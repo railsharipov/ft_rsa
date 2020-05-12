@@ -40,7 +40,7 @@ Usage is quite similar to openssl, although some flags are different
 ```
 Digest commands: md5, sha1, sha224, sha256, sha384, sha512, sha512/224, sha512/256
     <file>              read from <file>
-    -p                  read from IO_STDIN
+    -p                  read from stdin
     -r                  reverse output format
     -q                  quiet mode
     -s <string>         input <string>
