@@ -16,6 +16,21 @@ This project also includes:
 2. libft library (partial implementation of libc functions)
 3. text parser
 
+## Requirements
+GNU C
+
+MacOS High Sierra or higher
+
+Ubuntu 16.04 or higher
+
+## Limitations
+```bnum``` library supports ``big ints`` up to ```8192 bits```. This is because ```big int```'s
+values are stored in stack memory. Since ```bnum``` library is used mainly for RSA operations
+and RSA keysize is usually less than ```8192 bits```, this limitation should not be important in practice.
+
+During DES crypt operations on a file, whole file is read into memory,
+which implies system memory limitations.
+
 ## Compile
 ```make```
 
