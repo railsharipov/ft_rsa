@@ -79,3 +79,16 @@ RSA commands:
     -pubin              input key file is public RSA key
     -hexdump            hexdump output
 ```
+## Usage examples
+Generate RSA private key:
+```
+./ft_ssl genrsa -o key 2048
+```
+Check RSA key and print its contents:
+```
+./ft_ssl rsa -in key -check -text -noout
+```
+Encrypt message using RSA algorithm:
+```
+./ft_ssl rsautl -in message -out cipher -inkey key
+```
