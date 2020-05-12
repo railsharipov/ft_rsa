@@ -29,7 +29,7 @@ values are stored in stack memory. Since ```bnum``` library is used mainly for R
 and RSA keysize is usually less than ```8192 bits```, this limitation should not be important in practice.
 
 During DES crypt operations on a file, whole file is read into memory,
-which implies system memory limitations.
+which implies system memory limitations for large files.
 
 ## Compile
 ```make```
