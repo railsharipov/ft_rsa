@@ -61,6 +61,14 @@ typedef struct	s_task
 	uint32_t	val;
 }				t_task;
 
+int				comm_base64(char **, const char *);
+int				comm_hash(char **, const char *);
+int				comm_des_ecb(char **, const char *);
+int				comm_des_cbc(char **, const char *);
+int				comm_rsa_gen(char **, const char *);
+int				comm_rsa(char **, const char *);
+int				comm_rsa_utl(char **, const char *);
+
 void			ssl_exit(uint32_t);
 char			*ssl_getpass(void);
 int				ssl_setpass(const char *);
@@ -84,13 +92,5 @@ int				util_null(int, ...);
 t_htbl  		*util_task_htable(const t_task *, int);
 void			util_print_intbits(uint64_t, int, int);
 void			util_print_strbits(void *, size_t);
-
-int				comm_base64(char **, const char *);
-int				comm_hash(char **, const char *);
-int				comm_des_ecb(char **, const char *);
-int				comm_des_cbc(char **, const char *);
-int				comm_rsa_gen(char **, const char *);
-int				comm_rsa(char **, const char *);
-int				comm_rsa_utl(char **, const char *);
 
 #endif
