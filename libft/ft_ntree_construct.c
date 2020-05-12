@@ -83,7 +83,13 @@ t_node	*ft_ntree_construct(const char *map)
 
 	idx = 0;
 	keys = ft_strsplit(map, ' ');
+
+	if (NULL == keys)
+	{
+		return (NULL);
+	}
 	ntree = __create_recur(keys, &idx);
 	ft_2darray_del((void **)keys, -1);
+
 	return (ntree);
 }
