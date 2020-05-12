@@ -16,6 +16,21 @@ This project also includes:
 2. libft library (partial implementation of libc functions)
 3. text parser
 
+## Requirements
+GNU C
+
+MacOS High Sierra or higher
+
+Ubuntu 16.04 or higher
+
+## Limitations
+```bnum``` library supports ``big ints`` up to ```8192 bits```. This is because ```big int```'s
+values are stored in stack memory. Since ```bnum``` library is used mainly for RSA operations
+and RSA keysize is usually less than ```8192 bits```, this limitation should not be important in practice.
+
+During DES crypt operations on a file, whole file is read into memory,
+which implies system memory limitations for large files.
+
 ## Compile
 ```make```
 
@@ -24,13 +39,15 @@ Usage is quite similar to openssl, although some flags are different
 
 ```
 Digest commands: md5, sha1, sha224, sha256, sha384, sha512, sha512/224, sha512/256
+
     <file>              read from <file>
-    -p                  read from IO_STDIN
+    -p                  read from stdin
     -r                  reverse output format
     -q                  quiet mode
     -s <string>         input <string>
 
 DES cipher commands: des-ecb, des-cbc
+
     -a                  encode/decode the input/output to base64
     -i <file>           read from <file>
     -o <file>           write output to <file>
@@ -41,6 +58,7 @@ DES cipher commands: des-ecb, des-cbc
     -p <pass>           password (des)
 
 Base64 commands: base64
+
     -i <file>           encode file contents
     -o <file>           output to file
     -b <num>            set output line width to num
