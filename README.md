@@ -39,6 +39,7 @@ Usage is quite similar to openssl, although some flags are different
 
 ```
 Digest commands: md5, sha1, sha224, sha256, sha384, sha512, sha512/224, sha512/256
+
     <file>              read from <file>
     -p                  read from stdin
     -r                  reverse output format
@@ -46,6 +47,7 @@ Digest commands: md5, sha1, sha224, sha256, sha384, sha512, sha512/224, sha512/2
     -s <string>         input <string>
 
 DES cipher commands: des-ecb, des-cbc
+
     -a                  encode/decode the input/output to base64
     -i <file>           read from <file>
     -o <file>           write output to <file>
@@ -56,6 +58,7 @@ DES cipher commands: des-ecb, des-cbc
     -p <pass>           password (des)
 
 Base64 commands: base64
+
     -i <file>           encode file contents
     -o <file>           output to file
     -b <num>            set output line width to num
