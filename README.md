@@ -2,7 +2,7 @@
 Simple crypto library. RSA, ASN.1, PEM, DER, DES, Base64, SHAx, MD5
 
 ## About
-This goal of this project is implementing following algorithms:
+This goal of this project is implementing following:
 1. RSA crypt
 2. DES crypt
 2. Message digest (hashing)
