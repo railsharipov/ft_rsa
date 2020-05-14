@@ -110,3 +110,18 @@ Encrypt message using RSA algorithm:
 ```
 ./ft_ssl rsautl -in message -out cipher -inkey key
 ```
+## References
+1.	ITU-T X.660: General procedures and top arcs of the international object identifier tree
+2.	ITU-T X.690: Abstract Syntax Notation One (ASN.1)
+3.	FIPS 180-4: Secure Hash Standard
+4.	FIPS 186-4: Digital Signature Standard
+5.	RFC 5280: Internet X.509 Public Key Infrastructure Certificate
+6.	RFC 3447: PKCS #1: RSA Cryptography Specifications Version 2.1
+7.	RFC 8017: PKCS #1: RSA Cryptography Specifications Version 2.2
+8.	RFC 5208: PKCS #8: Private-Key Information Syntax Specification Version 1.2
+9.	RFC 5958: Asymmetric Key Packages
+10.	RFC 7468: Textual Encodings of PKIX, PKCS, and CMS Structures
+11.	RFC 6234: US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)
+12.	RFC 1321: The MD5 Message-Digest Algorithm
+13.	FIPS 46-3: Data Encryption Standard (DES)
+14.	RFC 1829: The ESP DES-CBC Transform
