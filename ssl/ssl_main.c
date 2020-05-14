@@ -65,13 +65,13 @@ int		main(int ac, char **av)
 	char		*name_comm;
 
 	if (ac < 2)
-		ssl_exit(ERR_INVALID);
+		ssl_exit(SSL_ERR_USAGE);
 
 	__get_command(&func_comm, &name_comm, av[1]);
 
 	if (NULL == name_comm)
 	{
-		ssl_exit(ERR_INVALID);
+		ssl_exit(SSL_ERR_USAGE);
 	}
 	if (SSL_OK != func_comm(av+2, name_comm))
 	{

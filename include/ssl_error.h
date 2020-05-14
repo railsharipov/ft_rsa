@@ -4,7 +4,8 @@
 # include <ft_printf.h>
 # include <sys/errno.h>
 
-# define SSL_ERRBUF	1024
+# define SSL_ERRBUF		1024
+# define SSL_INFO_FILE	"./docs/usage.txt"
 
 extern int global_ssl_error_set;
 

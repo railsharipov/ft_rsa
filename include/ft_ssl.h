@@ -30,14 +30,9 @@ enum	e_status
 	SSL_FALSE		= 0UL,
 	SSL_TRUE		= 1UL,
 	SSL_OK			= 1UL << 1,
-	SSL_ERR			= 1UL << 2
-};
-
-enum	e_error
-{
-	ERR_INVALID		= 1UL << 3,
-	ERR_MEMORY		= 1UL << 4,
-	ERR_NULL		= 1UL << 5
+	SSL_ERR			= 1UL << 2,
+	SSL_ERR_USAGE	= 1UL << 3,
+	SSL_ERR_MEMORY	= 1UL << 4
 };
 
 typedef uint32_t	t_bool;
