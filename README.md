@@ -3,18 +3,23 @@ Simple crypto library. RSA, ASN.1, PEM, DER, DES, Base64, SHAx, MD5
 
 ## About
 This goal of this project is implementing following:
-1. RSA crypt
-2. DES crypt
-2. Message digest (hashing)
-3. Base64 encoding
-4. ASN.1 tree
-5. DER encoding
-6. PEM encoding
+* Pseudo-random number generators
+* Password based key derivation
+* RSA key generation
+* RSA crypt
+* RSA utilities
+* DES crypt
+* Message digest
+* Base64 encoding
+* ASN.1 tree
+* DER encoding
+* PEM encoding
+* OpenSSL style flags
 
 This project also includes:
-1. bnum library (big number implementation)
-2. libft library (partial implementation of libc functions)
-3. text parser
+* ```bnum``` library (big number implementation)
+* ```libft``` library (partial implementation of libc functions)
+* Text parser
 
 ## Requirements
 GNU C
@@ -111,6 +116,7 @@ Encrypt message using RSA algorithm:
 ./ft_ssl rsautl -in message -out cipher -inkey key
 ```
 ## References
+* Tom St Denis, Mads Rasmussen, Greg Rose: Multi-Precision Math
 * ITU-T X.660: General procedures and top arcs of the international object identifier tree
 * ITU-T X.690: Abstract Syntax Notation One (ASN.1)
 * FIPS 180-4: Secure Hash Standard
