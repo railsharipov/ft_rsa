@@ -3,7 +3,7 @@ Simple crypto library. RSA, ASN.1, PEM, DER, DES, Base64, SHAx, MD5
 
 ## About
 This goal of this project is implementing following:
-* Pseudo-random number generators
+* Pseudo-random number generator
 * Password based key derivation
 * RSA key generation
 * RSA crypt
