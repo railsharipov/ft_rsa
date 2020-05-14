@@ -72,7 +72,7 @@ RSA commands:
 
     genrsa (generate RSA private keys):
     
-    -rand <files>       set rand source as list of files, each separated by semicolon
+    -rand <files>       set rand source as list of files, separated by colon
     -o <file>           output generated key to a file
     <number>            set RSA key size (shall be last argument)
     
