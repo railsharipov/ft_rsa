@@ -239,10 +239,12 @@ extern int	global_ft_malloc_error;
 #  define LIBFT_FREE(PTR) \
 	do \
 	{ \
-		ft_printf(TXT_MAG("%s\n"), __func__); \
-		ft_free(#PTR, PTR); \
-		PTR = NULL; \
-		\
+		if (NULL != PTR) \
+		{ \
+			ft_printf(TXT_MAG("%s\n"), __func__); \
+			ft_free(#PTR, PTR); \
+			PTR = NULL; \
+		} \
 		if (LIBFT_FATAL == global_ft_malloc_error) \
 		{ \
 			 ft_exit(); \
