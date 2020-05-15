@@ -116,7 +116,7 @@ Encrypt message using RSA algorithm:
 ./ft_ssl rsautl -in message -out cipher -inkey key
 ```
 ## References
-* Tom St Denis, Mads Rasmussen, Greg Rose: Multi-Precision Math
+* LibTomMath, Multi-Precision Math: Tom St Denis, Mads Rasmussen, Greg Rose
 * ITU-T X.660: General procedures and top arcs of the international object identifier tree
 * ITU-T X.690: Abstract Syntax Notation One (ASN.1)
 * FIPS 180-4: Secure Hash Standard
