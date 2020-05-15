@@ -83,9 +83,9 @@ static int	__set_type(const char *opt, const t_task *task)
 
 static int	__write_output(char *output, size_t outsize)
 {
-	if ((STDOUT_FILENO == __out.fd) && (SSL_FLAG(RSA_HEXDUMP, __gflag)))
+	if (SSL_FLAG(RSA_HEXDUMP, __gflag))
 	{
-		util_hexdump(STDOUT_FILENO, output, outsize);
+		util_hexdump(__out.fd, output, outsize);
 	}
 	else if (__out.func(&__out, output, outsize) < 0)
 	{
