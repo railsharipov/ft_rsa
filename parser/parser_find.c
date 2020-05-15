@@ -2,9 +2,6 @@
 #include <parser.h>
 
 // Find ostring 'pattern' in ostring 'octets'
-// Ostring = unsigned 8-bit integer array
-// May be used for C-strings
-
 int parser_find(
 	const char *octets, int olen, const char *pattern, int patlen)
 {
