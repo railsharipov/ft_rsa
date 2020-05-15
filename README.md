@@ -22,11 +22,9 @@ This project also includes:
 * Text parser
 
 ## Requirements
-GNU C
-
-MacOS High Sierra or higher
-
-Ubuntu 16.04 or higher
+* GNU C
+* MacOS High Sierra or higher
+* Ubuntu 16.04 or higher
 
 ## Limitations
 ```bnum``` library supports ``big ints`` up to ```8192 bits```. This is because ```big int```'s
