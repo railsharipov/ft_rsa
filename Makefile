@@ -31,23 +31,20 @@ OBJS := $(foreach file, $(SRCS:.c=.o), $(addprefix $(OBJ_PREFIX)/,$(file)))
 
 DEPS := $(foreach file, $(SRCS:.c=.d), $(addprefix $(DEP_PREFIX)/,$(file)))
 
-CC = gcc -Og -Wno-incompatible-pointer-types
+CC = gcc -O3 -Wno-incompatible-pointer-types
 CFLAGS = -I./include
 LDFLAGS =
 LDLIBS =
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_PREFIX)/$*.d
 
-.PHONY: all debug
+.PHONY: all sanitize debug
 
 all: $(NAME)
 
-final: override CFLAGS += -O3
-final: $(NAME)
-
-sanitize: override CFLAGS += -g -fsanitize=address
+sanitize: override CFLAGS = gcc -Og -g -fsanitize=address
 sanitize: $(NAME)
 
-debug: override CFLAGS += -g
+debug: override CFLAGS = gcc -Og -g
 debug: $(NAME)
 
 $(NAME): $(OBJS)

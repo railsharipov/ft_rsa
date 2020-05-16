@@ -148,6 +148,7 @@ static void	__key_info(t_node *asn_key)
 {
 	t_htbl	*key_items;
 	t_iasn	*asn_item;
+	char	*snum;
 
 	if (SSL_FLAG(RSA_TEXT, __gflag))
 	{
@@ -159,7 +160,8 @@ static void	__key_info(t_node *asn_key)
 
 		if (NULL != asn_item)
 		{
-			print_num("Modulus", asn_item->content);
+			ft_putstr("Modulus=");
+			print_num(NULL, asn_item->content);
 		}
 	}
 }
