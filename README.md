@@ -34,7 +34,7 @@ and RSA keysize is usually less than ```8192 bits```, this limitation should not
 During DES crypt operations on a file, whole file is read into memory,
 which implies system memory limitations for large files.
 
-Although standard recommend that number of trials in Miller-Rabin prime check should change depending
+Although standard recommends that number of trials in Miller-Rabin prime check should change depending
 on number size, this implemetation uses fixed number of trials, specifically 20 (defined by ```RM_TRIALS```). 
 This results in lower performance when prime checks are performed on 4096 bit or larger numbers.
 
