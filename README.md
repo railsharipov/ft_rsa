@@ -35,7 +35,7 @@ During DES crypt operations on a file, whole file is read into memory,
 which implies system memory limitations for large files.
 
 ## Compile
-```make```
+```make final```
 
 ## Usage
 Usage is quite similar to openssl, although some flags are different
