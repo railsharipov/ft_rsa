@@ -35,8 +35,8 @@ During DES crypt operations on a file, whole file is read into memory,
 which implies system memory limitations for large files.
 
 Although standard recommend that number of trials in Miller-Rabin prime check should change depending
-on number size, this implemetation uses fixed number of trials, specifically 20. This results in lower 
-performance, compared to OpenSSL, when prime checks are performed on 4096 bit or larger numbers.
+on number size, this implemetation uses fixed number of trials, specifically 20 (defined by ```RM_TRIALS```). 
+This results in lower performance, compared to OpenSSL, when prime checks are performed on 4096 bit or larger numbers.
 
 ## Compile
 ```make```
