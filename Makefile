@@ -41,10 +41,10 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_PREFIX)/$*.d
 
 all: $(NAME)
 
-sanitize: override CFLAGS = gcc -Og -g -fsanitize=address
+sanitize: override CC = gcc -Og -g -fsanitize=address
 sanitize: $(NAME)
 
-debug: override CFLAGS = gcc -Og -g
+debug: override CC = gcc -Og -g
 debug: $(NAME)
 
 $(NAME): $(OBJS)
