@@ -55,11 +55,11 @@ Digest commands: md5, sha1, sha224, sha256, sha384, sha512, sha512/224, sha512/2
 
 DES cipher commands: des-ecb, des-cbc
 
-    -a                  base64-encode output / base64-decode input (depending on des mode)
+    -a                  base64-encode output / base64-decode input (depending on DES mode)
     -i <file>           read message from <file>
     -o <file>           write output to <file>
-    -e                  des encryption mode
-    -d                  des decryption mode
+    -e                  DES encryption mode (default)
+    -d                  DES decryption mode
     -k <key>            hex key input
     -s <salt>           hex salt input
     -p <pass>           password input
@@ -67,7 +67,9 @@ DES cipher commands: des-ecb, des-cbc
 Base64 commands: base64
 
     -i <file>           read message from <file>
-    -o <file>           output to <file>
+    -o <file>           write output to <file>
+	-e					base64 encode mode (default)
+	-d					base64 decode mode
     -b <num>            set output line width to <num>
 
 RSA commands:
@@ -75,7 +77,7 @@ RSA commands:
     genrsa (generate RSA private keys):
     
     -rand <files>       set rand source as list of <files>, separated by colon
-    -o <file>           output generated key to a <file>
+    -o <keyfile>        output generated key to a <keyfile>
     <keysize>           set RSA key size to <keysize> (shall be last argument)
     
     rsa (perform operation on RSA keys):
@@ -96,10 +98,10 @@ RSA commands:
     
     rsautl (perform RSA crypt):
     
-    -in <file>          read message form <file>
-    -out <file>         output to a <file>
-    -inkey <keyfile>    read input key form <keyfile>
-    -encrypt            RSA encryption mode
+    -in <file>          read message/cipher form <file>
+    -out <file>         write output to a <file>
+    -inkey <keyfile>    read RSA key form <keyfile>
+    -encrypt            RSA encryption mode (default)
     -decrypt            RSA decryption mode
     -pubin              input key is a X.509 public key
     -hexdump            hexdump output
@@ -109,7 +111,7 @@ Generate RSA private key:
 ```
 ./ft_ssl genrsa -o key 2048
 ```
-Check RSA key and print its contents:
+Check RSA key and print its components:
 ```
 ./ft_ssl rsa -in key -check -text -noout
 ```
