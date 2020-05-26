@@ -68,8 +68,8 @@ Base64 commands: base64
 
     -i <file>           read message from <file>
     -o <file>           write output to <file>
-	-e					base64 encode mode (default)
-	-d					base64 decode mode
+    -e                  base64 encode mode (default)
+    -d                  base64 decode mode
     -b <num>            set output line width to <num>
 
 RSA commands:
