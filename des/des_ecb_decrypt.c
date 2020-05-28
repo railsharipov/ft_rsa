@@ -119,7 +119,7 @@ int	des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 		return (SSL_ERROR("invalid des-ecb input"));
 	}
 	mes->content = NULL;
-	
+
 	if (ciph->size % DES_MES_BLOCK_SIZE != 0)
 	{
 		return (SSL_ERROR("bad des cipher"));
@@ -137,5 +137,5 @@ int	des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 	des_decrypt_schedule(__ksched, &__permut_key);
 
 	return (__decrypt(
-		(uint8_t *)(ciph->content), ciph->size, &mes->content, &mes->size));
+		(uint8_t *)(ciph->content), ciph->size, &(mes->content), &(mes->size)));
 }

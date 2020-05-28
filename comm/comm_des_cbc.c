@@ -167,22 +167,20 @@ static int	__dec(t_ostring *ciph, t_ostring *mes)
 	return (des_cbc_decrypt(__des, ciph, mes));
 }
 
-static int	__dec_b64(t_ostring *ciph, t_ostring *mes)
+static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 {
-	t_ostring	b64;
+	t_ostring	cipher;
 
 	if (SSL_OK != base64_decode(
-		(char *)(ciph->content), ciph->size, &b64.content, &b64.size))
+		(char *)(b64->content), b64->size, &cipher.content, &cipher.size))
 			return (SSL_ERROR("base64 decode error"));
 
-	if (SSL_OK != des_cbc_decrypt(__des, &b64, mes))
+	if (SSL_OK != des_cbc_decrypt(__des, &cipher, mes))
 	{
-		SSL_FREE(b64.content);
-		return (SSL_ERROR("des-cbc decrypt error"));
+		SSL_FREE(cipher.content);
+		return (SSL_ERROR("des-ecb decrypt error"));
 	}
-
-	mes->content = b64.content;
-	mes->size = b64.size;
+	SSL_FREE(cipher.content);
 
 	return (SSL_OK);
 }

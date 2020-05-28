@@ -25,9 +25,9 @@
 # include <stdio.h>
 
 /* enable ft_malloc wrapper */
-# define LIBFT_MEM_ALLOC
+// # define LIBFT_MEM_ALLOC
 /* enable ft_malloc debug info */
-# define LIBFT_MEM_DEBUG
+// # define LIBFT_MEM_DEBUG
 /* enable ft_malloc verbal info */
 // # define LIBFT_MEM_VERBAL
 
@@ -359,7 +359,7 @@ extern int	global_ft_malloc_error;
 	do \
 	{ \
 		PTR = calloc(SZ, 1); \
-		if (NULL == PTR) \
+		if (ENOMEM == errno) \
 		{ \
 			perror(TXT_RED("fatal error")); \
 			ft_exit(); \
