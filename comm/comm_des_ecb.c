@@ -110,6 +110,8 @@ static int	__get_input(char **input, size_t *insize)
 	*input = NULL;
 	*insize = 0;
 
+	// if input is in base64 format (flag DES_A [-a])
+	// set input stream delimeter to '\n'
 	if (SSL_FLAG(DES_A | DES_D, __gflag))
 	{
 		__in.delim = '\n';

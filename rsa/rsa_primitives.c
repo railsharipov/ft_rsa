@@ -27,6 +27,7 @@ int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 	SSL_ALLOC(*octets, osize);
 	nstr = stringify_num(num);
 	ft_memcpy(*octets + osize-nlen, nstr, nlen);
+	SSL_FREE(nstr);
 
 	return (SSL_OK);
 }
