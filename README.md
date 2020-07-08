@@ -19,7 +19,6 @@ This goal of this project is implementing following:
 This project also includes:
 * ```bnum``` library (big number implementation)
 * ```libft``` library (partial implementation of ```libc``` functions)
-* Text parser
 
 ## Requirements
 * GNU C
