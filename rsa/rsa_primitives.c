@@ -16,17 +16,17 @@ int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 {
 	char	*nstr;
-	int		nlen;
+	int		nsize;
 
-	nlen = CEIL(lmbit_num(num), 8) / 8;
+	nsize = CEIL(lmbit_num(num), 8) / 8;
 
-	if (nlen > CHAR_BIT * osize)
+	if (nsize > CHAR_BIT * osize)
 	{
 		return (SSL_ERROR("integer too large"));
 	}
 	SSL_ALLOC(*octets, osize);
 	nstr = stringify_num(num);
-	ft_memcpy(*octets + osize-nlen, nstr, nlen);
+	ft_memcpy(*octets + osize-nsize, nstr, nsize);
 	SSL_FREE(nstr);
 
 	return (SSL_OK);
