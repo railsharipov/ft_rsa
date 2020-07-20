@@ -38,9 +38,9 @@ void	pem_encap(t_pem **pem, const char *type, char *content, size_t consize)
 	__concat(*pem, __posten, __postsize);
 	__concat(*pem, "\n", 1);
 
-	if (NULL == __preen)
+	if (NULL != __preen)
 		free(__preen);
-	if (NULL == __posten)
+	if (NULL != __posten)
 		free(__posten);
 }
 
