@@ -60,9 +60,9 @@ int	pem_remove_encap(
 	bidx = parser_find(pem->content, pem->size, __preen, __presize);
 	eidx = parser_find(pem->content, pem->size, __posten, __postsize);
 
-	if (NULL == __preen)
+	if (NULL != __preen)
 		free(__preen);
-	if (NULL == __posten)
+	if (NULL != __posten)
 		free(__posten);
 
 	if ((bidx < 0) || (eidx < 0) || (bidx > eidx))
