@@ -108,15 +108,15 @@ RSA commands:
 ## Usage examples
 Generate RSA private key:
 ```
-./ft_ssl genrsa -o key 2048
+./ft_ssl genrsa -o <key> 2048
 ```
 Check RSA key and print its components:
 ```
-./ft_ssl rsa -in key -check -text -noout
+./ft_ssl rsa -in <key> -check -text -noout
 ```
 Encrypt message using RSA algorithm:
 ```
-./ft_ssl rsautl -in message -out cipher -inkey key
+./ft_ssl rsautl -in <message> -out <cipher> -inkey <key>
 ```
 ## References
 * LibTomMath, Multi-Precision Math: Tom St Denis, Mads Rasmussen, Greg Rose
