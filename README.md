@@ -1,6 +1,11 @@
 # ft_rsa
 Simple crypto library. RSA, ASN.1, PEM, DER, DES, Base64, SHAx, MD5
 
+## For 42School buddies
+This project does not follow 'Norminette' code formatting requirements. Crypto involves a lot of math, 
+so making 25-liners will not improve readability in any way. In my opinion, 'Norminette' is only good for
+Tier 2 and lower projects, but that's another story ;)
+
 ## About
 The goals of this project:
 * Pseudo-random number generator
