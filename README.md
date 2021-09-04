@@ -37,11 +37,6 @@ Although standard recommends that number of trials in Miller-Rabin prime check s
 on number size, this implemetation uses fixed number of trials, specifically 20 (defined by ```RM_TRIALS```). 
 This results in lower performance when prime checks are performed on 4096 bit or larger numbers.
 
-## For 42School buddies
-This project does not follow 'Norminette' code formatting requirements. Crypto involves a lot of math, 
-so making 25-liners will not improve readability in any way. In my opinion, 'Norminette' is only good for
-Tier 2 and lower projects, but that's another story ;)
-
 ## Compile
 ```make```
 
