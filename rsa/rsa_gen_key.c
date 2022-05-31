@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_base64.h>
 #include <ssl_der.h>
@@ -50,18 +51,18 @@ static int	__get_primes(int modsize, const char *frand)
 
 	if (SSL_OK != rand_fseed(&seed, frand))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	rand_mtw_init(seed);
 	keysize = modsize / 2;
 
 	if (SSL_OK != __gen_prime(__items->prime1, keysize))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != __gen_prime(__items->prime2, modsize - keysize))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	mul_num(__items->prime1, __items->prime2, __items->modulus);
 	invmod_num(__items->prime2, __items->prime1, __items->coeff);
@@ -97,27 +98,27 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 
 	if (NULL == asn_pkey)
 	{
-		return (SSL_ERROR("invalid rsa gen input"));
+		return (RSA_ERROR(INVALID_INPUT));
 	}
 	if (modsize < 64)
 	{
-		return (SSL_ERROR("rsa key size too small"));
+		return (RSA_ERROR(INVALID_RSA_KEY_SIZE));
 	}
 	if (NULL == (*asn_pkey = asn_tree(MAP_RSA_PRIVATE_KEY)))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != rsa_key_items(*asn_pkey, &__items))
 	{
-		ret = SSL_ERROR("rsa key generation failed");
+		ret = RSA_ERROR(FAILED_RSA_KEY_GENERATION);
 	}
 	else if (SSL_OK != __get_primes(modsize, frand))
 	{
-		ret = SSL_ERR;
+		ret = UNSPECIFIED_ERROR;
 	}
 	else if (SSL_OK != __get_exponents())
 	{
-		ret = SSL_ERR;
+		ret = UNSPECIFIED_ERROR;
 	}
 	if (SSL_OK != ret)
 	{

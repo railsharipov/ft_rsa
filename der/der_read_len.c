@@ -1,44 +1,25 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
+#include <ssl_der.h>
 
-int	__len_long(unsigned char **octets, int *osize, int *len)
-{
-  int   len_nbytes;
+static int	__len_long(unsigned char **octets, size_t *osize, size_t *len);
 
-  len_nbytes = **octets & (~(1<<7));
-  *octets = *octets + 1;
-  *osize = *osize - 1;
-
-  while ((len_nbytes-- > 0) && (*osize > 0))
-  {
-    *len <<= 8;
-    *len |= **octets;
-    *octets = *octets + 1;
-    *osize = *osize - 1;
-  }
-
-  if (len_nbytes > 0)
-    return (SSL_ERR);
-  return (SSL_OK);
-}
-
-int der_read_len(char **derenc, int *dersize, int *len)
+int	der_read_len(unsigned char **derenc, size_t *dersize, size_t *len)
 {
   unsigned char *octets;
-  int           osize;
+  size_t        osize;
 
   SSL_CHECK((NULL != derenc) && (NULL != *derenc));
   SSL_CHECK(NULL != dersize);
   SSL_CHECK(NULL != len);
 
-  if (*dersize <= 0)
-    return (SSL_ERROR("bad der encoding: unexpected bytes stop"));
+  if (*dersize == 0)
+    return (DER_ERROR(INVALID_DER_ENCODING));
 
   octets = (unsigned char *)(*derenc);
   osize = *dersize;
   *len = 0;
-
-  // asn_print_len_tag(octets);
 
   if (ASN_LEN_SHORT == (*octets & (1<<7)))
   {
@@ -49,11 +30,37 @@ int der_read_len(char **derenc, int *dersize, int *len)
   else
   {
     if (SSL_OK != __len_long(&octets, &osize, len))
-      return (SSL_ERROR("bad der length bytes: unexpected bytes stop"));
+      return (DER_ERROR(UNSPECIFIED_ERROR));
   }
 
-  *derenc = (char *)octets;
+  *derenc = octets;
   *dersize = osize;
+
+  return (SSL_OK);
+}
+
+static int	__len_long(unsigned char **octets, size_t *osize, size_t *len)
+{
+  uint32_t	len_octets;
+  int		len_nbytes;
+
+  len_nbytes = **octets & (~(1<<7));
+  *octets = *octets + 1;
+  *osize = *osize - 1;
+
+  if (len_nbytes > *osize)
+  	return (DER_ERROR(INVALID_DER_ENCODING));
+
+  len_octets = 0;
+  while (len_nbytes-- > 0)
+  {
+    len_octets <<= 8;
+    len_octets |= **octets;
+    *octets = *octets + 1;
+    *osize = *osize - 1;
+  }
+
+  *len = len_octets;
 
   return (SSL_OK);
 }

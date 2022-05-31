@@ -2,7 +2,7 @@
 #include <ssl_asn.h>
 #include <bnum.h>
 
-t_iasn	*asn_primitive_bool(char *key, char *name)
+t_iasn	*asn_primitive_bool(const char *key, const char *name)
 {
 	t_iasn	*item;
 
@@ -11,7 +11,7 @@ t_iasn	*asn_primitive_bool(char *key, char *name)
 	return (item);
 }
 
-t_iasn	*asn_primitive_int(char *key, char *name)
+t_iasn	*asn_primitive_int(const char *key, const char *name)
 {
 	t_iasn	*item;
 
@@ -23,7 +23,7 @@ t_iasn	*asn_primitive_int(char *key, char *name)
 	return (item);
 }
 
-t_iasn	*asn_primitive_ostring(char *key, char *name)
+t_iasn	*asn_primitive_ostring(const char *key, const char *name)
 {
 	t_iasn	*item;
 
@@ -32,7 +32,7 @@ t_iasn	*asn_primitive_ostring(char *key, char *name)
 	return (item);
 }
 
-t_iasn	*asn_primitive_bitstring(char *key, char *name)
+t_iasn	*asn_primitive_bitstring(const char *key, const char *name)
 {
 	t_iasn	*item;
 
@@ -41,7 +41,7 @@ t_iasn	*asn_primitive_bitstring(char *key, char *name)
 	return (item);
 }
 
-t_iasn	*asn_primitive_null(char *key, char *name)
+t_iasn	*asn_primitive_null(const char *key, const char *name)
 {
 	t_iasn	*item;
 
@@ -50,7 +50,7 @@ t_iasn	*asn_primitive_null(char *key, char *name)
 	return (item);
 }
 
-t_iasn	*asn_primitive_oid(char *key, char *name)
+t_iasn	*asn_primitive_oid(const char *key, const char *name)
 {
 	t_iasn	*item;
 

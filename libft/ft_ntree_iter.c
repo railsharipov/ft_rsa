@@ -12,7 +12,7 @@
 
 #include <libft.h>
 
-static int	__iter_func(t_node *node, void *ptr)
+static int	__iter_func(t_node *node, const void *ptr)
 {
 	t_queue	*queue;
 

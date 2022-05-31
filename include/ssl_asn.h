@@ -64,6 +64,12 @@
 // length octet as most significant bit of integer
 # define ASN_LEN_LONG         0x80
 
+# define ASN_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, ASN_ERROR_CTX))
+
+enum  e_asn_error {
+	INVALID_ASN_TREE = 1,
+};
+
 typedef struct  s_iasn
 {
   void          *content;
@@ -74,7 +80,7 @@ typedef struct  s_iasn
 struct s_der;
 struct s_node;
 
-struct s_node	*asn_tree(char *);
+struct s_node	*asn_tree(const char *);
 void			asn_tree_del(struct s_node *);
 void			*asn_tree_fetch(t_node *, const char *);
 t_htbl			*asn_tree_items(struct s_node *);
@@ -87,13 +93,13 @@ void			asn_item_del(t_iasn *);
 void			*asn_item_content(t_iasn *);
 size_t			asn_item_size(t_iasn *);
 char			*asn_item_type(t_iasn *);
-t_iasn			*asn_primitive_bool(char *, char *);
-t_iasn			*asn_primitive_int(char *, char *);
-t_iasn			*asn_primitive_ostring(char *, char *);
-t_iasn			*asn_primitive_bitstring(char *, char *);
-t_iasn			*asn_primitive_oid(char *, char *);
-t_iasn			*asn_primitive_null(char *, char *);
-t_iasn			*asn_construct_sequence(char *, char *);
+t_iasn			*asn_primitive_bool(const char *key, const char *name);
+t_iasn			*asn_primitive_int(const char *key, const char *name);
+t_iasn			*asn_primitive_ostring(const char *key, const char *name);
+t_iasn			*asn_primitive_bitstring(const char *key, const char *name);
+t_iasn			*asn_primitive_oid(const char *key, const char *name);
+t_iasn			*asn_primitive_null(const char *key, const char *name);
+t_iasn			*asn_construct_sequence(const char *key, const char *content);
 void			asn_print(struct s_node *);
 int				asn_transform(struct s_node *, struct s_node *);
 char			*asn_oid_tree_get_name(const char *);

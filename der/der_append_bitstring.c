@@ -1,8 +1,9 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
-int der_append_bitstring(t_der *der, void *content, int cont_nbytes)
+int der_append_bitstring(t_der *der, void *content, size_t cont_nbytes)
 {
   unsigned char *octets;
   int           id_nbytes, len_nbytes, enc_nbytes, init_nbytes;
@@ -11,7 +12,7 @@ int der_append_bitstring(t_der *der, void *content, int cont_nbytes)
   octets = (unsigned char *)(content);
 
   if (NULL == der)
-    return (SSL_ERROR("invalid input"));
+    return (DER_ERROR(INVALID_INPUT));
 
   id_nbytes = 1; // since simple tag expected
   init_nbytes = 1; // initial byte used to store number of trailing zero bits

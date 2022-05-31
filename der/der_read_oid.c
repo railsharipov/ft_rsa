@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
 #include <bnum.h>
@@ -9,7 +10,7 @@ static const int	ASN_PRIMITIVE	= (ASN_ENCODE_PRIMITIVE | ASN_TAG);
 static void	__num_ids_to_ostring(
 	char **obj_id, uint32_t *num_ids, int num_idlen)
 {
-	uint8_t		**sub_ids;
+	unsigned char	**sub_ids;
 	uint32_t	concat_id;
 	int			ix;
 
@@ -25,18 +26,18 @@ static void	__num_ids_to_ostring(
 	// CONCAT_ID = 40 * ID_0 + ID_1
 
 	concat_id = num_ids[0];
- 	ft_sprintf(sub_ids + 0, "%lu.", num_ids[0] / 40);
- 	ft_sprintf(sub_ids + 1, "%lu.", num_ids[0] % 40);
+ 	ft_sprintf((char **)sub_ids + 0, "%lu.", num_ids[0] / 40);
+ 	ft_sprintf((char **)sub_ids + 1, "%lu.", num_ids[0] % 40);
 
 	ix = 1;
 	while (ix < num_idlen-1) // skip last one
 	{
-	 	ft_sprintf(sub_ids + (ix+1), "%lu.", num_ids[ix]);
+	 	ft_sprintf((char **)sub_ids + (ix+1), "%lu.", num_ids[ix]);
 		ix++;
 	}
 	if (ix < num_idlen) // get last one
 	{
-		ft_sprintf(sub_ids + (ix+1), "%lu", num_ids[ix]);
+		ft_sprintf((char **)sub_ids + (ix+1), "%lu", num_ids[ix]);
 	}
 	*obj_id = ft_2darray_merge_cstr((char **)sub_ids, num_idlen+1);
 
@@ -48,7 +49,7 @@ static void	__num_ids_to_ostring(
 	SSL_FREE(sub_ids);
 }
 
-static int	__sub_ids(char **obj_id, uint8_t *octets, int olen)
+static int	__sub_ids(char **obj_id, unsigned char *octets, size_t olen)
 {
 	uint32_t	num_ids[olen];
 	int			ix;
@@ -72,7 +73,7 @@ static int	__sub_ids(char **obj_id, uint8_t *octets, int olen)
 		}
 		if ((bits > CHAR_BIT*(sizeof(int)-1)) || (ix >= olen))
 		{
-			return (SSL_ERROR("bad sub id last octet"));
+			return (DER_ERROR(UNSPECIFIED_ERROR));
 		}
 		// get last sub id 7-bit block
 		num_ids[iy] <<= (CHAR_BIT-1);
@@ -82,18 +83,18 @@ static int	__sub_ids(char **obj_id, uint8_t *octets, int olen)
 	}
 	if (iy < 2)
 	{
-		return (SSL_ERROR("invalid number of sub ids"));
+		return (DER_ERROR(UNSPECIFIED_ERROR));
 	}
 	__num_ids_to_ostring(obj_id, num_ids, iy);
 
 	return (SSL_OK);
 }
 
-int	der_read_oid(t_iasn *item, char **derenc, int *dersize)
+int	der_read_oid(t_iasn *item, char **derenc, size_t *dersize)
 {
-	uint8_t	*octets;
-	int		osize;
-	int		olen;
+	unsigned char	*octets;
+	size_t	osize;
+	size_t	olen;
 	char	*obj_name;
 	char	*obj_id;
 
@@ -101,34 +102,34 @@ int	der_read_oid(t_iasn *item, char **derenc, int *dersize)
 	SSL_CHECK((NULL != derenc) && (NULL != *derenc));
 	SSL_CHECK(NULL != dersize);
 
-	octets = (uint8_t *)(*derenc);
+	octets = (unsigned char *)(*derenc);
 	osize = *dersize;
 
 	if ((ASN_PRIMITIVE | ASN_TAG_OBJECT_ID) != *octets)
 	{
-		return (SSL_ERROR("bad object id asn tag"));
+		return (DER_ERROR(INVALID_ASN_TYPE_TAG));
 	}
 	octets++;
 	osize--;
 
 	if (SSL_OK != der_read_len(&octets, &osize, &olen))
 	{
-		return (SSL_ERROR("bad asn len tag"));
+		return (DER_ERROR(INVALID_ASN_LEN_TAG));
 	}
 	if (olen > osize)
 	{
-		return (SSL_ERROR("invalid asn len"));
+		return (DER_ERROR(INVALID_ASN_LEN_TAG));
 	}
 	if (SSL_OK != __sub_ids(&obj_id, octets, olen))
 	{
-		return (SSL_ERROR("bad asn object id"));
+		return (DER_ERROR(INVALID_ASN_OBJECT_ID));
 	}
 	obj_name = asn_oid_tree_get_name(obj_id);
 	SSL_FREE(obj_id);
 
 	if (NULL == obj_name)
 	{
-		return (SSL_ERROR("unknown asn object id"));
+		return (DER_ERROR(UNKNOWN_ASN_OBJECT_ID));
 	}
 	item->content = obj_name;
 	item->size = ft_strlen(obj_name);

@@ -12,12 +12,12 @@
 
 #include <libft.h>
 
-static int	__calc_size_func(t_node *node, void *farg)
+static int	__calc_size_func(t_node *node, const void *farg)
 {
 	int	*size;
 
 	(void)node;
-	size = farg;
+	size = (int *)farg;
 	*size = *size + 1;
 	return (0);
 }

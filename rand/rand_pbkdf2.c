@@ -11,15 +11,17 @@
 /* ************************************************************************** */
 
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_des.h>
 #include <ssl_hash.h>
+#include <ssl_rand.h>
 #include <pwd.h>
 
 static char	__buf[160];
 
 /* Password based key derivation function - PBKDF2 */
 
-int	rand_pbkdf2(uint8_t *key, uint8_t *salt, uint8_t *vect)
+int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect)
 {
 	t_hash	*md5;
 	char	*bufptr;
@@ -27,9 +29,9 @@ int	rand_pbkdf2(uint8_t *key, uint8_t *salt, uint8_t *vect)
 	char	*pass;
 
 	if (NULL == salt)
-		return (SSL_ERROR("expected salt input"));
+		return (RAND_ERROR(INVALID_INPUT));
 	if (NULL == (pass = ssl_getpass()))
-		return (SSL_ERROR("expected pass input"));
+		return (RAND_ERROR(EXPECTED_PASSWORD_INPUT));
 
 	bufptr = __buf;
 	ft_memcpy(bufptr, pass, ft_strlen(pass));

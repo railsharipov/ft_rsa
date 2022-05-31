@@ -13,12 +13,12 @@
 #include <ft_ssl.h>
 #include <ssl_des.h>
 
-static const uint8_t	CHA[16] = {
+static const unsigned char	CHA[16] = {
 	1,  1,  2,  2,  2,  2,  2,  2,
 	1,  2,  2,  2,  2,  2,  2,  1
 };
 
-static const uint8_t	CSA[48] = {
+static const unsigned char	CSA[48] = {
 	14, 17, 11, 24, 1,  5,  3,  28, 15, 6,  21, 10,
 	23, 19, 12, 4,  26, 8,  16, 7,  27, 20, 13, 2,
 	41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48,

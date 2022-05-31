@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
 #include <bnum.h>
@@ -6,11 +7,11 @@
 static const int  ASN_TAG       = (ASN_TAG_UNIVERSAL | ASN_TAG_SIMPLE);
 static const int  ASN_CONSTRUCT = (ASN_ENCODE_CONSTRUCT | ASN_TAG);
 
-int  der_read_sequence(t_iasn *item, char **derenc, int *dersize)
+int  der_read_sequence(t_iasn *item, char **derenc, size_t *dersize)
 {
   unsigned char  *octets;
-  int            osize;
-  int            olen;
+  size_t         osize;
+  size_t         olen;
 
   SSL_CHECK(NULL != item);
   SSL_CHECK((NULL != derenc) && (NULL != *derenc));
@@ -20,18 +21,18 @@ int  der_read_sequence(t_iasn *item, char **derenc, int *dersize)
   osize = *dersize;
 
   if ((ASN_CONSTRUCT | ASN_TAG_SEQUENCE) != *octets)
-    return (SSL_ERROR("bad sequence asn tag"));
+    return (DER_ERROR(INVALID_ASN_TYPE_TAG));
 
   octets++;
   osize--;
 
   if (SSL_OK != der_read_len(&octets, &osize, &olen))
-    return (SSL_ERROR("bad asn len tag"));
+    return (DER_ERROR(INVALID_ASN_LEN_TAG));
 
   if (olen > osize)
-    return (SSL_ERROR("invalid asn len"));
+    return (DER_ERROR(INVALID_ASN_LEN_TAG));
 
-	SSL_ALLOC(item->content, olen);
+  SSL_ALLOC(item->content, olen);
   ft_memcpy(item->content, octets, olen);
   item->size = olen;
 

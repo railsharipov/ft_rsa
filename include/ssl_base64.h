@@ -8,6 +8,13 @@
 # define B64_C(X)	((((X)>>(6))&(0x3c))|(((X)>>(22))&(0x3)))
 # define B64_D(X)	(((X)>>(16))&(0x3f))
 
+# define BASE64_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, BASE64_ERROR_CTX))
+
+enum	e_base64_error
+{
+	INVALID_BASE64_ENCODING = 1,
+};
+
 enum	e_base64_flag
 {
 	B64_D	= 1 << 1

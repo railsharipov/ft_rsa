@@ -1,11 +1,12 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_rand.h>
 #include <ssl_io.h>
 
 int	rand_fseed(uint64_t *seed, const char *files)
 {
 	char	**farr;
-	char	buf[RD_BUF];
+	char	buf[IO_BUFSIZE];
 	ssize_t	rbytes;
 	int		fd;
 	int		idx;
@@ -22,24 +23,24 @@ int	rand_fseed(uint64_t *seed, const char *files)
 	{
 		if ((fd = open(farr[idx], O_RDONLY)) < 0)
 		{
-			return (SSL_ERROR(NULL));
+			return (RAND_ERROR(UNSPECIFIED_ERROR));
 		}
-		if ((rbytes = read(fd, buf, RD_BUF)) < 0)
+		if ((rbytes = read(fd, buf, IO_BUFSIZE)) < 0)
 		{
-			return (SSL_ERROR(NULL));
+			return (RAND_ERROR(UNSPECIFIED_ERROR));
 		}
 		while (rbytes > 0)
 		{
 			*seed *= ft_hash(buf, rbytes);
-			if ((rbytes = read(fd, buf, RD_BUF)) < 0)
+			if ((rbytes = read(fd, buf, IO_BUFSIZE)) < 0)
 			{
-				return (SSL_ERROR(NULL));
+				return (RAND_ERROR(UNSPECIFIED_ERROR));
 			}
 		}
 		close(fd);
 		idx++;
 	}
-	ft_2darray_del(farr, -1);
+	ft_2darray_del((void **)farr, -1);
 
 	return (SSL_OK);
 }

@@ -2,7 +2,7 @@
 
 void	util_puthex(void *ptr, int size, int cols, int del)
 {
-	uint8_t	*octets;
+	unsigned char	*octets;
 	int		ix;
 
 	if (NULL != ptr)

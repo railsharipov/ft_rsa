@@ -10,7 +10,7 @@ static void	__oid_tree_del(void)
 	__oid_tree = NULL;
 }
 
-static int	__f_init(t_node *node, void *farg)
+static int	__f_init(t_node *node, const void *farg)
 {
 	char	**keys;
 
@@ -36,7 +36,7 @@ static void	__oid_tree_init(void)
 	ft_ntree_bfs(__oid_tree, NULL, __f_init);
 }
 
-static int	__f_find_oid(t_node *node, void *farg)
+static int	__f_find_oid(t_node *node, const void *farg)
 {
 	if (NULL == node)
 	{
@@ -71,7 +71,7 @@ char	*asn_oid_tree_get_name(const char *oid)
 	return (name);
 }
 
-static int	__f_find_name(t_node *node, void *farg)
+static int	__f_find_name(t_node *node, const void *farg)
 {
 	if (NULL == node)
 	{

@@ -1,7 +1,8 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 
-static void	__del_node(t_node *node, void *farg)
+static void	__del_node(t_node *node)
 {
 	SSL_FREE(node);
 }
@@ -37,7 +38,7 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 			}
 			else
 			{
-				return (SSL_ERROR("invalid asn item"));
+				return (SSL_ERROR(INVALID_ASN_TREE));
 			}
 		}
 		src_iter = src_iter->next;

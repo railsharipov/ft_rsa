@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_io.h>
 #include <ssl_des.h>
 #include <ssl_base64.h>
@@ -44,14 +45,14 @@ static int	__init_io(const char *opt, const t_task *task)
 static int	__get_vector(const char *opt, const t_task *task)
 {
 	if (!ft_str_ishex(opt))
-		return (SSL_ERROR("argument not in hex format"));
+		return (SSL_ERROR(INVALID_INPUT));
 
 	if (DES_K == task->tflag)
-		__keyhex = opt;
+		__keyhex = (char *)opt;
 	else if (DES_S == task->tflag)
-		__salthex = opt;
+		__salthex = (char *)opt;
 	else
-		return (SSL_ERR);
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -90,9 +91,9 @@ static int	__write_output(const char *output, size_t outsize)
 	{
 		__out.delim = '\n';
 	}
-	if (__out.func(&__out, output, outsize) < 0)
+	if (__out.func(&__out, (char *const)output, outsize) < 0)
 	{
-		return (SSL_ERROR(NULL));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_FLAG(DES_A | DES_E, __gflag))
 	{
@@ -103,7 +104,7 @@ static int	__write_output(const char *output, size_t outsize)
 
 static int	__get_input(char **input, size_t *insize)
 {
-	char	buf[RD_BUF];
+	char	buf[IO_BUFSIZE];
 	ssize_t	rbytes;
 	size_t	tbytes;
 
@@ -116,7 +117,7 @@ static int	__get_input(char **input, size_t *insize)
 	{
 		__in.delim = '\n';
 	}
-	while ((rbytes = __in.func(&__in, buf, RD_BUF)) > 0)
+	while ((rbytes = __in.func(&__in, buf, IO_BUFSIZE)) > 0)
 	{
 		SSL_REALLOC(*input, *insize, (*insize) + rbytes);
 		ft_memcpy(*input + *insize, buf, rbytes);
@@ -126,7 +127,7 @@ static int	__get_input(char **input, size_t *insize)
 	{
 		SSL_FREE(*input);
 		*insize = 0;
-		return (SSL_ERROR(NULL));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 
 	return (SSL_OK);
@@ -145,11 +146,11 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 	ret = SSL_OK;
 
 	if (SSL_OK != des_ecb_encrypt(__des, mes, ciph))
-		return (SSL_ERROR("des-ecb encrypt error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != base64_encode(
 		(char *)(ciph->content), ciph->size, &b64.content, &b64.size))
-			ret = (SSL_ERROR("base64 encode error"));
+			ret = (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	SSL_FREE(ciph->content);
 	ciph->content = b64.content;
@@ -169,12 +170,12 @@ static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 
 	if (SSL_OK != base64_decode(
 		(char *)(b64->content), b64->size, &cipher.content, &cipher.size))
-			return (SSL_ERROR("base64 decode error"));
+			return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != des_ecb_decrypt(__des, &cipher, mes))
 	{
 		SSL_FREE(cipher.content);
-		return (SSL_ERROR("des-ecb decrypt error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	SSL_FREE(cipher.content);
 
@@ -192,7 +193,7 @@ static int __run_task(void)
 	__des = des_hexinit(__keyhex, __salthex, NULL);
 
 	if (SSL_OK != __get_input(&input.content, &input.size))
-		return (SSL_ERROR("des-ecb input error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_FLAG(DES_D, __gflag))
 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
@@ -217,34 +218,36 @@ static int	__get_task(const char **opt)
 	while (NULL != *opt)
 	{
 		if (NULL == (task = ft_htbl_get(__des_htable, *opt)))
-			return (SSL_ERROR("invalid option flag"));
+			return (SSL_ERROR(INVALID_OPTION_FLAG));
 
 		__gflag |= task->gflag;
 		opt += task->val;
 
 		if (NULL == *opt)
-			return (SSL_ERROR("expected option flag"));
+			return (SSL_ERROR(EXPECTED_OPTION_FLAG));
 		else if (NULL != (f_task = task->ptr))
 			if (SSL_OK != f_task(*opt, task))
-				return (SSL_ERR);
+				return (SSL_ERROR(UNSPECIFIED_ERROR));
 		opt++;
 	}
 
 	return (SSL_OK);
 }
 
-int	comm_des_ecb(char **opt, const char *name_comm)
+int	comm_des_ecb(const char **opt, const char *name_comm)
 {
 	int	ret;
 
 	if (NULL == opt)
-		return (SSL_ERROR("des-ecb command error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (NULL == (__des_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
-		return (SSL_ERROR("des-ecb command error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	io_init(&__in, NULL, 0, IO_READ|IO_STDIN);
-	io_init(&__out, NULL, 0, IO_WRITE|IO_STDOUT);
+	if (SSL_OK != io_init(&__in, NULL, 0, IO_READ|IO_STDIN))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	if (SSL_OK != io_init(&__out, NULL, 0, IO_WRITE|IO_STDOUT))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	__gflag = DES_E;
 
@@ -255,6 +258,6 @@ int	comm_des_ecb(char **opt, const char *name_comm)
 	io_close_multi(&__in, &__out, NULL);
 
 	if (SSL_OK != ret)
-		return (SSL_ERROR("des-ecb command error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	return (SSL_OK);
 }

@@ -16,8 +16,6 @@
 #include <ssl_hash.h>
 #include <ssl_rsa.h>
 
-int	global_ssl_error_set = 0;
-
 static const struct {
 	char			*name_comm;
 	FUNC_COM		func_comm;
@@ -36,10 +34,12 @@ static const struct {
 	{	"genrsa",		comm_rsa_gen	},
 	{	"rsa",			comm_rsa		},
 	{	"rsautl",		comm_rsa_utl	},
+	{	"test",			comm_test		},
 	{	NULL,			NULL			}
 };
 
-static void	__get_command(FUNC_COM *func_comm, char **name_comm, char *sarg)
+static void	__get_command(
+	FUNC_COM *func_comm, char **name_comm, const char *sarg)
 {
 	int	ix;
 
@@ -59,23 +59,22 @@ static void	__get_command(FUNC_COM *func_comm, char **name_comm, char *sarg)
 	}
 }
 
-int		main(int ac, char **av)
+int		main(int ac, const char **av)
 {
 	FUNC_COM	func_comm;
 	char		*name_comm;
 
 	if (ac < 2)
-		ssl_exit(SSL_ERR_USAGE);
+		ssl_exit(USAGE_ERROR);
 
 	__get_command(&func_comm, &name_comm, av[1]);
 
 	if (NULL == name_comm)
 	{
-		ssl_exit(SSL_ERR_USAGE);
+		ssl_exit(USAGE_ERROR);
 	}
-	if (SSL_OK != func_comm(av+2, name_comm))
-	{
-		SSL_ERROR("ft_ssl error");
-	}
+
+	func_comm(av+2, name_comm);
+
 	return (0);
 }

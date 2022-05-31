@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_rand.h>
 
 int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)
@@ -7,7 +8,7 @@ int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)
 
 	if (nbytes <= 0)
 	{
-		return (SSL_ERROR("invalid number of bytes"));
+		return (RAND_ERROR(INVALID_INPUT));
 	}
 	rand_mtw_init(seed);
 
@@ -21,7 +22,7 @@ int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)
 
 	while (nbytes-- > 0)
 	{
-		*(uint8_t *)(buf) = tmp & 0xFF;
+		*(unsigned char *)(buf) = tmp & 0xFF;
 		buf++;
 		tmp >>= 8;
 	}

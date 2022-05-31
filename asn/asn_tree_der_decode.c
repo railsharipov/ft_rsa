@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
@@ -7,8 +8,8 @@ static const int	ASN_PRIMITIVE	= (ASN_ENCODE_PRIMITIVE | ASN_TAG);
 static const int	ASN_CONSTRUCT	= (ASN_ENCODE_CONSTRUCT | ASN_TAG);
 
 static const struct {
-	uint8_t	type;
-	int		(*f_read)(t_iasn *, char **, int *);
+	unsigned char	type;
+	int		(*f_read)(t_iasn *, char **, size_t *);
 } T[] = {
 	{	(ASN_CONSTRUCT | ASN_TAG_SEQUENCE),		der_read_sequence	},
 	{	(ASN_PRIMITIVE | ASN_TAG_BOOLEAN),		der_read_bool		},
@@ -36,32 +37,32 @@ static t_htbl	*__init_func_htable(void)
 }
 
 static int	__decode_item(
-	t_iasn *item, char **derenc, int *dersize, t_htbl *func_htable)
+	t_iasn *item, char **derenc, size_t *dersize, t_htbl *func_htable)
 {
-	int	(*f_read)(t_iasn *, void *, int *);
+	int	(*f_read)(t_iasn *, void *, size_t *);
 
 	SSL_CHECK((NULL != derenc) && (NULL != *derenc));
 	SSL_CHECK(NULL != dersize);
 
-	if (*dersize <= 0)
+	if (*dersize == 0)
 	{
-		return (SSL_ERROR("invalid der encoding: bad size"));
+		return (UNSPECIFIED_ERROR);
 	}
 	if (NULL == (f_read = ft_htbl_raw_get(func_htable, *derenc, 1)))
 	{
-		return (SSL_ERROR("invalid der encoding: bad asn tag"));
+		return (UNSPECIFIED_ERROR);
 	}
 	if (SSL_OK != f_read(item, derenc, dersize))
 	{
-		return (SSL_ERROR("invalid der encoding"));
+		return (UNSPECIFIED_ERROR);
 	}
 	return (SSL_OK);
 }
 
 static	int __decode_recur(
-	t_node *node, char *derenc, int dersize, t_htbl *func_htable)
+	t_node *node, char *derenc, size_t dersize, t_htbl *func_htable)
 {
-	void	(*f_dec)(t_der *, void *, int);
+	void	(*f_dec)(t_der *, void *, size_t);
 	t_iasn	*item;
 	char	*content;
 	int		consize;
@@ -75,7 +76,7 @@ static	int __decode_recur(
 
 	if (SSL_OK != __decode_item(item, &derenc, &dersize, func_htable))
 	{
-		return (SSL_ERROR("der decode error"));
+		return (SSL_ERROR(INVALID_DER_ENCODING));
 	}
 	if (ft_node_is_parent(node))
 	{
@@ -88,7 +89,7 @@ static	int __decode_recur(
 
 		if (SSL_OK != ret)
 		{
-			return (SSL_ERR);
+			return (SSL_ERROR(INVALID_DER_ENCODING));
 		}
 	}
 	return (__decode_recur(node->next, derenc, dersize, func_htable));

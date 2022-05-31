@@ -23,7 +23,7 @@ char	*ft_intchar(char *buf, intmax_t integer, int int_bytes)
 	while (j < int_bytes)
 	{
 		shift = (int_bytes - j - 1) * 8;
-		buf[j] = (uint8_t)((integer >> shift) & 0xff);
+		buf[j] = (unsigned char)((integer >> shift) & 0xff);
 		j++;
 	}
 	return (buf);

@@ -12,7 +12,8 @@
 
 NAME := ft_ssl
 
-MODULES := ssl bnum parser comm io rand hash util base64 des asn der pem rsa
+MODULES := ssl error bnum parser comm io rand hash util base64 des asn der pem\
+ rsa test
 LIBS := libft
 
 OBJ_PREFIX := obj
@@ -31,7 +32,7 @@ OBJS := $(foreach file, $(SRCS:.c=.o), $(addprefix $(OBJ_PREFIX)/,$(file)))
 
 DEPS := $(foreach file, $(SRCS:.c=.d), $(addprefix $(DEP_PREFIX)/,$(file)))
 
-CC = gcc -O3 -Wno-incompatible-pointer-types
+CC = gcc -O3
 CFLAGS = -I./include
 LDFLAGS =
 LDLIBS =

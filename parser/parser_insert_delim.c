@@ -1,7 +1,7 @@
 #include <ft_ssl.h>
 #include <parser.h>
 
-void	parser_insert_delim(char **arr, int *asize, int delim, int step)
+void	parser_insert_delim(char **arr, size_t *asize, int delim, int step)
 {
 	char	*rptr;
 	char	*res;

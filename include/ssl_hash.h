@@ -12,6 +12,13 @@ typedef uint64_t	t_sha512_256_word;
 typedef uint64_t	t_sha384_word;
 typedef uint64_t	t_sha512_word;
 
+# define HASH_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, HASH_ERROR_CTX))
+
+enum	e_hash_error
+{
+	UNSPECIFIED_HASH_ERROR = 1,
+};
+
 # define MD5_BLOCK_SIZE			64
 # define MD5_HASH_LEN			4
 

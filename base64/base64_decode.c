@@ -11,13 +11,14 @@
 /* ************************************************************************** */
 
 #include <ft_ssl.h>
-#include <bnum.h>
+#include <ssl_error.h>
 #include <ssl_base64.h>
+#include <bnum.h>
 
-static const uint8_t	MES_BLOCK_SIZE = 3;
-static const uint8_t	B64_BLOCK_SIZE = 4;
+static const unsigned char	MES_BLOCK_SIZE = 3;
+static const unsigned char	B64_BLOCK_SIZE = 4;
 
-static const uint8_t	UB64[128] = {
+static const unsigned char	UB64[128] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	62,	0,	0,	0,	63,
@@ -31,25 +32,25 @@ static const uint8_t	UB64[128] = {
 
 int	base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize)
 {
-	uint8_t	*omes;
-	uint8_t	*oenc;
+	unsigned char	*omes;
+	unsigned char	*oenc;
 
 	if ((NULL == enc) || (NULL == mes) || (NULL == messize))
 	{
-		return (SSL_ERROR("invalid base64 input"));
+		return (BASE64_ERROR(INVALID_INPUT));
 	}
 	*mes = NULL;
 
 	if ((encsize % B64_BLOCK_SIZE != 0)
 		|| (SSL_OK != base64_check(enc, encsize)))
 	{
-		return (SSL_ERROR("invalid base64 encoding"));
+		return (BASE64_ERROR(INVALID_BASE64_ENCODING));
 	}
 
-	oenc = (uint8_t *)(enc);
+	oenc = (unsigned char *)(enc);
 	*messize = CEIL(encsize, B64_BLOCK_SIZE)/B64_BLOCK_SIZE * MES_BLOCK_SIZE;
 	SSL_ALLOC(*mes, *messize);
-	omes = (uint8_t *)(*mes);
+	omes = (unsigned char *)(*mes);
 
 	while (encsize >= B64_BLOCK_SIZE)
 	{

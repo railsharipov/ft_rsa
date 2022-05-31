@@ -19,7 +19,7 @@ uint32_t ft_hash(const char *key, size_t keysize)
 	hash = 0;
 	while (keysize--)
 	{
-		hash += *(uint8_t *)key++;
+		hash += *(unsigned char *)key++;
 		hash += hash << 10;
 		hash ^= hash >> 6;
 	}

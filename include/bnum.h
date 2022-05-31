@@ -51,7 +51,6 @@
 	exit(0); \
 })
 
-typedef	unsigned char	uint8_t;
 typedef __uint128_t		t_uint128;
 typedef __int128_t		int128_t;
 

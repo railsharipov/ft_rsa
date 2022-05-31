@@ -20,7 +20,8 @@ static void	__del_node_func(t_node *node)
 	LIBFT_FREE(node);
 }
 
-void	*ft_ntree_bfs(t_node *node, void *farg, int (*f)(t_node *, void *))
+void	*ft_ntree_bfs(
+	t_node *node, const void *farg, int (*f)(t_node *, const void *))
 {
 	t_queue	*queue;
 	t_node	*child_node;

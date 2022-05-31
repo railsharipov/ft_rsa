@@ -103,9 +103,9 @@ void		ft_htbl_add(t_htbl *, const char *, void *);
 void		*ft_htbl_get(t_htbl *, const char *);
 void		ft_htbl_assign(t_htbl *, const char *, void *);
 void		ft_htbl_del(t_htbl *);
-void		ft_htbl_raw_add(t_htbl *, void *, size_t, void *);
-void		*ft_htbl_raw_get(t_htbl *, void *, size_t);
-void		ft_htbl_raw_assign(t_htbl *, void *, size_t, void *);
+void		ft_htbl_raw_add(t_htbl *, const void *, size_t, void *);
+void		*ft_htbl_raw_get(t_htbl *, const void *, size_t);
+void		ft_htbl_raw_assign(t_htbl *, const void *, size_t, void *);
 
 t_node		*ft_node_init(void);
 t_node		*ft_node_new(const char *, void *, size_t);
@@ -142,8 +142,8 @@ void		ft_queue_del(t_queue *, void (*f)(t_node *));
 t_htbl		*ft_queue_htable(t_queue *);
 
 t_node		*ft_ntree_construct(const char *);
-void		*ft_ntree_dfs(t_node *, void *, int (*f)(t_node *, void *));
-void		*ft_ntree_bfs(t_node *, void *, int (*f)(t_node *, void *));
+void		*ft_ntree_dfs(t_node *, const void *, int (*f)(t_node *, const void *));
+void		*ft_ntree_bfs(t_node *, const void *, int (*f)(t_node *, const void *));
 void		ft_ntree_del(t_node *, void (*f_del)(t_node *));
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);

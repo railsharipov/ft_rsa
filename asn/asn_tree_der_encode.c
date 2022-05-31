@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
@@ -42,29 +43,29 @@ static int	__encode_recur(t_node *node, t_der *der, t_htbl *func_htable)
 	item = node->content;
 
 	if (NULL == item)
-		return (SSL_ERROR("invalid asn item"));
+		return (UNSPECIFIED_ERROR);
 
 	if (NULL == (f_enc = ft_htbl_get(func_htable, item->type)))
-		return (SSL_ERROR("invalid asn type"));
+		return (UNSPECIFIED_ERROR);
 
 	if (ft_node_is_parent(node))
 	{
 		child_der = der_init();
 
 		if (SSL_OK != __encode_recur(node->nodes, child_der, func_htable))
-			ret = SSL_ERR;
+			ret = UNSPECIFIED_ERROR;
 		else if (SSL_OK != f_enc(der, child_der->content, child_der->size))
-			ret = SSL_ERR;
+			ret = UNSPECIFIED_ERROR;
 
 		der_del(child_der);
 
 		if (SSL_OK != ret)
-			return (SSL_ERR);
+			return (UNSPECIFIED_ERROR);
 	}
 	else
 	{
 		if (SSL_OK != f_enc(der, item->content, item->size))
-			return (SSL_ERR);
+			return (UNSPECIFIED_ERROR);
 	}
 	return (__encode_recur(node->next, der, func_htable));
 }
@@ -77,17 +78,16 @@ int	asn_tree_der_encode(t_node *tree, t_der **der)
 	SSL_CHECK(NULL != tree);
 	SSL_CHECK(NULL != der);
 
-	ret = SSL_OK;
-
 	*der = der_init();
 	func_htable = __init_func_htable();
+	ret = __encode_recur(tree, *der, func_htable);
+	ft_htbl_del(func_htable);
 
-	if (SSL_OK != (ret = __encode_recur(tree, *der, func_htable)))
+	if (SSL_OK != ret)
 	{
 		der_del(*der);
 		*der = NULL;
+		return (SSL_ERROR(INVALID_ASN_TREE));
 	}
-	ft_htbl_del(func_htable);
-
-	return (ret);
+	return (SSL_OK);
 }

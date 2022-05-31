@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_rsa.h>
 #include <bnum.h>
 
@@ -6,7 +7,7 @@ int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 {
 	if (BNUM_DIGIT_BIT * BNUM_MAX_DIG < CHAR_BIT * osize)
 	{
-		return (SSL_ERROR("octet string too large"));
+		return (RSA_ERROR(INVALID_OCTET_STRING_SIZE));
 	}
 	bytes_to_num(num, (char *)octets, osize);
 
@@ -22,7 +23,7 @@ int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 
 	if (nsize > CHAR_BIT * osize)
 	{
-		return (SSL_ERROR("integer too large"));
+		return (RSA_ERROR(INVALID_INTEGER_SIZE));
 	}
 	SSL_ALLOC(*octets, osize);
 	nstr = stringify_num(num);

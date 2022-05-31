@@ -1,9 +1,10 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
 #include <bnum.h>
 
-int der_append_int(t_der *der, void *content, int cont_nbytes)
+int der_append_int(t_der *der, void *content, size_t cont_nbytes)
 {
   int     id_nbytes, len_nbytes, enc_nbytes, cont_nbits;
   int     sign_nbytes;
@@ -11,7 +12,7 @@ int der_append_int(t_der *der, void *content, int cont_nbytes)
   t_num   *num;
 
   if (NULL == der)
-    return (SSL_ERROR("invalid input"));
+    return (DER_ERROR(INVALID_INPUT));
 
   id_nbytes = 1; // since simple tag expected
 
@@ -48,7 +49,7 @@ int der_append_int(t_der *der, void *content, int cont_nbytes)
 
   if (sign_nbytes != 0)
   {
-    ((uint8_t *)(der->content))[der->size] = (1u<<7)*(int)(BNUM_NEG==num->sign);
+    ((unsigned char *)(der->content))[der->size] = (1u<<7)*(int)(BNUM_NEG==num->sign);
     der->size += 1;
   }
   ft_memcpy(der->content + der->size, content, cont_nbytes);

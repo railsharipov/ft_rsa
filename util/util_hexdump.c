@@ -4,7 +4,7 @@ static const int	COL = 16;
 
 void	util_hexdump(int fd, void *ptr, size_t size)
 {
-	uint8_t		*octets;
+	unsigned char		*octets;
 	uint32_t	bytes;
 	int			ix;
 	int			iy;
@@ -12,7 +12,7 @@ void	util_hexdump(int fd, void *ptr, size_t size)
 	if ((size <= 0) || (NULL == ptr) || (fd < 0))
 		return ;
 
-	octets = (uint8_t *)(ptr);
+	octets = (unsigned char *)(ptr);
 	bytes = 0;
 
 	ix = 0;

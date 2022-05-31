@@ -16,7 +16,7 @@
 static const int	END_BYTE = 1 << 7;
 static const int	LEN_SIZE = 8;
 
-static void	__len_octets(uint64_t msize_nbits, uint8_t *octets)
+static void	__len_octets(uint64_t msize_nbits, unsigned char *octets)
 {
 	octets[0] = (msize_nbits >> 56) & 0xFF;
 	octets[1] = (msize_nbits >> 48) & 0xFF;
@@ -45,7 +45,7 @@ void	hash_sha1_final(t_hash *sha1, const char *buf, size_t bufsize)
 	char 		*pbuf;
 	int			pbsize;
 	uint64_t	msize_nbits;
-	uint8_t		msize_octets[LEN_SIZE];
+	unsigned char		msize_octets[LEN_SIZE];
 
 	if ((NULL == sha1) || (NULL == buf))
 		return ;

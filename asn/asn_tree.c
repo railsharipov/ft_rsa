@@ -3,7 +3,7 @@
 
 static const struct {
 	char	*type;
-	t_iasn	*(*func)(char *, char *);
+	t_iasn	*(*func)(const char *, const char *);
 } T[] = {
 	{ "sequence",		asn_construct_sequence	},
 	{ "boolean",		asn_primitive_bool		},
@@ -30,10 +30,10 @@ static t_htbl	*__init_func_htable(void)
 	return (func_htable);
 }
 
-static int	__init_func(t_node *node, void *ptr)
+static int	__init_func(t_node *node, const void *ptr)
 {
 	t_htbl	*func_htable;
-	t_iasn	*(*f)(char *, char *);
+	t_iasn	*(*f)(const char *, const char *);
 	char	**keys;
 
 	if (NULL == node)
@@ -46,14 +46,14 @@ static int	__init_func(t_node *node, void *ptr)
 	SSL_CHECK(NULL != keys);
 	f = ft_htbl_get(func_htable, keys[0]);
 	SSL_CHECK(NULL != f);
-	node->content = f(keys[0], keys[1]);
+	node->content = f((const char *)keys[0], (const char *)keys[1]);
 	node->key = ft_strdup(keys[1]);
-	ft_2darray_del(keys, -1);
+	ft_2darray_del((void **)keys, -1);
 
 	return (0);
 }
 
-t_node	*asn_tree(char *map)
+t_node	*asn_tree(const char *map)
 {
 	t_node	*tree;
 	t_htbl	*func_htable;

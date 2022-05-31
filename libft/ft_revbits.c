@@ -15,7 +15,7 @@
 void	ft_revbits(void *ptr, size_t size)
 {
 	unsigned char	*p;
-	uint8_t			num;
+	unsigned char			num;
 	size_t			i;
 	size_t			j;
 

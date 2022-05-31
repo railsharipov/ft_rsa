@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <pwd.h>
 
 static const int	__SSL_PASS_LEN = 128;
@@ -17,14 +18,14 @@ int	__passin(void)
 
 	if (inlen > __SSL_PASS_LEN)
 	{
-		ret = SSL_ERROR("password too long");
+		ret = SSL_ERROR(INVALID_PASSWORD_SIZE);
 	}
 	else
 	{
 		ft_memzcpy(__pass, input, sizeof(__pass), inlen);
 		input = getpass("confirm password:");
 		if (ft_strcmp(__pass, input))
-			ret = SSL_ERROR("passwords don't match");
+			ret = SSL_ERROR(PASSWORDS_NOT_IDENTICAL);
 	}
 	ft_bzero(input, _PASSWORD_LEN);
 
@@ -42,7 +43,7 @@ char	*ssl_getpass(void)
 
 		__is_set = 1;
 	}
-	return (&__pass);
+	return (__pass);
 }
 
 int		ssl_setpass(const char *passin)
@@ -58,7 +59,7 @@ int		ssl_setpass(const char *passin)
 	}
 	if (passin_len > __SSL_PASS_LEN)
 	{
-		return (SSL_ERROR("password too long"));
+		return (SSL_ERROR(INVALID_PASSWORD_SIZE));
 	}
 	ft_memcpy(__pass, passin, passin_len);
 

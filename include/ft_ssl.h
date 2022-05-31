@@ -25,20 +25,21 @@
 
 # define NONE	0
 
-enum	e_status
+enum e_boolean
 {
-	SSL_FALSE		= 0UL,
-	SSL_TRUE		= 1UL,
-	SSL_OK			= 1UL << 1,
-	SSL_ERR			= 1UL << 2,
-	SSL_ERR_USAGE	= 1UL << 3,
-	SSL_ERR_MEMORY	= 1UL << 4
+	SSL_FALSE		= 0,
+	SSL_TRUE		= 1,
 };
 
-typedef uint32_t	t_bool;
+enum	e_status
+{
+	SSL_OK			= 0
+};
+
+typedef uint32_t		t_bool;
 typedef __uint128_t	t_uint128;
 
-typedef int		(*FUNC_COM)(char **, const char *);
+typedef int		(*FUNC_COM)(const char **, const char *);
 
 typedef	struct	s_ostring
 {
@@ -61,13 +62,14 @@ char			*ssl_getpass(void);
 int				ssl_setpass(const char *);
 void			ssl_unsetpass(void);
 
-int				comm_base64(char **, const char *);
-int				comm_hash(char **, const char *);
-int				comm_des_ecb(char **, const char *);
-int				comm_des_cbc(char **, const char *);
-int				comm_rsa_gen(char **, const char *);
-int				comm_rsa(char **, const char *);
-int				comm_rsa_utl(char **, const char *);
+int				comm_base64(const char **, const char *);
+int				comm_hash(const char **, const char *);
+int				comm_des_ecb(const char **, const char *);
+int				comm_des_cbc(const char **, const char *);
+int				comm_rsa_gen(const char **, const char *);
+int				comm_rsa(const char **, const char *);
+int				comm_rsa_utl(const char **, const char *);
+int				comm_test(const char **, const char *);
 
 void			util_ostrinit(t_ostring *);
 t_ostring		*util_ostrnew(void *, size_t);

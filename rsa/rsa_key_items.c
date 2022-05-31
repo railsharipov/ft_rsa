@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_rsa.h>
 
@@ -32,7 +33,7 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 		|| (NULL == key->coeff))
 	{
 		SSL_FREE(key);
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	*rsa_key = key;
 
@@ -53,7 +54,7 @@ static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	if ((NULL == key->modulus) || (NULL == key->pubexp))
 	{
 		SSL_FREE(key);
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	*rsa_key = key;
 
@@ -67,11 +68,11 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 
 	if ((NULL == asn_key) || (NULL == rsa_key))
 	{
-		return (SSL_ERROR("invalid input"));
+		return (RSA_ERROR(INVALID_INPUT));
 	}
 	if (NULL == (asn_items = asn_tree_items(asn_key)))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (!ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
 	{
@@ -83,7 +84,7 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 	}
 	else
 	{
-		ret = SSL_ERROR("invalid rsa key input");
+		ret = RSA_ERROR(INVALID_INPUT);
 	}
 	asn_tree_items_del(asn_items);
 

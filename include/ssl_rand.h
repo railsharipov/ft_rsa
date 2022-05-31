@@ -3,6 +3,14 @@
 
 # define RAND_DEV	"/dev/random"
 
+# define RAND_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, RAND_ERROR_CTX))
+
+enum	e_rand_error
+{
+	EXPECTED_PASSWORD_INPUT = 1,
+	INVALID_NUMBER_OF_BYTES_READ
+};
+
 # define MT_A		0xB5026F5AA96619E9
 # define MT_F		0x5851F42D4C957F2D
 # define MT_W		64
@@ -27,6 +35,6 @@ int			rand_fseed(uint64_t *, const char *);
 int			rand_mgf(char *, int, char *, int);
 void  		rand_mtw_init(uint64_t);
 uint64_t	rand_mtw_extract(void);
-int			rand_pbkdf2(uint8_t *, uint8_t *, uint8_t *);
+int			rand_pbkdf2(unsigned char *, unsigned char *, unsigned char *);
 
 #endif

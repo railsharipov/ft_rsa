@@ -36,32 +36,32 @@ static char	*__to_cstring(char *raw, size_t rawsize)
 }
 
 void	ft_htbl_raw_add(
-	t_htbl *htbl, void *key, size_t keysize, void *content)
+	t_htbl *htbl, const void *key, size_t keysize, void *content)
 {
 	char	*cskey;
 
-	cskey = __to_cstring(key, keysize);
-	ft_htbl_add(htbl, cskey, content);
+	cskey = __to_cstring((char *)key, keysize);
+	ft_htbl_add(htbl, (const char *)cskey, content);
 	LIBFT_FREE(cskey);
 }
 
-void	*ft_htbl_raw_get(t_htbl *htbl, void *key, size_t keysize)
+void	*ft_htbl_raw_get(t_htbl *htbl, const void *key, size_t keysize)
 {
 	char	*cskey;
 	void	*content;
 
-	cskey = __to_cstring(key, keysize);
-	content = ft_htbl_get(htbl, cskey);
+	cskey = __to_cstring((char *)key, keysize);
+	content = ft_htbl_get(htbl, (const char *)cskey);
 	LIBFT_FREE(cskey);
 	return (content);
 }
 
 void	ft_htbl_raw_assign(
-	t_htbl *htbl, void *key, size_t keysize, void *content)
+	t_htbl *htbl, const void *key, size_t keysize, void *content)
 {
 	char	*cskey;
 
-	cskey = __to_cstring(key, keysize);
-	ft_htbl_assign(htbl, cskey, content);
+	cskey = __to_cstring((char *)key, keysize);
+	ft_htbl_assign(htbl, (const char *)cskey, content);
 	LIBFT_FREE(cskey);
 }

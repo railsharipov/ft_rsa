@@ -13,7 +13,7 @@
 #include <libft.h>
 
 static void	__dfs_recur(
-	t_node *node, void *farg, int (*f)(t_node *, void *), void **ptr)
+	t_node *node, const void *farg, int (*f)(t_node *, const void *), void **ptr)
 {
 	if (NULL == node)
 	{
@@ -31,7 +31,8 @@ static void	__dfs_recur(
 	}
 }
 
-void	*ft_ntree_dfs(t_node *node, void *farg, int (*f)(t_node *, void *))
+void	*ft_ntree_dfs(
+	t_node *node, const void *farg, int (*f)(t_node *, const void *))
 {
 	void	*ptr;
 

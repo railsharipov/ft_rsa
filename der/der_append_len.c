@@ -1,7 +1,7 @@
 #include <ft_ssl.h>
 #include <ssl_asn.h>
 
-int  der_append_len(char *encoding, int len)
+int  der_append_len(char *encoding, size_t len)
 {
   int len_nbits;
   int len_nbytes;

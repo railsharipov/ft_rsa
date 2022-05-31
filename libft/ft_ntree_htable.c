@@ -12,9 +12,9 @@
 
 #include <libft.h>
 
-static int	__htable_func(t_node *node, void *farg)
+static int	__htable_func(t_node *node, const void *farg)
 {
-	ft_htbl_add(farg, node->key, node->content);
+	ft_htbl_add((t_htbl *)farg, node->key, node->content);
 	return (0);
 }
 

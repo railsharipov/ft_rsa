@@ -1,13 +1,12 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_io.h>
 
 static ssize_t __sread_delim(
 	t_io *const io, char *buf, size_t nbytes, uint32_t delim)
 {
 	size_t	bytes;
-	char 	*bufptr;
 
-	bufptr = buf;
 	bytes = 0;
 	delim = ~delim;
 
@@ -15,14 +14,14 @@ static ssize_t __sread_delim(
 
 	while ((bytes < nbytes) && (io->seek < io->insize))
 	{
-		bufptr[bytes] = io->input[io->seek++];
-		bytes += IS_NONZERO_32(*bufptr & delim);
+		buf[bytes] = io->input[io->seek++];
+		bytes += IS_NONZERO_32(*buf & delim);
 	}
 
 	return (bytes);
 }
 
-ssize_t	io_sread(t_io *const io, char *buf, size_t nbytes)
+ssize_t	io_sread(t_io *const io, char *const buf, size_t nbytes)
 {
 	size_t	bytes;
 	char	*bufptr;
@@ -33,7 +32,7 @@ ssize_t	io_sread(t_io *const io, char *buf, size_t nbytes)
 		return (0);
 	else if (NULL == io->input)
 	{
-		SSL_ERROR("no input specified");
+		IO_ERROR(INVALID_INPUT);
 		return (-1);
 	}
 	else if (io->delim)

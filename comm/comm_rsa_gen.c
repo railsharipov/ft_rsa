@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_rsa.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
@@ -28,7 +29,7 @@ static const t_task	T[] = {
 
 static int	__set_rand(const char *opt, const t_task *task)
 {
-	__frand = opt;
+	__frand = (char *)opt;
 	return (SSL_OK);
 }
 
@@ -41,7 +42,7 @@ static int	__set_modsize(const char *opt)
 {
 	if (!ft_str_isdigit(opt))
 	{
-		return (SSL_ERR);
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	__modsize = ft_atoi(opt);
 
@@ -62,7 +63,7 @@ static int	__write_output(void)
 
 	if (__out.func(&__out, __pem_pkey->content, __pem_pkey->size) < 0)
 	{
-		return (SSL_ERR);
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -73,20 +74,20 @@ static int __run_task(void)
 
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand))
 	{
-		return (SSL_ERROR("rsa gen key error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != asn_tree_der_encode(__asn_pkey, &__der_pkey))
 	{
-		return (SSL_ERROR("der encode error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != pem_encode(
-		__der_pkey, &__pem_pkey, "RSA PRIVATE KEY", SSL_FALSE))
+		(t_ostring *)__der_pkey, &__pem_pkey, "RSA PRIVATE KEY", SSL_FALSE))
 	{
-		return (SSL_ERROR("pem encode error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != __write_output())
 	{
-		return (SSL_ERROR("rsa gen output error"));
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -101,7 +102,7 @@ static int	__get_task(const char **opt)
 		if (NULL == (task = ft_htbl_get(__rsa_htable, *opt)))
 		{
 			if (SSL_OK != __set_modsize(*opt))
-				return (SSL_ERROR("invalid option flag"));
+				return (SSL_ERROR(INVALID_OPTION_FLAG));
 		}
 		else
 		{
@@ -109,12 +110,12 @@ static int	__get_task(const char **opt)
 			opt += task->val;
 			if (NULL == *opt)
 			{
-				return (SSL_ERROR("expected option flag"));
+				return (SSL_ERROR(EXPECTED_OPTION_FLAG));
 			}
 			else if (NULL != (f_task = task->ptr))
 			{
 				if (SSL_OK != f_task(*opt, task))
-					return (SSL_ERR);
+					return (SSL_ERROR(UNSPECIFIED_ERROR));
 			}
 		}
 		opt++;
@@ -123,32 +124,29 @@ static int	__get_task(const char **opt)
 	return (SSL_OK);
 }
 
-int	comm_rsa_gen(char **opt, const char *name_comm)
+int	comm_rsa_gen(const char **opt, const char *name_comm)
 {
 	int	ret;
 
 	if (NULL == opt)
-	{
-		return (SSL_ERROR("genrsa command error"));
-	}
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	if (NULL == (__rsa_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
-	{
-		return (SSL_ERROR("genrsa command error"));
-	}
-	io_init(&__out, NULL, 0, IO_WRITE_STDOUT);
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	if (SSL_OK != io_init(&__out, NULL, 0, IO_WRITE_STDOUT))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
 	__frand = NULL;
 	__modsize = 512;
 
 	if (SSL_OK == (ret = __get_task(opt)))
-	{
 		ret = __run_task();
-	}
+
 	io_close(&__out);
 	__clean();
 
 	if (SSL_OK != ret)
-	{
-		return (SSL_ERROR("genrsa command error"));
-	}
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
 	return (SSL_OK);
 }

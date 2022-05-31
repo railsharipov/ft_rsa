@@ -11,15 +11,16 @@
 /* ************************************************************************** */
 
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_rand.h>
 #include <ssl_base64.h>
 #include <ssl_des.h>
 
 static int		__is_salted;
 
-static uint8_t	*__salt;
-static uint8_t	*__key;
-static uint8_t	*__vect;
+static unsigned char	*__salt;
+static unsigned char	*__key;
+static unsigned char	*__vect;
 
 static uint64_t	__permut_key;
 static uint64_t	__ksched[16];
@@ -35,62 +36,64 @@ static int	__vectors(uint32_t vflag)
 		if (!SSL_FLAG(DES_S, vflag))
 		{
 			if (SSL_OK != rand_useed(&rand_seed, sizeof(uint64_t)))
-				return (SSL_ERROR("rand error"));
+				return (DES_ERROR(UNSPECIFIED_ERROR));
 			if (SSL_OK != rand_bytes(rand_seed, __salt, sizeof(__salt)))
-				return (SSL_ERROR("rand error"));
+				return (DES_ERROR(UNSPECIFIED_ERROR));
 			__is_salted = 1;
 		}
 		if (SSL_OK != rand_pbkdf2(
 			__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL):(__vect)))
 		{
-			return (SSL_ERROR("pbkdf2 error"));
+			return (DES_ERROR(UNSPECIFIED_ERROR));
 		}
 	}
 	else if (!SSL_FLAG(DES_V, vflag))
 	{
-		return (SSL_ERROR("iv vector required"));
+		return (DES_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
 
 static void	__encrypt(
-	const uint8_t *mes, size_t messize, uint8_t **ciph, size_t *ciphsize)
+	const unsigned char *mes, size_t messize, char **ciph, size_t *ciphsize)
 {
 	size_t	ix;
-	uint8_t	padsize;
-	uint8_t	vectbuf[8];
+	unsigned char	padsize;
+	unsigned char	vectbuf[8];
+	unsigned char	**ciph_ptr;
 
+	ciph_ptr = (unsigned char **)ciph;
 	ft_memcpy(vectbuf, __vect, 8);
 	padsize = 8 - (messize % 8);
 	*ciphsize = messize + padsize + (16 * __is_salted);
-	SSL_ALLOC(*ciph, *ciphsize);
+	SSL_ALLOC(*ciph_ptr, *ciphsize);
 
 	ix = 0;
 	if (__is_salted)
 	{
-		ft_memcpy(*ciph, "Salted__", 8);
-		ft_memcpy(*ciph + 8, __salt, 8);
+		ft_memcpy(*ciph_ptr, "Salted__", 8);
+		ft_memcpy(*ciph_ptr + 8, __salt, 8);
 		ix += 16;
 	}
 	while (messize-- > 0)
 	{
-		(*ciph)[ix++] = *mes++;
+		(*ciph_ptr)[ix++] = *mes++;
 	}
 	while (ix < *ciphsize)
 	{
-		(*ciph)[ix++] = padsize;
+		(*ciph_ptr)[ix++] = padsize;
 	}
 	ix = 0 + (16 * __is_salted);
 	while (ix < *ciphsize)
 	{
-		*(uint64_t *)(*ciph + ix) ^= *(uint64_t *)(vectbuf);
+		*(uint64_t *)(*ciph_ptr + ix) ^= *(uint64_t *)(vectbuf);
 
-		des_permute_block_init(*ciph + ix);
-		des_permute_block(*ciph + ix, __ksched);
-		des_permute_block_final(*ciph + ix);
+		des_permute_block_init((uint64_t *)*ciph_ptr + ix);
+		des_permute_block((uint64_t *)*ciph_ptr + ix, __ksched);
+		des_permute_block_final((uint64_t *)*ciph_ptr + ix);
 
-		*(uint64_t *)(*ciph + ix) = util_bswap64(*(uint64_t *)(*ciph + ix));
-		*(uint64_t *)(vectbuf) = *(uint64_t *)(*ciph + ix);
+		*(uint64_t *)(*ciph_ptr + ix) = util_bswap64(*(uint64_t *)(*ciph_ptr + ix));
+		*(uint64_t *)(vectbuf) = *(uint64_t *)(*ciph_ptr + ix);
 
 		ix += 8;
 	}
@@ -100,7 +103,7 @@ int	des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
 	{
-		return (SSL_ERROR("invalid des-cbc input"));
+		return (DES_ERROR(INVALID_INPUT));
 	}
 	ciph->content = NULL;
 	__salt = des->salt;
@@ -109,13 +112,13 @@ int	des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph)
 
 	if (SSL_OK != __vectors(des->vflag))
 	{
-		return (SSL_ERROR("invalid des-cbc input"));
+		return (DES_ERROR(UNSPECIFIED_ERROR));
 	}
 	des_permute_key(&__permut_key, __key);
 	des_encrypt_schedule(__ksched, &__permut_key);
 
 	__encrypt(
-		(uint8_t *)(mes->content), mes->size, &ciph->content, &ciph->size);
+		(unsigned char *)(mes->content), mes->size, &ciph->content, &ciph->size);
 
 	return (SSL_OK);
 }

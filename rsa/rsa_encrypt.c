@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_rsa.h>
 #include <ssl_rand.h>
@@ -9,7 +10,7 @@ static t_rsa	*__items;
 // EME PKCS1 v1.5 encoding
 // Generate PS ostring with non-zero pseudo-random octets
 static int	__eme_pkcs1_v1_5_ps(
-	uint8_t **ps, size_t *psize, int modsize, size_t messize)
+	unsigned char **ps, size_t *psize, int modsize, size_t messize)
 {
 	uint64_t	seed;
 	uint64_t	prand;
@@ -17,7 +18,7 @@ static int	__eme_pkcs1_v1_5_ps(
 
 	if (SSL_OK != rand_useed(&seed, 8))
 	{
-		return (SSL_ERROR("rand error"));
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	rand_mtw_init(seed);
 
@@ -39,11 +40,11 @@ static int	__eme_pkcs1_v1_5_ps(
 
 // Concatenate PS ostring, message and three intermediate octets
 static void	__eme_pkcs1_v1_5_concat(
-	uint8_t **octets, size_t *osize, const char *mes, size_t messize)
+	unsigned char **octets, size_t *osize, const char *mes, size_t messize)
 {
-	const uint8_t	EME_OCTET_0X00 = 0x00;
-	const uint8_t	EME_OCTET_0X02 = 0x02;
-	uint8_t			*enc;
+	const unsigned char	EME_OCTET_0X00 = 0x00;
+	const unsigned char	EME_OCTET_0X02 = 0x02;
+	unsigned char			*enc;
 	size_t			encsize;
 
 	encsize = *osize + messize + 3;
@@ -65,7 +66,7 @@ static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 {
 	if (compare_num_u(mes_rep, __items->modulus) >= 0)
 	{
-		return (SSL_ERROR("message representative out of range"));
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	m_powmod_num(mes_rep, __items->pubexp, __items->modulus, ciph_rep);
 
@@ -76,7 +77,7 @@ static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 static int  __encrypt(
 	const char *mes, size_t messize, char **ciph, size_t *ciphsize)
 {
-	uint8_t	*octets;
+	unsigned char	*octets;
 	size_t	osize;
 	t_num	mes_rep, ciph_rep;
 	int		modsize;
@@ -86,11 +87,11 @@ static int  __encrypt(
 
 	if (messize > modsize-11)
 	{
-		return (SSL_ERROR("message too long"));
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != __eme_pkcs1_v1_5_ps(&octets, &osize, modsize, messize))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	__eme_pkcs1_v1_5_concat(&octets, &osize, mes, messize);
 
@@ -99,15 +100,15 @@ static int  __encrypt(
 
 	if (SSL_OK != ret)
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != __encrypt_prim(&mes_rep, &ciph_rep))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
-	if (SSL_OK != rsa_i2os(&ciph_rep, ciph, modsize))
+	if (SSL_OK != rsa_i2os(&ciph_rep, (unsigned char **)ciph, modsize))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	*ciphsize = modsize;
 
@@ -121,18 +122,18 @@ int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key)
 	if ((NULL == mes) || (NULL == mes->content)
 		|| (NULL == ciph) || (NULL == asn_key))
 	{
-		return (SSL_ERROR("invalid input"));
+		return (RSA_ERROR(INVALID_INPUT));
 	}
 	ciph->content = NULL;
 
 	if (SSL_OK != rsa_key_items(asn_key, &__items))
 	{
-		return (SSL_ERROR("bad rsa key"));
+		return (RSA_ERROR(INVALID_RSA_KEY));
 	}
 	if (SSL_OK != __encrypt(
 		mes->content, mes->size, &(ciph->content), &(ciph->size)))
 	{
-		return (SSL_ERROR("rsa encrypt error"));
+		return (RSA_ERROR(INVALID_INPUT));
 	}
 	return (SSL_OK);
 }

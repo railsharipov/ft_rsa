@@ -41,7 +41,7 @@ int	__push(const char *memkey, void *memptr, size_t memsize)
 		perror(COLOR_RED "fatal error" COLOR_RESET);
 		return (LIBFT_ERR);
 	}
-	node->key = memkey;
+	node->key = (char *)memkey;
 	node->content = memptr;
 	node->size = memsize;
 	node->next = __memlist;

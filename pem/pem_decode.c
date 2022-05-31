@@ -1,9 +1,10 @@
 #include <ft_ssl.h>
-#include <parser.h>
+#include <ssl_error.h>
 #include <ssl_rand.h>
 #include <ssl_base64.h>
 #include <ssl_pem.h>
 #include <ssl_des.h>
+#include <parser.h>
 
 static const char	*PEM_PROC = "Proc-Type: ";
 static const char	*DEK_INFO = "DEK-Info: ";
@@ -32,14 +33,14 @@ static int __decrypt(void)
 	t_des		*des;
 	t_ostring	cipher;
 	t_ostring	message;
-	uint8_t		vect[8];
-	uint8_t		key[8];
+	unsigned char		vect[8];
+	unsigned char		key[8];
 
 	ft_hexbin(vect, __vecthex, 16);
 
 	if (SSL_OK != rand_pbkdf2(key, vect, NULL))
 	{
-		return (SSL_ERROR("rand pbkdf error"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	des = des_init(key, NULL, vect);
 	cipher.content = __content;
@@ -47,7 +48,7 @@ static int __decrypt(void)
 
 	if (SSL_OK != des_cbc_decrypt(des, &cipher, &message))
 	{
-		return (SSL_ERROR("des cbc decrypt error"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	SSL_FREE(__content);
 	__content = (char *)message.content;
@@ -64,22 +65,22 @@ static int __parse_proc(const char *proc)
 
 	proc_info = ft_strsplit(proc, ' ');
 
-	if (ft_2darray_len(proc_info) < 2)
+	if (ft_2darray_len((void **)proc_info) < 2)
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	proc_type = ft_strsplit(proc_info[1], ',');
 
-	check = (ft_2darray_len(proc_type) < 2);
+	check = (ft_2darray_len((void **)proc_type) < 2);
 	check += ft_strcmp("4", proc_type[0]);
 	check += ft_strcmp("ENCRYPTED", proc_type[1]);
 
-	ft_2darray_del(proc_type, -1);
-	ft_2darray_del(proc_info, -1);
+	ft_2darray_del((void **)proc_type, -1);
+	ft_2darray_del((void **)proc_info, -1);
 
 	if (check != 0)
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -92,24 +93,24 @@ static int __parse_dek(const char *dek)
 
 	dek_info = ft_strsplit(dek, ' ');
 
-	if (ft_2darray_len(dek_info) < 2)
+	if (ft_2darray_len((void **)dek_info) < 2)
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	dek_cipher = ft_strsplit(dek_info[1], ',');
 
-	check = (ft_2darray_len(dek_cipher) < 2);
+	check = (ft_2darray_len((void **)dek_cipher) < 2);
 	check += ft_strcmp("DES-CBC", dek_cipher[0]);
 	check += (ft_strlen(dek_cipher[1]) != 16);
 	check += !ft_str_ishex(dek_cipher[1]);
 
 	ft_memcpy(__vecthex, dek_cipher[1], MIN(16, ft_strlen(dek_cipher[1])));
-	ft_2darray_del(dek_cipher, -1);
-	ft_2darray_del(dek_info, -1);
+	ft_2darray_del((void **)dek_cipher, -1);
+	ft_2darray_del((void **)dek_info, -1);
 
 	if (check != 0)
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -123,7 +124,7 @@ static int	__check_crypt_header(const char *proc, const char *dek)
 
 	if ((NULL == proc) || (NULL == dek))
 	{
-		return (SSL_ERROR("invalid crypt header"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	procidx = parser_find(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
 	dekidx = parser_find(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
@@ -132,11 +133,11 @@ static int	__check_crypt_header(const char *proc, const char *dek)
 
 	if (procidx > dekidx)
 	{
-		return (SSL_ERROR("bad crypt header"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (dekidx + deklen + 1 >= __consize) // include newline character
 	{
-		return (SSL_ERROR("bad crypt header"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -167,15 +168,15 @@ static int	__parse_crypt_header(void)
 
 	if (SSL_OK != __check_crypt_header(proc, dek))
 	{
-		ret = SSL_ERR;
+		ret = UNSPECIFIED_ERROR;
 	}
 	else if (SSL_OK != __parse_proc(proc))
 	{
-		ret = SSL_ERROR("invalid proc line");
+		ret = PEM_ERROR(UNSPECIFIED_ERROR);
 	}
 	else if (SSL_OK != __parse_dek(dek))
 	{
-		ret = SSL_ERROR("invalid dek line");
+		ret = PEM_ERROR(UNSPECIFIED_ERROR);
 	}
 	SSL_FREE(proc);
 	SSL_FREE(dek);
@@ -197,7 +198,7 @@ static int __decode(void)
 
 		if (SSL_OK != __parse_crypt_header())
 		{
-			return (SSL_ERR);
+			return (PEM_ERROR(UNSPECIFIED_ERROR));
 		}
 		__remove_crypt_header();
 	}
@@ -206,7 +207,7 @@ static int __decode(void)
 
 	if (SSL_OK != base64_decode(b64enc, b64len, &__content, &__consize))
 	{
-		ret = SSL_ERROR("base64 error");
+		ret = PEM_ERROR(UNSPECIFIED_ERROR);
 	}
 	else if (SSL_TRUE == __encrypted)
 	{
@@ -226,11 +227,11 @@ int pem_decode(t_pem *pem, const char *type, t_ostring **content)
 
 	if (SSL_OK != pem_remove_encap(pem, type, &__content, &__consize))
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(INVALID_PEM_ENCODING));
 	}
 	if (SSL_OK != __decode())
 	{
-		return (SSL_ERROR("bad pem encoding"));
+		return (PEM_ERROR(INVALID_PEM_ENCODING));
 	}
 	SSL_ALLOC(*content, sizeof(t_ostring));
 

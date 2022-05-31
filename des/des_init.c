@@ -14,12 +14,12 @@
 #include <ssl_des.h>
 
 static t_des	__des;
-static uint8_t	__key[8];
-static uint8_t	__salt[8];
-static uint8_t	__vect[8];
+static unsigned char	__key[8];
+static unsigned char	__salt[8];
+static unsigned char	__vect[8];
 
 t_des	*des_init(
-	const uint8_t *key, const uint8_t *salt, const uint8_t *vect)
+	const unsigned char *key, const unsigned char *salt, const unsigned char *vect)
 {
 	ft_bzero(__key, sizeof(__key));
 	ft_bzero(__salt, sizeof(__salt));

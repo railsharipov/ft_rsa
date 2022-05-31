@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_pem.h>
 #include <parser.h>
 
@@ -67,7 +68,7 @@ int	pem_remove_encap(
 
 	if ((bidx < 0) || (eidx < 0) || (bidx > eidx))
 	{
-		return (SSL_ERROR("bad pem encapsulation"));
+		return (PEM_ERROR(INVALID_PEM_ENCAPSULATION));
 	}
 	*consize = eidx - (bidx + __presize);
 	*content = ft_memdup(pem->content + (bidx + __presize), *consize);

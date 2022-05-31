@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_rsa.h>
 #include <ssl_asn.h>
 #include <bnum.h>
@@ -9,11 +10,11 @@ static int	__check_pubexp(void)
 {
 	if (BNUM_EVEN(__items->pubexp))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (lmbit_num(__items->pubexp) >= 256)
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -26,11 +27,11 @@ static int	__check_privexp(void)
 
 	if (BNUM_EVEN(__items->privexp))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (lmbit_num(__items->privexp) <= lmbit_num(__items->modulus) / 2)
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	sub_num_d(__items->prime1, 1, &p1);
 	sub_num_d(__items->prime2, 1, &q1);
@@ -40,11 +41,11 @@ static int	__check_privexp(void)
 
 	if (compare_num(__items->privexp, &lcm) >= 0)
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (!BNUM_ONE(&edmod))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -60,17 +61,17 @@ static int	__check_crt_comps(void)
 	if ((compare_num_d(__items->exponent1, 1) <= 0)
 		|| (compare_num(__items->exponent1, &p1) >= 0))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if ((compare_num_d(__items->exponent2, 1) <= 0)
 		|| (compare_num(__items->exponent2, &q1) >= 0))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	if ((compare_num_d(__items->coeff, 1) <= 0)
 		|| (compare_num(__items->coeff, __items->prime1) >= 0))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 
 	mul_num(__items->exponent1, __items->pubexp, &mul);
@@ -78,7 +79,7 @@ static int	__check_crt_comps(void)
 
 	if (compare_num_d(&mod, 1))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 
 	mul_num(__items->exponent2, __items->pubexp, &mul);
@@ -86,7 +87,7 @@ static int	__check_crt_comps(void)
 
 	if (compare_num_d(&mod, 1))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 
 	mul_num(__items->coeff, __items->prime2, &mul);
@@ -94,7 +95,7 @@ static int	__check_crt_comps(void)
 
 	if (compare_num_d(&mod, 1))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -107,7 +108,7 @@ static int	__check_modulus(void)
 
 	if (compare_num(__items->modulus, &tmod))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -119,14 +120,14 @@ static int	__check_prime(t_num *prime)
 
 	if (!prime_test(prime, lmbit_num(prime), RM_TRIALS, SSL_FALSE))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	sub_num_d(prime, 1, &p1);
 	gcd_num(&p1, __items->pubexp, &gcd);
 
 	if (compare_num_d(&gcd, 1))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -139,15 +140,15 @@ int	rsa_check(t_node *asn_key)
 
 	if (NULL == asn_key)
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(INVALID_INPUT));
 	}
 	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
 	{
-		return (SSL_ERROR("only private keys can be checked"));
+		return (RSA_ERROR(INVALID_RSA_KEY_TYPE));
 	}
 	if (SSL_OK != rsa_key_items(asn_key, &__items))
 	{
-		return (SSL_ERR);
+		return (RSA_ERROR(INVALID_RSA_KEY));
 	}
 	ret |= __check_pubexp();
 	ret |= __check_modulus();
@@ -158,7 +159,7 @@ int	rsa_check(t_node *asn_key)
 
 	if (SSL_OK != ret)
 	{
-		ret = SSL_ERROR("invalid rsa key");
+		ret = RSA_ERROR(INVALID_RSA_KEY);
 	}
 	SSL_FREE(__items);
 

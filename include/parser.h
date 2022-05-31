@@ -10,6 +10,6 @@ void	parser_del_wspace(const char *, int, char **, int *);
 void	parser_del_eolws(const char *, int, char **, int *);
 void	parser_del_empty_lines(const char *, int, char **, int *);
 char	*parser_line(const char *, int, const char *, int);
-void	parser_insert_delim(char **, int *, int, int);
+void	parser_insert_delim(char **, size_t *, int, int);
 
 #endif

@@ -33,7 +33,7 @@ static ssize_t __fread_delim(
 	return ((bytes >= 0) ? (idx) : (-1));
 }
 
-ssize_t io_fread(t_io *const io, char *buf, size_t nbytes)
+ssize_t io_fread(t_io *const io, char *const buf, size_t nbytes)
 {
 	ssize_t	bytes;
 
@@ -42,7 +42,7 @@ ssize_t io_fread(t_io *const io, char *buf, size_t nbytes)
 	else if (nbytes == 0)
 		return (0);
 	else if (io->delim)
-		return (__fread_delim(io, buf, nbytes, io->delim));
+		return (__fread_delim(io, (char *)buf, nbytes, io->delim));
 
 	bytes = read(io->fd, buf, nbytes);
 

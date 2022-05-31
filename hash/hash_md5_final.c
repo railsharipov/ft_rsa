@@ -21,7 +21,7 @@ void	hash_md5_final(t_hash *md5, const char *buf, size_t bufsize)
 	char 		*pbuf;
 	int			pbsize;
 	uint64_t	msize_nbits;
-	uint8_t		msize_octets[8];
+	unsigned char		msize_octets[8];
 
 	if ((NULL == md5) || (NULL == buf))
 		return ;

@@ -1,13 +1,14 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_io.h>
 
 static ssize_t	__fwrite_delim(
 	t_io *const io, char *buf, size_t nbytes, char **s)
 {
-	int	idx;
-	int	idw;
-	int	offset;
-	int	width;
+	int		idx;
+	int		idw;
+	int		offset;
+	int		width;
 
 	if (io->lwidth <= 0)
 		io->lwidth = 64;
@@ -37,7 +38,7 @@ static ssize_t	__fwrite_delim(
 	return (idw);
 }
 
-ssize_t	io_fwrite(t_io *const io, char *buf, size_t nbytes)
+ssize_t	io_fwrite(t_io *const io, char *const buf, size_t nbytes)
 {
 	char	*s;
 	ssize_t	sbytes;
@@ -53,7 +54,7 @@ ssize_t	io_fwrite(t_io *const io, char *buf, size_t nbytes)
 
 	if (io->delim)
 	{
-		sbytes = __fwrite_delim(io, buf, nbytes, &s);
+		sbytes = __fwrite_delim(io, (char *)buf, nbytes, &s);
 		wbytes = write(io->fd, s, sbytes);
 		SSL_FREE(s);
 	}
@@ -64,7 +65,7 @@ ssize_t	io_fwrite(t_io *const io, char *buf, size_t nbytes)
 	io->seek += nbytes;
 
 	if (wbytes < 0)
-		SSL_ERROR("write error");
+		IO_ERROR(UNSPECIFIED_ERROR);
 
 	return (wbytes);
 }

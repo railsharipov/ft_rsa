@@ -1,14 +1,15 @@
 #include <ft_ssl.h>
-#include <parser.h>
+#include <ssl_error.h>
 #include <ssl_rand.h>
 #include <ssl_pem.h>
 #include <ssl_base64.h>
 #include <ssl_des.h>
+#include <parser.h>
 
 static const char	*PEM_PROC = "Proc-Type: 4,ENCRYPTED\n";
 static const char	*DEK_INFO = "DEK-Info: DES-CBC,";
 
-static uint8_t __vect[8];
+static unsigned char __vect[8];
 
 // Encrypted PEM format:
 //
@@ -28,25 +29,26 @@ static uint8_t __vect[8];
 static int	__des_crypt(t_ostring *content, t_ostring *cipher)
 {
 	t_des	*des;
-	uint8_t	key[8];
+	unsigned char	key[8];
 
 	if ((SSL_OK != rand_useed((uint64_t *)__vect, 8))
 		|| (SSL_OK != rand_pbkdf2(key, __vect, NULL)))
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	des = des_init(key, NULL, __vect);
 
 	if (SSL_OK != des_cbc_encrypt(des, content, cipher))
 	{
-		return (SSL_ERROR("des encrypt error"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	ft_bzero(key, sizeof(key));
 
 	return (SSL_OK);
 }
 
-static void	__concat(char *dst, size_t *dstsize, char *src, size_t srcsize)
+static void	__concat(
+	char *dst, size_t *dstsize, const char *src, size_t srcsize)
 {
 	ft_memcpy(dst + *dstsize, src, srcsize);
 	*dstsize += srcsize;
@@ -71,7 +73,7 @@ static int	__encode(t_ostring *content, char **pemenc, size_t *pemsize)
 	if (SSL_OK != base64_encode(
 		(char *)(content->content), content->size, pemenc, pemsize))
 	{
-		return (SSL_ERROR("base64 error"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	parser_insert_delim(pemenc, pemsize, '\n', 64);
 
@@ -87,7 +89,7 @@ static int	__crypt_encode(t_ostring *content, char **pemenc, size_t *pemsize)
 
 	if (SSL_OK != __des_crypt(content, &cipher))
 	{
-		return (SSL_ERROR("pem crypt error"));
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK == (ret = __encode(&cipher, pemenc, pemsize)))
 	{
@@ -118,12 +120,12 @@ int	pem_encode(
 	{
 		if (SSL_OK != __crypt_encode(content, &pemenc, &pemsize))
 		{
-			return (SSL_ERR);
+			return (PEM_ERROR(UNSPECIFIED_ERROR));
 		}
 	}
 	else if (SSL_OK != __encode(content, &pemenc, &pemsize))
 	{
-		return (SSL_ERR);
+		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	pem_encap(pem, type, pemenc, pemsize);
 	SSL_FREE(pemenc);

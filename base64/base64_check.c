@@ -1,4 +1,5 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_base64.h>
 
 static const char	UB64[128] = {
@@ -21,7 +22,7 @@ int base64_check(const char *b64enc, int size)
 	while (ix < size)
 	{
 		if (UB64[b64enc[ix++]] == 0)
-			return (SSL_ERR);
+			return (SSL_ERROR(INVALID_BASE64_ENCODING));
 	}
 
 	return (SSL_OK);

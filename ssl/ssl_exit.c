@@ -3,15 +3,15 @@
 
 void	ssl_exit(uint32_t error)
 {
-	char	buf[SSL_ERRBUF];
+	char	buf[ERROR_BUF_SIZE];
 	int		rbytes;
 	int		fd;
 
-	if (SSL_ERR_USAGE == error)
+	if (USAGE_ERROR == error)
 	{
 		if ((fd = open(SSL_INFO_FILE, O_RDONLY)) > 0)
 		{
-			while ((rbytes = read(fd, buf, SSL_ERRBUF)) > 0)
+			while ((rbytes = read(fd, buf, ERROR_BUF_SIZE)) > 0)
 			{
 				write(STDOUT_FILENO, buf, rbytes);
 			}
@@ -23,7 +23,7 @@ void	ssl_exit(uint32_t error)
 				"https://github.com/nugliar/ft_rsa");
 		}
 	}
-	else if (SSL_ERR_MEMORY == error)
+	else if (MEMORY_ERROR == error)
 	{
 		ft_printf("%@FATAL: memory error\n");
 	}
