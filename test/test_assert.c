@@ -1,18 +1,21 @@
 #include <ft_ssl.h>
 #include <ssl_test.h>
 
-void	test_assert(
+int	test_assert(
 	int bool, const char *expr, const char *func, const char *file)
 {
 	if (bool)
-		return ;
+		return (SSL_TRUE);
+
+	if (NULL == func || NULL == file)
+		return (SSL_FALSE);
 
 	ft_printf("%@%s, %s: ", func, file);
 
 	if (errno)
 		perror(NULL);
 	else
-		ft_printf("%@assertion failed (%s)\n", expr);
+		ft_printf("%@" TXT_RED("ASSERT FAIL") " " TXT_YELL("(%s)\n"), expr);
 
-	exit(0);
+	return (SSL_FALSE);
 }

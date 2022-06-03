@@ -1,19 +1,19 @@
 #include <ft_ssl.h>
+#include <ssl_error.h>
 #include <ssl_test.h>
 #include <ssl_io.h>
 
-void	test_get_testfile_content(const char *testfile_path, t_ostring *ostring)
+int	test_get_testfile_content(const char *testfile_path, t_ostring *ostring)
 {
 	int 	fd;
 	ssize_t	nbytes;
 	char	buf[IO_BUFSIZE];
 
-	TEST_ASSERT(NULL != testfile_path);
-	TEST_ASSERT(NULL != ostring);
+	if (NULL == testfile_path || NULL == ostring)
+		return (SSL_ERROR(INVALID_INPUT));
 
-	fd = open(testfile_path, O_RDONLY);
-
-	TEST_ASSERT(fd > 2);
+	if ((fd = open(testfile_path, O_RDONLY)) < 0)
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	ostring->content = NULL;
 	ostring->size = 0;
@@ -25,5 +25,8 @@ void	test_get_testfile_content(const char *testfile_path, t_ostring *ostring)
 		ostring->size += nbytes;
 	}
 
-	TEST_ASSERT(nbytes >= 0);
+	if (nbytes < 0)
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	return (SSL_OK);
 }

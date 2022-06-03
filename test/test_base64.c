@@ -8,33 +8,48 @@ static const char	*__base64_file_path = "test/testfiles/base64_message.txt";
 static t_ostring	__input;
 static t_ostring	__ref;
 
-static void	__test_base64_setup(void);
-static void	__test_base64_encode(void);
+static int	__test_base64_setup(void);
+static int	__test_base64_encode(void);
 
-void	test_base64(void)
+int	test_base64(void)
 {
-	__test_base64_setup();
-	__test_base64_encode();
+	int	res;
+
+	if (SSL_OK != __test_base64_setup())
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	res = __test_base64_encode();
+
+
+	return (SSL_OK);
 }
 
-static void	__test_base64_setup(void)
+static int	__test_base64_setup(void)
 {
-	test_get_testfile_content(__binary_file_path, &__input);
-	test_get_testfile_content(__base64_file_path, &__ref);
+	if (SSL_OK != test_get_testfile_content(__binary_file_path, &__input))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	if (SSL_OK != test_get_testfile_content(__base64_file_path, &__ref))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	return (SSL_OK);
 }
 
-static void	__test_base64_encode(void)
+static int	__test_base64_encode(void)
 {
 	char		*output;
 	size_t		outsize;
-	int			ret;
+	int			ret_val;
+	int			pass;
 
-	ret = base64_encode(__input.content, __input.size, &output, &outsize);
+	ret_val = base64_encode(__input.content, __input.size, &output, &outsize);
 
-	assert(SSL_OK == ret);
-	assert(NULL != output);
-	assert(outsize == __ref.size);
-	assert(!ft_memcmp(output, __ref.content, outsize));
+	pass = TEST_ASSERT(SSL_OK == ret_val);
+	pass &= TEST_ASSERT(NULL != output);
+	pass &= TEST_ASSERT(outsize == __ref.size);
+	pass &= TEST_ASSERT(!ft_memcmp(output, __ref.content, outsize));
 
-	TEST_PASS();
+	if (SSL_TRUE == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
 }
