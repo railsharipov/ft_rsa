@@ -51,12 +51,18 @@
 # define TXT_CYAN(STR_LITERAL)	COLOR_CYAN STR_LITERAL COLOR_RESET
 # define TXT_MAG(STR_LITERAL)	COLOR_MAGENTA STR_LITERAL COLOR_RESET
 
+/* Round X down to a multiple of Y */
 # define FLOOR(X,Y)				((X)-((X)%(Y)))
+
+/* Round X up to a multiple of Y */
 # define CEIL(X,Y)				(((X)%(Y)==0)?(X):((X)+((Y)-((X)%(Y)))))
+
 # define MAX(A,B)				((A)>(B)?(A):(B))
 # define MIN(A,B)				((A)<(B)?(A):(B))
 # define ASC(X)					(X - 48)
 # define ABS(X)					((X)>=(0)?(X):(-X))
+
+# define IS_OF_TYPE(X, T)		_Generic((X), T:1, default:0)
 
 enum e_libft_err
 {
@@ -92,6 +98,24 @@ typedef struct		s_htbl
 	int				size;
 }					t_htbl;
 
+// Overload macros on number of args
+# define SEL12(_1,_2,NAME,...)			NAME
+# define SEL23(_1,_2,_3,NAME,...)		NAME
+# define SEL34(_1,_2,_3,_4,NAME,...)	NAME
+
+# define _HADD1(...)			ft_htbl_raw_add(__VA_ARGS__)
+# define _HADD2(...)			ft_htbl_add(__VA_ARGS__)
+
+# define _HGET1(...)			ft_htbl_raw_get(__VA_ARGS__)
+# define _HGET2(...)			ft_htbl_get(__VA_ARGS__)
+
+# define _HASG1(...)			ft_htbl_raw_assign(__VA_ARGS__)
+# define _HASG2(...)			ft_htbl_assign(__VA_ARGS__)
+
+# define ft_htbl_add(...)		SEL34(__VA_ARGS__,_HADD1,_HADD2)(__VA_ARGS__)
+# define ft_htbl_get(...)		SEL23(__VA_ARGS__,_HGET1,_HGET2)(__VA_ARGS__)
+# define ft_htbl_assign(...)	SEL34(__VA_ARGS__,_HASG1,_HASG2)(__VA_ARGS__)
+
 void		*ft_malloc(const char *memkey, size_t memsize);
 void		ft_free(const char *memkey, void *memptr);
 void		ft_free_all(void);
@@ -99,13 +123,14 @@ void		ft_free_all(void);
 uint32_t	ft_hash(const char *, size_t);
 void		*ft_htbl_init(int);
 t_node		*ft_htbl_iter(t_htbl *);
-void		ft_htbl_add(t_htbl *, const char *, void *);
-void		*ft_htbl_get(t_htbl *, const char *);
-void		ft_htbl_assign(t_htbl *, const char *, void *);
 void		ft_htbl_del(t_htbl *);
-void		ft_htbl_raw_add(t_htbl *, const void *, size_t, void *);
+
+void		(ft_htbl_add)(t_htbl *, void *, const char *);
+void		*(ft_htbl_get)(t_htbl *, const char *);
+void		(ft_htbl_assign)(t_htbl *, void *, const char *);
+void		ft_htbl_raw_add(t_htbl *, void *, const void *, size_t);
 void		*ft_htbl_raw_get(t_htbl *, const void *, size_t);
-void		ft_htbl_raw_assign(t_htbl *, const void *, size_t, void *);
+void		ft_htbl_raw_assign(t_htbl *, void *, const void *, size_t);
 
 t_node		*ft_node_init(void);
 t_node		*ft_node_new(const char *, void *, size_t);

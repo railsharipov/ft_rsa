@@ -25,7 +25,7 @@ static t_htbl	*__init_func_htable(void)
 
 	for (idx = 0; idx < ntypes; idx++)
 	{
-		ft_htbl_add(func_htable, T[idx].type, T[idx].func);
+		ft_htbl_add(func_htable, T[idx].func, T[idx].type);
 	}
 	return (func_htable);
 }

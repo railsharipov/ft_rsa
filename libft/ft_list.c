@@ -154,7 +154,7 @@ t_htbl	*ft_lst_htable(t_node *lst)
 	htbl = ft_htbl_init(ft_lst_size(lst));
 	while (lst)
 	{
-		ft_htbl_add(htbl, lst->key, lst->content);
+		ft_htbl_add(htbl, lst->content, lst->key);
 		lst = lst->next;
 	}
 	return (htbl);

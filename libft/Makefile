@@ -16,7 +16,7 @@ NAME := libft.a
 
 OBJ_DIR := obj
 
-SRCS := $(wildcard ft_*.c) $(wildcard pf_*.c) get_next_line.c
+SRCS := $(wildcard ft_*.c)
 OBJS := $(foreach file, $(SRCS:.c=.o), $(addprefix $(OBJ_DIR)/,$(file)))
 
 CC = gcc -Wall -Wextra -Werror -Wno-incompatible-pointer-types \

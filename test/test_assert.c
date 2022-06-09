@@ -5,10 +5,10 @@ int	test_assert(
 	int bool, const char *expr, const char *func, const char *file)
 {
 	if (bool)
-		return (SSL_TRUE);
+		return (SSL_OK);
 
 	if (NULL == func || NULL == file)
-		return (SSL_FALSE);
+		return (SSL_FAIL);
 
 	ft_printf("%@%s, %s: ", func, file);
 
@@ -17,5 +17,5 @@ int	test_assert(
 	else
 		ft_printf("%@" TXT_RED("ASSERT FAIL") " " TXT_YELL("(%s)\n"), expr);
 
-	return (SSL_FALSE);
+	return (SSL_FAIL);
 }

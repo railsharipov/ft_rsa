@@ -42,7 +42,7 @@ int  der_read_bitstring(t_iasn *item, char **derenc, size_t *dersize)
 	SSL_ALLOC(item->content, olen);
   ft_memcpy(item->content, octets, olen);
   util_rshift_bytes((unsigned char *)item->content, olen, shift);
-  item->size = olen;
+  item->__size = olen;
 
   *derenc = (char *)(octets) + olen;
   *dersize = osize - olen;

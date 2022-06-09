@@ -33,7 +33,7 @@ int  der_read_null(t_iasn *item, char **derenc, size_t *dersize)
     return (DER_ERROR(INVALID_ASN_LEN_TAG));
 
   item->content = NULL;
-  item->size = 0;
+  item->__size = 0;
 
   *derenc = (char *)(octets) + olen;
   *dersize = osize - olen;

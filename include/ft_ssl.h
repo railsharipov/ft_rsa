@@ -27,13 +27,14 @@
 
 enum e_boolean
 {
-	SSL_FALSE		= 0,
-	SSL_TRUE		= 1,
+	SSL_FALSE	= 0,
+	SSL_TRUE	= 1,
 };
 
 enum	e_status
 {
-	SSL_OK			= 0
+	SSL_FAIL	= -1,
+	SSL_OK		= 0
 };
 
 typedef uint32_t		t_bool;

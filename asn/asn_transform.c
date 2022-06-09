@@ -16,8 +16,8 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 	t_iasn	*src_item;
 	t_iasn	*dest_item;
 
-	SSL_CHECK(NULL != src_tree);
-	SSL_CHECK(NULL != dest_tree);
+	if (NULL == src_tree || NULL == dest_tree)
+		return (ASN_ERROR(INVALID_INPUT));
 
 	src_iter = ft_ntree_iter(src_tree);
 	dest_items = ft_ntree_htable(dest_tree);
@@ -32,9 +32,9 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 			if (NULL != (src_item = src_node->content))
 			{
 				ft_memcpy(
-					dest_item->content, src_item->content, src_item->size);
-				dest_item->size = src_item->size;
-				ft_strcpy(dest_item->type, src_item->type);
+					dest_item->content, src_item->content, src_item->__size);
+				dest_item->__size = src_item->__size;
+				ft_strcpy(dest_item->__type, src_item->__type);
 			}
 			else
 			{

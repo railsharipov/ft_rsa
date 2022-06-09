@@ -6,22 +6,15 @@
 
 // IDENTIFIER OCTET
 
-// Bits 8 and 7 represent tag class
 # define ASN_TAG_UNIVERSAL    0x0
 # define ASN_TAG_APPLICATION  0x40
 # define ASN_TAG_CONTEXT      0x80
 # define ASN_TAG_PRIVATE      0xC0
 
-// Bit 6 represent encoding complexity
 # define ASN_ENCODE_PRIMITIVE 0x0
 # define ASN_ENCODE_CONSTRUCT 0x20
 
-// Bits 5 to 1 represent tag number
-// If tag number <= 30, tag is simple
 # define ASN_TAG_SIMPLE       0x0
-
-// If tag number > 30, tag is complex
-// bits 5 to 1 are set to '1'
 # define ASN_TAG_COMPLEX      0x1F
 
 # define ASN_TAG_BOOLEAN      0x1
@@ -33,13 +26,6 @@
 # define ASN_TAG_OBJECT_DESCR 0x7
 # define ASN_TAG_SEQUENCE     0x10
 
-// If tag is complex, 2 or more octets are used.
-// Each subsequent octet's 8th bit is set to '1',
-// except the last one.
-// Bits 7 to 1 of each subsequent octet is used to
-// store tag number represented as unsigned integer,
-// with bit 7 of first subsequent octet representing
-// most significant bit of integer
 # define ASN_TAG_SUBSEQ       0x80
 # define ASN_TAG_SUBSEQ_LAST  0x0
 
@@ -64,17 +50,30 @@
 // length octet as most significant bit of integer
 # define ASN_LEN_LONG         0x80
 
+enum e_asn_type
+{
+	ASN_TYPE_BOOL,
+	ASN_TYPE_INT,
+	ASN_TYPE_OSTRING,
+	ASN_TYPE_BITSTRING,
+	ASN_TYPE_NULL,
+	ASN_TYPE_OBJECT_ID,
+};
+
 # define ASN_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, ASN_ERROR_CTX))
 
-enum  e_asn_error {
+enum  e_asn_error
+{
 	INVALID_ASN_TREE = 1,
 };
 
 typedef struct  s_iasn
 {
   void          *content;
-  char          *type;
-  size_t        size;
+  char          *__type;
+  size_t        __size;
+  char			*(*get_type)(struct s_iasn *);
+  size_t		(*get_size)(struct s_iasn *);
 }               t_iasn;
 
 struct s_der;
@@ -90,9 +89,6 @@ int				asn_tree_der_decode(
 					struct s_der *, const char *, struct s_node **);
 t_iasn			*asn_item_init(void);
 void			asn_item_del(t_iasn *);
-void			*asn_item_content(t_iasn *);
-size_t			asn_item_size(t_iasn *);
-char			*asn_item_type(t_iasn *);
 t_iasn			*asn_primitive_bool(const char *key, const char *name);
 t_iasn			*asn_primitive_int(const char *key, const char *name);
 t_iasn			*asn_primitive_ostring(const char *key, const char *name);

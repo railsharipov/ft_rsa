@@ -57,7 +57,7 @@ int	io_init(t_io *const io, const char *input, int insize, uint32_t flags)
 
 	key = &flags;
 
-	if (NULL == (param = ft_htbl_raw_get(io_htable, key, sizeof(uint32_t))))
+	if (NULL == (param = ft_htbl_get(io_htable, key, sizeof(uint32_t))))
 		return (IO_ERROR(INVALID_IO_PARAMETERS));
 
 	if (SSL_OK != __init_io_fd(&io->fd, io->input, param->f1, param->arg))
@@ -82,7 +82,7 @@ static t_htbl	*__init_io_htable(void)
 	{
 		key = (void *)&(T[ix].flag);
 		content = (void *)(T + ix);
-		ft_htbl_raw_add(io_htable, key, sizeof(uint32_t), content);
+		ft_htbl_add(io_htable, content, key, sizeof(uint32_t));
 		ix++;
 	}
 	return (io_htable);

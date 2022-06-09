@@ -22,6 +22,6 @@ enum	e_base64_flag
 
 int		base64_encode(const char *, size_t, char **, size_t *);
 int		base64_decode(const char *, size_t, char **, size_t *);
-int		base64_check(const char *, int);
+int		base64_check(const char *, size_t);
 
 #endif

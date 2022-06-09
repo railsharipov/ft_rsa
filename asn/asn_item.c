@@ -1,6 +1,9 @@
 #include <ft_ssl.h>
 #include <ssl_asn.h>
 
+static char		*__get_type(t_iasn *item);
+static size_t	__get_size(t_iasn *item);
+
 t_iasn	*asn_item_init(void)
 {
 	t_iasn	*item;
@@ -17,36 +20,27 @@ void	asn_item_del(t_iasn *item)
 	}
 	if (NULL != item->content)
 	{
-		ft_bzero(item->content, item->size);
+		ft_bzero(item->content, item->__size);
 		SSL_FREE(item->content);
 	}
-	SSL_FREE(item->type);
+	SSL_FREE(item->__type);
 	SSL_FREE(item);
 }
 
-void	*asn_item_content(t_iasn *item)
-{
-	if (NULL == item)
-	{
-		return (NULL);
-	}
-	return (item->content);
-}
-
-size_t	asn_item_size(t_iasn *item)
+size_t	__get_size(t_iasn *item)
 {
 	if (NULL == item)
 	{
 		return (0);
 	}
-	return (item->size);
+	return (item->__size);
 }
 
-char	*asn_item_type(t_iasn *item)
+char	*__get_type(t_iasn *item)
 {
 	if (NULL == item)
 	{
 		return (NULL);
 	}
-	return (item->type);
+	return (item->__type);
 }

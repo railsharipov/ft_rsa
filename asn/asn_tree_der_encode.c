@@ -24,7 +24,7 @@ static t_htbl	*__init_func_htable(void)
 		return (NULL);
 
 	for (int idx = 0; idx < sizeof(T)/sizeof(*T); idx++)
-		ft_htbl_add(htbl, T[idx].type, T[idx].f_enc);
+		ft_htbl_add(htbl, T[idx].f_enc, T[idx].type);
 
 	return (htbl);
 }
@@ -45,7 +45,7 @@ static int	__encode_recur(t_node *node, t_der *der, t_htbl *func_htable)
 	if (NULL == item)
 		return (UNSPECIFIED_ERROR);
 
-	if (NULL == (f_enc = ft_htbl_get(func_htable, item->type)))
+	if (NULL == (f_enc = ft_htbl_get(func_htable, item->__type)))
 		return (UNSPECIFIED_ERROR);
 
 	if (ft_node_is_parent(node))
@@ -64,7 +64,7 @@ static int	__encode_recur(t_node *node, t_der *der, t_htbl *func_htable)
 	}
 	else
 	{
-		if (SSL_OK != f_enc(der, item->content, item->size))
+		if (SSL_OK != f_enc(der, item->content, item->__size))
 			return (UNSPECIFIED_ERROR);
 	}
 	return (__encode_recur(node->next, der, func_htable));

@@ -41,10 +41,10 @@ static void	__print_content(t_iasn *item, int space)
 	int	idx;
 
 	idx = 0;
-	while (idx < item->size)
+	while (idx < item->__size)
 	{
 		__print_space(space);
-		util_puthex(item->content+idx, MIN(15, item->size-idx), 0, ':');
+		util_puthex(item->content+idx, MIN(15, item->__size-idx), 0, ':');
 		idx += 15;
 	}
 }
@@ -67,7 +67,7 @@ static void	__f_print(t_node *node, int space)
 	{
 		item = node->content;
 
-		if (!ft_strcmp("int", item->type))
+		if (!ft_strcmp("int", item->__type))
 		{
 			__print_int_content(item, space + INDENT_SPACE_CNT);
 		}

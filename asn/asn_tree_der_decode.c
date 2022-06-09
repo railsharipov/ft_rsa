@@ -30,8 +30,8 @@ static t_htbl	*__init_func_htable(void)
 	}
 	for (int idx = 0; idx < sizeof(T)/sizeof(*T); idx++)
 	{
-		ft_htbl_raw_add(
-			htbl, &(T[idx].type), sizeof(T[idx].type), T[idx].f_read);
+		ft_htbl_add(
+			htbl, T[idx].f_read, &(T[idx].type), sizeof(T[idx].type));
 	}
 	return (htbl);
 }
@@ -48,7 +48,7 @@ static int	__decode_item(
 	{
 		return (UNSPECIFIED_ERROR);
 	}
-	if (NULL == (f_read = ft_htbl_raw_get(func_htable, *derenc, 1)))
+	if (NULL == (f_read = ft_htbl_get(func_htable, *derenc, 1)))
 	{
 		return (UNSPECIFIED_ERROR);
 	}
@@ -81,11 +81,11 @@ static	int __decode_recur(
 	if (ft_node_is_parent(node))
 	{
 		ret = __decode_recur(
-			node->nodes, item->content, item->size, func_htable);
+			node->nodes, item->content, item->__size, func_htable);
 
 		SSL_FREE(item->content);
 		item->content = NULL;
-		item->size = 0;
+		item->__size = 0;
 
 		if (SSL_OK != ret)
 		{

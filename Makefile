@@ -32,7 +32,7 @@ OBJS := $(foreach file, $(SRCS:.c=.o), $(addprefix $(OBJ_PREFIX)/,$(file)))
 
 DEPS := $(foreach file, $(SRCS:.c=.d), $(addprefix $(DEP_PREFIX)/,$(file)))
 
-CC = gcc -O3
+CC = gcc -O3 -std=c11
 CFLAGS = -I./include
 LDFLAGS =
 LDLIBS =

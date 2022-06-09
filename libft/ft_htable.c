@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stddef.h>
 #include <libft.h>
 
 void	*ft_htbl_init(int size)
@@ -52,7 +53,7 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 	return (iter);
 }
 
-void	ft_htbl_add(t_htbl *htbl, const char *key, void *content)
+void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 {
 	t_node		*node;
 	uint32_t	hash;
@@ -96,7 +97,7 @@ static t_node	*__htbl_node(t_htbl *htbl, const char *key)
 	return (NULL);
 }
 
-void	*ft_htbl_get(t_htbl *htbl, const char *key)
+void	*(ft_htbl_get)(t_htbl *htbl, const char *key)
 {
 	t_node	*node;
 
@@ -108,7 +109,7 @@ void	*ft_htbl_get(t_htbl *htbl, const char *key)
 	return (node->content);
 }
 
-void	ft_htbl_assign(t_htbl *htbl, const char *key, void *content)
+void	(ft_htbl_assign)(t_htbl *htbl, void *content, const char *key)
 {
 	t_node	*node;
 
@@ -149,4 +150,58 @@ void	ft_htbl_del(t_htbl *htbl)
 	}
 	LIBFT_FREE(htbl->arr);
 	LIBFT_FREE(htbl);
+}
+
+static char	*__to_cstring(char *raw, size_t rawsize)
+{
+	char	*cskey;
+	size_t	ix;
+
+	LIBFT_ALLOC(cskey, rawsize + 1);
+	ix = 0;
+	while (ix < rawsize)
+	{
+		if (raw[ix] == 0)
+		{
+			cskey[ix] = '=';
+		}
+		else
+		{
+			cskey[ix] = raw[ix];
+		}
+		ix++;
+	}
+	cskey[rawsize] = 0;
+	return (cskey);
+}
+
+void	ft_htbl_raw_add(
+	t_htbl *htbl, void *content, const void *key, size_t keysize)
+{
+	char	*cskey;
+
+	cskey = __to_cstring((char *)key, keysize);
+	(ft_htbl_add)(htbl, content, (const char *)cskey);
+	LIBFT_FREE(cskey);
+}
+
+void	*ft_htbl_raw_get(t_htbl *htbl, const void *key, size_t keysize)
+{
+	char	*cskey;
+	void	*content;
+
+	cskey = __to_cstring((char *)key, keysize);
+	content = (ft_htbl_get)(htbl, (const char *)cskey);
+	LIBFT_FREE(cskey);
+	return (content);
+}
+
+void	ft_htbl_raw_assign(
+	t_htbl *htbl, void *content, const void *key, size_t keysize)
+{
+	char	*cskey;
+
+	cskey = __to_cstring((char *)key, keysize);
+	(ft_htbl_assign)(htbl, content, (const char *)cskey);
+	LIBFT_FREE(cskey);
 }

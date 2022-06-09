@@ -6,6 +6,7 @@
 
 static char	*__SSL_ERROR_MESSAGES[] = {
 	"unspecified error",
+	"unexpected error",
 	"pass through error",
 	"invalid command line argument",
 	"memory allocation error",
@@ -83,8 +84,8 @@ static size_t	__ERROR_CTX_TABLE_SIZE =
 const char	*error_to_string(int error)
 {
 	struct s_error_ctx	error_ctx;
-	uint32_t						error_ctx_idx;
-	uint32_t						error_idx;
+	uint32_t			error_ctx_idx;
+	uint32_t			error_idx;
 
 	if (error == UNSPECIFIED_ERROR)
 		return (NULL);
@@ -93,12 +94,12 @@ const char	*error_to_string(int error)
 	error_idx = GET_ERROR(error) - 1;
 
 	if (error_ctx_idx >= __ERROR_CTX_TABLE_SIZE)
-		return __INVALID_ERROR_ID_MESSAGE;
+		return (__INVALID_ERROR_ID_MESSAGE);
 
 	error_ctx = __ERROR_CTX_TABLE[error_ctx_idx];
 
 	if (error_idx >= error_ctx.size)
-		return __INVALID_ERROR_ID_MESSAGE;
+		return (__INVALID_ERROR_ID_MESSAGE);
 
 	return error_ctx.table[error_idx];
 }

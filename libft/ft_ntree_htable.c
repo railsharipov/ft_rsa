@@ -14,7 +14,7 @@
 
 static int	__htable_func(t_node *node, const void *farg)
 {
-	ft_htbl_add((t_htbl *)farg, node->key, node->content);
+	ft_htbl_add((t_htbl *)farg, node->content, node->key);
 	return (0);
 }
 

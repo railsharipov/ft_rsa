@@ -26,7 +26,7 @@ t_htbl  *util_task_htable(const t_task *task, int size)
 	ix = 0;
 	while (ix++ < size)
 	{
-		ft_htbl_add(htbl, task->key, (void *)task);
+		ft_htbl_add(htbl, (void *)task, task->key);
 		task++;
 	}
 

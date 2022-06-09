@@ -23,6 +23,8 @@
 # define GET_ERROR(ERROR)			(((uint32_t)(ERROR))&(MASK_16_BIT))
 # define ADD_ERROR_CTX(ERROR, MOD)	(((uint32_t)(ERROR))|(MOD<<16))
 
+# define IS_ERROR(FLAG)				((int)(FLAG > 0))
+
 # define __INVALID_ERROR_ID_MESSAGE	"invalid error id"
 
 
@@ -35,6 +37,7 @@ struct s_error_ctx
 enum	e_ssl_error
 {
 	UNSPECIFIED_ERROR = 1,
+	UNEXPECTED_ERROR,
 	PASS_THROUGH_ERROR,
 	USAGE_ERROR,
 	MEMORY_ERROR,
