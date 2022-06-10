@@ -32,9 +32,9 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 			if (NULL != (src_item = src_node->content))
 			{
 				ft_memcpy(
-					dest_item->content, src_item->content, src_item->__size);
-				dest_item->__size = src_item->__size;
-				ft_strcpy(dest_item->__type, src_item->__type);
+					dest_item->content, src_item->content, src_item->bitsize);
+				dest_item->bitsize = src_item->bitsize;
+				ft_strcpy(dest_item->type, src_item->type);
 			}
 			else
 			{

@@ -18,8 +18,10 @@ int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 {
 	char	*nstr;
 	int		nsize;
+	int		bitsize;
 
-	nsize = CEIL(lmbit_num(num), 8) / 8;
+	bitsize = lmbit_num(num);
+	nsize = TO_NUM_BYTES(bitsize);
 
 	if (nsize > CHAR_BIT * osize)
 	{

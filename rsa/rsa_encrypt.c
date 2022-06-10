@@ -83,7 +83,7 @@ static int  __encrypt(
 	int		modsize;
 	int		ret;
 
-	modsize = CEIL(__items->keysize, 8) / 8;
+	modsize = TO_NUM_BYTES(__items->keysize);
 
 	if (messize > modsize-11)
 	{

@@ -15,10 +15,12 @@ static void	__print_space(int cnt)
 static void	__print_int_content(t_iasn *item, int space)
 {
 	char	*num_octets;
+	int		bitsize;
 	int		numsize;
 	int		idx;
 
-	numsize = CEIL(lmbit_num(item->content), 8) / 8;
+	bitsize = lmbit_num(item->content);
+	numsize = TO_NUM_BYTES(bitsize);
 
 	if (numsize == 0)
 	{
@@ -38,13 +40,15 @@ static void	__print_int_content(t_iasn *item, int space)
 
 static void	__print_content(t_iasn *item, int space)
 {
-	int	idx;
+	int		idx;
+	size_t	size;
 
+	size = TO_NUM_BYTES(item->bitsize);
 	idx = 0;
-	while (idx < item->__size)
+	while (idx < size)
 	{
 		__print_space(space);
-		util_puthex(item->content+idx, MIN(15, item->__size-idx), 0, ':');
+		util_puthex(item->content+idx, MIN(15, size-idx), 0, ':');
 		idx += 15;
 	}
 }
@@ -67,7 +71,7 @@ static void	__f_print(t_node *node, int space)
 	{
 		item = node->content;
 
-		if (!ft_strcmp("int", item->__type))
+		if (!ft_strcmp("int", item->type))
 		{
 			__print_int_content(item, space + INDENT_SPACE_CNT);
 		}

@@ -109,7 +109,7 @@ static int	__decrypt(
 	t_num	mes_rep;
 	t_num	ciph_rep;
 
-	modsize = CEIL(__items->keysize, 8) / 8;
+	modsize = TO_NUM_BYTES(__items->keysize);
 
 	if ((ciphsize > modsize) || (ciphsize < 11))
 	{

@@ -83,7 +83,7 @@ static int	__sub_ids(char **octets, int *olen, char *content, size_t size)
 	return (SSL_OK);
 }
 
-int	der_append_oid(t_der *der, void *content, size_t cont_nbytes)
+int	der_append_oid(t_der *der, void *content, size_t nbits)
 {
 	int		id_nbytes, len_nbytes, enc_nbytes;
 	char	*octets;
@@ -91,7 +91,7 @@ int	der_append_oid(t_der *der, void *content, size_t cont_nbytes)
 	char	*obj_id;
 	char	*precontent;
 
-	(void)cont_nbytes;
+	(void)nbits;
 
 	if (NULL == der)
 	{

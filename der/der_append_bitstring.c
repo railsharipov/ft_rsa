@@ -3,10 +3,10 @@
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
-int der_append_bitstring(t_der *der, void *content, size_t cont_nbytes)
+int der_append_bitstring(t_der *der, void *content, size_t nbits)
 {
 	unsigned char	*octets;
-	int				id_nbytes, len_nbytes, enc_nbytes, init_nbytes;
+	int				id_nbytes, len_nbytes, enc_nbytes, init_nbytes, cont_nbytes;
 	char			*precontent;
 
 	octets = (unsigned char *)(content);
@@ -16,6 +16,7 @@ int der_append_bitstring(t_der *der, void *content, size_t cont_nbytes)
 
 	id_nbytes = 1; // since simple tag expected
 	init_nbytes = 1; // initial byte used to store number of trailing zero bits
+	cont_nbytes = TO_NUM_BYTES(nbits);
 
 	// This implementation only supports bitstrings with number of bits
 	// being multiple of 8. Therefore, trailing bits is always 0

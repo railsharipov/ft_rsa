@@ -59,8 +59,11 @@
 
 # define MAX(A,B)				((A)>(B)?(A):(B))
 # define MIN(A,B)				((A)<(B)?(A):(B))
-# define ASC(X)					(X - 48)
+# define ASC(X)					(X-48)
 # define ABS(X)					((X)>=(0)?(X):(-X))
+
+# define TO_NUM_BYTES(X)		(CEIL(X,8)/8)
+# define TO_NUM_BITS(X)			(X*8)
 
 # define IS_OF_TYPE(X, T)		_Generic((X), T:1, default:0)
 

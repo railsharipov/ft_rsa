@@ -64,8 +64,8 @@ static	int __decode_recur(
 {
 	void	(*f_dec)(t_der *, void *, size_t);
 	t_iasn	*item;
-	char	*content;
-	int		consize;
+	char	*child_derenc;
+	size_t	child_derenc_size;
 	int		ret;
 
 	if (NULL == node)
@@ -80,12 +80,15 @@ static	int __decode_recur(
 	}
 	if (ft_node_is_parent(node))
 	{
+		child_derenc = item->content;
+		child_derenc_size = TO_NUM_BYTES(item->bitsize);
+
 		ret = __decode_recur(
-			node->nodes, item->content, item->__size, func_htable);
+			node->nodes, child_derenc, child_derenc_size, func_htable);
 
 		SSL_FREE(item->content);
 		item->content = NULL;
-		item->__size = 0;
+		item->bitsize = 0;
 
 		if (SSL_OK != ret)
 		{

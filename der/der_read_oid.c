@@ -4,15 +4,15 @@
 #include <ssl_der.h>
 #include <bnum.h>
 
-static const int	ASN_TAG			= (ASN_TAG_UNIVERSAL | ASN_TAG_SIMPLE);
-static const int	ASN_PRIMITIVE	= (ASN_ENCODE_PRIMITIVE | ASN_TAG);
+static const int	ASN_TAG = (ASN_TAG_UNIVERSAL | ASN_TAG_SIMPLE);
+static const int	ASN_PRIMITIVE = (ASN_ENCODE_PRIMITIVE | ASN_TAG);
 
 static void	__num_ids_to_ostring(
 	char **obj_id, uint32_t *num_ids, int num_idlen)
 {
 	unsigned char	**sub_ids;
-	uint32_t	concat_id;
-	int			ix;
+	uint32_t		concat_id;
+	int				ix;
 
 	SSL_ALLOC(sub_ids, (num_idlen+1) * sizeof(char *));
 
@@ -132,7 +132,7 @@ int	der_read_oid(t_iasn *item, char **derenc, size_t *dersize)
 		return (DER_ERROR(UNKNOWN_ASN_OBJECT_ID));
 	}
 	item->content = obj_name;
-	item->__size = ft_strlen(obj_name);
+	item->bitsize = TO_NUM_BITS(ft_strlen(obj_name));
 
 	*derenc = (char *)(octets) + olen;
 	*dersize = osize - olen;

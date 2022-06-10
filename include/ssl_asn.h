@@ -70,10 +70,8 @@ enum  e_asn_error
 typedef struct  s_iasn
 {
   void          *content;
-  char          *__type;
-  size_t        __size;
-  char			*(*get_type)(struct s_iasn *);
-  size_t		(*get_size)(struct s_iasn *);
+  char          *type;
+  size_t        bitsize;
 }               t_iasn;
 
 struct s_der;
@@ -87,8 +85,12 @@ void			asn_tree_items_del(t_htbl *);
 int				asn_tree_der_encode(struct s_node *, struct s_der **);
 int				asn_tree_der_decode(
 					struct s_der *, const char *, struct s_node **);
+
 t_iasn			*asn_item_init(void);
 void			asn_item_del(t_iasn *);
+size_t			asn_item_get_size(t_iasn *item);
+void			asn_item_set_size(t_iasn *item, size_t size);
+
 t_iasn			*asn_primitive_bool(const char *key, const char *name);
 t_iasn			*asn_primitive_int(const char *key, const char *name);
 t_iasn			*asn_primitive_ostring(const char *key, const char *name);
