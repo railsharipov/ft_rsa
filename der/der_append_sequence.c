@@ -3,31 +3,20 @@
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
-int der_append_sequence(t_der *der, void *content, size_t cont_nbytes)
+int der_append_sequence(t_der *der, void *content, size_t cont_nbits)
 {
-	int		id_nbytes, len_nbytes, enc_nbytes;
-	char	*precontent;
+	int	cont_nbytes;
 
 	if (NULL == der)
 		return (DER_ERROR(INVALID_INPUT));
 
-	id_nbytes = 1; // since simple tag expected
+	der_append_id_tag(
+		der,
+		ASN_ENCODE_CONSTRUCT | ASN_TAG_UNIVERSAL,
+		ASN_TAG_SEQUENCE);
 
-	SSL_ALLOC(precontent, (1+sizeof(cont_nbytes))+id_nbytes);
-
-	*precontent = ASN_ENCODE_CONSTRUCT | ASN_TAG_UNIVERSAL | ASN_TAG_SIMPLE;
-	*precontent |= ASN_TAG_SEQUENCE;
-
-	len_nbytes = der_append_len(precontent + id_nbytes, cont_nbytes);
-	enc_nbytes = id_nbytes + len_nbytes + cont_nbytes;
-
-	SSL_REALLOC(der->content, der->size, der->size + enc_nbytes);
-	ft_memcpy(der->content + der->size, precontent, id_nbytes + len_nbytes);
-	der->size += id_nbytes + len_nbytes;
-	ft_memcpy(der->content + der->size, content, cont_nbytes);
-	der->size += cont_nbytes;
-
-	SSL_FREE(precontent);
+	der_append_len_new(der, cont_nbytes);
+	der_append_content(der, content, cont_nbytes);
 
 	return (SSL_OK);
 }

@@ -7,7 +7,7 @@ void	add_num_u(const t_num *a, const t_num *b, t_num *res)
 	slen = BNUM_MAX(a->len, b->len)+1;
 
 	if (slen > BNUM_MAX_DIG)
-		BNUM_ERROR("big number size limit exceeded");
+		increase_num_size(res, slen);
 
 	{
 		const uint64_t	*aptr, *bptr;
@@ -25,11 +25,11 @@ void	add_num_u(const t_num *a, const t_num *b, t_num *res)
 		}
 		*rptr = carry;
 	}
-	
-	for (i = slen; i < BNUM_MAX_DIG; i++)
-  {
-    res->val[i] = 0;
-  }
+
+	for (i = slen; i < res->size; i++)
+	{
+		res->val[i] = 0;
+	}
 	res->len = slen;
 	skip_zeros(res);
 }

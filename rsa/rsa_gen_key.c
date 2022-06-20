@@ -12,7 +12,7 @@
 
 static t_rsa	*__items;
 
-static int	__gen_prime(t_num *prime, int keysize)
+static void	__gen_prime(t_num *prime, int keysize)
 {
 	uint64_t	mask;
 	int			idx;
@@ -20,112 +20,91 @@ static int	__gen_prime(t_num *prime, int keysize)
 	mask = (1ULL<<((keysize-1)%BNUM_DIGIT_BIT+1))-1;
 
 	do {
-		init_num(prime);
+		reset_num(prime);
 		prime->len = keysize/BNUM_DIGIT_BIT + (int)(keysize%BNUM_DIGIT_BIT!=0);
 
 		for (idx = 0; idx < prime->len; idx++)
-		{
 			prime->val[idx] = BNUM_MAX_VAL & rand_mtw_extract();
-		}
+
 		while (!(prime->val[prime->len-1] & ((mask>>1)+1)))
-		{
 			prime->val[prime->len-1] = BNUM_MAX_VAL & rand_mtw_extract();
-		}
+
 		prime->val[prime->len-1] &= mask;
 
 		for (; idx < BNUM_MAX_DIG; idx++)
-		{
 			prime->val[idx] = 0;
-		}
-	} while (!prime_test(prime, keysize, RM_TRIALS, SSL_TRUE));
 
-	return (SSL_OK);
+	} while (!prime_test(prime, keysize, RM_TRIALS, SSL_TRUE));
 }
 
-static int	__get_primes(int modsize, const char *frand)
+static void	__get_primes(int modsize, uint64_t seed)
 {
-	uint64_t	seed;
-	int			keysize;
+	int	keysize;
 
-	set_num(__items->version, 0);
+	set_num_d(__items->version, 0);
 
-	if (SSL_OK != rand_fseed(&seed, frand))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
 	rand_mtw_init(seed);
 	keysize = modsize / 2;
 
-	if (SSL_OK != __gen_prime(__items->prime1, keysize))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != __gen_prime(__items->prime2, modsize - keysize))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
+	__gen_prime(__items->prime1, keysize);
+	__gen_prime(__items->prime2, modsize - keysize);
+
 	mul_num(__items->prime1, __items->prime2, __items->modulus);
 	invmod_num(__items->prime2, __items->prime1, __items->coeff);
-
-	return (SSL_OK);
 }
 
-static int	__get_exponents(void)
+static void	__get_exponents(void)
 {
-	t_num	t1;
-	t_num	t2;
-	t_num	t3;
+	t_num	t1, t2, t3;
 
-	init_num(&t1);
-	init_num(&t2);
-	init_num(&t3);
+	init_num_multi(&t1, &t2, &t3, NULL);
+
 	sub_num_d(__items->prime1, 1, &t1);
 	sub_num_d(__items->prime2, 1, &t2);
 	lcm_num(&t1, &t2, &t3);
-	set_num(__items->pubexp, RSA_EXPPUB);
+	set_num_d(__items->pubexp, RSA_EXPPUB);
 	invmod_num(__items->pubexp, &t3, __items->privexp);
 	divmod_num(__items->privexp, &t1, NULL, __items->exponent1);
 	divmod_num(__items->privexp, &t2, NULL, __items->exponent2);
 
-	return (SSL_OK);
+	clear_num_multi(&t1, &t2, &t3, NULL);
 }
 
 int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 {
-	int	ret;
+	t_node		*pkey_tree;
+	uint64_t	seed;
+	int			res;
 
-	ret = SSL_OK;
+	__items = NULL;
+	pkey_tree = NULL;
+	res = SSL_OK;
 
 	if (NULL == asn_pkey)
-	{
 		return (RSA_ERROR(INVALID_INPUT));
-	}
-	if (modsize < 64)
-	{
-		return (RSA_ERROR(INVALID_RSA_KEY_SIZE));
-	}
-	if (NULL == (*asn_pkey = asn_tree(MAP_RSA_PRIVATE_KEY)))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != rsa_key_items(*asn_pkey, &__items))
-	{
-		ret = RSA_ERROR(FAILED_RSA_KEY_GENERATION);
-	}
-	else if (SSL_OK != __get_primes(modsize, frand))
-	{
-		ret = UNSPECIFIED_ERROR;
-	}
-	else if (SSL_OK != __get_exponents())
-	{
-		ret = UNSPECIFIED_ERROR;
-	}
-	if (SSL_OK != ret)
-	{
-		asn_tree_del(*asn_pkey);
-		*asn_pkey = NULL;
-	}
-	SSL_FREE(__items);
 
-	return (ret);
+	if (modsize < 64)
+		return (RSA_ERROR(INVALID_RSA_KEY_SIZE));
+
+	if (NULL == (pkey_tree = asn_tree(MAP_RSA_PRIVATE_KEY)))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != rsa_key_items(pkey_tree, &__items))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != rand_fseed(&seed, frand))
+		res = SSL_FAIL;
+
+	if (SSL_OK != res)
+	{
+		SSL_FREE(pkey_tree);
+		return (RSA_ERROR(FAILED_RSA_KEY_GENERATION));
+	}
+
+	__get_primes(modsize, seed);
+	__get_exponents();
+
+	*asn_pkey = pkey_tree;
+
+	return (SSL_OK);
 }

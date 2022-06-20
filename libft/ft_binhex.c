@@ -12,24 +12,41 @@
 
 #include <libft.h>
 
-void	ft_binhex(char *hex, const void *bin, size_t binsize)
+static const char	A[16] = {
+	'0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
+
+char	*ft_binhex(const void *bin, size_t binsize)
 {
-	char	A[16] = {
-		'0', '1', '2', '3', '4', '5', '6', '7',
-		'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-	};
 	unsigned char	*bptr;
-	char			buf[2*binsize];
+	char			*hptr;
+	char			*hex;
+	size_t			hexsize;
 	size_t			ix;
 
-	if ((NULL == hex) || (NULL == bin))
-		return ;
+	if (NULL == bin || binsize == 0)
+		return (NULL);
 
+	hexsize = 2*binsize;
+	LIBFT_ALLOC(hex, hexsize+1);
+	hptr = hex;
 	bptr = (unsigned char *)bin;
 
-	for (ix = 0; ix < 2*binsize; ix++)
-		buf[ix] = A[ (( bptr[ix>>1] )>>( 4*((ix+1)&1) )) & 0xF ];
+	for (ix = 0; ix < binsize; ix++)
+	{
+		*hptr++ = A[bptr[ix]>>4];
+		*hptr++ = A[bptr[ix]&0xF];
+	}
+	*hptr = 0;
 
-	for (ix = 0; ix < 2*binsize; ix++)
-		hex[ix] = buf[ix];
+	ix = 0;
+	while (hex[ix] == '0' && ix < hexsize-1)
+		ix++;
+
+	hptr = hex;
+	hex = ft_strdup(hptr + ix);
+	LIBFT_FREE(hptr);
+
+	return (hex);
 }

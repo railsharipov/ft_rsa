@@ -24,6 +24,8 @@ t_der	*der_init(void);
 void	der_del(t_der *);
 void	der_append_content(t_der *der, void *content, size_t size);
 int		der_append_id_tag(t_der *der, int tag_flags, uint32_t tag_num);
+int		der_append_len(char *, size_t size);
+int		der_append_len_new(t_der *der, size_t size);
 
 void	der_append_content(t_der *der, void *content, size_t nbits);
 int		der_append_sequence(t_der *der, void *content, size_t nbits);
@@ -33,7 +35,6 @@ int		der_append_ostring(t_der *der, void *content, size_t nbits);
 int		der_append_bitstring(t_der *der, void *content, size_t nbits);
 int		der_append_oid(t_der *der, void *content, size_t nbits);
 int		der_append_null(t_der *der, void *content, size_t nbits);
-int		der_append_len(char *, size_t size);
 int		der_read_sequence(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_bool(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_int(struct s_iasn *item, char **derenc, size_t *dersize);

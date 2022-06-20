@@ -2,17 +2,19 @@
 
 void	increm_num_u(t_num *num)
 {
-	uint64_t	carry;
+	uint64_t	carry, idx;
 
 	carry = 1;
-	for (int i = 0; carry && i < BNUM_MAX_DIG; i++)
+	for (idx = 0; carry && idx < num->len; idx++)
 	{
-		num->val[i] += carry;
-		carry = num->val[i] >> BNUM_DIGIT_BIT;
-		num->val[i] &= BNUM_MAX_VAL;
+		num->val[idx] += carry;
+		carry = num->val[idx] >> BNUM_DIGIT_BIT;
+		num->val[idx] &= BNUM_MAX_VAL;
 	}
 	if (carry)
-  {
-		BNUM_ERROR("big number size limit exceeded");
-  }
+	{
+		increase_num_size(num, num->len + 1);
+		num->val[idx] = carry;
+		num->len += 1;
+	}
 }

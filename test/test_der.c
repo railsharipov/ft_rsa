@@ -6,6 +6,8 @@
 static int	__test_der_setup(void);
 static int	__test_der_append_simple_id_tag(void);
 static int	__test_der_append_complex_id_tag(void);
+static int	__test_der_append_len_long_form(void);
+static int	__test_der_append_len_short_form(void);
 static int	__test_der_encode(void);
 static int	__test_der_decode(void);
 
@@ -18,8 +20,8 @@ int	test_der(void)
 
 	res = __test_der_append_simple_id_tag();
 	res |= __test_der_append_complex_id_tag();
-	res |= __test_der_encode();
-	res |= __test_der_encode();
+	res |= __test_der_append_len_long_form();
+	res |= __test_der_append_len_short_form();
 
 	return (res);
 }
@@ -81,6 +83,60 @@ static int	__test_der_append_complex_id_tag(void)
 			((char *)der->content)[0] == (flags | ASN_TAG_COMPLEX));
 
 	der_del(der);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_der_append_len_long_form(void)
+{
+	t_der	*der;
+	size_t	len;
+	int		ret;
+	int		pass;
+	int		len_size;
+
+	len = 12354;
+	len_size = NBITS_TO_NBYTES(util_lmbit(len, 8 * sizeof(len)));
+
+	der = der_init();
+	ret = der_append_len_new(der, len);
+
+	pass = TEST_ASSERT(SSL_OK == ret);
+	pass |= TEST_ASSERT(NULL != der->content);
+	pass |= TEST_ASSERT(der->size > 1);
+	pass |= TEST_ASSERT(ASN_LEN_LONG == (0x80 & der->content[0]));
+	pass |= TEST_ASSERT(len_size == (der->content[0] & 0x7F));
+	pass |= TEST_ASSERT(len_size == der->size - 1);
+	pass |= TEST_ASSERT(
+		len == util_bytes_to_uint64(der->content + 1, der->size - 1));
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_der_append_len_short_form(void)
+{
+	t_der	*der;
+	size_t	len;
+	int		ret;
+	int		pass;
+	int		len_size;
+
+	len = 124;
+
+	der = der_init();
+	ret = der_append_len_new(der, len);
+
+	pass = TEST_ASSERT(SSL_OK == ret);
+	pass |= TEST_ASSERT(NULL != der->content);
+	pass |= TEST_ASSERT(der->size == 1);
+	pass |= TEST_ASSERT(ASN_LEN_SHORT == (0x80 & der->content[0]));
+	pass |= TEST_ASSERT(len == (0x7F & der->content[0]));
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());

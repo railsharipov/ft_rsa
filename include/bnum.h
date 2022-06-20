@@ -22,7 +22,8 @@
 # define BNUM_BASE		((uint64_t)1 << (BNUM_DIGIT_BIT))
 # define BNUM_MAX_VAL	((BNUM_BASE) - 1)
 # define BNUM_MSB_VAL	((BNUM_BASE) >> 1)
-# define BNUM_MAX_DIG	(1 << ((BNUM_WORD_BIT) - 2*(BNUM_DIGIT_BIT)))
+# define BNUM_MAX_DIG	(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT))
+# define BNUM_MAX_WDIG	(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT + 1))
 
 # define BNUM_NEG		-1
 # define BNUM_POS		1
@@ -30,9 +31,7 @@
 # define BNUM_FALSE		0
 # define BNUM_KAR_THRES	80
 
-# if (BNUM_MAX_DIG > 256)
-#  define BNUM_HEAP_WINDOW
-# endif
+# define BNUM_MAX_DIG_COMBA		(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT))
 
 # define BNUM_MAX(A,B)	((A)>(B)?(A):(B))
 # define BNUM_MIN(A,B)	((A)<(B)?(A):(B))
@@ -42,7 +41,7 @@
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
 # define BNUM_SIGN(X)	(((X)->sign == BNUM_NEG)?(BNUM_NEG):(BNUM_POS))
 
-# define BNUM_ERROR(MES) ({ \
+# define BNUM_ERROR_EXIT(MES) ({ \
 	ft_printf("bnum error in '%s', %s:%d\n", __func__, __FILE__, __LINE__); \
 	if (errno) \
 		perror(MES); \
@@ -56,11 +55,14 @@ typedef __int128_t		int128_t;
 
 typedef struct			s_num
 {
-	uint64_t		val[BNUM_MAX_DIG];
+	uint64_t		*val;
+	size_t			size;
 	int 			len;
 	int				sign;
 }					t_num;
 
+void	hex_to_num(t_num *num, const char *hex);
+char	*num_to_hex(t_num *num);
 void	error(char const *);
 void	out_of_memory(void);
 void	division_by_zero(void);
@@ -69,12 +71,17 @@ void	size_error(void);
 void	print_num(const char *, const t_num *);
 void	print_num_raw(const t_num *);
 void	print_num_bits(const t_num *);
-char	*stringify_num(const t_num *);
+void	num_to_bytes(const t_num *, char **, size_t *);
 void	bytes_to_num(t_num *, const char *, int);
 void	abs_num(const t_num *, t_num *);
-void	mask_num(t_num *, const char *, size_t);
 void	init_num(t_num *);
-void	set_num(t_num *, uint64_t);
+void	init_num_multi(t_num *, ...);
+void	init_num_with_size(t_num *num, int size);
+void	reset_num(t_num *);
+void	clear_num(t_num *);
+void	clear_num_multi(t_num *, ...);
+void	increase_num_size(t_num *, size_t newsize);
+void	set_num_d(t_num *, uint64_t);
 void	set_randnum(t_num *, int);
 void	copy_num(const t_num *, t_num *, int, int);
 int		compare_num(const t_num *, const t_num *);
@@ -114,6 +121,7 @@ void	div_num_2d_inpl(t_num *num);
 void	montgomery_setup(const t_num *, uint64_t *);
 void	montgomery_norm(const t_num *, t_num *);
 void	montgomery_reduce(t_num *, const t_num *, uint64_t);
+void	montgomery_fast_reduce(t_num *, const t_num *, uint64_t);
 void	exp_num(const t_num *, uint64_t, t_num *);
 void	exp2_num(t_num *, int);
 void	powmod_num(const t_num *, const t_num *, const t_num *, t_num *);

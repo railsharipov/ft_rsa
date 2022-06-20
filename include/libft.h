@@ -26,10 +26,6 @@
 
 /* enable ft_malloc wrapper */
 // # define LIBFT_MEM_ALLOC
-/* enable ft_malloc debug info */
-// # define LIBFT_MEM_DEBUG
-/* enable ft_malloc verbal info */
-// # define LIBFT_MEM_VERBAL
 
 # define LIBFT_BUFF				256
 # define LIBFT_ERRBUF			1024
@@ -62,17 +58,27 @@
 # define ASC(X)					(X-48)
 # define ABS(X)					((X)>=(0)?(X):(-X))
 
-# define TO_NUM_BYTES(X)		(CEIL(X,8)/8)
-# define TO_NUM_BITS(X)			(X*8)
+# define NBITS_TO_NWORDS(X, WORD_BIT)	((((ssize_t)X)-1)/WORD_BIT+1)
+# define NBITS_TO_NBYTES(X)				((((ssize_t)X)-1)/CHAR_BIT+1)
+# define NWORDS_TO_NBITS(X, WORD_BIT)	((X)*WORD_BIT)
+# define NBYTES_TO_NBITS(X)				((X)*CHAR_BIT)
 
 # define IS_OF_TYPE(X, T)		_Generic((X), T:1, default:0)
 
-enum e_libft_err
+enum	e_libft_err
 {
-	LIBFT_OK	= 0,
-	LIBFT_ERR	= -1,
-	LIBFT_MEM	= -2,
-	LIBFT_FATAL	= -3,
+	LIBFT_OK				= 0,
+	LIBFT_ERR				= -1,
+	LIBFT_MEM_ERR			= -2,
+	LIBFT_MEM_LEAK			= -3,
+	LIBFT_MEM_DOUBLE_FREE	= -4,
+	LIBFT_MEM_FATAL			= -5,
+};
+
+enum	e_libft_alloc_flag
+{
+	LIBFT_ALLOC_NONE = 0,
+	LIBFT_ALLOC_DEBUG,
 };
 
 typedef struct		s_node
@@ -190,6 +196,7 @@ void		*ft_memdup(void *, size_t);
 void		ft_memdel(void **ap);
 size_t		ft_strlen(const char *s);
 char		*ft_strdup(const char *s1);
+char		*ft_strrev(const char *s);
 char		*ft_strcpy(char *dst, const char *src);
 char		*ft_strncpy(char *dst, const char *src, size_t len);
 char		*ft_strcat(char *s1, const char *s2);
@@ -249,7 +256,7 @@ void		ft_putnbr_fd(int fd, int n);
 int			get_next_line(int fd, char **line);
 int			ft_printf(const char *format, ...);
 int			ft_strlst(const char *s, int num, ...);
-void		ft_binhex(char *hex, const void *bin, size_t binsize);
+char		*ft_binhex(const void *bin, size_t binsize);
 void		ft_hexbin(void *bin, const char *hex, size_t hexsize);
 void		ft_revbits(void *src, size_t size);
 char		*ft_intchar(char *buf, intmax_t integer, int int_bytes);
@@ -262,56 +269,16 @@ void		ft_exit(void);
 
 extern int	global_ft_malloc_error;
 
-# if defined (LIBFT_MEM_ALLOC) && defined (LIBFT_MEM_VERBAL)
+# if defined (LIBFT_MEM_ALLOC)
 
-#  define LIBFT_FREE(PTR) \
+#  define EXIT_WITH_MEM_ERROR() \
 	do \
 	{ \
-		if (NULL != PTR) \
-		{ \
-			ft_printf(TXT_MAG("%s\n"), __func__); \
-			ft_free(#PTR, PTR); \
-			PTR = NULL; \
-		} \
-		if (LIBFT_FATAL == global_ft_malloc_error) \
-		{ \
-			 ft_exit(); \
-		} \
+		ft_printf("%@fatal memory error %d\n", global_ft_malloc_error); \
+		ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
+		ft_exit(); \
 	} \
 	while (0)
-
-#  define LIBFT_ALLOC(PTR, SZ) \
-	do \
-	{ \
-		ft_printf(TXT_MAG("%s\n"), __func__); \
-		PTR = ft_malloc(#PTR, SZ); \
-		if (LIBFT_FATAL == global_ft_malloc_error) \
-		{ \
-			 ft_exit(); \
-		} \
-	} \
-	while (0)
-
-#  define LIBFT_REALLOC(PTR, SZ, NSZ) \
-	do \
-	{ \
-		ft_printf(TXT_MAG("%s\n"), __func__); \
-		void	*NEWPTR; \
-		NEWPTR = ft_malloc(#PTR "_realloc", NSZ); \
-		if (LIBFT_FATAL == global_ft_malloc_error) \
-		{ \
-			 ft_exit(); \
-		} \
-		if (NULL != PTR) \
-		{ \
-			ft_memcpy(NEWPTR, PTR, SZ); \
-			ft_free(#PTR, PTR); \
-		} \
-		PTR = NEWPTR; \
-	} \
-	while (0)
-
-# elif defined (LIBFT_MEM_ALLOC)
 
 #  define LIBFT_FREE(PTR) \
 	do \
@@ -323,11 +290,7 @@ extern int	global_ft_malloc_error;
 			\
 			if (LIBFT_OK != global_ft_malloc_error) \
 			{ \
-				ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
-			} \
-			if (LIBFT_FATAL == global_ft_malloc_error) \
-			{ \
-				 ft_exit(); \
+				EXIT_WITH_MEM_ERROR() \
 			} \
 		} \
 	} \
@@ -339,11 +302,7 @@ extern int	global_ft_malloc_error;
 		PTR = ft_malloc(#PTR, SZ); \
 		if (LIBFT_OK != global_ft_malloc_error) \
 		{ \
-			ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
-		} \
-		if (LIBFT_FATAL == global_ft_malloc_error) \
-		{ \
-			 ft_exit(); \
+			EXIT_WITH_MEM_ERROR() \
 		} \
 	} \
 	while (0)
@@ -355,11 +314,7 @@ extern int	global_ft_malloc_error;
 		NEWPTR = ft_malloc(#PTR "_realloc_", NSZ); \
 		if (LIBFT_OK != global_ft_malloc_error) \
 		{ \
-			ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
-		} \
-		if (LIBFT_FATAL == global_ft_malloc_error) \
-		{ \
-			 ft_exit(); \
+			EXIT_WITH_MEM_ERROR() \
 		} \
 		if (NULL != PTR) \
 		{ \
@@ -386,10 +341,11 @@ extern int	global_ft_malloc_error;
 #  define LIBFT_ALLOC(PTR, SZ) \
 	do \
 	{ \
-		PTR = calloc(SZ, 1); \
+		PTR = malloc(SZ); \
+		ft_bzero(PTR, SZ); \
 		if (ENOMEM == errno) \
 		{ \
-			perror(TXT_RED("fatal error")); \
+			perror(TXT_RED("fatal memory error")); \
 			ft_exit(); \
 		} \
 	} \

@@ -8,7 +8,7 @@ void	montgomery_setup(const t_num *num, uint64_t *rho)
 	b = num->val[0];
 
 	if (!(b & 1u))
-		BNUM_ERROR("Montogemy reduction requires odd modulo");
+		BNUM_ERROR_EXIT("montogemy reduction requires odd modulo");
 
 	x = (((b + 2u) & 4u) << 1) + b; // x*a == 1 mod 2^4
 	x *= 2u - b * x; // .. 2^8

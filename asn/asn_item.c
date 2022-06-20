@@ -19,7 +19,7 @@ void	asn_item_del(t_iasn *item)
 	}
 	if (NULL != item->content)
 	{
-		size = TO_NUM_BYTES(item->bitsize);
+		size = NBITS_TO_NBYTES(item->bitsize);
 		ft_bzero(item->content, size);
 		item->bitsize = 0;
 		SSL_FREE(item->content);

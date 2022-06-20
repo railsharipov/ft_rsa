@@ -74,12 +74,31 @@ void		util_xor(char *res, char *buf1, char *buf2, size_t size)
 
 int			util_lmbit(uint64_t num, int bits)
 {
+	bits = MIN(bits, 8 * sizeof(num));
+
 	for (int i = bits; i > 0; i--)
 	{
-		if ((1<<(i-1)) & num)
+		if ((((uint64_t)1)<<(i-1)) & num)
 			return (i);
 	}
 	return (0);
+}
+
+uint64_t	util_bytes_to_uint64(char *bytes, int nbytes)
+{
+	uint64_t	num;
+	int			idx;
+
+	num = 0;
+	nbytes = MIN(nbytes, sizeof(uint64_t));
+
+	idx = 0;
+	while (idx < nbytes)
+	{
+		num <<= 8;
+		num |= (uint64_t)bytes[idx++];
+	}
+	return (num);
 }
 
 int			util_rmbit(uint64_t num, int bits)

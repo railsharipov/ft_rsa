@@ -34,7 +34,7 @@ int	der_read_sequence(t_iasn *item, char **derenc, size_t *dersize)
 
 	SSL_ALLOC(item->content, olen);
 	ft_memcpy(item->content, octets, olen);
-	item->bitsize = TO_NUM_BITS(olen);
+	item->bitsize = NBYTES_TO_NBITS(olen);
 
 	*derenc = (char *)(octets) + olen;
 	*dersize = osize - olen;

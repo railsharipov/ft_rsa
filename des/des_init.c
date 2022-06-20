@@ -13,18 +13,17 @@
 #include <ft_ssl.h>
 #include <ssl_des.h>
 
-static t_des	__des;
+static t_des			__des;
 static unsigned char	__key[8];
 static unsigned char	__salt[8];
 static unsigned char	__vect[8];
 
+static void	__init_bufs(void);
+
 t_des	*des_init(
 	const unsigned char *key, const unsigned char *salt, const unsigned char *vect)
 {
-	ft_bzero(__key, sizeof(__key));
-	ft_bzero(__salt, sizeof(__salt));
-	ft_bzero(__vect, sizeof(__vect));
-	ft_bzero(&__des, sizeof(t_des));
+	__init_bufs();
 
 	if (NULL != key)
 	{
@@ -51,10 +50,7 @@ t_des	*des_init(
 t_des	*des_hexinit(
 	const char *keyhex, const char *salthex, const char *vecthex)
 {
-	ft_bzero(__key, sizeof(__key));
-	ft_bzero(__salt, sizeof(__salt));
-	ft_bzero(__vect, sizeof(__vect));
-	ft_bzero(&__des, sizeof(t_des));
+	__init_bufs();
 
 	if (NULL != keyhex)
 	{
@@ -76,4 +72,12 @@ t_des	*des_hexinit(
 	__des.vect = __vect;
 
 	return (&__des);
+}
+
+static void	__init_bufs(void)
+{
+	ft_bzero(__key, sizeof(__key));
+	ft_bzero(__salt, sizeof(__salt));
+	ft_bzero(__vect, sizeof(__vect));
+	ft_bzero(&__des, sizeof(t_des));
 }

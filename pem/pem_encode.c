@@ -56,16 +56,18 @@ static void	__concat(
 
 static void	__crypt_header(char **chead, size_t *chsize)
 {
-	char		vecthex[16];
+	char	*vecthex;
 
 	SSL_ALLOC(*chead, ft_strlen(PEM_PROC) + ft_strlen(DEK_INFO) + 16 + 2);
-	ft_binhex(vecthex, __vect, sizeof(__vect));
+	vecthex = ft_binhex(__vect, sizeof(__vect));
 
 	*chsize = 0;
 	__concat(*chead, chsize, PEM_PROC, ft_strlen(PEM_PROC));
 	__concat(*chead, chsize, DEK_INFO, ft_strlen(DEK_INFO));
-	__concat(*chead, chsize, vecthex, sizeof(vecthex));
+	__concat(*chead, chsize, vecthex, ft_strlen(vecthex));
 	__concat(*chead, chsize, "\n\n", 2);
+	
+	SSL_FREE(vecthex);
 }
 
 static int	__encode(t_ostring *content, char **pemenc, size_t *pemsize)

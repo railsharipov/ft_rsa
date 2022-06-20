@@ -12,31 +12,42 @@
 
 #include <libft.h>
 
+static const int	A[128] = {
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+	48,	48,	48,	48,	48,	48,	48,	48,	48,	48,	0,	0,	0,	0,	0,	0,
+	0,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,
+	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	0,	0,	0,	0,	0,
+	0,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,
+	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
+};
+
 void	ft_hexbin(void *bin, const char *hex, size_t hexsize)
 {
-    int    	A[128] = {
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-		0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
-		48,	48,	48,	48,	48,	48,	48,	48,	48,	48,	0,	0,	0,	0,	0,	0,
-		0,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,
-		55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	0,	0,	0,	0,	0,
-		0,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,
-		87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
-	};
-	unsigned char  buf[hexsize];
-    unsigned char  *hptr;
-	size_t         ix;
+	unsigned char	*buf;
+	unsigned char	*ptr;
+	size_t			bufsize;
+	ssize_t			ix;
 
 	if ((NULL == hex) || (NULL == bin))
 		return ;
 
-	ft_bzero(buf, hexsize);
-    hptr = (unsigned char *)hex;
+	bufsize = 2 * NBITS_TO_NBYTES(4 * hexsize);
+	LIBFT_ALLOC(buf, bufsize);
+	ft_bzero(buf, bufsize);
 
-	for (ix = 0; ix < hexsize; ix++)
-		buf[ix>>1] |= (hptr[ix] - (A[hptr[ix]] & 0x7F)) << (4*(( ix+1 )&1));
+	ptr = (unsigned char *)buf+bufsize-1;
 
-	for (ix = 0; ix < hexsize/2 + (hexsize&1); ix++)
-        ((unsigned char *)bin)[ix] = buf[ix] & 0xFF;
+	for (ix = hexsize-1; ix >= 0; ix--)
+		*ptr-- = hex[ix] - A[hex[ix] & 0x7F];
+
+	ptr = (unsigned char *)buf;
+
+	for (ix = 0; ix < bufsize/2; ix++)
+	{
+		((unsigned char *)bin)[ix] = *ptr++ << 4;
+		((unsigned char *)bin)[ix] |= *ptr++;
+	}
+	LIBFT_FREE(buf);
 }

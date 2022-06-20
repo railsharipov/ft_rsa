@@ -7,6 +7,7 @@ void	add_num(const t_num *a, const t_num *b, t_num *res)
 
 	asign = BNUM_SIGN(a);
 	bsign = BNUM_SIGN(b);
+	
 	if (asign == bsign)
 	{
 		add_num_u(a, b, res);

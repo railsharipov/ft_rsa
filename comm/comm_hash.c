@@ -87,8 +87,7 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 	char	*sformat;
 
 	sformat = NULL;
-	SSL_ALLOC(hexhash, (2*__hash->size)+1);
-	ft_binhex(hexhash, __hash->hash, __hash->size);
+	hexhash = ft_binhex(__hash->hash, __hash->size);
 
 	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag))
 	{

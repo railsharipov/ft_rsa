@@ -1,24 +1,32 @@
 #include <bnum.h>
 
+/* Convert bytes representing unsigned integer to bignum */
+
 void	bytes_to_num(t_num *num, const char *buf, int bufsize)
 {
 	unsigned char	*octets;
+	size_t			ndigits;
+	size_t			nbits;
+	int				idx;
 
-	octets = (unsigned char *)buf;
 	init_num(num);
 
-	if ((NULL == octets) || (0 == bufsize))
+	if (NULL == buf || bufsize == 0)
 		return ;
-	if (*octets == '-')
-	{
-		num->sign = BNUM_NEG;
-		octets++;
-		bufsize--;
-	}
-	while (bufsize-- > 0)
+
+	nbits = bufsize * CHAR_BIT;
+	ndigits = NBITS_TO_NWORDS(nbits, BNUM_DIGIT_BIT);
+
+	if (ndigits > num->size)
+		increase_num_size(num, ndigits);
+
+	octets = (unsigned char *)buf;
+
+	idx = 0;
+	while (idx < bufsize)
 	{
 		lsh_num_b_inpl(num, 8);
-		*(num->val) |= *octets++;
+		*(num->val) |= octets[idx++];
 	}
 	skip_zeros(num);
 }

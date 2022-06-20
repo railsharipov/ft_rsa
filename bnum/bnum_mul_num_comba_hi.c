@@ -2,27 +2,21 @@
 
 void	mul_num_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 {
-#ifdef BNUM_HEAP_WINDOW
 	uint64_t	*temp;
-#else
-	uint64_t	temp[BNUM_MAX_DIG];
-#endif
-	t_uint128	value;
-	int 		plen, idx, z;
+	t_uint128	val;
+	int 		ndig, idx, z;
 
-	value = 0;
-	plen = a->len + b->len;
+	val = 0;
+	ndig = a->len + b->len;
 
-	if (plen > BNUM_MAX_DIG)
-		BNUM_ERROR("big number size limit exceeded");
+	if (ndig > res->size)
+		increase_num_size(res, ndig);
 
-#ifdef BNUM_HEAP_WINDOW
-	LIBFT_ALLOC(TEMP, sizeof(uint64_t) * BNUM_MAX_DIG);
-#endif
+	LIBFT_ALLOC(temp, sizeof(uint64_t) * ndig);
 
 	dig = BNUM_MAX(0, dig-2);
 
-	for (int idx = dig; idx < plen; idx++)
+	for (int idx = dig; idx < ndig; idx++)
 	{
 		const uint64_t	*aptr, *bptr;
 		int				n, y, x;
@@ -35,22 +29,20 @@ void	mul_num_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 		bptr = b->val + y;
 
 		for (z = 0; z < n; z++)
-			value += (t_uint128) *aptr++ * *bptr--;
+			val += (t_uint128) *aptr++ * *bptr--;
 
-		temp[idx] = value & BNUM_MAX_VAL;
-		value >>= BNUM_DIGIT_BIT;
+		temp[idx] = val & BNUM_MAX_VAL;
+		val >>= BNUM_DIGIT_BIT;
 	}
 
-	for (int i = dig; i < plen; i++)
+	for (int i = dig; i < ndig; i++)
 		res->val[i] = temp[i];
-	for (int i = plen; i < BNUM_MAX_DIG; i++)
+	for (int i = ndig; i < res->size; i++)
 		res->val[i] = 0;
 
-	res->len = plen;
+	res->len = ndig;
 	res->sign = a->sign * b->sign;
 	skip_zeros(res);
 
-#ifdef BNUM_HEAP_WINDOW
 	LIBFT_FREE(temp);
-#endif
 }

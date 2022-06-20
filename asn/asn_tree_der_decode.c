@@ -81,7 +81,7 @@ static	int __decode_recur(
 	if (ft_node_is_parent(node))
 	{
 		child_derenc = item->content;
-		child_derenc_size = TO_NUM_BYTES(item->bitsize);
+		child_derenc_size = NBITS_TO_NBYTES(item->bitsize);
 
 		ret = __decode_recur(
 			node->nodes, child_derenc, child_derenc_size, func_htable);

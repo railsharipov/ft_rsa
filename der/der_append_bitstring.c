@@ -3,41 +3,27 @@
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
-int der_append_bitstring(t_der *der, void *content, size_t nbits)
+int der_append_bitstring(t_der *der, void *content, size_t cont_nbits)
 {
-	unsigned char	*octets;
-	int				id_nbytes, len_nbytes, enc_nbytes, init_nbytes, cont_nbytes;
-	char			*precontent;
-
-	octets = (unsigned char *)(content);
+	const int		num_octets_for_num_unused_bits = 1;
+	unsigned char	num_unused_bits;
+	int				cont_nbytes;
 
 	if (NULL == der)
 		return (DER_ERROR(INVALID_INPUT));
 
-	id_nbytes = 1; // since simple tag expected
-	init_nbytes = 1; // initial byte used to store number of trailing zero bits
-	cont_nbytes = TO_NUM_BYTES(nbits);
+	// number of unused bits in the last content octet
+	num_unused_bits = 8 - cont_nbits % 8;
+	cont_nbytes = NBITS_TO_NBYTES(cont_nbits);
 
-	// This implementation only supports bitstrings with number of bits
-	// being multiple of 8. Therefore, trailing bits is always 0
+	der_append_id_tag(
+		der,
+		ASN_ENCODE_PRIMITIVE | ASN_TAG_UNIVERSAL,
+		ASN_TAG_BIT_STRING);
 
-	SSL_ALLOC(precontent, (1+sizeof(cont_nbytes))+id_nbytes);
-
-	*precontent = ASN_ENCODE_PRIMITIVE | ASN_TAG_UNIVERSAL | ASN_TAG_SIMPLE;
-	*precontent |= ASN_TAG_BIT_STRING;
-
-	len_nbytes = der_append_len(
-		precontent + id_nbytes, cont_nbytes + init_nbytes);
-	enc_nbytes = id_nbytes + len_nbytes + init_nbytes + cont_nbytes;
-
-	SSL_REALLOC(der->content, der->size, der->size + enc_nbytes);
-	ft_memcpy(der->content + der->size, precontent, id_nbytes + len_nbytes);
-	der->size += id_nbytes + len_nbytes + init_nbytes;
-
-	ft_memcpy(der->content + der->size, content, cont_nbytes);
-	der->size += cont_nbytes;
-
-	SSL_FREE(precontent);
+	der_append_len_new(der, cont_nbytes + num_octets_for_num_unused_bits);
+	der_append_content(der, &num_unused_bits, num_octets_for_num_unused_bits);
+	der_append_content(der, content, cont_nbytes);
 
 	return (SSL_OK);
 }

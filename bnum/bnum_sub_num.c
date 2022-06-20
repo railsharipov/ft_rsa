@@ -5,8 +5,9 @@ void	sub_num(const t_num *a, const t_num *b, t_num *res)
 	int	asign;
 	int bsign;
 
-	asign = BNUM_SIGN(a);
-	bsign = BNUM_SIGN(b);
+	asign = a->sign;
+	bsign = b->sign;
+
 	if (asign != bsign)
 	{
 		add_num_u(a, b, res);
@@ -22,7 +23,7 @@ void	sub_num(const t_num *a, const t_num *b, t_num *res)
 		else
 		{
 			sub_num_u(b, a, res);
-			res->sign = (BNUM_POS == asign) ? (BNUM_NEG):(BNUM_POS);
+			res->sign = (BNUM_POS == asign) ? (BNUM_NEG) : (BNUM_POS);
 		}
 	}
 }

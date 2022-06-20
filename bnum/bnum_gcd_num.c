@@ -6,7 +6,7 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 	int		k, xk, yk;
 
 	if ((a->sign == BNUM_NEG) || (b->sign == BNUM_NEG))
-		BNUM_ERROR("negative number is not supported");
+		BNUM_ERROR_EXIT("negative number is not supported");
 
 	if (BNUM_ZERO(a))
 	{
@@ -19,6 +19,8 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 		return ;
 	}
 
+	init_num(&x);
+	init_num(&y);
 	copy_num(a, &x, 0, a->len);
 	copy_num(b, &y, 0, b->len);
 
@@ -45,4 +47,6 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 
 	lsh_num_b_inpl(&x, k);
 	copy_num(&x, res, 0, x.len);
+	clear_num(&x);
+	clear_num(&y);
 }

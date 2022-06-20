@@ -4,7 +4,7 @@
 static void	___in_bar(char *s, unsigned char c)
 {
 	struct winsize	w;
-	int 						len;
+	int 			len;
 
 	len = ft_strlen(s);
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
@@ -25,7 +25,7 @@ static void	___out_num(const t_num *num)
 {
 	char		*buf;
 	ssize_t		bufsize;
-	const char	dstr[] = "0123456789ABCDEF";
+	const char	dstr[] = "0123456789abcdef";
 	t_num		copy;
 	char		*bptr;
 
@@ -36,6 +36,7 @@ static void	___out_num(const t_num *num)
 	LIBFT_ALLOC(buf, bufsize + 1);
 	ft_bzero(buf, bufsize + 1);
 
+	init_num(&copy);
 	bptr = buf + bufsize - 1;
 	copy_num(num, &copy, 0, num->len);
 
@@ -51,6 +52,7 @@ static void	___out_num(const t_num *num)
 		ft_printf("[ NO SIGN ] ");
 
 	ft_printf("%s\n", bptr);
+	clear_num(&copy);
 	LIBFT_FREE(buf);
 }
 

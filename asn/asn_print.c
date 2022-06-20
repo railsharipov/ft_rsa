@@ -14,28 +14,20 @@ static void	__print_space(int cnt)
 
 static void	__print_int_content(t_iasn *item, int space)
 {
-	char	*num_octets;
-	int		bitsize;
-	int		numsize;
-	int		idx;
+	char	*octets;
+	size_t	osize;
+	size_t	idx;
 
-	bitsize = lmbit_num(item->content);
-	numsize = TO_NUM_BYTES(bitsize);
-
-	if (numsize == 0)
-	{
-		numsize = 1;
-	}
-	num_octets = stringify_num(item->content);
+	num_to_bytes(item->content, &octets, &osize);
 
 	idx = 0;
-	while (idx < numsize)
+	while (idx < osize)
 	{
 		__print_space(space);
-		util_puthex(num_octets+idx, MIN(15, numsize-idx), 0, ':');
+		util_puthex(octets+idx, MIN(15, osize-idx), 0, ':');
 		idx += 15;
 	}
-	SSL_FREE(num_octets);
+	SSL_FREE(octets);
 }
 
 static void	__print_content(t_iasn *item, int space)
@@ -43,7 +35,7 @@ static void	__print_content(t_iasn *item, int space)
 	int		idx;
 	size_t	size;
 
-	size = TO_NUM_BYTES(item->bitsize);
+	size = NBITS_TO_NBYTES(item->bitsize);
 	idx = 0;
 	while (idx < size)
 	{

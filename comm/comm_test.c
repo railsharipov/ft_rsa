@@ -4,6 +4,7 @@
 typedef int	(*FUNC_TEST)(void);
 
 static const FUNC_TEST	__TESTS[] = {
+	test_bnum,
 	test_base64,
 	test_der,
 };

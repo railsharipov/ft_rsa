@@ -39,13 +39,13 @@ static int	__eme_pkcs1_v1_5_ps(
 }
 
 // Concatenate PS ostring, message and three intermediate octets
-static void	__eme_pkcs1_v1_5_concat(
+static int	__eme_pkcs1_v1_5_concat(
 	unsigned char **octets, size_t *osize, const char *mes, size_t messize)
 {
 	const unsigned char	EME_OCTET_0X00 = 0x00;
 	const unsigned char	EME_OCTET_0X02 = 0x02;
-	unsigned char			*enc;
-	size_t			encsize;
+	unsigned char		*enc;
+	size_t				encsize;
 
 	encsize = *osize + messize + 3;
 	SSL_ALLOC(enc, encsize);
@@ -59,15 +59,16 @@ static void	__eme_pkcs1_v1_5_concat(
 	SSL_FREE(*octets);
 	*octets = enc;
 	*osize = encsize;
+
+	return (SSL_OK);
 }
 
 // RSA encryption primitive
 static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 {
 	if (compare_num_u(mes_rep, __items->modulus) >= 0)
-	{
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	m_powmod_num(mes_rep, __items->pubexp, __items->modulus, ciph_rep);
 
 	return (SSL_OK);
@@ -78,38 +79,42 @@ static int  __encrypt(
 	const char *mes, size_t messize, char **ciph, size_t *ciphsize)
 {
 	unsigned char	*octets;
-	size_t	osize;
-	t_num	mes_rep, ciph_rep;
-	int		modsize;
-	int		ret;
+	size_t			osize;
+	t_num			mes_rep, ciph_rep;
+	int				modsize;
+	int				res;
 
-	modsize = TO_NUM_BYTES(__items->keysize);
+	modsize = NBITS_TO_NBYTES(__items->keysize);
+
+	init_num_multi(&mes_rep, &ciph_rep, NULL);
+
+	octets = NULL;
+	res = SSL_OK;
 
 	if (messize > modsize-11)
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != __eme_pkcs1_v1_5_ps(&octets, &osize, modsize, messize))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	__eme_pkcs1_v1_5_concat(&octets, &osize, mes, messize);
+		res = SSL_FAIL;
 
-	ret = rsa_os2i(&mes_rep, octets, osize);
+	else if (SSL_OK != __eme_pkcs1_v1_5_ps(&octets, &osize, modsize, messize))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != __eme_pkcs1_v1_5_concat(&octets, &osize, mes, messize))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != rsa_os2i(&mes_rep, octets, osize))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != __encrypt_prim(&mes_rep, &ciph_rep))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != rsa_i2os(&ciph_rep, (unsigned char **)ciph, modsize))
+		res = SSL_FAIL;
+
+	clear_num_multi(&mes_rep, &ciph_rep, NULL);
 	SSL_FREE(octets);
 
-	if (SSL_OK != ret)
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != __encrypt_prim(&mes_rep, &ciph_rep))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != rsa_i2os(&ciph_rep, (unsigned char **)ciph, modsize))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
+	if (SSL_OK != res)
+		return RSA_ERROR(UNSPECIFIED_ERROR);
+
 	*ciphsize = modsize;
 
 	return (SSL_OK);

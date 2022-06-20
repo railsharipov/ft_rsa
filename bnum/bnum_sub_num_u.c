@@ -13,6 +13,7 @@ void	sub_num_u(const t_num *a, const t_num *b, t_num *res)
 		aptr = a->val;
 		bptr = b->val;
 		rptr = res->val;
+
 		borrow = 0;
 		for (int i = 0; i < slen; i++)
 		{
@@ -22,10 +23,9 @@ void	sub_num_u(const t_num *a, const t_num *b, t_num *res)
 		}
 	}
 
-	for (i = slen; i < BNUM_MAX_DIG; i++)
-  {
-    res->val[i] = 0;
-  }
+	for (i = slen; i < res->size; i++)
+		res->val[i] = 0;
+
 	res->len = slen;
 	skip_zeros(res);
 }

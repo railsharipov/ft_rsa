@@ -132,7 +132,7 @@ int	der_read_oid(t_iasn *item, char **derenc, size_t *dersize)
 		return (DER_ERROR(UNKNOWN_ASN_OBJECT_ID));
 	}
 	item->content = obj_name;
-	item->bitsize = TO_NUM_BITS(ft_strlen(obj_name));
+	item->bitsize = NBYTES_TO_NBITS(ft_strlen(obj_name));
 
 	*derenc = (char *)(octets) + olen;
 	*dersize = osize - olen;

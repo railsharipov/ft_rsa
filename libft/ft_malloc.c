@@ -37,9 +37,7 @@ int	__push(const char *memkey, void *memptr, size_t memsize)
 
 	if (NULL == (node = malloc(sizeof(t_node))))
 	{
-		global_ft_malloc_error = LIBFT_FATAL;
-		perror(COLOR_RED "fatal error" COLOR_RESET);
-		return (LIBFT_ERR);
+		return (LIBFT_MEM_FATAL);
 	}
 	node->key = (char *)memkey;
 	node->content = memptr;
@@ -67,34 +65,24 @@ void	*ft_malloc(const char *memkey, size_t memsize)
 	t_node	*lookup_node;
 
 	global_ft_malloc_error = LIBFT_OK;
-	lookup_node = NULL;
-#ifdef LIBFT_MEM_VERBAL
-	ft_printf("%@" TXT_CYAN("%s ") ":: ", memkey);
-#endif
-	memptr = calloc(memsize, 1);
+
+	memptr = malloc(memsize);
+	ft_bzero(memptr, memsize);
+
 	if (ENOMEM == errno)
 	{
-		global_ft_malloc_error = LIBFT_FATAL;
-		perror(COLOR_RED_BOLD "fatal error" COLOR_RESET " :");
+		global_ft_malloc_error = LIBFT_MEM_FATAL;
 		return (NULL);
 	}
-#ifdef LIBFT_MEM_DEBUG
-	lookup_node = __lookup(memptr);
-#endif
+	if (NULL != (lookup_node = __lookup(memptr)))
+	{
+		global_ft_malloc_error = LIBFT_MEM_LEAK;
+		return (NULL);
+	}
 	if (LIBFT_OK != __push(memkey, memptr, memsize))
 	{
+		global_ft_malloc_error = LIBFT_MEM_FATAL;
 		return (NULL);
-	}
-#ifdef LIBFT_MEM_VERBAL
-	ft_printf("%@" TXT_YELL("%zu ") "bytes at " TXT_GREEN("%p\n"),
-		memsize, memptr);
-#endif
-	if (NULL != lookup_node)
-	{
-		global_ft_malloc_error = LIBFT_MEM;
-		ft_printf("%@" TXT_RED("leak ") "in " TXT_CYAN("[%s] ")
-		"at " TXT_GREEN("%p\n"),
-		lookup_node->key, lookup_node->content);
 	}
 	return (memptr);
 }
@@ -105,6 +93,7 @@ void	ft_free(const char *memkey, void *memptr)
 	t_node	*prevnode;
 
 	global_ft_malloc_error = LIBFT_OK;
+
 	node = __memlist;
 	prevnode = NULL;
 	while (node)
@@ -116,14 +105,7 @@ void	ft_free(const char *memkey, void *memptr)
 	}
 	if (NULL == node)
 	{
-#ifdef LIBFT_MEM_DEBUG
-		global_ft_malloc_error = LIBFT_MEM;
-		ft_printf("%@" TXT_RED("invalid free ") "of "
-			TXT_CYAN("%s ") "at " TXT_GREEN("%p") "\n",
-			memkey, memptr);
-#else
-		(void)memkey;
-#endif
+		global_ft_malloc_error = LIBFT_MEM_DOUBLE_FREE;
 		return ;
 	}
 	if (NULL == prevnode)
@@ -134,10 +116,6 @@ void	ft_free(const char *memkey, void *memptr)
 	{
 		prevnode->next = node->next;
 	}
-#ifdef LIBFT_MEM_VERBAL
-	ft_printf("%@free " TXT_CYAN("%s ") "at " TXT_GREEN("%p\n"),
-		node->key, node->content);
-#endif
 	free(node->content);
 	free(node);
 }

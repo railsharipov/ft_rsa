@@ -17,18 +17,13 @@ int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 {
 	char	*nstr;
-	int		nsize;
-	int		bitsize;
-
-	bitsize = lmbit_num(num);
-	nsize = TO_NUM_BYTES(bitsize);
+	size_t	nsize;
 
 	if (nsize > CHAR_BIT * osize)
-	{
 		return (RSA_ERROR(INVALID_INTEGER_SIZE));
-	}
+
 	SSL_ALLOC(*octets, osize);
-	nstr = stringify_num(num);
+	num_to_bytes(num, &nstr, &nsize);
 	ft_memcpy(*octets + osize-nsize, nstr, nsize);
 	SSL_FREE(nstr);
 

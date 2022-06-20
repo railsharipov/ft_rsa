@@ -13,9 +13,9 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 {
 	unsigned char	*optr;
 	unsigned char	*mes;
-	size_t	messize;
-	int		check;
-	int		ix;
+	size_t			messize;
+	int				check;
+	int				ix;
 
 	optr = *octets;
 	ix = 0;
@@ -57,44 +57,26 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 	return (SSL_OK);
 }
 
-// RSA decryption primitive (... refer to RFC 3447)
-//
-// If the first form (n, d) of K is used, let m = c^d mod n.
-//
-// If the second form (p, q, dP, dQ, qInv) of K is used,
-// proceed as follows:
-//
-// 1.	Let m_1 = c^dP mod p and m_2 = c^dQ mod q.
-//
-// 2.	Let h = (m_1 - m_2) * qInv mod p.
-//
-// 3.	Let m = m_2 + q * h.
-//
+/* RSA decryption primitive (... refer to RFC 3447)
+*
+* If the first form (n, d) of K is used, let m = c^d mod n.
+*
+* If the second form (p, q, dP, dQ, qInv) of K is used,
+* proceed as follows:
+*
+* 1. Let m_1 = c^dP mod p and m_2 = c^dQ mod q.
+*
+* 2. Let h = (m_1 - m_2) * qInv mod p.
+*
+* 3. Let m = m_2 + q * h.
+*/
+
 static int	__decrypt_prim(t_num *ciph_rep, t_num *mes_rep)
 {
-	t_num	m1;
-	t_num	m2;
-	t_num	h;
-
 	if (compare_num_u(ciph_rep, __items->modulus) >= 0)
-	{
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	// first form
-	m_powmod_num(ciph_rep, __items->privexp, __items->modulus, mes_rep);
 
-	// // second form
-	// init_num(&m1);
-	// init_num(&m2);
-	// init_num(&h);
-	//
-	// m_powmod_num(ciph_rep, __items->exponent1, __items->prime1, &m1);
-	// m_powmod_num(ciph_rep, __items->exponent2, __items->prime2, &m2);
-	// sub_num(&m1, &m2, &h);
-	// mul_num(&h, __items->coeff, &h);
-	// divmod_num(&h, __items->prime1, NULL, &h);
-	// mul_num(__items->prime2, &h, mes_rep);
-	// add_num(mes_rep, &m2, mes_rep);
+	m_powmod_num(ciph_rep, __items->privexp, __items->modulus, mes_rep);
 
 	return (SSL_OK);
 }
@@ -104,38 +86,43 @@ static int	__decrypt(
 	const char *ciph, size_t ciphsize, char **mes, size_t *messize)
 {
 	unsigned char	*octets;
-	int		osize;
-	int		modsize;
-	t_num	mes_rep;
-	t_num	ciph_rep;
+	int				osize;
+	t_num			mes_rep, ciph_rep;
+	int				res;
 
-	modsize = TO_NUM_BYTES(__items->keysize);
+	osize = NBITS_TO_NBYTES(__items->keysize);
 
-	if ((ciphsize > modsize) || (ciphsize < 11))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != rsa_os2i(&ciph_rep, (unsigned char *)ciph, ciphsize))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != __decrypt_prim(&ciph_rep, &mes_rep))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != rsa_i2os(&mes_rep, &octets, modsize))
-	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	}
-	osize = modsize;
+	init_num_multi(&mes_rep, &ciph_rep, NULL);
 
-	if (SSL_OK != __eme_pkcs1_v1_5_split(&octets, &osize))
+	octets = NULL;
+	res = SSL_OK;
+
+	if ((ciphsize > osize) || (ciphsize < 11))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != rsa_os2i(&ciph_rep, (unsigned char *)ciph, ciphsize))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != __decrypt_prim(&ciph_rep, &mes_rep))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != rsa_i2os(&mes_rep, &octets, osize))
+		res = SSL_FAIL;
+
+	else if (SSL_OK != __eme_pkcs1_v1_5_split(&octets, &osize))
+		res = SSL_FAIL;
+
+	if (SSL_OK == res)
 	{
-		SSL_FREE(octets);
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		*mes = (char *)octets;
+		*messize = osize;
 	}
-	*mes = (char *)octets;
-	*messize = osize;
+
+	clear_num_multi(&mes_rep, &ciph_rep, NULL);
+	SSL_FREE(octets);
+
+	if (SSL_OK != res)
+		return (RSA_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }

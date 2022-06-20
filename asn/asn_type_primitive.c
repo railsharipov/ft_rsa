@@ -20,7 +20,7 @@ t_iasn	*asn_primitive_int(const char *key, const char *name)
 	SSL_ALLOC(item->content, sizeof(t_num));
 	init_num(item->content);
 	size = sizeof(t_num);
-	item->bitsize = TO_NUM_BITS(size);
+	item->bitsize = NBYTES_TO_NBITS(size);
 	item->type = ft_strdup(key);
 	return (item);
 }
@@ -61,7 +61,7 @@ t_iasn	*asn_primitive_oid(const char *key, const char *name)
 	item->type = ft_strdup(key);
 	item->content = ft_strdup(name);
 	size = ft_strlen(name);
-	item->bitsize = TO_NUM_BITS(size);
+	item->bitsize = NBYTES_TO_NBITS(size);
 
 	return (item);
 }

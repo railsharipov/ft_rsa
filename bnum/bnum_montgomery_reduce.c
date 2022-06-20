@@ -1,63 +1,50 @@
 #include <bnum.h>
 
-void	montgomery_reduce(t_num	*num, const t_num *mod, uint64_t rho)
+void	montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 {
-	t_uint128	*tw;
-	int			idx;
+	int idx, digs;
 
-	if ((2*mod->len+1 > BNUM_MAX_DIG) || (mod->len > BNUM_MAX_DIG) || (num->len >= BNUM_MAX_DIG))
-		BNUM_ERROR("big number size limit exceeded");
+	digs = (mod->len * 2) + 1;
 
-	LIBFT_ALLOC(tw, BNUM_MAX_DIG * sizeof(t_uint128));
+	if ((digs < BNUM_MAX_WDIG)
+		&& (num->len <= BNUM_MAX_WDIG)
+		&& (mod->len < BNUM_MAX_DIG_COMBA))
+	{
+		montgomery_fast_reduce(num, mod, rho);
+		return ;
+	}
 
-	for (idx = 0; idx < num->len; idx++)
-		tw[idx] = num->val[idx];
+	increase_num_size(num, digs);
+	num->len = digs;
 
 	for (idx = 0; idx < mod->len; idx++)
 	{
-		uint64_t	mu;
+		t_uint128	t, u, mu;
+		int			idy;
 
-		mu = ((tw[idx] & BNUM_MAX_VAL) * rho) & BNUM_MAX_VAL;
+		mu = (num->val[idx] * rho) & BNUM_MAX_VAL;
+		u = 0;
 
+		for (idy = 0; idy < mod->len; idy++)
 		{
-			const uint64_t	*tm;
-			t_uint128		*_tw;
-			int				idy;
+			t = mu * (t_uint128)mod->val[idy]
+				+ u + (t_uint128)num->val[idx + idy];
 
-			tm = mod->val;
-			_tw = tw + idx;
-
-			for (idy = 0; idy < mod->len; idy++)
-				*_tw++ += (t_uint128) mu * *tm++;
+			u = (t >> BNUM_DIGIT_BIT) & BNUM_MAX_VAL;
+			num->val[idx + idy] = (uint64_t)(t & BNUM_MAX_VAL);
 		}
 
-		tw[idx+1] += tw[idx] >> BNUM_DIGIT_BIT;
+		while (u != 0)
+		{
+			num->val[idx + idy] += (uint64_t)u;
+			u = (num->val[idx + idy] >> BNUM_DIGIT_BIT) & BNUM_MAX_VAL;
+			idy++;
+		}
 	}
 
-	{
-		t_uint128	*_tw, *_tw1;
-		uint64_t	*tn;
-
-		_tw = tw + idx;
-		_tw1 = tw + ++idx;
-
-		for (; idx <= (2 * mod->len)+1; idx++)
-			*_tw1++ += *_tw++ >> BNUM_DIGIT_BIT;
-
-		tn = num->val;
-		_tw = tw + mod->len;
-
-		for (idx = 0; idx < mod->len+1; idx++)
-			*tn++ = *_tw++ & BNUM_MAX_VAL;
-
-		for (; idx < num->len; idx++)
-			*tn++ = 0;
-	}
-	num->len = mod->len+1;
 	skip_zeros(num);
+	rsh_num_d_inpl(num, mod->len);
 
 	if (compare_num_u(num, mod) >= 0)
 		sub_num_u(num, mod, num);
-
-	LIBFT_FREE(tw);
 }

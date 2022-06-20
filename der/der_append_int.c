@@ -4,7 +4,7 @@
 #include <ssl_der.h>
 #include <bnum.h>
 
-int der_append_int(t_der *der, void *content, size_t nbits)
+int der_append_int(t_der *der, void *content, size_t cont_nbits)
 {
 	int		id_nbytes, len_nbytes, enc_nbytes, cont_nbytes;
 	int		sign_nbytes;
@@ -17,9 +17,7 @@ int der_append_int(t_der *der, void *content, size_t nbits)
 	id_nbytes = 1; // since simple tag expected
 
 	num = (t_num *)(content);
-	content = stringify_num(num);
-	nbits = lmbit_num(num);
-	cont_nbytes = TO_NUM_BYTES(nbits);
+	num_to_bytes(num, (char **)&content, (size_t *)&cont_nbytes);
 
 	// Special case for zero
 	if (cont_nbytes == 0)

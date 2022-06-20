@@ -3,32 +3,33 @@
 void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 {
 	t_num	q, x, y, t1, t2;
-	int		norm, n, t, i;
+	int		shift, n, t, i;
 	int		asign, bsign;
 
-	asign = BNUM_SIGN(a);
-	bsign = BNUM_SIGN(b);
+	asign = a->sign;
+	bsign = b->sign;
 
 	if (BNUM_ZERO(b))
-		BNUM_ERROR("division by zero");
-	else if (compare_num_u(a, b) < 0)
+		BNUM_ERROR_EXIT("division by zero");
+
+	if (compare_num_u(a, b) < 0)
 	{
 		if (NULL != d)
 			copy_num(a, d, 0, a->len);
 		if (NULL != c)
-			set_num(c, 0);
+			set_num_d(c, 0);
 		return ;
 	}
 
-	init_num(&q);
-	init_num(&t1);
-	init_num(&t2);
+	init_num_multi(&t1, &t2, &x, &y, NULL);
+	init_num_with_size(&q, a->len);
+
 	abs_num(a, &x);
 	abs_num(b, &y);
 
-	norm = BNUM_DIGIT_BIT - lmbit_num(&y) % BNUM_DIGIT_BIT;
-	lsh_num_b_inpl(&x, norm);
-	lsh_num_b_inpl(&y, norm);
+	shift = BNUM_DIGIT_BIT - lmbit_num(&y) % BNUM_DIGIT_BIT;
+	lsh_num_b_inpl(&x, shift);
+	lsh_num_b_inpl(&y, shift);
 
 	n = x.len-1;
 	t = y.len-1;
@@ -50,12 +51,12 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 			q.val[i-t-1] = BNUM_MAX_VAL;
 		else
 		{
-			t_uint128	value;
+			t_uint128	val;
 
-			value = ((t_uint128) x.val[i]) << BNUM_DIGIT_BIT;
-			value |= (t_uint128) x.val[i-1];
-			value /= (t_uint128) y.val[t];
-			q.val[i-t-1] = value;
+			val = ((t_uint128) x.val[i]) << BNUM_DIGIT_BIT;
+			val |= (t_uint128) x.val[i-1];
+			val /= (t_uint128) y.val[t];
+			q.val[i-t-1] = val;
 		}
 
 		q.val[i-t-1] = (q.val[i-t-1]+1u) & BNUM_MAX_VAL;
@@ -63,7 +64,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		do
 		{
 			q.val[i-t-1] = (q.val[i-t-1]-1u) & BNUM_MAX_VAL;
-			init_num(&t1);
+			reset_num(&t1);
 
 			t1.val[0] = (t-1 < 0) ? (0u) : (y.val[t-1]);
 			t1.val[1] = y.val[t];
@@ -103,7 +104,9 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	{
 		skip_zeros(&x);
 		x.sign = (BNUM_ZERO(&x)) ? (BNUM_POS):(asign);
-		rsh_num_b_inpl(&x, norm);
+		rsh_num_b_inpl(&x, shift);
 		copy_num(&x, d, 0, x.len);
 	}
+
+	clear_num_multi(&q, &t1, &t2, &x, &y, NULL);
 }
