@@ -10,7 +10,7 @@ void	m_powmod_num(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 	if (BNUM_ZERO(e))
 		set_num_d(res, 1);
 	else if (BNUM_ONE(e))
-		copy_num(b, res, 0, b->len);
+		copy_num(b, res);
 	else
 	{
 		int	i, bits, bitbuf, bitcnt;
@@ -24,7 +24,7 @@ void	m_powmod_num(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		montgomery_setup(m, &rho);
 		montgomery_norm(m, res);
 
-		copy_num(res, window, 0, res->len);
+		copy_num(res, window);
 		mul_num(b, res, window + 1);
 		divmod_num(window + 1, m, NULL, window + 1);
 

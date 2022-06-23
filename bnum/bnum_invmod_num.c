@@ -10,7 +10,7 @@ void	invmod_num(const t_num *a, const t_num *b, t_num *res)
 	init_num(&x);
 	init_num(&y);
 
-	copy_num(b, &y, 0, b->len);
+	copy_num(b, &y);
 	divmod_num(a, b, NULL, &x);
 
 	if (BNUM_EVEN(&x) && BNUM_EVEN(&y))
@@ -18,8 +18,8 @@ void	invmod_num(const t_num *a, const t_num *b, t_num *res)
 
 	init_num_multi(&u, &v, &ta, &tb, &tc, &td, NULL);
 
-	copy_num(&x, &u, 0, x.len);
-	copy_num(&y, &v, 0, y.len);
+	copy_num(&x, &u);
+	copy_num(&y, &v);
 	set_num_d(&ta, 1u);
 	set_num_d(&tb, 0u);
 	set_num_d(&tc, 0u);
@@ -75,7 +75,7 @@ void	invmod_num(const t_num *a, const t_num *b, t_num *res)
 	while (compare_num(&tc, b) >= 0)
 		sub_num(&tc, b, &tc);
 
-	copy_num(&tc, res, 0, tc.len);
+	copy_num(&tc, res);
 	res->sign = BNUM_POS;
 
 	clear_num_multi(&x, &y, &u, &v, &ta, &tb, &tc, &td, NULL);

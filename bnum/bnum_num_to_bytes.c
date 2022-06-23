@@ -13,7 +13,7 @@ void	num_to_bytes(const t_num *num, char **bin, size_t *binsize)
 
 	bptr = *bin + *binsize-1;
 	init_num(&copy);
-	copy_num(num, &copy, 0, num->len);
+	copy_num(num, &copy);
 
 	idx = 0;
 	while (idx++ < *binsize)

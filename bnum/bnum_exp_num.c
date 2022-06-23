@@ -5,7 +5,7 @@ void	exp_num(const t_num *base, uint64_t expo, t_num *res)
 	if (expo == 0)
 		set_num_d(res, 1);
 	else if (expo == 1)
-		copy_num(base, res, 0, base->len);
+		copy_num(base, res);
 	else
 	{
 		int	sign;

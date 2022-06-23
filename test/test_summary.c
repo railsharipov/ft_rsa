@@ -18,8 +18,15 @@ int	test_summary(int *result_arr, size_t arr_size, int verbose)
 
 	if (verbose)
 	{
+		if (num_passed == arr_size)
+			ft_printf(
+				"%@\nSUMMARY: " TXT_GREEN("ALL PASS\n"));
+		else
+			ft_printf(
+				"%@\nSUMMARY: " TXT_RED("FAIL\n"));
+
 		ft_printf(
-			"%@tested modules: %d, pass: %d, fail: %d\n",
+			"%@tested: %d, pass: %d, fail: %d\n\n",
 			arr_size, num_passed, arr_size - num_passed);
 	}
 

@@ -30,7 +30,7 @@
 
 struct s_error_ctx
 {
-	char		**table;
+	char	**table;
 	size_t	size;
 };
 

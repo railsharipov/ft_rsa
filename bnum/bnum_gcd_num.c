@@ -10,19 +10,19 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 
 	if (BNUM_ZERO(a))
 	{
-		copy_num(a, res, 0, a->len);
+		copy_num(a, res);
 		return ;
 	}
 	if (BNUM_ZERO(b))
 	{
-		copy_num(b, res, 0, b->len);
+		copy_num(b, res);
 		return ;
 	}
 
 	init_num(&x);
 	init_num(&y);
-	copy_num(a, &x, 0, a->len);
-	copy_num(b, &y, 0, b->len);
+	copy_num(a, &x);
+	copy_num(b, &y);
 
 	xk = rmbit_num(&x) - 1;
 	yk = rmbit_num(&y) - 1;
@@ -46,7 +46,7 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 	}
 
 	lsh_num_b_inpl(&x, k);
-	copy_num(&x, res, 0, x.len);
+	copy_num(&x, res);
 	clear_num(&x);
 	clear_num(&y);
 }

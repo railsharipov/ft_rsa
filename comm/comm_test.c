@@ -25,6 +25,8 @@ int	comm_test(const char **opt, const char *name)
 
 	while (idx < __NUM_TESTS)
 	{
+		TEST_INFO(idx);
+
 		f_test = __TESTS[idx];
 		ret[idx] = f_test();
 

@@ -1,5 +1,7 @@
 #include <bnum.h>
 
+static void	__copy_digs(const t_num *a, t_num *res, int offset, int len);
+
 void	sqr_num_karatsuba(const t_num *a, t_num *res)
 {
 	t_num	a0, a1, t1, t2, a0a0, a1a1;
@@ -12,8 +14,8 @@ void	sqr_num_karatsuba(const t_num *a, t_num *res)
 
 	init_num_multi(&a0, &a1, &t1, &t2, &a0a0, &a1a1, NULL);
 
-	copy_num(a, &a0, 0, hlen);
-	copy_num(a, &a1, hlen, a->len - hlen);
+	__copy_digs(a, &a0, 0, hlen);
+	__copy_digs(a, &a1, hlen, a->len - hlen);
 
 	sqr_num(&a0, &a0a0);
 	sqr_num(&a1, &a1a1);
@@ -34,4 +36,18 @@ void	sqr_num_karatsuba(const t_num *a, t_num *res)
 	res->len = 2 * a->len;
 	res->sign = BNUM_POS;
 	skip_zeros(res);
+}
+
+static void	__copy_digs(const t_num *a, t_num *res, int offset, int len)
+{
+	int i;
+
+	if (len > res->size)
+		increase_num_size(res, offset + len);
+
+	for (i = 0; i < len; i++)
+		res->val[i] = a->val[i + offset];
+
+	res->len = len;
+	res->sign = a->sign;
 }

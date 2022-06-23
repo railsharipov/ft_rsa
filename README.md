@@ -30,15 +30,11 @@ This project also includes:
 * Ubuntu 16.04 or higher
 
 ## Limitations
-```bnum``` library supports ``big ints`` up to ```8192 bits```. This is because ```big int```'s
-values are stored in stack memory. Since ```bnum``` library is used mainly for RSA operations
-and RSA keysize is usually less than ```8192 bits```, this limitation should not be important in practice.
-
 During DES crypt operations on a file, whole file is read into memory,
 which implies system memory limitations for large files.
 
 Although standard recommends that number of trials in Miller-Rabin prime check should change depending
-on number size, this implemetation uses fixed number of trials, specifically 20 (defined by ```RM_TRIALS```). 
+on number size, this implemetation uses fixed number of trials, specifically 20 (defined by ```RM_TRIALS```).
 This results in lower performance when prime checks are performed on 4096 bit or larger numbers.
 
 ## Compile
@@ -78,13 +74,13 @@ Base64 commands: base64
 RSA commands:
 
     genrsa (generate RSA private keys):
-    
+
     -rand <files>       set rand source as list of <files>, separated by colon
     -o <keyfile>        output generated key to a <keyfile>
     <keysize>           set RSA key size to <keysize> (shall be last argument)
-    
+
     rsa (perform operation on RSA keys):
-    
+
     -in <keyfile>       read input key from <keyfile>
     -out <keyfile>      output key to <keyfile>
     -inform <PEM|DER>   set format of the input key, default is PEM-encoded
@@ -98,9 +94,9 @@ RSA commands:
     -text               print input key components
     -noout              do not output key
     -modulus            print input key modulus
-    
+
     rsautl (perform RSA crypt):
-    
+
     -in <file>          read message/cipher form <file>
     -out <file>         write output to a <file>
     -inkey <keyfile>    read RSA key form <keyfile>

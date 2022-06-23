@@ -38,7 +38,7 @@ static void	___out_num(const t_num *num)
 
 	init_num(&copy);
 	bptr = buf + bufsize - 1;
-	copy_num(num, &copy, 0, num->len);
+	copy_num(num, &copy);
 
 	while (!(BNUM_ZERO(&copy)))
 	{

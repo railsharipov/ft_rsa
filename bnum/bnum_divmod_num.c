@@ -15,7 +15,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	if (compare_num_u(a, b) < 0)
 	{
 		if (NULL != d)
-			copy_num(a, d, 0, a->len);
+			copy_num(a, d);
 		if (NULL != c)
 			set_num_d(c, 0);
 		return ;
@@ -85,7 +85,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 
 		if (x.sign == BNUM_NEG)
 		{
-			copy_num(&y, &t1, 0, y.len);
+			copy_num(&y, &t1);
 			lsh_num_d_inpl(&t1, i-t-1);
 			add_num(&x, &t1, &x);
 			q.val[i-t-1] = (q.val[i-t-1]-1) & BNUM_MAX_VAL;
@@ -97,7 +97,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		q.len = a->len+2;
 		q.sign = asign * bsign;
 		skip_zeros(&q);
-		copy_num(&q, c, 0, q.len);
+		copy_num(&q, c);
 	}
 
 	if (d != NULL)
@@ -105,7 +105,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		skip_zeros(&x);
 		x.sign = (BNUM_ZERO(&x)) ? (BNUM_POS):(asign);
 		rsh_num_b_inpl(&x, shift);
-		copy_num(&x, d, 0, x.len);
+		copy_num(&x, d);
 	}
 
 	clear_num_multi(&q, &t1, &t2, &x, &y, NULL);

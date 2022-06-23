@@ -9,7 +9,7 @@ void	powmod_num(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 	if (BNUM_ZERO(e))
 		set_num_d(res, 1);
 	else if (BNUM_ONE(e))
-		copy_num(b, res, 0, b->len);
+		copy_num(b, res);
 	else
 	{
 		int	i, bits, bitbuf, bitcnt;

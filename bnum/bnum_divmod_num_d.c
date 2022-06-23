@@ -13,7 +13,7 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	if (b == 1 || BNUM_ZERO(a))
 	{
 		if (NULL != c)
-			copy_num(a, c, 0, a->len);
+			copy_num(a, c);
 		if (NULL != d)
 			*d = 0;
 		return ;
@@ -27,11 +27,32 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 		if (NULL != c)
 		{
-			copy_num(a, c, 0, a->len);
+			copy_num(a, c);
 			rsh_num_b_inpl(c, idx-1u);
 		}
 		if (NULL != d)
 			*d = a->val[0] & ((1ull << (idx-1u)) - 1u);
+		return ;
+	}
+
+	if (b > BNUM_MAX_VAL)
+	{
+		t_num	x, r;
+
+		init_num(&x);
+		init_num(&r);
+		set_num_d(&x, b);
+
+		divmod_num(a, &x, c, &r);
+
+		if (r.len == 2)
+			*d = (r.val[1] << BNUM_DIGIT_BIT) | (r.val[0] & BNUM_MAX_VAL);
+		else
+			*d = r.val[0] & BNUM_MAX_VAL;
+
+		clear_num(&x);
+		clear_num(&r);
+
 		return ;
 	}
 
@@ -61,7 +82,7 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 		q.len = a->len;
 		q.sign = a->sign;
 		skip_zeros(&q);
-		copy_num(&q, c, 0, q.len);
+		copy_num(&q, c);
 	}
 	if (NULL != d)
 		*d = val & BNUM_MAX_VAL;

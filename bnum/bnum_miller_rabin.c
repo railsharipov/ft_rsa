@@ -9,7 +9,7 @@ int		miller_rabin(const t_num *num, const t_num *rnd)
 	init_num_multi(&np, &n1, &e, NULL);
 
 	sub_num_ud(num, 1, &n1);
-	copy_num(&n1, &e, 0, n1.len);
+	copy_num(&n1, &e);
 	x = rmbit_num(&e);
 	rsh_num_b_inpl(&e, --x);
 	m_powmod_num(rnd, &e, num, &np);
