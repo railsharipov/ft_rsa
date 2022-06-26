@@ -33,6 +33,8 @@ static int	__test_bnum_compare_num_d(void);
 static int	__test_bnum_compare_num_u(void);
 static int	__test_bnum_compare_num(void);
 static int	__test_bnum_copy_num(void);
+static int	__test_bnum_mul_num(void);
+static int	__test_bnum_sqr_num(void);
 static int	__test_bnum_div_num_2d_inpl(void);
 static int	__test_bnum_divmod_num(void);
 static int	__test_bnum_divmod_num_d(void);
@@ -74,6 +76,8 @@ int	test_bnum(void)
 	res |= __test_bnum_compare_num_u();
 	res |= __test_bnum_compare_num();
 	res |= __test_bnum_copy_num();
+	res |= __test_bnum_mul_num();
+	res |= __test_bnum_sqr_num();
 	res |= __test_bnum_div_num_2d_inpl();
 	res |= __test_bnum_divmod_num();
 	res |= __test_bnum_divmod_num_d();
@@ -836,6 +840,112 @@ static int	__test_bnum_copy_num(void)
 
 	clear_num(&num);
 	clear_num(&copy);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_mul_num(void)
+{
+	const char		*num1_hex =	"d9f2c6197c1610f216e06def0f65e4d7b34c737cb667fc"\
+								"745f08e7f0270c4358e73cc2bf501b20bd4c8ca63659be"\
+								"0347edc9c63275cf93c3267b25ce953d0da55647c3bc12"\
+								"7cbba3abcedd08632253a5558c77acbf2989a975bb0b66"\
+								"017f718cba54627855b848fd1ef695b764f6a86538dc67"\
+								"5fdf208ace577ca087e49f433d";
+	const char		*num2_hex =	"f937d6f312350b810bb40d0eaf9c7b2d77f084f455264a"\
+								"b53b7e7ba204f9c4cc52cce6f844cc5bb3877a65efadb9"\
+								"d6bd3f361b1b81de3db461d443926024705f";
+	const char		*ref_hex =	"d42cacd73bb6b220712f8b53aff0919a37bcc5a11b280c"\
+								"23ab413a2c65786bd60184199c9d94a11a7b6f6ab55b59"\
+								"bfdf5d655acdad2c6e2cd5855b0861f825951418e63df4"\
+								"22adf8118bc99922864cf23ebca0dad40249bbc97c81bc"\
+								"91a25604f983b5247ba4d7a3aa853ef3bc3cdb041d12de"\
+								"3a827c1b5bd8d623399a9f5187e83e1208c389fdb34a61"\
+								"cdefc730bff1b95204c750cc73265d876344e562010961"\
+								"71df2dade99e16b7445ccf764e5355ebc503e29fc86d2a"\
+								"634435d9d918a3a3";
+	t_num			num1, num2, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num1, &num2, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num1, num1_hex);
+	hex_to_num(&num2, num2_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	mul_num_comba(&num1, &num2, &test_num);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	mul_num(&num1, &num2, &test_num);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	exp_num(&num1, 10u, &num1);
+	exp_num(&num2, 10u, &num2);
+	mul_num_karatsuba(&num1, &num2, &test_num);
+	mul_num_comba(&num1, &num2, &ref_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	mul_num(&num1, &num2, &test_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	clear_num_multi(&num1, &num2, &test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_sqr_num(void)
+{
+	const char		*num_hex =	"d9f2c6197c1610f216e06def0f65e4d7b34c737cb667fc"\
+								"745f08e7f0270c4358e73cc2bf501b20bd4c8ca63659be"\
+								"0347edc9c63275cf93c3267b25ce953d0da55647c3bc12"\
+								"7cbba3abcedd08632253a5558c77acbf2989a975bb0b66"\
+								"017f718cba54627855b848fd1ef695b764f6a86538dc67"\
+								"5fdf208ace577ca087e49f433d";
+	const char		*ref_hex =	"b98d7a1255d770ee0f26e7ac32db9ffac1c5608ed8d306"\
+								"58576b194109727d5174388c62912cd93c6c92bb592526"\
+								"ff8f69d3acafc205be87c588fdf5fa6e4203c875d9f5fe"\
+								"56930cd03f69ab9139b99095c563b9a65cfdf108f8e500"\
+								"938517c338a7caa84f339d500eafdeae9b67a84f906fb5"\
+								"15c5ea5b73c8f4026946711b2ecda750112ba99917322d"\
+								"93c2faf691c7b8f7a261b7f939c60a846365e0ad623fe7"\
+								"7c8d24da2428a392a78966e35176923d5dd71c97e9e8ac"\
+								"26d50881e50f720038dd9bca487e4ab761b45952ac6349"\
+								"ef860072f80211c2298de6d500220cab11d894b06faf03"\
+								"7f837543a30f5fae579440f86b32ffc1da1299493d2f3f"\
+								"6efc89";
+	t_num			num, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, num_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	sqr_num_comba(&num, &test_num);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	sqr_num(&num, &test_num);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	exp_num(&num, 10u, &num);
+	sqr_num_karatsuba(&num, &test_num);
+	sqr_num_comba(&num, &ref_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	sqr_num(&num, &test_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	clear_num_multi(&num, &test_num, &ref_num, NULL);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());
