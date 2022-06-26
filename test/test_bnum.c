@@ -5,6 +5,7 @@
 #include <printnl.h>
 
 static t_num	__zero_num;
+static t_num	__one_num;
 
 static int	__test_bnum_setup(void);
 static void	__test_bnum_cleanup(void);
@@ -35,6 +36,14 @@ static int	__test_bnum_copy_num(void);
 static int	__test_bnum_div_num_2d_inpl(void);
 static int	__test_bnum_divmod_num(void);
 static int	__test_bnum_divmod_num_d(void);
+static int	__test_bnum_exp_num(void);
+static int	__test_bnum_exp2_num(void);
+static int	__test_bnum_gcd_num(void);
+static int	__test_bnum_invmod_num(void);
+static int	__test_bnum_lcm_num(void);
+static int	__test_bnum_lmbit_num(void);
+static int	__test_bnum_powmod_num(void);
+static int	__test_bnum_m_powmod_num(void);
 
 int	test_bnum(void)
 {
@@ -68,6 +77,14 @@ int	test_bnum(void)
 	res |= __test_bnum_div_num_2d_inpl();
 	res |= __test_bnum_divmod_num();
 	res |= __test_bnum_divmod_num_d();
+	res |= __test_bnum_exp_num();
+	res |= __test_bnum_exp2_num();
+	res |= __test_bnum_gcd_num();
+	res |= __test_bnum_invmod_num();
+	res |= __test_bnum_lcm_num();
+	res |= __test_bnum_lmbit_num();
+	res |= __test_bnum_powmod_num();
+	res |= __test_bnum_m_powmod_num();
 
 	__test_bnum_cleanup();
 
@@ -80,19 +97,11 @@ static int	__test_bnum_setup(void)
 	t_num		n2;
 	uint64_t	digit;
 
-	// init_num(&n1);
-	// init_num(&n2);
-	// set_randnum(&n1, 137);
-	// set_randnum(&n2, 142);
-	// rand_useed(&digit, sizeof(digit));
-	// print_num(NULL, &n1);
-	// print_num(NULL, &n2);
-	// printf("%#llx\n", digit);
-	// clear_num(&n1);
-	// clear_num(&n2);
-
 	init_num(&__zero_num);
 	set_num_d(&__zero_num, 0);
+
+	init_num(&__one_num);
+	set_num_d(&__one_num, 1);
 
 	return (SSL_OK);
 }
@@ -100,6 +109,7 @@ static int	__test_bnum_setup(void)
 static void	__test_bnum_cleanup(void)
 {
 	clear_num(&__zero_num);
+	clear_num(&__one_num);
 }
 
 static int	__test_bnum_num_to_hex(void)
@@ -934,6 +944,279 @@ static int	__test_bnum_divmod_num_d(void)
 	pass |= TEST_ASSERT(rem_digit == 0);
 
 	clear_num_multi(&num, &quot_num, &ref_quot_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_exp_num(void)
+{
+	const char		*num_hex = "179672f4b9ce4ff1ce809d56dbdc138ec5caaa123123";
+	const char		*ref_hex = "307d822cbac6df486c0439fa7323e996bc8edc830ea826"\
+		"f417f3e8cd1f36aae8a4e26881a00a5a53181ba5c067e078127e6c39038c34a758037"\
+		"7ffa6a228757ce1ef74baa023c4022fbc4a8440bd89d9cd14033ff63964b3c856dcdd"\
+		"dff9e4be2f4598511a160318f75d7fac3df6b71b2e80cf62958311d52daa2f29f78f1"\
+		"c5e98777338b458885a22663d1a773a7a262fb9843be7c231bf6329c3c8f12fb01412"\
+		"e5162ce266d000d32c9a5b50f804a3a6f0f55ea68b4a89cca964e1cd5dbb21afebcbf"\
+		"5fab55fa96c1c70f81c8e94e745968ff88e5cf469";
+	const uint64_t	exp_digit = 0xa;
+	t_num			num, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, num_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	exp_num(&num, exp_digit, &test_num);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	exp_num(&num, 0, &test_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &__one_num) == 0);
+
+	exp_num(&__zero_num, exp_digit, &test_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &__zero_num) == 0);
+
+	clear_num_multi(&num, &test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_exp2_num(void)
+{
+	const char		*ref_hex =	"10000000000000000000000000000000000000"\
+								"00000000000000000000000000000000000000"\
+								"00000000000000000000000000000000000000"\
+								"00000000000000000000000000000000000000"\
+								"00000000000000000000000000000000000000"\
+								"00000000000000000000000000000000000000"\
+								"00000000000000000000000000000";
+	const uint64_t	powers_of_two_digit = 0x400;
+	t_num			test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&test_num, &ref_num, NULL);
+
+	hex_to_num(&ref_num, ref_hex);
+
+	exp2_num(&test_num, powers_of_two_digit);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	exp2_num(&test_num, 0);
+	pass |= TEST_ASSERT(compare_num(&test_num, &__one_num) == 0);
+
+	clear_num_multi(&test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_gcd_num(void)
+{
+	const char		*num_hex =	"fb9a1f894f696eb8b5437f023eadf153fbf8f8"\
+								"5028098415a4591";
+	const char		*num2_hex =	"1aa092dcd526845fa1474d57154348d4c91581";
+	const char		*ref_hex =	"aaaaaaabbb";
+	t_num			num, num2, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &num2, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, num_hex);
+	hex_to_num(&num2, num2_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	gcd_num(&num, &num2, &test_num);
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	gcd_num(&num, &__one_num, &test_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &__one_num) == 0);
+
+	gcd_num(&__one_num, &num, &test_num);
+	pass |= TEST_ASSERT(compare_num(&test_num, &__one_num) == 0);
+
+	clear_num_multi(&num, &num2, &test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_invmod_num(void)
+{
+	const char		*hex =		"ca49ba166dcaa428a46aaf1c8c913eae21f28f"\
+								"c26ac3b7ff5026d0f30b1214f7";
+	const char		*mod_hex =	"fe686c175338a780b1aa10807cd6383366fe05"\
+								"88fb77262b7610775409c5bfdf";
+	const char		*ref_hex =	"3ef2b6f98a5892c498eb07ef47728698428582"\
+								"ddc016720f1a1743bb73705dc8";
+	t_num			num, mod_num, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &mod_num, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, hex);
+	hex_to_num(&mod_num, mod_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	invmod_num(&num, &mod_num, &test_num);
+
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	clear_num_multi(&num, &mod_num, &test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_lcm_num(void)
+{
+	const char		*num_hex =	"fb9a1f894f696eb8b5437f023eadf153fbf8f8"\
+								"5028098415a4591";
+	const char		*num2_hex =	"1aa092dcd526845fa1474d57154348d4c91581";
+	const char		*ref_hex =	"274133cda512b84eee201d96dc306d9471e19d"\
+								"8a1e0fd497502e692c7573fb8a036fadee4c1a"\
+								"da1a3";
+	t_num			num, num2, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &num2, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, num_hex);
+	hex_to_num(&num2, num2_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	lcm_num(&num, &num2, &test_num);
+
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	clear_num_multi(&num, &num2, &test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_lmbit_num(void)
+{
+	const char	*hex =	"fb9a1f894f696eb8b5437f023eadf153fbf8f8"\
+						"5028098415a4591";
+	const int	ref_nbits = 212;
+	int			nbits;
+	t_num		num;
+	int			pass;
+
+	pass = SSL_OK;
+
+	init_num(&num);
+	hex_to_num(&num, hex);
+
+	nbits = lmbit_num(&num);
+
+	pass = TEST_ASSERT(nbits == ref_nbits);
+
+	clear_num(&num);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_powmod_num(void)
+{
+	const char		*hex =		"d9f2c6197c1610f216e06def0f65e4d7b34c737cb667fc"\
+								"745f08e7f0270c4358e73cc2bf501b20bd4c8ca63659be"\
+								"0347edc9c63275cf93c3267b25ce953d0da55647c3bc12"\
+								"7cbba3abcedd08632253a5558c77acbf2989a975bb0b66"\
+								"017f718cba54627855b848fd1ef695b764f6a86538dc67"\
+								"5fdf208ace577ca087e49f433d";
+	const char		*exp_hex =	"f577d0a80d56a42fa7c4e204e3cb84d96f3108eba10620"\
+								"be36b5ab58a7b5db77";
+	const char		*mod_hex =	"f937d6f312350b810bb40d0eaf9c7b2d77f084f455264a"\
+								"b53b7e7ba204f9c4cc52cce6f844cc5bb3877a65efadb9"\
+								"d6bd3f361b1b81de3db461d443926024705f";
+	const char		*ref_hex =	"f1100bb7f97d0c1609722f6798d886a449f33c793f735e"\
+								"af53b1e944053dcd8f3475ac72ef832924fee76b494039"\
+								"371bc72e301219e37409b64238e31018ca7b";
+	t_num			num, exp_num, mod_num, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &exp_num, &mod_num, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, hex);
+	hex_to_num(&exp_num, exp_hex);
+	hex_to_num(&mod_num, mod_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	powmod_num(&num, &exp_num, &mod_num, &test_num);
+
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	clear_num_multi(&num, &exp_num, &mod_num, &test_num, &ref_num, NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_bnum_m_powmod_num(void)
+{
+	const char		*hex =		"d9f2c6197c1610f216e06def0f65e4d7b34c737cb667fc"\
+								"745f08e7f0270c4358e73cc2bf501b20bd4c8ca63659be"\
+								"0347edc9c63275cf93c3267b25ce953d0da55647c3bc12"\
+								"7cbba3abcedd08632253a5558c77acbf2989a975bb0b66"\
+								"017f718cba54627855b848fd1ef695b764f6a86538dc67"\
+								"5fdf208ace577ca087e49f433d";
+	const char		*exp_hex =	"f577d0a80d56a42fa7c4e204e3cb84d96f3108eba10620"\
+								"be36b5ab58a7b5db77";
+	const char		*mod_hex =	"f937d6f312350b810bb40d0eaf9c7b2d77f084f455264a"\
+								"b53b7e7ba204f9c4cc52cce6f844cc5bb3877a65efadb9"\
+								"d6bd3f361b1b81de3db461d443926024705f";
+	const char		*ref_hex =	"f1100bb7f97d0c1609722f6798d886a449f33c793f735e"\
+								"af53b1e944053dcd8f3475ac72ef832924fee76b494039"\
+								"371bc72e301219e37409b64238e31018ca7b";
+	t_num			num, exp_num, mod_num, test_num, ref_num;
+	int				pass;
+
+	pass = SSL_OK;
+
+	init_num_multi(&num, &exp_num, &mod_num, &test_num, &ref_num, NULL);
+
+	hex_to_num(&num, hex);
+	hex_to_num(&exp_num, exp_hex);
+	hex_to_num(&mod_num, mod_hex);
+	hex_to_num(&ref_num, ref_hex);
+
+	m_powmod_num(&num, &exp_num, &mod_num, &test_num);
+
+	pass = TEST_ASSERT(compare_num(&test_num, &ref_num) == 0);
+
+	clear_num_multi(&num, &exp_num, &mod_num, &test_num, &ref_num, NULL);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());

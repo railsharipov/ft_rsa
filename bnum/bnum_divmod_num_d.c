@@ -35,6 +35,8 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 		return ;
 	}
 
+	init_num_with_size(&q, a->len);
+
 	if (b > BNUM_MAX_VAL)
 	{
 		t_num	x, r;
@@ -43,20 +45,19 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 		init_num(&r);
 		set_num_d(&x, b);
 
-		divmod_num(a, &x, c, &r);
+		divmod_num(a, &x, &q, &r);
 
 		if (r.len == 2)
 			*d = (r.val[1] << BNUM_DIGIT_BIT) | (r.val[0] & BNUM_MAX_VAL);
 		else
 			*d = r.val[0] & BNUM_MAX_VAL;
 
-		clear_num(&x);
-		clear_num(&r);
+		copy_num(&q, c);
+		clear_num_multi(&x, &r, &q, NULL);
 
 		return ;
 	}
 
-	init_num_with_size(&q, a->len);
 	val = 0u;
 
 	for (idx = BNUM_MAX_DIG-1; idx > a->len-1; idx--)

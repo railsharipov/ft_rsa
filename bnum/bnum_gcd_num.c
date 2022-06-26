@@ -8,12 +8,15 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 	if ((a->sign == BNUM_NEG) || (b->sign == BNUM_NEG))
 		BNUM_ERROR_EXIT("negative number is not supported");
 
-	if (BNUM_ZERO(a))
+	if (BNUM_ZERO(a) || BNUM_ZERO(b))
+		BNUM_ERROR_EXIT("gcd is undefined for zero input");
+
+	if (BNUM_ONE(a))
 	{
 		copy_num(a, res);
 		return ;
 	}
-	if (BNUM_ZERO(b))
+	if (BNUM_ONE(b))
 	{
 		copy_num(b, res);
 		return ;
