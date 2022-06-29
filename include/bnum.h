@@ -77,6 +77,8 @@ void	abs_num(const t_num *, t_num *);
 void	init_num(t_num *);
 void	init_num_multi(t_num *, ...);
 void	init_num_with_size(t_num *num, int size);
+t_num	*create_num(void);
+void	del_num(t_num *);
 void	reset_num(t_num *);
 void	clear_num(t_num *);
 void	clear_num_multi(t_num *, ...);
