@@ -1,7 +1,7 @@
 #include <ft_ssl.h>
 #include <ssl_rsa.h>
 
-int	rsa_key_items_del(t_rsa *rsa_key)
+void	rsa_key_items_del(t_rsa *key)
 {
 	key->tflag = 0;
 	del_num(key->version);
@@ -13,5 +13,4 @@ int	rsa_key_items_del(t_rsa *rsa_key)
 	del_num(key->exponent1);
 	del_num(key->exponent2);
 	del_num(key->coeff);
-	del_num(key->keysize);
 }
