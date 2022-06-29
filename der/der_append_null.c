@@ -16,7 +16,7 @@ int der_append_null(t_der *der, void *content, size_t cont_nbits)
 		ASN_ENCODE_PRIMITIVE | ASN_TAG_UNIVERSAL,
 		ASN_TAG_NULL);
 
-	der_append_len_new(der, 0);
+	der_append_len(der, 0);
 
 	return (SSL_OK);
 }

@@ -25,7 +25,6 @@ void	der_del(t_der *);
 void	der_append_content(t_der *der, void *content, size_t size);
 int		der_append_id_tag(t_der *der, int tag_flags, uint32_t tag_num);
 int		der_append_len(char *, size_t size);
-int		der_append_len_new(t_der *der, size_t size);
 
 void	der_append_content(t_der *der, void *content, size_t nbits);
 int		der_append_sequence(t_der *der, void *content, size_t nbits);

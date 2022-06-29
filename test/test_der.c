@@ -102,7 +102,7 @@ static int	__test_der_append_len_long_form(void)
 	len_size = NBITS_TO_NBYTES(util_lmbit(len, 8 * sizeof(len)));
 
 	der = der_init();
-	ret = der_append_len_new(der, len);
+	ret = der_append_len(der, len);
 
 	pass = TEST_ASSERT(SSL_OK == ret);
 	pass |= TEST_ASSERT(NULL != der->content);
@@ -130,7 +130,7 @@ static int	__test_der_append_len_short_form(void)
 	len = 124;
 
 	der = der_init();
-	ret = der_append_len_new(der, len);
+	ret = der_append_len(der, len);
 
 	pass = TEST_ASSERT(SSL_OK == ret);
 	pass |= TEST_ASSERT(NULL != der->content);

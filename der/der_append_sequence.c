@@ -15,7 +15,7 @@ int der_append_sequence(t_der *der, void *content, size_t cont_nbits)
 		ASN_ENCODE_CONSTRUCT | ASN_TAG_UNIVERSAL,
 		ASN_TAG_SEQUENCE);
 
-	der_append_len_new(der, cont_nbytes);
+	der_append_len(der, cont_nbytes);
 	der_append_content(der, content, cont_nbytes);
 
 	return (SSL_OK);

@@ -17,7 +17,7 @@ int	der_append_bool(t_der *der, void *content, size_t cont_nbits)
 		ASN_ENCODE_PRIMITIVE | ASN_TAG_UNIVERSAL,
 		ASN_TAG_BOOLEAN);
 
-	der_append_len_new(der, cont_nbytes);
+	der_append_len(der, cont_nbytes);
 	der_append_content(der, content, cont_nbytes);
 
 	return (SSL_OK);

@@ -6,7 +6,7 @@ static int	__is_long_form(size_t len);
 static void	__append_long_form(t_der *der, size_t len);
 static void	__append_short_form(t_der *der, size_t len);
 
-int  der_append_len_new(t_der *der, size_t len)
+int  der_append_len(t_der *der, size_t len)
 {
 	if (NULL == der)
 		return (SSL_ERROR(INVALID_INPUT));
@@ -64,36 +64,4 @@ static void	__append_short_form(t_der *der, size_t len)
 	len_buf[0] |= len;
 
 	der_append_content(der, len_buf, len_buf_size);
-}
-
-
-int  der_append_len(char *encoding, size_t len)
-{
-	int len_nbits;
-	int len_nbytes;
-	int idx;
-
-	len_nbits = util_lmbit(len, 8 * sizeof(len));
-	len_nbits = CEIL(len_nbits, 8);
-	len_nbytes = (len >= 0x7F) ? (len_nbits / 8) : 0;
-
-	idx = 0;
-
-	if (len_nbytes == 0)
-	{
-		encoding[idx] = ASN_LEN_SHORT;
-		encoding[idx++] |= len;
-	}
-	else
-	{
-		encoding[idx] = ASN_LEN_LONG;
-		encoding[idx++] |= len_nbytes;
-
-		while (len_nbits > 0)
-		{
-			encoding[idx++] = len >> (len_nbits-8);
-			len_nbits -= 8;
-		}
-	}
-	return (idx);
 }
