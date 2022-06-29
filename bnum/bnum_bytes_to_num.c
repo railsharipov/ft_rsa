@@ -9,9 +9,12 @@ void	bytes_to_num(t_num *num, const char *buf, int bufsize)
 	size_t			nbits;
 	int				idx;
 
+	if (NULL == num || NULL == buf)
+		return ;
+
 	init_num(num);
 
-	if (NULL == buf || bufsize == 0)
+	if (bufsize == 0)
 		return ;
 
 	nbits = bufsize * CHAR_BIT;
