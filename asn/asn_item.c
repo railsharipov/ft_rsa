@@ -6,6 +6,9 @@ t_iasn	*asn_item_init(void)
 	t_iasn	*item;
 
 	SSL_ALLOC(item, sizeof(t_iasn));
+	item->content = NULL;
+	item->type = NULL;
+	item->bitsize = 0;
 	return (item);
 }
 
