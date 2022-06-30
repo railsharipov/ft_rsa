@@ -41,3 +41,8 @@ int	der_read_sequence(t_iasn *item, char **derenc, size_t *dersize)
 
 	return (SSL_OK);
 }
+
+int  der_read_sequence_octets(t_iasn *item, char *derenc, size_t dersize)
+{
+	return (der_read_ostring_octets(item, derenc, dersize));
+}

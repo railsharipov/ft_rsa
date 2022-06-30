@@ -40,3 +40,18 @@ int  der_read_null(t_iasn *item, char **derenc, size_t *dersize)
 
 	return (SSL_OK);
 }
+
+int  der_read_null_octets(t_iasn *item, char *derenc, size_t dersize)
+{
+	if (NULL == item || NULL == derenc)
+		return (DER_ERROR(INVALID_INPUT));
+
+	while (dersize-- != 0)
+		if (*derenc++ != 0)
+			return (DER_ERROR(INVALID_DER_ENCODING));
+
+	item->content = NULL;
+	item->bitsize = 0;
+
+	return (SSL_OK);
+}

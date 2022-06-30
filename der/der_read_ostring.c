@@ -41,3 +41,15 @@ int  der_read_ostring(t_iasn *item, char **derenc, size_t *dersize)
 
 	return (SSL_OK);
 }
+
+int  der_read_ostring_octets(t_iasn *item, char *derenc, size_t dersize)
+{
+	if (NULL == item || NULL == derenc)
+		return (DER_ERROR(INVALID_INPUT));
+
+	SSL_ALLOC(item->content, dersize);
+	ft_memcpy(item->content, derenc, dersize);
+	item->bitsize = NBYTES_TO_NBITS(dersize);
+
+	return (SSL_OK);
+}

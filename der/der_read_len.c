@@ -41,27 +41,27 @@ int	der_read_len(unsigned char **derenc, size_t *dersize, size_t *len)
 }
 
 int	der_read_len_octets(
-	size_t *len, size_t *lensize, unsigned char *derenc, size_t dersize)
+	size_t *len, size_t *rsize, unsigned char *derenc, size_t dersize)
 {
 	unsigned char	*octets;
 	size_t			osize;
 
-	if (NULL == len || NULL == lensize || NULL == derenc)
+	if (NULL == len || NULL == rsize || NULL == derenc)
 		return DER_ERROR(INVALID_INPUT);
 
 	if (dersize == 0)
 		return (DER_ERROR(INVALID_DER_ENCODING));
 
-	*lensize = 0;
+	*rsize = 0;
 
 	if (__is_short_len(octets))
 	{
-		if (SSL_OK != __read_len_short(len, lensize, derenc, dersize))
+		if (SSL_OK != __read_len_short(len, rsize, derenc, dersize))
 			return (DER_ERROR(UNSPECIFIED_ERROR));
 	}
 	else
 	{
-		if (SSL_OK != __read_len_long(len, lensize, derenc, dersize))
+		if (SSL_OK != __read_len_long(len, rsize, derenc, dersize))
 			return (DER_ERROR(UNSPECIFIED_ERROR));
 	}
 
@@ -74,16 +74,16 @@ static int	__is_short_len(unsigned char *octets)
 }
 
 static int	__read_len_short(
-	size_t *len, size_t *lensize, unsigned char *derenc, size_t dersize)
+	size_t *len, size_t *rsize, unsigned char *derenc, size_t dersize)
 {
 	*len = *derenc & 0x7F;
-	*lensize += 1;
+	*rsize += 1;
 
 	return (SSL_OK);
 }
 
 static int	__read_len_long(
-	size_t *len, size_t *lensize, unsigned char *derenc, size_t dersize)
+	size_t *len, size_t *rsize, unsigned char *derenc, size_t dersize)
 {
 	uint32_t	octets;
 	int			osize;
@@ -91,8 +91,9 @@ static int	__read_len_long(
 	osize = *derenc & 0x7F;
 	derenc++;
 	dersize--;
+	*rsize += 1;
 
-	if (osize > dersize || osize > 4)
+	if (osize > dersize || osize <= 1 || osize > 4)
 		return (DER_ERROR(INVALID_DER_ENCODING));
 
 	octets = 0;
@@ -101,7 +102,7 @@ static int	__read_len_long(
 	{
 		octets <<= CHAR_BIT;
 		octets |= *derenc++;
-		*lensize += 1;
+		*rsize += 1;
 	}
 
 	*len = (size_t)octets;

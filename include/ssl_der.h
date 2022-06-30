@@ -34,6 +34,9 @@ int		der_append_ostring(t_der *der, void *content, size_t nbits);
 int		der_append_bitstring(t_der *der, void *content, size_t nbits);
 int		der_append_oid(t_der *der, void *content, size_t nbits);
 int		der_append_null(t_der *der, void *content, size_t nbits);
+
+int		der_read_len(unsigned char **, size_t *, size_t *);
+
 int		der_read_sequence(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_bool(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_int(struct s_iasn *item, char **derenc, size_t *dersize);
@@ -41,6 +44,13 @@ int		der_read_ostring(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_bitstring(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_oid(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_null(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_len(unsigned char **, size_t *, size_t *);
+
+int		der_read_sequence_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_bool_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_int_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_ostring_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_bitstring_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_oid_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_null_octets(struct s_iasn *item, char *derenc, size_t dersize);
 
 #endif

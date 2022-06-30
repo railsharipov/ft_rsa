@@ -67,12 +67,12 @@ enum  e_asn_error
 	INVALID_ASN_TREE = 1,
 };
 
-typedef struct  s_iasn
+typedef struct	s_iasn
 {
-  void          *content;
-  char          *type;
-  size_t        bitsize;
-}               t_iasn;
+	void		*content;
+	char		*type;
+	size_t		bitsize;
+}				t_iasn;
 
 struct s_der;
 struct s_node;
