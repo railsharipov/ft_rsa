@@ -115,10 +115,11 @@ static	int __decode_recur(
 static int	__decode_item(
 	t_iasn *item, unsigned char **derenc, size_t *dersize, t_htbl *func_htable)
 {
-	int		(*f_read)(t_iasn *, unsigned char *, size_t);
-	size_t	readsize;
-	size_t	lensize;
-	size_t	len;
+	int			(*f_read)(t_iasn *, unsigned char *, size_t);
+	uint8_t		tag;
+	size_t		readsize;
+	size_t		lensize;
+	size_t		len;
 
 	readsize = 0;
 
@@ -128,7 +129,10 @@ static int	__decode_item(
 	if (*dersize == 0)
 		return (UNSPECIFIED_ERROR);
 
-	if (NULL == (f_read = ft_htbl_get(func_htable, *derenc, 1)))
+	if (SSL_OK != der_read_id_tag(&tag, *derenc, *dersize))
+		return (UNSPECIFIED_ERROR);
+
+	if (NULL == (f_read = ft_htbl_get(func_htable, &tag, sizeof(tag))))
 		return (UNSPECIFIED_ERROR);
 
 	readsize++;

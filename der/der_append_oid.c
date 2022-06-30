@@ -110,42 +110,32 @@ static void	__encode_sub_ids(
 {
 	unsigned char	*octets;
 	size_t			osize;
-	size_t			sub_id_word_size;
-	size_t			sub_id_word_bitsize;
-	size_t			shift, bitcnt;
+	uint32_t		sub_id;
+	ssize_t			idx;
 
-	sub_id_word_size = sizeof(*sub_ids);
+	osize = NBITS_TO_NWORDS(CHAR_BIT * sizeof(*sub_ids) * num_sub_ids, 7);
+	osize = MIN(1, osize);
+	SSL_ALLOC(octets, osize);
 
-	osize = NBITS_TO_NWORDS(CHAR_BIT * sub_id_word_size * num_sub_ids, 7);
-	SSL_ALLOC(octets, MIN(1, osize));
-
-	osize = 0;
+	idx = osize;
 
 	while (num_sub_ids-- > 0)
 	{
-		sub_id_word_bitsize = util_lmbit(*sub_ids, CHAR_BIT * sub_id_word_size);
-		// round up to a multiple of 7
-		sub_id_word_bitsize = CEIL(sub_id_word_bitsize, 7);
+		sub_id = *sub_ids++;
 
-		bitcnt = 0;
+		octets[--idx] = 0x7F & sub_id;
+		sub_id >>= 7;
 
-		// get 7-bit blocks except last one
-		while (bitcnt + 7 < sub_id_word_bitsize)
+		while (sub_id != 0)
 		{
-			bitcnt += 7;
-			shift = sub_id_word_bitsize - bitcnt;
-
-			*octets++ = ((*sub_ids >> shift) & 0x7F) | 0x80;
-			osize += 1;
+			octets[--idx] = (0x7F & sub_id) | 0x80;
+			sub_id >>= 7;
 		}
-
-		// get last sub id 7-bit block
-		*octets = *sub_ids & 0x7F;
-		osize += 1;
-
-		sub_ids++;
 	}
 
-	*obj_octets = (char *)octets;
-	*obj_size = osize;
+	*obj_size = osize - idx;
+	SSL_ALLOC(*obj_octets, *obj_size);
+	ft_memcpy(*obj_octets, octets + idx, *obj_size);
+
+	SSL_FREE(octets);
 }

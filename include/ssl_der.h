@@ -55,5 +55,6 @@ int		der_read_ostring_octets(struct s_iasn *item, unsigned char *derenc, size_t 
 int		der_read_bitstring_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
 int		der_read_oid_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
 int		der_read_null_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-
+int		der_read_id_tag(uint8_t *, unsigned char *, size_t);
+int		der_read_id_tagnum_octets(uint32_t *, size_t *, unsigned char *, size_t);
 #endif

@@ -58,30 +58,25 @@ static int	__get_obj_id_string(
 static int	__get_sub_ids(
 	uint32_t *sub_ids, int *num_sub_ids, unsigned char *derenc, size_t dersize)
 {
-	size_t		sub_id_word_size;
-	int			bitcnt;
-	int			ix;
-
-	sub_id_word_size = sizeof(*sub_ids);
+	int	ix;
 
 	ix = 0;
 	while (dersize != 0)
 	{
-		bitcnt = 0;
-		// get sub id 7-bit blocks except last one
-		while ((dersize-- != 0) && (*derenc & 0x80))
+		// get 7-bit blocks, except the last one
+		while (dersize-- != 0 && *derenc & 0x80)
 		{
 			sub_ids[ix] <<= 7;
 			sub_ids[ix] |= *derenc++ & 0x7F;
-			bitcnt += 7;
 		}
 
-		if (bitcnt > CHAR_BIT * (sub_id_word_size-1))
-			return (DER_ERROR(UNSPECIFIED_ERROR));
+		if ((*derenc & 0x80) != 0)
+			return (DER_ERROR(INVALID_DER_ENCODING));
 
-		// get last sub id 7-bit block
+		// get the last block
 		sub_ids[ix] <<= 7;
 		sub_ids[ix] |= *derenc & 0x7F;
+
 		ix++;
 	}
 
