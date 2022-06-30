@@ -14,9 +14,8 @@ int  der_read_bitstring(t_iasn *item, char **derenc, size_t *dersize)
 	size_t			olen;
 	int				shift;
 
-	SSL_CHECK(NULL != item);
-	SSL_CHECK((NULL != derenc) && (NULL != *derenc));
-	SSL_CHECK(NULL != dersize);
+	if (NULL == item || NULL == derenc || NULL == *derenc || NULL == dersize)
+		return DER_ERROR(INVALID_INPUT);
 
 	octets = (unsigned char *)(*derenc);
 	osize = *dersize;
