@@ -42,7 +42,7 @@ int  der_read_bool(t_iasn *item, char **derenc, size_t *dersize)
 	return (SSL_OK);
 }
 
-int  der_read_bool_octets(t_iasn *item, char *derenc, size_t dersize)
+int  der_read_bool_octets(t_iasn *item, unsigned char *derenc, size_t dersize)
 {
 	const size_t	bool_size = 1;
 	unsigned char	bool_value;

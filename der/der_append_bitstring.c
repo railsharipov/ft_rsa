@@ -7,7 +7,7 @@ int der_append_bitstring(t_der *der, void *content, size_t cont_nbits)
 {
 	const int		num_octets_for_num_unused_bits = 1;
 	unsigned char	num_unused_bits;
-	int				cont_nbytes;
+	size_t			cont_nbytes;
 
 	if (NULL == der)
 		return (DER_ERROR(INVALID_INPUT));

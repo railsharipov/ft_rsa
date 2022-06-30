@@ -5,7 +5,7 @@
 
 int	der_append_bool(t_der *der, void *content, size_t cont_nbits)
 {
-	int	cont_nbytes;
+	size_t	cont_nbytes;
 
 	if (NULL == der)
 		return (DER_ERROR(INVALID_INPUT));

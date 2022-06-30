@@ -49,7 +49,7 @@ int  der_read_bitstring(t_iasn *item, char **derenc, size_t *dersize)
 	return (SSL_OK);
 }
 
-int  der_read_bitstring_octets(t_iasn *item, char *derenc, size_t dersize)
+int  der_read_bitstring_octets(t_iasn *item, unsigned char *derenc, size_t dersize)
 {
 	unsigned char	num_unused_bits;
 

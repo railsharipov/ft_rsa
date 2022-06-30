@@ -4,8 +4,8 @@
 #include <ssl_der.h>
 
 static int	__is_short_len(unsigned char *);
-static int	__read_len_short(size_t *, size_t *, unsigned char *, size_t);
-static int	__read_len_long(size_t *, size_t *, unsigned char *, size_t);
+static void	__read_len_short(size_t *, unsigned char *, size_t);
+static void	__read_len_long(size_t *, unsigned char *, size_t);
 
 int	der_read_len(unsigned char **derenc, size_t *dersize, size_t *len)
 {
@@ -40,72 +40,43 @@ int	der_read_len(unsigned char **derenc, size_t *dersize, size_t *len)
 	return (SSL_OK);
 }
 
-int	der_read_len_octets(
-	size_t *len, size_t *rsize, unsigned char *derenc, size_t dersize)
+int	der_read_len_octets(size_t *len, unsigned char *derenc, size_t dersize)
 {
-	unsigned char	*octets;
-	size_t			osize;
-
-	if (NULL == len || NULL == rsize || NULL == derenc)
+	if (NULL == len || NULL == derenc)
 		return DER_ERROR(INVALID_INPUT);
 
-	if (dersize == 0)
+	if (dersize == 0 || dersize > 4)
 		return (DER_ERROR(INVALID_DER_ENCODING));
 
-	*rsize = 0;
-
-	if (__is_short_len(octets))
-	{
-		if (SSL_OK != __read_len_short(len, rsize, derenc, dersize))
-			return (DER_ERROR(UNSPECIFIED_ERROR));
-	}
+	if (__is_short_len(derenc))
+		__read_len_short(len, derenc, dersize);
 	else
-	{
-		if (SSL_OK != __read_len_long(len, rsize, derenc, dersize))
-			return (DER_ERROR(UNSPECIFIED_ERROR));
-	}
+		__read_len_long(len, derenc, dersize);
 
 	return (SSL_OK);
 }
 
-static int	__is_short_len(unsigned char *octets)
+static int	__is_short_len(unsigned char *derenc)
 {
-	return (ASN_LEN_SHORT == (*octets & 0x80));
+	return (ASN_LEN_SHORT == (*derenc & 0x80));
 }
 
-static int	__read_len_short(
-	size_t *len, size_t *rsize, unsigned char *derenc, size_t dersize)
+static void	__read_len_short(size_t *len, unsigned char *derenc, size_t dersize)
 {
 	*len = *derenc & 0x7F;
-	*rsize += 1;
-
-	return (SSL_OK);
 }
 
-static int	__read_len_long(
-	size_t *len, size_t *rsize, unsigned char *derenc, size_t dersize)
+static void	__read_len_long(size_t *len, unsigned char *derenc, size_t dersize)
 {
 	uint32_t	octets;
-	int			osize;
-
-	osize = *derenc & 0x7F;
-	derenc++;
-	dersize--;
-	*rsize += 1;
-
-	if (osize > dersize || osize <= 1 || osize > 4)
-		return (DER_ERROR(INVALID_DER_ENCODING));
 
 	octets = 0;
 
-	while (osize-- > 0)
+	while (dersize-- > 0)
 	{
 		octets <<= CHAR_BIT;
 		octets |= *derenc++;
-		*rsize += 1;
 	}
 
 	*len = (size_t)octets;
-
-	return (SSL_OK);
 }

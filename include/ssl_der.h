@@ -45,12 +45,15 @@ int		der_read_bitstring(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_oid(struct s_iasn *item, char **derenc, size_t *dersize);
 int		der_read_null(struct s_iasn *item, char **derenc, size_t *dersize);
 
-int		der_read_sequence_octets(struct s_iasn *item, char *derenc, size_t dersize);
-int		der_read_bool_octets(struct s_iasn *item, char *derenc, size_t dersize);
-int		der_read_int_octets(struct s_iasn *item, char *derenc, size_t dersize);
-int		der_read_ostring_octets(struct s_iasn *item, char *derenc, size_t dersize);
-int		der_read_bitstring_octets(struct s_iasn *item, char *derenc, size_t dersize);
-int		der_read_oid_octets(struct s_iasn *item, char *derenc, size_t dersize);
-int		der_read_null_octets(struct s_iasn *item, char *derenc, size_t dersize);
+int		der_read_len_size(size_t *lensize, unsigned char *, size_t);
+int		der_read_len_octets(size_t *len, unsigned char *, size_t);
+
+int		der_read_sequence_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
+int		der_read_bool_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
+int		der_read_int_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
+int		der_read_ostring_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
+int		der_read_bitstring_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
+int		der_read_oid_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
+int		der_read_null_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
 
 #endif
