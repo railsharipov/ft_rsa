@@ -10,6 +10,8 @@ int der_append_ostring(t_der *der, void *content, size_t cont_nbits)
 	if (NULL == der)
 		return (DER_ERROR(INVALID_INPUT));
 
+	cont_nbytes = NBITS_TO_NBYTES(cont_nbits);
+
 	der_append_id_tag(
 		der,
 		ASN_ENCODE_PRIMITIVE | ASN_TAG_UNIVERSAL,

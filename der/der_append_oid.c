@@ -2,6 +2,7 @@
 #include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
+#include <printnl.h>
 
 static int	__get_obj_id_octets(char **, size_t *, char *);
 static int	__check_sub_ids(char **, int);
@@ -10,8 +11,9 @@ static void	__encode_sub_ids(char **, size_t *, uint32_t *, int);
 
 int	der_append_oid(t_der *der, void *content, size_t cont_nbits)
 {
+	size_t	cont_nbytes = NBITS_TO_NBYTES(cont_nbits);
+	char	obj_name[cont_nbytes+1];
 	char	*obj_id_string;
-	char	*obj_name;
 	char	*obj_octets;
 	size_t	obj_size;
 
@@ -20,7 +22,8 @@ int	der_append_oid(t_der *der, void *content, size_t cont_nbits)
 	if (NULL == der || NULL == content)
 		return (DER_ERROR(INVALID_INPUT));
 
-	obj_name = (char *)content;
+	ft_memcpy(obj_name, content, cont_nbytes);
+	obj_name[cont_nbytes] = 0;
 
 	if (NULL == (obj_id_string = asn_oid_tree_get_oid(obj_name)))
 		return (DER_ERROR(INVALID_ASN_OBJECT_ID));
@@ -108,34 +111,45 @@ static void	__get_sub_ids(
 static void	__encode_sub_ids(
 	char **obj_octets, size_t *obj_size, uint32_t *sub_ids, int num_sub_ids)
 {
-	unsigned char	*octets;
-	size_t			osize;
+	unsigned char	*id_octets;
+	size_t			id_octets_size;
+	unsigned char	*sub_id_enc;
+	int				sub_id_enc_size;
+	int				sub_id_enc_nbits;
 	uint32_t		sub_id;
 	ssize_t			idx;
 
-	osize = NBITS_TO_NWORDS(CHAR_BIT * sizeof(*sub_ids) * num_sub_ids, 7);
-	osize = MIN(1, osize);
-	SSL_ALLOC(octets, osize);
+	id_octets_size = NBITS_TO_NWORDS(8 * sizeof(*sub_ids) * num_sub_ids, 7);
+	id_octets_size = MAX(1, id_octets_size);
+	SSL_ALLOC(id_octets, id_octets_size);
 
-	idx = osize;
+	id_octets_size = 0;
+	idx = 0;
 
 	while (num_sub_ids-- > 0)
 	{
 		sub_id = *sub_ids++;
+		sub_id_enc_nbits = util_lmbit(sub_id, 8*sizeof(sub_id));
+		sub_id_enc_size = NBITS_TO_NWORDS(sub_id_enc_nbits, 7);
 
-		octets[--idx] = 0x7F & sub_id;
+		SSL_ALLOC(sub_id_enc, sub_id_enc_size);
+
+		idx = sub_id_enc_size;
+
+		sub_id_enc[--idx] = 0x7F & sub_id;
 		sub_id >>= 7;
 
 		while (sub_id != 0)
 		{
-			octets[--idx] = (0x7F & sub_id) | 0x80;
+			sub_id_enc[--idx] = (0x7F & sub_id) | 0x80;
 			sub_id >>= 7;
 		}
+
+		ft_memcpy(id_octets + id_octets_size, sub_id_enc, sub_id_enc_size);
+		id_octets_size += sub_id_enc_size;
+		SSL_FREE(sub_id_enc);
 	}
 
-	*obj_size = osize - idx;
-	SSL_ALLOC(*obj_octets, *obj_size);
-	ft_memcpy(*obj_octets, octets + idx, *obj_size);
-
-	SSL_FREE(octets);
+	*obj_octets = (char *)id_octets;
+	*obj_size = id_octets_size;
 }
