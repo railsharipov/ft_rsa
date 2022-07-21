@@ -1,8 +1,10 @@
 #include <ft_ssl.h>
 #include <ssl_io.h>
 
-void	io_close(t_io * const io)
+void	io_close(t_iodes * const iodes)
 {
-	if (io->fd > 2)
-		close(io->fd);
+	if (iodes->fd > 2)
+		close(iodes->fd);
+
+	iodes->osbuf = NULL;
 }

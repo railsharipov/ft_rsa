@@ -2,70 +2,74 @@
 #include <ssl_error.h>
 #include <ssl_io.h>
 
-static ssize_t	__fwrite_delim(
-	t_io *const io, char *buf, size_t nbytes, char **s)
+static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 {
-	int		idx;
-	int		idw;
-	int		offset;
-	int		width;
+	char	tbuf[2*nbytes];
+	ssize_t	wbytes;
+	ssize_t	offset;
+	ssize_t	width;
+	ssize_t	ix;
 
-	if (io->lwidth <= 0)
-		io->lwidth = 64;
+	if (iodes->lwidth <= 0)
+		iodes->lwidth = 64;
 
-	SSL_ALLOC((*s), 2*nbytes);
-	width = io->lwidth;
-	offset = MIN(nbytes, (io->seek % width));
-	idw = 0;
+	width = (size_t)iodes->lwidth;
+	offset = MIN(nbytes, (iodes->seek % width));
+	wbytes = 0;
 
 	/* Finish last line if it's not [width] bytes long */
 	if (offset)
 	{
-		for (; idw < (width - offset); idw++, nbytes--)
-			(*s)[idw] = *buf++;
+		for (; wbytes < (width - offset); nbytes--)
+			tbuf[wbytes++] = *buf++;
 		if (nbytes > 0)
-			(*s)[idw++] = io->delim;
+			tbuf[wbytes++] = iodes->delim;
 	}
+
 	while (nbytes/width > 0)
 	{
-		for (idx = 0; idx < width; idx++, nbytes--)
-			(*s)[idw++] = *buf++;
-		(*s)[idw++] = io->delim;
+		for (ix = 0; ix < width; ix++, nbytes--)
+			tbuf[wbytes++] = *buf++;
+		tbuf[wbytes++] = iodes->delim;
 	}
-	while (nbytes-- > 0)
-		(*s)[idw++] = *buf++;
 
-	return (idw);
+	while (nbytes-- > 0)
+		tbuf[wbytes++] = *buf++;
+
+	wbytes = write(iodes->fd, tbuf, wbytes);
+
+	if (wbytes > 0)
+		iodes->seek += wbytes;
+
+	return (wbytes);
 }
 
-ssize_t	io_fwrite(t_io *const io, char *const buf, size_t nbytes)
+static ssize_t __fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
-	char	*s;
-	ssize_t	sbytes;
 	ssize_t	wbytes;
 
-	if (NULL == buf)
+	wbytes = write(iodes->fd, buf, nbytes);
+
+	if (wbytes > 0)
+		iodes->seek += wbytes;
+
+	return (wbytes);
+}
+
+ssize_t	io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
+{
+	ssize_t	wbytes;
+
+	if (NULL == buf || NULL == iodes)
 		return (-1);
 
 	if (nbytes == 0)
 		return (0);
 
-	s = NULL;
-
-	if (io->delim)
-	{
-		sbytes = __fwrite_delim(io, (char *)buf, nbytes, &s);
-		wbytes = write(io->fd, s, sbytes);
-		SSL_FREE(s);
-	}
+	if (iodes->delim)
+		wbytes = __fwrite_delim(iodes, (char *)buf, nbytes);
 	else
-	{
-		wbytes = write(io->fd, buf, nbytes);
-	}
-	io->seek += nbytes;
-
-	if (wbytes < 0)
-		IO_ERROR(UNSPECIFIED_ERROR);
+		wbytes = __fwrite(iodes, (char *)buf, nbytes);
 
 	return (wbytes);
 }

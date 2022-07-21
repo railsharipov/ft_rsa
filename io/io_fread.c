@@ -1,53 +1,66 @@
 #include <ft_ssl.h>
 #include <ssl_io.h>
 
-static ssize_t __fread_delim(
-	t_io *const io, char *buf, size_t nbytes, uint32_t delim)
+static ssize_t __fread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {
-	ssize_t	bytes;
-	size_t	idx;
-	char	*tbuf;
-	char 	*tbufptr;
+	uint32_t	delim;
+	ssize_t		rbytes;
+	ssize_t		tbytes;
+	char		tbuf[nbytes];
+	char 		*tbufptr;
 
-	SSL_ALLOC(tbuf, nbytes);
-	idx = 0;
-	while (idx < nbytes)
+	delim = (uint32_t)iodes->delim;
+
+	tbytes = 0;
+	while (tbytes < nbytes)
 	{
 		tbufptr = tbuf;
-		bytes = read(io->fd, tbuf, nbytes-idx);
+		rbytes = read(iodes->fd, tbuf, nbytes-tbytes);
 
-		if (bytes <= 0)
+		if (rbytes <= 0)
 			break ;
 
-		io->seek += bytes;
+		iodes->seek += rbytes;
 
-		while (bytes > 0)
+		while (rbytes > 0)
 		{
-			buf[idx] = *tbufptr;
-			idx += IS_NONZERO_32(*tbufptr ^ delim);
+			buf[tbytes] = *tbufptr;
+			// if character is delimiter, do not increment
+			tbytes += (size_t)IS_NONZERO_32(*tbufptr ^ delim);
 			tbufptr++;
-			bytes--;
+			rbytes--;
 		}
 	}
-	SSL_FREE(tbuf);
-	return ((bytes >= 0) ? (idx) : (-1));
+
+	return ((rbytes >= 0) ? (tbytes) : (-1));
 }
 
-ssize_t io_fread(t_io *const io, char *const buf, size_t nbytes)
+static ssize_t __fread(t_iodes *iodes, char *buf, size_t nbytes)
 {
-	ssize_t	bytes;
+	ssize_t	rbytes;
 
-	if (NULL == buf)
+	rbytes = read(iodes->fd, buf, nbytes);
+
+	if (rbytes > 0)
+		iodes->seek += rbytes;
+
+	return (rbytes);
+}
+
+ssize_t io_fread(t_iodes *iodes, char *buf, size_t nbytes)
+{
+	ssize_t	rbytes;
+
+	if (NULL == buf || NULL == iodes)
 		return (-1);
-	else if (nbytes == 0)
+
+	if (nbytes == 0)
 		return (0);
-	else if (io->delim)
-		return (__fread_delim(io, (char *)buf, nbytes, io->delim));
 
-	bytes = read(io->fd, buf, nbytes);
+	if (iodes->delim)
+		rbytes = __fread_delim(iodes, (char *)buf, nbytes);
+	else
+		rbytes = __fread(iodes, (char *)buf, nbytes);
 
-	if (bytes > 0)
-		io->seek += bytes;
-
-	return (bytes);
+	return (rbytes);
 }

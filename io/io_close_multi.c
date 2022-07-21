@@ -2,19 +2,19 @@
 #include <ssl_io.h>
 #include <stdarg.h>
 
-void	io_close_multi(t_io *io, ...)
+void	io_close_multi(t_iodes *iodes, ...)
 {
 	va_list	ap;
 
-	if ((NULL != io) && (io->fd > 2))
-		close(io->fd);
+	if ((NULL != iodes) && (iodes->fd > 2))
+		close(iodes->fd);
 
-	va_start(ap, io);
+	va_start(ap, iodes);
 
-	while (NULL != (io = va_arg(ap, t_io *)))
+	while (NULL != (iodes = va_arg(ap, t_iodes *)))
 	{
-		if (io->fd > 2)
-			close(io->fd);
+		if (iodes->fd > 2)
+			close(iodes->fd);
 	}
 
 	va_end(ap);

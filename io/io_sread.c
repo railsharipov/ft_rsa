@@ -2,51 +2,63 @@
 #include <ssl_error.h>
 #include <ssl_io.h>
 
-static ssize_t __sread_delim(
-	t_io *const io, char *buf, size_t nbytes, uint32_t delim)
+static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {
-	size_t	bytes;
+	t_ostring	*osbuf;
+	size_t		rbytes;
+	uint32_t	delim;
 
-	bytes = 0;
-	delim = ~delim;
+	osbuf = iodes->osbuf;
 
-	nbytes = MIN(nbytes, MAX(0, io->insize - io->seek));
+	if (NULL == osbuf || NULL == osbuf->content)
+		return (-1);
 
-	while ((bytes < nbytes) && (io->seek < io->insize))
+	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
+	delim = (uint32_t)iodes->delim;
+	rbytes = 0;
+
+	while ((rbytes < nbytes) && (iodes->seek < osbuf->size))
 	{
-		buf[bytes] = io->input[io->seek++];
-		bytes += IS_NONZERO_32(*buf & delim);
+		buf[rbytes] = osbuf->content[iodes->seek++];
+		rbytes += IS_NONZERO_32(*buf ^ delim);
 	}
 
-	return (bytes);
+	return (rbytes);
 }
 
-ssize_t	io_sread(t_io *const io, char *const buf, size_t nbytes)
+static ssize_t __sread(t_iodes *iodes, char *buf, size_t nbytes)
 {
-	size_t	bytes;
-	char	*bufptr;
+	t_ostring	*osbuf;
+	size_t		rbytes;
 
-	if (NULL == buf)
-		return (-1);
-	else if (nbytes == 0)
-		return (0);
-	else if (NULL == io->input)
-	{
-		IO_ERROR(INVALID_INPUT);
-		return (-1);
-	}
-	else if (io->delim)
-		return (__sread_delim(io, buf, nbytes, io->delim));
+	osbuf = iodes->osbuf;
 
-	bufptr = buf;
-	bytes = 0;
-	nbytes = MIN(nbytes, MAX(0, io->insize - io->seek));
+	if (NULL == osbuf || NULL == osbuf->content)
+		return (-1);
+
+	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
+	rbytes = 0;
 
 	while (nbytes-- > 0)
-	{
-		*bufptr++ = io->input[io->seek++];
-		bytes++;
-	}
+		buf[rbytes++] = osbuf->content[iodes->seek++];
 
-	return (bytes);
+	return (rbytes);
+}
+
+ssize_t	io_sread(t_iodes *iodes, char *buf, size_t nbytes)
+{
+	size_t	rbytes;
+
+	if (NULL == iodes || NULL == buf)
+		return (-1);
+
+	if (nbytes == 0)
+		return (0);
+
+	if (iodes->delim)
+		rbytes = __sread_delim(iodes, buf, nbytes);
+	else
+		rbytes = __sread(iodes, buf, nbytes);
+
+	return (rbytes);
 }
