@@ -12,49 +12,41 @@ enum	e_der_error
 	UNKNOWN_ASN_OBJECT_ID,
 };
 
-typedef struct	s_der
+typedef struct		s_der
 {
-	char	*content;
-	size_t	size;
-}				t_der;
+	unsigned char	*content;
+	size_t			size;
+}					t_der;
 
-struct s_iasn;
+struct s_iodes;
 
 t_der	*der_init(void);
 void	der_del(t_der *);
-void	der_append_content(t_der *der, void *content, size_t size);
-int		der_append_id_tag(t_der *der, int tag_flags, uint32_t tag_num);
-int		der_append_len(t_der *, size_t len);
+void	der_clean(t_der *);
 
-void	der_append_content(t_der *der, void *content, size_t nbits);
-int		der_append_sequence(t_der *der, void *content, size_t nbits);
-int		der_append_bool(t_der *der, void *content, size_t nbits);
-int		der_append_int(t_der *der, void *content, size_t nbits);
-int		der_append_ostring(t_der *der, void *content, size_t nbits);
-int		der_append_bitstring(t_der *der, void *content, size_t nbits);
-int		der_append_oid(t_der *der, void *content, size_t nbits);
-int		der_append_null(t_der *der, void *content, size_t nbits);
+ssize_t	der_read_octets(char *content, size_t size, struct s_iodes *);
+ssize_t	der_read_octets_indef(char **content, size_t *size, struct s_iodes *);
+ssize_t	der_read_tag(uint8_t *tag, uint32_t *tagnum, struct s_iodes *);
+ssize_t	der_read_len(size_t *len, uint8_t *form, struct s_iodes *);
 
-int		der_read_len(unsigned char **, size_t *, size_t *);
+ssize_t	der_write_octets(char *content, size_t size, struct s_iodes *);
+ssize_t	der_write_tag(uint8_t tag_flags, uint32_t tag_num, struct s_iodes *);
+ssize_t	der_write_len(size_t len, struct s_iodes *);
 
-int		der_read_sequence(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_bool(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_int(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_ostring(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_bitstring(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_oid(struct s_iasn *item, char **derenc, size_t *dersize);
-int		der_read_null(struct s_iasn *item, char **derenc, size_t *dersize);
+int		der_encode_sequence(t_ostring *osbuf, void *content, size_t size);
+int		der_encode_bool(t_ostring *osbuf, void *content, size_t size);
+int		der_encode_int(t_ostring *osbuf, void *content, size_t size);
+int		der_encode_ostring(t_ostring *osbuf, void *content, size_t size);
+int		der_encode_bitstring(t_ostring *osbuf, void *content, size_t size);
+int		der_encode_oid(t_ostring *osbuf, void *content, size_t size);
+int		der_encode_null(t_ostring *osbuf, void *content, size_t size);
 
-int		der_read_len_size(size_t *lensize, unsigned char *, size_t);
-int		der_read_len_octets(size_t *len, unsigned char *, size_t);
+int		der_decode_sequence(t_ostring *osbuf, uint8_t *enc, size_t size);
+int		der_decode_bool(t_ostring *osbuf, uint8_t *enc, size_t size);
+int		der_decode_int(t_ostring *osbuf, uint8_t *enc, size_t size);
+int		der_decode_ostring(t_ostring *osbuf, uint8_t *enc, size_t size);
+int		der_decode_bitstring(t_ostring *osbuf, uint8_t *enc, size_t size);
+int		der_decode_oid(t_ostring *osbuf, uint8_t *enc, size_t size);
+int		der_decode_null(t_ostring *osbuf, uint8_t *enc, size_t size);
 
-int		der_read_sequence_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_bool_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_int_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_ostring_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_bitstring_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_oid_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_null_octets(struct s_iasn *item, unsigned char *derenc, size_t dersize);
-int		der_read_id_tag(uint8_t *, unsigned char *, size_t);
-int		der_read_id_tagnum_octets(uint32_t *, size_t *, unsigned char *, size_t);
 #endif

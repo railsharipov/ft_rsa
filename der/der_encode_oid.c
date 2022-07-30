@@ -2,28 +2,24 @@
 #include <ssl_error.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
-#include <printnl.h>
 
 static int	__get_obj_id_octets(char **, size_t *, char *);
 static int	__check_sub_ids(char **, int);
 static void	__get_sub_ids(int **, int *, char **, int);
 static void	__encode_sub_ids(char **, size_t *, uint32_t *, int);
 
-int	der_append_oid(t_der *der, void *content, size_t cont_nbits)
+int	der_encode_oid(t_ostring *osbuf, void *content, size_t size)
 {
-	size_t	cont_nbytes = NBITS_TO_NBYTES(cont_nbits);
-	char	obj_name[cont_nbytes+1];
+	char	obj_name[size+1];
 	char	*obj_id_string;
 	char	*obj_octets;
 	size_t	obj_size;
 
-	(void)cont_nbits;
-
-	if (NULL == der || NULL == content)
+	if (NULL == osbuf || NULL == content)
 		return (DER_ERROR(INVALID_INPUT));
 
-	ft_memcpy(obj_name, content, cont_nbytes);
-	obj_name[cont_nbytes] = 0;
+	ft_memcpy(obj_name, content, size);
+	obj_name[size] = 0;
 
 	if (NULL == (obj_id_string = asn_oid_tree_get_oid(obj_name)))
 		return (DER_ERROR(INVALID_ASN_OBJECT_ID));
@@ -31,13 +27,8 @@ int	der_append_oid(t_der *der, void *content, size_t cont_nbits)
 	if (SSL_OK != __get_obj_id_octets(&obj_octets, &obj_size, obj_id_string))
 		return (DER_ERROR(INVALID_ASN_OBJECT_ID));
 
-	der_append_id_tag(
-		der,
-		ASN_ENCODE_PRIMITIVE | ASN_TAG_UNIVERSAL,
-		ASN_TAG_OBJECT_ID);
-
-	der_append_len(der, obj_size);
-	der_append_content(der, obj_octets, obj_size);
+	osbuf->content = ft_memdup(obj_octets, obj_size);
+	osbuf->size = obj_size;
 
 	return (SSL_OK);
 }

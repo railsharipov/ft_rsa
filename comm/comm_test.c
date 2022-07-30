@@ -1,20 +1,10 @@
 #include <ft_ssl.h>
 #include <ssl_test.h>
 
-typedef int	(*FUNC_TEST)(void);
-
-static const FUNC_TEST	__TESTS[] = {
-	test_bnum,
-	test_base64,
-	test_der,
-};
-
-static const int	__NUM_TESTS = sizeof(__TESTS)/sizeof(FUNC_TEST);
-
 int	comm_test(const char **opt, const char *name)
 {
 	FUNC_TEST	f_test;
-	int			ret[__NUM_TESTS];
+	int			ret[NUM_TESTS];
 	int			idx;
 
 	(void)opt;
@@ -23,11 +13,11 @@ int	comm_test(const char **opt, const char *name)
 	ft_bzero(ret, sizeof(ret));
 	idx = 0;
 
-	while (idx < __NUM_TESTS)
+	while (idx < NUM_TESTS)
 	{
 		TEST_INFO(idx);
 
-		f_test = __TESTS[idx];
+		f_test = TESTS[idx];
 		ret[idx] = f_test();
 
 		if (IS_ERROR(ret[idx]))
@@ -36,7 +26,7 @@ int	comm_test(const char **opt, const char *name)
 		idx++;
 	}
 
-	TEST_SUMMARY(ret, __NUM_TESTS);
+	TEST_SUMMARY(ret, NUM_TESTS);
 
 	return (SSL_OK);
 }

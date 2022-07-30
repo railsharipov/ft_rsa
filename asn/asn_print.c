@@ -32,15 +32,13 @@ static void	__print_int_content(t_iasn *item, int space)
 
 static void	__print_content(t_iasn *item, int space)
 {
-	int		idx;
-	size_t	size;
+	int	idx;
 
-	size = NBITS_TO_NBYTES(item->bitsize);
 	idx = 0;
-	while (idx < size)
+	while (idx < item->size)
 	{
 		__print_space(space);
-		util_puthex(item->content+idx, MIN(15, size-idx), 0, ':');
+		util_puthex(item->content+idx, MIN(15, item->size-idx), 0, ':');
 		idx += 15;
 	}
 }
@@ -63,7 +61,7 @@ static void	__f_print(t_node *node, int space)
 	{
 		item = node->content;
 
-		if (!ft_strcmp("int", item->type))
+		if (ASN_TAGNUM_INT == item->tagnum)
 		{
 			__print_int_content(item, space + INDENT_SPACE_CNT);
 		}

@@ -22,6 +22,8 @@
 # define TEST_PASS()		TEST_RESULT(SSL_OK, __func__, __FILE__)
 # define TEST_FAIL()		TEST_RESULT(SSL_FAIL, __func__, __FILE__)
 
+typedef int	(*FUNC_TEST)(void);
+
 enum	e_test_modules
 {
 	BNUM_MODULE = 0,
@@ -30,6 +32,8 @@ enum	e_test_modules
 	NUMBER_OF_TEST_MODULES
 };
 
+extern const FUNC_TEST	TESTS[];
+extern const int		NUM_TESTS;
 extern const char		*TEST_DESC_ARR[];
 extern const size_t		TEST_DESC_ARR_SIZE;
 
@@ -39,6 +43,7 @@ int		test_get_testfile_content(const char *testfile_path, t_ostring *ostring);
 int		test_result(int res, int verbose, const char *func_name, const char *file_name);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 
+int		test_io(void);
 int		test_base64(void);
 int		test_der(void);
 int		test_bnum(void);

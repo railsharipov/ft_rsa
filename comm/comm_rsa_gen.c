@@ -9,9 +9,9 @@
 
 static t_htbl		*__rsa_htable;
 
-static char			*__frand;
+static const char	*__frand;
 static uint32_t		__gflag;
-static t_io			__out;
+static t_iodes		__out;
 static int			__modsize;
 static t_node		*__asn_pkey;
 static t_der		*__der_pkey;
@@ -29,21 +29,20 @@ static const t_task	T[] = {
 
 static int	__set_rand(const char *opt, const t_task *task)
 {
-	__frand = (char *)opt;
+	__frand = opt;
 	return (SSL_OK);
 }
 
 static int	__init_io(const char *opt, const t_task *task)
 {
-	return (io_init(&__out, opt, ft_strlen(opt), task->oflag));
+	return (io_init(&__out, task->oflag, opt));
 }
 
 static int	__set_modsize(const char *opt)
 {
 	if (!ft_str_isdigit(opt))
-	{
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	__modsize = ft_atoi(opt);
 
 	return (SSL_OK);
@@ -61,10 +60,9 @@ static int	__write_output(void)
 {
 	ft_printf("%@e is %d (%#x)\n", RSA_EXPPUB, RSA_EXPPUB);
 
-	if (__out.func(&__out, __pem_pkey->content, __pem_pkey->size) < 0)
-	{
+	if (io_write(&__out, __pem_pkey->content, __pem_pkey->size) < 0)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	return (SSL_OK);
 }
 
@@ -73,22 +71,18 @@ static int __run_task(void)
 	ft_printf("%@Generating RSA private key, %d bit long modulus\n", __modsize);
 
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand))
-	{
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	if (SSL_OK != asn_tree_der_encode(__asn_pkey, &__der_pkey))
-	{
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	if (SSL_OK != pem_encode(
 		(t_ostring *)__der_pkey, &__pem_pkey, "RSA PRIVATE KEY", SSL_FALSE))
-	{
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+			return (SSL_ERROR(UNSPECIFIED_ERROR));
+
 	if (SSL_OK != __write_output())
-	{
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	return (SSL_OK);
 }
 
@@ -108,6 +102,7 @@ static int	__get_task(const char **opt)
 		{
 			__gflag |= task->gflag;
 			opt += task->val;
+
 			if (NULL == *opt)
 			{
 				return (SSL_ERROR(EXPECTED_OPTION_FLAG));
@@ -133,7 +128,7 @@ int	comm_rsa_gen(const char **opt, const char *name_comm)
 	if (NULL == (__rsa_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (SSL_OK != io_init(&__out, NULL, 0, IO_WRITE_STDOUT))
+	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	__frand = NULL;

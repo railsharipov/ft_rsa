@@ -3,16 +3,16 @@
 #include <ssl_der.h>
 #include <ssl_asn.h>
 
-int	der_read_id_tag(
-	uint8_t *tag, unsigned char *derenc, size_t dersize)
+int	der_decode_bool(t_ostring *osbuf, uint8_t *enc, size_t size)
 {
-	if (NULL == tag || NULL == derenc)
+	if (NULL == osbuf || NULL == enc)
 		return (DER_ERROR(INVALID_INPUT));
 
-	if (dersize == 0)
+	if (size != 1)
 		return (DER_ERROR(INVALID_DER_ENCODING));
 
-	*tag = *derenc;
+	osbuf->content = ft_memdup(enc, size);
+	osbuf->size = 1;
 
 	return (SSL_OK);
 }

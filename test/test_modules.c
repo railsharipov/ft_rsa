@@ -3,7 +3,17 @@
 
 #define ARR_SIZE(ARR)	sizeof(ARR) / sizeof(ARR[0])
 
+const FUNC_TEST	TESTS[] = {
+	test_io,
+	test_bnum,
+	test_base64,
+	test_der,
+};
+
+const int	NUM_TESTS = sizeof(TESTS)/sizeof(FUNC_TEST);
+
 const char	*TEST_DESC_ARR[] = {
+	"io",
 	"bnum",
 	"base64",
 	"der"

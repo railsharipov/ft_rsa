@@ -2,10 +2,11 @@
 #include <ssl_error.h>
 #include <ssl_der.h>
 #include <ssl_asn.h>
+#include <ssl_io.h>
 
-static int	__tag_is_complex(int);
-static void	__append_complex_tag(t_der *der, int, uint32_t);
-static void	__append_simple_tag(t_der *der, int, uint32_t);
+static int		__tag_is_complex(int);
+static ssize_t	__write_complex_tag(uint8_t, uint32_t, t_iodes *);
+static ssize_t	__write_simple_tag(uint8_t, uint32_t, t_iodes *);
 
 /*
 First octet:
@@ -20,15 +21,15 @@ Following octets:
 	subsequent octet representing most significant bit of integer.
 */
 
-int	der_append_id_tag(t_der *der, int tag_flags, uint32_t tag_num)
+ssize_t	der_write_tag(uint8_t tag_flags, uint32_t tag_num, t_iodes *iodes)
 {
-	if (NULL == der || tag_num < 0 || (tag_flags >> 8) != 0)
+	if (NULL == iodes || tag_num < 0)
 		return (DER_ERROR(INVALID_INPUT));
 
 	if (__tag_is_complex(tag_num))
-		__append_complex_tag(der, tag_flags, tag_num);
+		__write_complex_tag(tag_flags, tag_num, iodes);
 	else
-		__append_simple_tag(der, tag_flags, tag_num);
+		__write_simple_tag(tag_flags, tag_num, iodes);
 
 	return (SSL_OK);
 }
@@ -38,9 +39,11 @@ static inline int	__tag_is_complex(int tag_num)
 	return (tag_num > 30);
 }
 
-static void	__append_complex_tag(t_der *der, int tag_flags, uint32_t tag_num)
+static ssize_t	__write_complex_tag(
+	uint8_t tag_flags, uint32_t tag_num, t_iodes *iodes)
 {
-	char	*tag_buf;
+	ssize_t	wbytes;
+	uint8_t	*tag_buf;
 	int		tag_buf_size;
 	int		tag_num_nbytes;
 	int		tag_num_nbits;
@@ -67,19 +70,22 @@ static void	__append_complex_tag(t_der *der, int tag_flags, uint32_t tag_num)
 		tag_buf[idx--] = (0x7F & tag_num) | 0x80;
 		tag_num >>= 7;
 	}
-	tag_buf[0] = ASN_TAG_COMPLEX | tag_flags;
+	tag_buf[0] = ASN_TAGNUM_COMPLEX | tag_flags;
 
-	der_append_content(der, tag_buf, tag_buf_size);
+	wbytes = der_write_octets((char *)tag_buf, tag_buf_size, iodes);
 	SSL_FREE(tag_buf);
+
+	return (wbytes);
 }
 
-static void	__append_simple_tag(t_der *der, int tag_flags, uint32_t tag_num)
+static ssize_t	__write_simple_tag(
+	uint8_t tag_flags, uint32_t tag_num, t_iodes *iodes)
 {
-	const int		tag_buf_size = 1;
-	unsigned char	tag_buf[tag_buf_size];
+	const int	tag_buf_size = 1;
+	uint8_t		tag_buf[tag_buf_size];
 
-	tag_buf[0] = ASN_TAG_SIMPLE | tag_flags;
+	tag_buf[0] = ASN_TAGNUM_SIMPLE | tag_flags;
 	tag_buf[0] |= tag_num & 0x7F;
 
-	der_append_content(der, tag_buf, tag_buf_size);
+	return (der_write_octets((char *)tag_buf, tag_buf_size, iodes));
 }

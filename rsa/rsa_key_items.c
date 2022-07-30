@@ -81,7 +81,7 @@ static t_num	*__asn_int(t_htbl *htbl, const char *key)
 
 	item = (t_iasn *)ft_htbl_get(htbl, key);
 	content = (char *)item->content;
-	size = NBITS_TO_NBYTES(item->bitsize);
+	size = item->size;
 
 	num = create_num();
 	bytes_to_num(num, content, size);

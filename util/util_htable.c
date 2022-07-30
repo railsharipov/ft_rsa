@@ -32,3 +32,11 @@ t_htbl  *util_task_htable(const t_task *task, int size)
 
 	return (htbl);
 }
+
+void	util_task_htable_del(const t_htbl *htbl)
+{
+	if (NULL == htbl)
+		return ;
+
+	ft_htbl_del((t_htbl *)htbl);
+}

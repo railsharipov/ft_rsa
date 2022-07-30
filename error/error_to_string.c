@@ -7,7 +7,7 @@
 static char	*__SSL_ERROR_MESSAGES[] = {
 	"unspecified error",
 	"unexpected error",
-	"pass through error",
+	"not implemented error",
 	"invalid command line argument",
 	"memory allocation error",
 	"invalid argument",

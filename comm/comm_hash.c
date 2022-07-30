@@ -38,18 +38,20 @@ static const struct {
 static char		*__algo;
 static uint32_t	__gflag;
 static t_hash	*__hash;
-static t_io		__in;
+static t_iodes	__in;
+
+static const char	*__sarg;
 
 static const t_task	T[] = {
 	/*	KEY		PTR		TFLAG		__gflag		OFLAG			VAL	*/
 	{	"-p",	NULL,	HASH_P,		NONE,		IO_READ|IO_STDIN,	0	},
-	{	"-s",	NULL,	HASH_S,		NONE,		IO_INPUT|IO_STRING,	1	},
+	{	"-s",	NULL,	HASH_S,		NONE,		IO_INPUT|IO_OSBUF,	1	},
 	{	"-q",	NULL,	NONE,		HASH_Q,		NONE,				0	},
 	{	"-r",	NULL,	NONE,		HASH_R,		NONE,				0	},
 };
 
 static const t_task FILE_TASK =
-	{	NULL,	NULL,	IO_FILE,		NONE,		IO_READ|IO_FILE,		0	};
+	{	NULL,	NULL,	IO_FILE,	NONE,		IO_READ|IO_FILE,	0	};
 
 static t_htbl	*hash_htable;
 static t_hash	*(*func_hash_init)(void);
@@ -119,7 +121,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 
 	__hash = func_hash_init();
 
-	while ((rbytes = __in.func(&__in, buf, bufsize)) == bufsize)
+	while ((rbytes = io_read(&__in, buf, bufsize)) == bufsize)
 	{
 		if (SSL_FLAG(HASH_P, tflag))
 			write(1, buf, bufsize);
@@ -133,7 +135,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 		write(1, buf, rbytes);
 
 	func_hash_final(__hash, buf, rbytes);
-	__out_hash(__in.input, tflag, __gflag);
+	__out_hash(__sarg, tflag, __gflag);
 
 	return (SSL_OK);
 }
@@ -155,8 +157,12 @@ static int	__next_task(const char **opt)
 	{
 		if (NULL == *opt)
 			return (SSL_ERROR(EXPECTED_OPTION_FLAG));
-		if (SSL_OK != io_init(&__in, *opt, ft_strlen(*opt), task->oflag))
+
+		if (SSL_OK != io_init(&__in, task->oflag, *opt))
 			return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+		__sarg = *opt;
+
 		if (SSL_OK != __run_task(task->tflag, __gflag))
 			return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
@@ -167,7 +173,7 @@ static int	__next_task(const char **opt)
 
 static int	__default_task(const char **opt)
 {
-	if (SSL_OK != io_init(&__in, NULL, 0, (IO_READ | IO_STDIN)))
+	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	if (SSL_OK != __run_task(NONE, HASH_Q))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
@@ -193,9 +199,7 @@ int	comm_hash(const char **opt, const char *name_comm)
 	else
 		ret = __next_task(opt);
 
-	ft_htbl_del(hash_htable);
+	util_task_htable_del(hash_htable);
 
 	return (ret);
 }
-
-# undef FUNC_HASH

@@ -12,8 +12,8 @@ static char			*TYPE_RSA_PRIVATE_KEY = "RSA PRIVATE KEY";
 static char			*TYPE_X509_PUBLIC_KEY = "PUBLIC KEY";
 
 static t_htbl		*__rsa_htable;
-static t_io			__in;
-static t_io			__out;
+static t_iodes		__in;
+static t_iodes		__out;
 static t_pem		__inkey;
 
 static uint32_t		__gflag;
@@ -26,6 +26,14 @@ static char			*__out_map;
 static char			*__passin;
 static char			*__passout;
 
+static int	__setup_task(const char **);
+static int	__run_task(void);
+static int	__get_input(char **, size_t *);
+static int	__write_output(char *, size_t );
+static void	__key_info(t_node *);
+static int	__key_type(t_node **);
+static int	__decode_key(t_node **);
+static int	__encode_key(t_node *, t_ostring **);
 static int	__init_io(const char *, const t_task *);
 static int	__set_type(const char *, const t_task *);
 static int	__set_form(const char *, const t_task *);
@@ -49,15 +57,157 @@ static const t_task	  T[] = {
 	{	NULL,		NULL,		NONE,		NONE,		NONE,			0	}
 };
 
-static int	__init_io(const char *opt, const t_task *task)
+int	comm_rsa(const char **opt, const char *name_comm)
 {
-	t_io	*io;
-	int		ret;
+	int	ret;
 
-	io = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
-	ret = io_init(io, opt, ft_strlen(opt), task->oflag);
+	if (NULL == opt)
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	if (NULL == (__rsa_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	if (SSL_OK != io_init(&__in, IO_READ_STDIN))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT))
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	__inform = __outform = RSA_PEM;
+	__in_type = __out_type = TYPE_RSA_PRIVATE_KEY;
+	__in_map = __out_map = MAP_RSA_PRIVATE_KEY;
+
+	if (SSL_OK == (ret = __setup_task(opt)))
+		ret = __run_task();
+
+	SSL_FREE(__inkey.content);
+	io_close_multi(&__in, &__out, NULL);
+	util_task_htable_del(__rsa_htable);
+
+	if (SSL_OK != ret)
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+	return (SSL_OK);
+}
+
+static int	__setup_task(const char **opt)
+{
+	int		(*f_setup)(const char *, const t_task *);
+	t_task	*task;
+
+	// dynamically setup task
+	while (NULL != *opt)
+	{
+		if (NULL == (task = ft_htbl_get(__rsa_htable, *opt)))
+			return (SSL_ERROR(INVALID_INPUT));
+
+		__gflag |= task->gflag;
+
+		// if option flag is required
+		if (task->val)
+			if (NULL == * ++opt)
+				return (SSL_ERROR(EXPECTED_OPTION_FLAG));
+
+		if (NULL != (f_setup = task->ptr))
+			if (SSL_OK != f_setup(*opt, task))
+				return (SSL_ERROR(UNSPECIFIED_ERROR));
+
+		opt++;
+	}
+
+	return (SSL_OK);
+}
+
+static int	__run_task(void)
+{
+	t_ostring	*outkey;
+	t_node		*asn_key;
+	int			ret;
+
+	ret = SSL_OK;
+	outkey = NULL;
+
+	if (SSL_OK != __get_input(&(__inkey.content), &(__inkey.size)))
+	{
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	}
+	if (SSL_OK != __decode_key(&asn_key))
+	{
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	}
+	if (SSL_FLAG(RSA_CHECK, __gflag))
+	{
+		if (SSL_OK != rsa_check(asn_key))
+		{
+			asn_tree_del(asn_key);
+			return (SSL_ERROR(UNSPECIFIED_ERROR));
+		}
+		ft_putstr("RSA key ok\n");
+	}
+	__key_info(asn_key);
+
+	if (SSL_OK != __key_type(&asn_key))
+	{
+		ret = SSL_ERROR(UNSPECIFIED_ERROR);
+	}
+	else if (SSL_OK != __encode_key(asn_key, &outkey))
+	{
+		ret = SSL_ERROR(UNSPECIFIED_ERROR);
+	}
+	asn_tree_del(asn_key);
+
+	if (SSL_OK == ret)
+	{
+		ret = __write_output(outkey->content, outkey->size);
+	}
+	util_ostr_del(outkey);
 
 	return (ret);
+}
+
+static int	__get_input(char **input, size_t *insize)
+{
+	char	buf[IO_BUFSIZE];
+	ssize_t	rbytes;
+	size_t	tbytes;
+
+	*input = NULL;
+	*insize = 0;
+
+	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0)
+	{
+		SSL_REALLOC(*input, *insize, (*insize) + rbytes);
+		ft_memcpy(*input + *insize, buf, rbytes);
+		*insize += rbytes;
+	}
+	if (rbytes < 0)
+	{
+		SSL_FREE(*input);
+		*insize = 0;
+		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	}
+	return (SSL_OK);
+}
+
+static int	__write_output(char *output, size_t outsize)
+{
+	if (!SSL_FLAG(RSA_NOOUT, __gflag))
+	{
+		ft_putstr("writing RSA key\n");
+
+		if (io_write(&__out, output, outsize) < 0)
+			return (SSL_ERROR(UNSPECIFIED_ERROR));
+	}
+	return (SSL_OK);
+}
+
+static int	__init_io(const char *opt, const t_task *task)
+{
+	t_iodes	*iodes;
+
+	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+
+	return (io_init(iodes, task->oflag, opt));
 }
 
 static int	__set_type(const char *opt, const t_task *task)
@@ -82,68 +232,22 @@ static int	__set_form(const char *opt, const t_task *task)
 	form = (SSL_FLAG(RSA_INFORM, task->tflag)) ? (&__inform) : (&__outform);
 
 	if (!ft_strcmp(opt, "PEM"))
-	{
 		*form = RSA_PEM;
-	}
 	else if (!ft_strcmp(opt, "DER"))
-	{
 		*form = RSA_DER;
-	}
 	else
-	{
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
+
 	return (SSL_OK);
 }
 
 static int	__get_pass(const char *opt, const t_task *task)
 {
 	if (SSL_FLAG(RSA_PASSIN, task->tflag))
-	{
 		__passin = (char *)opt;
-	}
 	else
-	{
 		__passout = (char *)opt;
-	}
-	return (SSL_OK);
-}
 
-static int	__write_output(char *output, size_t outsize)
-{
-	if (!SSL_FLAG(RSA_NOOUT, __gflag))
-	{
-		ft_putstr("writing RSA key\n");
-
-		if (__out.func(&__out, output, outsize) < 0)
-		{
-			return (SSL_ERROR(UNSPECIFIED_ERROR));
-		}
-	}
-	return (SSL_OK);
-}
-
-static int	__get_input(char **input, size_t *insize)
-{
-	char	buf[IO_BUFSIZE];
-	ssize_t	rbytes;
-	size_t	tbytes;
-
-	*input = NULL;
-	*insize = 0;
-
-	while ((rbytes = __in.func(&__in, buf, IO_BUFSIZE)) > 0)
-	{
-		SSL_REALLOC(*input, *insize, (*insize) + rbytes);
-		ft_memcpy(*input + *insize, buf, rbytes);
-		*insize += rbytes;
-	}
-	if (rbytes < 0)
-	{
-		SSL_FREE(*input);
-		*insize = 0;
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
 	return (SSL_OK);
 }
 
@@ -210,7 +314,7 @@ static int	__decode_key(t_node **asn_key)
 	}
 	else
 	{
-		der_key = (t_der *)util_ostrdup((t_ostring *)&__inkey);
+		der_key = (t_der *)util_ostr_dup((t_ostring *)&__inkey);
 	}
 	if (SSL_OK == ret)
 	{
@@ -243,115 +347,9 @@ static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 	else
 	{
 		SSL_ALLOC(*outkey, sizeof(t_ostring));
-		*outkey = util_ostrdup((t_ostring *)der_key);
+		*outkey = util_ostr_dup((t_ostring *)der_key);
 	}
 	der_del(der_key);
 
 	return (ret);
-}
-
-static int	__run_task(void)
-{
-	t_ostring	*outkey;
-	t_node		*asn_key;
-	int			ret;
-
-	ret = SSL_OK;
-	outkey = NULL;
-
-	if (SSL_OK != __get_input(&(__inkey.content), &(__inkey.size)))
-	{
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_OK != __decode_key(&asn_key))
-	{
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	}
-	if (SSL_FLAG(RSA_CHECK, __gflag))
-	{
-		if (SSL_OK != rsa_check(asn_key))
-		{
-			asn_tree_del(asn_key);
-			return (SSL_ERROR(UNSPECIFIED_ERROR));
-		}
-		ft_putstr("RSA key ok\n");
-	}
-	__key_info(asn_key);
-
-	if (SSL_OK != __key_type(&asn_key))
-	{
-		ret = SSL_ERROR(UNSPECIFIED_ERROR);
-	}
-	else if (SSL_OK != __encode_key(asn_key, &outkey))
-	{
-		ret = SSL_ERROR(UNSPECIFIED_ERROR);
-	}
-	asn_tree_del(asn_key);
-
-	if (SSL_OK == ret)
-	{
-		ret = __write_output(outkey->content, outkey->size);
-	}
-	util_ostrdel(outkey);
-
-	return (ret);
-}
-
-static int	__get_task(const char **opt)
-{
-	int		(*f_task)(const char *, const t_task *);
-	t_task	*task;
-
-	while (NULL != *opt)
-	{
-		if (NULL == (task = ft_htbl_get(__rsa_htable, *opt)))
-		{
-			return (SSL_ERROR(INVALID_OPTION_FLAG));
-		}
-		__gflag |= task->gflag;
-		opt += task->val;
-
-		if (NULL == *opt)
-		{
-			return (SSL_ERROR(EXPECTED_OPTION_FLAG));
-		}
-		else if (NULL != (f_task = task->ptr))
-		{
-			if (SSL_OK != f_task(*opt, task))
-				return (SSL_ERROR(UNSPECIFIED_ERROR));
-		}
-		opt++;
-	}
-
-	return (SSL_OK);
-}
-
-int	comm_rsa(const char **opt, const char *name_comm)
-{
-	int	ret;
-
-	if (NULL == opt)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	if (NULL == (__rsa_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-
-	if (SSL_OK != io_init(&__in, NULL, 0, IO_READ_STDIN))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	if (SSL_OK != io_init(&__out, NULL, 0, IO_WRITE_STDOUT))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-
-	__inform = __outform = RSA_PEM;
-	__in_type = __out_type = TYPE_RSA_PRIVATE_KEY;
-	__in_map = __out_map = MAP_RSA_PRIVATE_KEY;
-
-	if (SSL_OK == (ret = __get_task(opt)))
-		ret = __run_task();
-
-	SSL_FREE(__inkey.content);
-	io_close_multi(&__in, &__out, NULL);
-
-	if (SSL_OK != ret)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-
-	return (SSL_OK);
 }

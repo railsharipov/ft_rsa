@@ -108,9 +108,9 @@ typedef struct		s_htbl
 }					t_htbl;
 
 // Overload macros on number of args
-# define SEL12(_1,_2,NAME,...)			NAME
-# define SEL23(_1,_2,_3,NAME,...)		NAME
-# define SEL34(_1,_2,_3,_4,NAME,...)	NAME
+# define SEL12(_1,_2,MACRO_NAME,...)		MACRO_NAME
+# define SEL23(_1,_2,_3,MACRO_NAME,...)		MACRO_NAME
+# define SEL34(_1,_2,_3,_4,MACRO_NAME,...)	MACRO_NAME
 
 # define _HADD1(...)			ft_htbl_raw_add(__VA_ARGS__)
 # define _HADD2(...)			ft_htbl_add(__VA_ARGS__)

@@ -1,67 +1,73 @@
 #include <ft_ssl.h>
 #include <ssl_asn.h>
 
-static const struct {
-	char	*type;
-	t_iasn	*(*func)(const char *, const char *);
-} T[] = {
-	{ "sequence",		asn_construct_sequence	},
-	{ "boolean",		asn_primitive_bool		},
-	{ "int",			asn_primitive_int		},
-	{ "ostring",		asn_primitive_ostring	},
-	{ "bitstring",		asn_primitive_bitstring	},
-	{ "objectId",		asn_primitive_oid		},
-	{ "null",			asn_primitive_null		}
-};
+static int	__init_func(t_node *node, const void *p);
+static void	__del_func(t_node *node);
+static int	__abort_with_error();
 
-static t_htbl	*__init_func_htable(void)
-{
-	t_htbl	*func_htable;
-	int		ntypes;
-	int		idx;
-
-	ntypes = sizeof(T)/sizeof(*T);
-	func_htable = ft_htbl_init(ntypes);
-
-	for (idx = 0; idx < ntypes; idx++)
-	{
-		ft_htbl_add(func_htable, T[idx].func, T[idx].type);
-	}
-	return (func_htable);
-}
-
-static int	__init_func(t_node *node, const void *ptr)
-{
-	t_htbl	*func_htable;
-	t_iasn	*(*f)(const char *, const char *);
-	char	**keys;
-
-	if (NULL == node)
-	{
-		return (0);
-	}
-	func_htable = (t_htbl *)(ptr);
-	keys = ft_strsplit(node->key, ':');
-	SSL_FREE(node->key);
-	SSL_CHECK(NULL != keys);
-	f = ft_htbl_get(func_htable, keys[0]);
-	SSL_CHECK(NULL != f);
-	node->content = f((const char *)keys[0], (const char *)keys[1]);
-	node->key = ft_strdup(keys[1]);
-	ft_2darray_del((void **)keys, -1);
-
-	return (0);
-}
+static int	__error_status;
 
 t_node	*asn_tree(const char *map)
 {
 	t_node	*tree;
-	t_htbl	*func_htable;
 
-	func_htable = __init_func_htable();
+	__error_status = SSL_OK;
+
 	tree = ft_ntree_construct(map);
-	ft_ntree_bfs(tree, func_htable, __init_func);
-	ft_htbl_del(func_htable);
+	ft_ntree_bfs(tree, NULL, __init_func);
+
+	if (__error_status != SSL_OK)
+	{
+		ft_ntree_del(tree, __del_func);
+		return (NULL);
+	}
 
 	return (tree);
+}
+
+static int	__init_func(t_node *node, const void *p)
+{
+	t_iasn	*item;
+	char	**strings;
+	size_t	num_strings;
+	char	type_key[128] = {0};
+	char	description[256] = {0};
+
+	if (NULL == node)
+		return (0);
+
+	strings = ft_strsplit(node->key, ':');
+	num_strings = ft_2darray_len((void **)strings);
+
+	if (NULL == strings || num_strings != 2)
+		return (__abort_with_error());
+
+	ft_strncpy(type_key, strings[0], sizeof(type_key)-1);
+	ft_strncpy(description, strings[1], sizeof(description)-1);
+
+	ft_2darray_del((void **)strings, -1);
+
+	item = asn_item_init();
+
+	if (SSL_OK != asn_item_set_type(item, type_key))
+		return (__abort_with_error());
+
+	item->description = ft_strdup(description);
+	node->content = item;
+
+	return (0);
+}
+
+static void	__del_func(t_node *node)
+{
+	t_iasn	*item;
+
+	if (NULL != node->content)
+		asn_item_del((t_iasn *)node->content);
+}
+
+static int	__abort_with_error()
+{
+	__error_status = SSL_FAIL;
+	return (-1);
 }

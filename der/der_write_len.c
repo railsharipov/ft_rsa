@@ -1,22 +1,25 @@
 #include <ft_ssl.h>
 #include <ssl_asn.h>
 #include <ssl_der.h>
+#include <ssl_io.h>
 
-static int	__is_long_form(size_t len);
-static void	__append_long_form(t_der *der, size_t len);
-static void	__append_short_form(t_der *der, size_t len);
+static int		__is_long_form(size_t len);
+static ssize_t	__write_long_form(size_t len, t_iodes *iodes);
+static ssize_t	__write_short_form(size_t len, t_iodes *iodes);
 
-int  der_append_len(t_der *der, size_t len)
+ssize_t  der_write_len(size_t len, t_iodes *iodes)
 {
-	if (NULL == der)
-		return (SSL_ERROR(INVALID_INPUT));
+	ssize_t	wbytes;
+
+	if (NULL == iodes)
+		return (-1);
 
 	if (__is_long_form(len))
-		__append_long_form(der, len);
+		wbytes = __write_long_form(len, iodes);
 	else
-		__append_short_form(der, len);
+		wbytes = __write_short_form(len, iodes);
 
-	return (SSL_OK);
+	return (wbytes);
 }
 
 static int	__is_long_form(size_t len)
@@ -24,9 +27,10 @@ static int	__is_long_form(size_t len)
 	return (len >= 0x7F);
 }
 
-static void	__append_long_form(t_der *der, size_t len)
+static ssize_t	__write_long_form(size_t len, t_iodes *iodes)
 {
-	char	*len_buf;
+	ssize_t	wbytes;
+	uint8_t	*len_buf;
 	int		len_buf_size;
 	int		len_nbytes;
 	int		len_nbits;
@@ -51,17 +55,20 @@ static void	__append_long_form(t_der *der, size_t len)
 		len_nbits -= 8;
 	}
 
-	der_append_content(der, len_buf, len_buf_size);
+	wbytes = der_write_octets((char *)len_buf, len_buf_size, iodes);
+
 	SSL_FREE(len_buf);
+
+	return (wbytes);
 }
 
-static void	__append_short_form(t_der *der, size_t len)
+static ssize_t	__write_short_form(size_t len, t_iodes *iodes)
 {
 	const size_t	len_buf_size = 1;
-	char			len_buf[len_buf_size];
+	uint8_t			len_buf[len_buf_size];
 
 	len_buf[0] = ASN_LEN_SHORT;
 	len_buf[0] |= len;
 
-	der_append_content(der, len_buf, len_buf_size);
+	return (der_write_octets((char *)len_buf, len_buf_size, iodes));
 }

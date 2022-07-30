@@ -25,7 +25,7 @@
 
 # define NONE	0
 
-enum e_boolean
+enum	e_boolean
 {
 	SSL_FALSE	= 0,
 	SSL_TRUE	= 1,
@@ -37,9 +37,6 @@ enum	e_status
 	SSL_OK		= 0
 };
 
-typedef uint32_t		t_bool;
-typedef __uint128_t	t_uint128;
-
 typedef int		(*FUNC_COM)(const char **, const char *);
 
 typedef	struct	s_ostring
@@ -47,6 +44,11 @@ typedef	struct	s_ostring
 	char		*content;
 	size_t		size;
 }				t_ostring;
+
+
+typedef uint32_t	t_bool;
+typedef t_ostring	t_bitstring;
+typedef __uint128_t	t_uint128;
 
 typedef struct	s_task
 {
@@ -72,10 +74,12 @@ int				comm_rsa(const char **, const char *);
 int				comm_rsa_utl(const char **, const char *);
 int				comm_test(const char **, const char *);
 
-void			util_ostrinit(t_ostring *);
-t_ostring		*util_ostrnew(void *, size_t);
-t_ostring		*util_ostrdup(t_ostring *);
-void			util_ostrdel(t_ostring *);
+t_ostring		*util_ostr_init(void);
+t_ostring		*util_ostr_new(size_t);
+t_ostring		*util_ostr_dup(t_ostring *);
+void			util_ostr_del(t_ostring *);
+void			util_ostr_clean(t_ostring *);
+
 uint32_t		util_bswap32(uint32_t);
 uint64_t		util_bswap64(uint64_t);
 t_uint128		util_bswap128(t_uint128);
@@ -88,6 +92,7 @@ void			util_rshift_bytes(unsigned char *, int, int);
 void			util_puthex(void *, int, int, int);
 void			util_hexdump(int fd, void *ptr, size_t size);
 t_htbl  		*util_task_htable(const t_task *, int);
+void			util_task_htable_del(const t_htbl *);
 void			util_print_intbits(uint64_t, int, int);
 void			util_print_strbits(void *, size_t);
 
