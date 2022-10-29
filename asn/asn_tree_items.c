@@ -2,7 +2,7 @@
 
 t_htbl	*asn_tree_items(t_node *tree)
 {
-	return (ft_ntree_htable(tree));
+	return (ft_ntree_to_set(tree));
 }
 
 void	asn_tree_items_del(t_htbl *tree_items)

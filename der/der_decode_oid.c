@@ -133,7 +133,7 @@ static void	__sub_ids_to_obj_id_string(
 	// get the last id
 	ft_sprintf(sub_id_sptr, "%lu", sub_ids[ix]);
 
-	*obj_id = ft_2darray_merge_cstr(sub_id_strings, num_sub_id_strings);
+	*obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_id_strings, "");
 
 	ft_2darray_del((void **)sub_id_strings, num_sub_id_strings);
 }

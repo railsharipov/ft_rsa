@@ -7,9 +7,10 @@
 
 # define DES_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, DES_ERROR_CTX))
 
-enum	e_des_error
+enum e_des_error
 {
 	INVALID_DES_ENCODING = 1,
+	KEY_DERIVATION_ERROR
 };
 
 enum	e_des

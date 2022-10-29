@@ -12,14 +12,14 @@
 
 #include <libft.h>
 
-uint32_t ft_hash(const char *key, size_t keysize)
+uint32_t ft_hash(const unsigned char *key, size_t keysize)
 {
 	uint32_t  hash;
 
 	hash = 0;
 	while (keysize--)
 	{
-		hash += *(unsigned char *)key++;
+		hash += *key++;
 		hash += hash << 10;
 		hash ^= hash >> 6;
 	}

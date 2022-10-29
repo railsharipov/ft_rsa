@@ -43,7 +43,7 @@ static int	__get_obj_id_octets(
 	int		ret;
 
 	sub_id_strings = ft_strsplit(obj_id_string, '.');
-	num_sub_id_strings = ft_2darray_len((void **)sub_id_strings);
+	num_sub_id_strings = ft_2darray_len_null_terminated((void **)sub_id_strings);
 
 	if (SSL_OK == (ret = __check_sub_ids(sub_id_strings, num_sub_id_strings)))
 	{
@@ -53,7 +53,7 @@ static int	__get_obj_id_octets(
 		SSL_FREE(sub_ids);
 	}
 
-	ft_2darray_del((void **)sub_id_strings, -1);
+	ft_2darray_del_null_terminated((void **)sub_id_strings);
 
 	return (ret);
 }

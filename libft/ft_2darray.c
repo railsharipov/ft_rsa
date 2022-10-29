@@ -12,81 +12,89 @@
 
 #include <libft.h>
 
-static void	__del_null_terminated(void **arr)
+void	ft_2darray_del(void **arr, int size)
 {
+	if (NULL == arr)
+		return ;
+	
+	while (size > 0)
+		LIBFT_FREE(arr[size--]);
+	
+	LIBFT_FREE(arr);
+}
+
+void 	ft_2darray_del_null_terminated(void **arr)
+{
+	if (NULL == arr)
+		return ;
+
 	while (NULL != *arr)
 	{
 		LIBFT_FREE(*arr);
 		arr++;
 	}
-}
 
-void	ft_2darray_del(void **arr, int size)
-{
-	if ((NULL == arr) || (size < -1))
-	{
-		return ;
-	}
-	if (size == -1)
-	{
-		__del_null_terminated(arr);
-	}
-	else
-	{
-		while (--size > 0)
-		{
-			LIBFT_FREE(arr[size]);
-		}
-	}
 	LIBFT_FREE(arr);
 }
 
-int		ft_2darray_len(void **arr)
+int 	ft_2darray_len_null_terminated(void **arr)
 {
 	int	len;
 
 	if (NULL == arr)
-	{
 		return (0);
-	}
+	
 	len = 0;
 	while (NULL != *arr++)
-	{
 		len++;
-	}
+	
 	return (len);
 }
 
-char	*ft_2darray_merge_cstr(char **arr, int size)
+char	*ft_2darray_strjoin(char **arr, int size, const char *delim)
 {
-	char	*cstr;
-	char	*ptr;
-	int	cstr_size;
-	int	ix;
-	int	iy;
+	char	*joined_str;
+	int		joined_size;
+	int		delim_size;
+	int		ix, iy;
+	char	*p;
 
-	if ((NULL == arr) || (size <= 0))
-	{
+	if (NULL == arr || size <= 0)
 		return (NULL);
-	}
-	cstr_size = 0;
+	
+	joined_size = 0;
+	delim_size = ft_strlen(delim);
+
 	ix = 0;
 	while (ix < size)
 	{
-		cstr_size += ft_strlen(arr[ix]);
+		joined_size += ft_strlen(arr[ix]);
 		ix++;
 	}
-	LIBFT_ALLOC(cstr, cstr_size+1);
-	ptr = cstr;
+	joined_size += delim_size;
+
+	LIBFT_ALLOC(joined_str, joined_size+1);
+
+	p = joined_str;
+
 	ix = 0;
-	while (ix < size)
+	while (ix < size-1)
 	{
 		iy = 0;
-		while (arr[ix][iy] != '\0')
-		{
-			*ptr++ = arr[ix][iy++];
-		}
+		while (arr[ix][iy])
+			*p++ = arr[ix][iy++];
+		
+		ft_memcpy(p, delim, delim_size);
+		p += delim_size;
+
 		ix++;
 	}
-	return (cstr);
+
+	iy = 0;
+	while (arr[ix][iy])
+		*p++ = arr[ix][iy++];
+
+	*p = 0;
+
+	return (joined_str);
 }

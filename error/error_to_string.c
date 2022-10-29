@@ -36,6 +36,7 @@ static char	*__DER_ERROR_MESSAGES[] = {
 
 static char	*__DES_ERROR_MESSAGES[] = {
 	"invalid des encoding",
+	"key derivation error",
 };
 
 static char	*__HASH_ERROR_MESSAGES[] = {

@@ -3,7 +3,7 @@
 #include <ssl_asn.h>
 #include <ssl_der.h>
 
-int	asn_tree_der_encode(t_der *der, const char *map, t_node **tree)
+int	asn_tree_der_encode(t_node *asn, t_der **der)
 {
 	return (SSL_OK);
 }

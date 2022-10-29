@@ -7,9 +7,8 @@ int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)
 	uint64_t	tmp;
 
 	if (nbytes <= 0)
-	{
 		return (RAND_ERROR(INVALID_INPUT));
-	}
+	
 	rand_mtw_init(seed);
 
 	while (nbytes > 8)

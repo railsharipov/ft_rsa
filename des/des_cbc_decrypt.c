@@ -32,22 +32,17 @@ static int	__remove_pad(unsigned char **mes, size_t *messize)
 	unsigned char	ix;
 
 	if (*messize == 0)
-	{
 		return (DES_ERROR(UNSPECIFIED_ERROR));
-	}
+	
 	if ((padsize = (*mes)[*messize-1]) > 8)
-	{
 		return (DES_ERROR(UNSPECIFIED_ERROR));
-	}
 
 	ix = 0;
 	while (ix++ < padsize)
 	{
 		*messize -= 1;
 		if ((*mes)[*messize] != padsize)
-		{
 			return (DES_ERROR(UNSPECIFIED_ERROR));
-		}
 	}
 
 	return (SSL_OK);
@@ -73,13 +68,12 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag)
 		if (SSL_OK != rand_pbkdf2(
 			__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL):(__vect)))
 		{
-			return (DES_ERROR("pbkdf2 error"));
+			return (DES_ERROR(KEY_DERIVATION_ERROR));
 		}
 	}
 	if (!SSL_FLAG(DES_V, vflag))
-	{
 		return (DES_ERROR(UNSPECIFIED_ERROR));
-	}
+	
 	return (SSL_OK);
 }
 
@@ -101,12 +95,14 @@ static int	__decrypt(
 		ciph += 16;
 		ciphsize -= 16;
 	}
+
 	ix = 0;
 	while (ix < ciphsize)
 	{
 		(*mes_ptr)[ix] = *ciph++;
 		ix++;
 	}
+
 	ix = 0;
 	while (ix < *messize)
 	{
@@ -124,9 +120,7 @@ static int	__decrypt(
 	}
 
 	if (SSL_OK != __remove_pad(mes_ptr, messize))
-	{
 		return (DES_ERROR(UNSPECIFIED_ERROR));
-	}
 
 	return (SSL_OK);
 }
@@ -134,9 +128,8 @@ static int	__decrypt(
 int	des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
-	{
 		return (DES_ERROR(INVALID_INPUT));
-	}
+	
 	mes->content = NULL;
 	__salt = des->salt;
 	__key = des->key;

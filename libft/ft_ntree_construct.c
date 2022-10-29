@@ -18,9 +18,8 @@ static t_node	*__create_recur(char **key, int *idx)
 	char	**childkey;
 
 	if (NULL == key[*idx])
-	{
 		return (NULL);
-	}
+	
 	if (!ft_strcmp(key[*idx], "}"))
 	{
 		(*idx)++;
@@ -39,7 +38,7 @@ static t_node	*__create_recur(char **key, int *idx)
 		else
 			node->key = NULL;
 
-		ft_2darray_del((void **)childkey, -1);
+		ft_2darray_del_null_terminated((void **)childkey);
 		node->nodes = __create_recur(key, idx);
 	}
 	node->next = __create_recur(key, idx);
@@ -85,11 +84,10 @@ t_node	*ft_ntree_construct(const char *map)
 	keys = ft_strsplit(map, ' ');
 
 	if (NULL == keys)
-	{
 		return (NULL);
-	}
+	
 	ntree = __create_recur(keys, &idx);
-	ft_2darray_del((void **)keys, -1);
+	ft_2darray_del_null_terminated((void **)keys);
 
 	return (ntree);
 }

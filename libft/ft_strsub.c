@@ -15,15 +15,19 @@
 char	*ft_strsub(char const *s, unsigned int start, size_t len)
 {
 	size_t	i;
-	char	*str;
+	char	*subs;
+
+	subs = ft_strnew(len);
 
 	i = 0;
-	if (s && (str = ft_strnew(len)))
+	if (s && subs)
 	{
 		while (i < len)
-			str[i++] = s[start++];
-		str[i] = 0;
-		return (str);
+			subs[i++] = s[start++];
+			
+		subs[i] = 0;
+
+		return (subs);
 	}
 	return (NULL);
 }

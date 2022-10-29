@@ -65,6 +65,11 @@
 
 # define IS_OF_TYPE(X, T)		_Generic((X), T:1, default:0)
 
+/* Overload macros on number of args */
+# define SEL12(_1, _2, MACRO_NAME, ...) MACRO_NAME
+# define SEL23(_1, _2, _3, MACRO_NAME, ...) MACRO_NAME
+# define SEL34(_1, _2, _3, _4, MACRO_NAME, ...) MACRO_NAME
+
 enum	e_libft_err
 {
 	LIBFT_OK				= 0,
@@ -81,8 +86,11 @@ enum	e_libft_alloc_flag
 	LIBFT_ALLOC_DEBUG,
 };
 
+typedef uint32_t	t_bool;
+
 typedef struct		s_node
 {
+	uint64_t		hash;
 	char			*key;
 	void			*content;
 	size_t			size;
@@ -107,29 +115,11 @@ typedef struct		s_htbl
 	int				size;
 }					t_htbl;
 
-// Overload macros on number of args
-# define SEL12(_1,_2,MACRO_NAME,...)		MACRO_NAME
-# define SEL23(_1,_2,_3,MACRO_NAME,...)		MACRO_NAME
-# define SEL34(_1,_2,_3,_4,MACRO_NAME,...)	MACRO_NAME
-
-# define _HADD1(...)			ft_htbl_raw_add(__VA_ARGS__)
-# define _HADD2(...)			ft_htbl_add(__VA_ARGS__)
-
-# define _HGET1(...)			ft_htbl_raw_get(__VA_ARGS__)
-# define _HGET2(...)			ft_htbl_get(__VA_ARGS__)
-
-# define _HASG1(...)			ft_htbl_raw_assign(__VA_ARGS__)
-# define _HASG2(...)			ft_htbl_assign(__VA_ARGS__)
-
-# define ft_htbl_add(...)		SEL34(__VA_ARGS__,_HADD1,_HADD2)(__VA_ARGS__)
-# define ft_htbl_get(...)		SEL23(__VA_ARGS__,_HGET1,_HGET2)(__VA_ARGS__)
-# define ft_htbl_assign(...)	SEL34(__VA_ARGS__,_HASG1,_HASG2)(__VA_ARGS__)
-
 void		*ft_malloc(const char *memkey, size_t memsize);
 void		ft_free(const char *memkey, void *memptr);
 void		ft_free_all(void);
 
-uint32_t	ft_hash(const char *, size_t);
+uint32_t	ft_hash(const unsigned char *, size_t);
 void		*ft_htbl_init(int);
 t_node		*ft_htbl_iter(t_htbl *);
 void		ft_htbl_del(t_htbl *);
@@ -137,13 +127,25 @@ void		ft_htbl_del(t_htbl *);
 void		(ft_htbl_add)(t_htbl *, void *, const char *);
 void		*(ft_htbl_get)(t_htbl *, const char *);
 void		(ft_htbl_assign)(t_htbl *, void *, const char *);
-void		ft_htbl_raw_add(t_htbl *, void *, const void *, size_t);
-void		*ft_htbl_raw_get(t_htbl *, const void *, size_t);
-void		ft_htbl_raw_assign(t_htbl *, void *, const void *, size_t);
+void		ft_htbl_bin_add(t_htbl *, void *, const void *, size_t);
+void		*ft_htbl_bin_get(t_htbl *, const void *, size_t);
+void		ft_htbl_bin_assign(t_htbl *, void *, const void *, size_t);
+
+# define 	_HADD1(...) ft_htbl_bin_add(__VA_ARGS__)
+# define 	_HADD2(...) ft_htbl_add(__VA_ARGS__)
+# define 	_HGET1(...) ft_htbl_bin_get(__VA_ARGS__)
+# define 	_HGET2(...) ft_htbl_get(__VA_ARGS__)
+# define 	_HASG1(...) ft_htbl_bin_assign(__VA_ARGS__)
+# define 	_HASG2(...) ft_htbl_assign(__VA_ARGS__)
+
+# define 	ft_htbl_add(...) SEL34(__VA_ARGS__, _HADD1, _HADD2)(__VA_ARGS__)
+# define 	ft_htbl_get(...) SEL23(__VA_ARGS__, _HGET1, _HGET2)(__VA_ARGS__)
+# define 	ft_htbl_assign(...) SEL34(__VA_ARGS__, _HASG1, _HASG2)(__VA_ARGS__)
 
 t_node		*ft_node_init(void);
 t_node		*ft_node_new(const char *, void *, size_t);
-void		ft_node_del(t_node *, void (*f_del)(t_node *));
+t_node 		*ft_node_dup(t_node *node);
+void 		ft_node_del(t_node *, void (*f_del)(t_node *));
 int			ft_node_is_parent(t_node *);
 
 void		ft_lst_append(t_node **, t_node *);
@@ -182,7 +184,7 @@ void		ft_ntree_del(t_node *, void (*f_del)(t_node *));
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);
 t_node		*ft_ntree_iter(t_node *);
-t_htbl		*ft_ntree_htable(t_node *);
+t_htbl		*ft_ntree_to_set(t_node *);
 
 void		*ft_memset(void *b, int c, size_t len);
 void		ft_bzero(void *s, size_t n);
@@ -261,8 +263,9 @@ void		ft_hexbin(void *bin, const char *hex, size_t hexsize);
 void		ft_revbits(void *src, size_t size);
 char		*ft_intchar(char *buf, intmax_t integer, int int_bytes);
 void		ft_2darray_del(void **, int);
-int			ft_2darray_len(void **);
-char		*ft_2darray_merge_cstr(char **, int);
+void 		ft_2darray_del_null_terminated(void **);
+int			ft_2darray_len_null_terminated(void **);
+char		*ft_2darray_strjoin(char **, int, const char *);
 
 int			ft_error(const char *, const char *);
 void		ft_exit(void);

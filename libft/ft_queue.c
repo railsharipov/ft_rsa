@@ -96,13 +96,9 @@ int		ft_queue_size(t_queue *queue)
 void	ft_queue_del(t_queue *queue, void (*f_del)(t_node *))
 {
 	if (NULL == queue)
-	{
 		return ;
-	}
-	if (NULL != f_del)
-	{
-		ft_lst_del(ft_queue_peek(queue), f_del);
-	}
+	
+	ft_lst_del(ft_queue_peek(queue), f_del);
 	LIBFT_FREE(queue);
 }
 
@@ -110,5 +106,6 @@ t_htbl	*ft_queue_htable(t_queue *queue)
 {
 	if (NULL == queue)
 		return (NULL);
+	
 	return (ft_lst_htable(ft_queue_peek(queue)));
 }

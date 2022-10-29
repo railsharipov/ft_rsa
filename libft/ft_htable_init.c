@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_exit.c                                          :+:      :+:    :+:   */
+/*   ft_hash.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,10 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <stddef.h>
 #include <libft.h>
 
-void  ft_exit(void)
+void *ft_htbl_init(int size)
 {
-	ft_free_all();
-	exit(0);
+	t_htbl	*htbl;
+
+	LIBFT_ALLOC(htbl, sizeof(t_htbl));
+
+	htbl->size = MAX(LIBFT_HT_SIZE, LIBFT_HT_FACTOR*size);
+	LIBFT_ALLOC(htbl->arr, htbl->size * sizeof(void *));
+
+	return (htbl);
 }

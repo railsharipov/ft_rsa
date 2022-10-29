@@ -18,15 +18,15 @@ static int	__htable_func(t_node *node, const void *farg)
 	return (0);
 }
 
-t_htbl	*ft_ntree_htable(t_node *node)
+t_htbl	*ft_ntree_to_set(t_node *node)
 {
 	t_htbl	*htbl;
 
 	if (NULL == node)
-	{
 		return (NULL);
-	}
+	
 	htbl = ft_htbl_init(ft_ntree_size(node));
 	ft_ntree_bfs(node, htbl, __htable_func);
+	
 	return (htbl);
 }

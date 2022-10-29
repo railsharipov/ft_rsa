@@ -20,7 +20,7 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 		return (ASN_ERROR(INVALID_INPUT));
 
 	src_iter = ft_ntree_iter(src_tree);
-	dest_items = ft_ntree_htable(dest_tree);
+	dest_items = ft_ntree_to_set(dest_tree);
 	src_ref = src_iter;
 
 	while (NULL != src_iter)

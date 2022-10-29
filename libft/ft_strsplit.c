@@ -12,81 +12,65 @@
 
 #include <libft.h>
 
-static unsigned int	__calc(char const *s, char c)
-{
-	unsigned int	i;
-	unsigned int	num;
-
-	i = 0;
-	num = 0;
-	if (s)
-	{
-		while (s[i] == c && s[i] != 0)
-		{
-			i++;
-		}
-		while (s[i] != 0)
-		{
-			num++;
-			while (s[i] != c && s[i] != 0)
-			{
-				i++;
-			}
-			while (s[i] == c && s[i] != 0)
-			{
-				i++;
-			}
-		}
-	}
-	return (num);
-}
-
-char	**__clean(char **arr, unsigned int words)
-{
-	unsigned int	i;
-
-	i = -1;
-	while (arr && ++i <= words)
-	{
-		LIBFT_FREE(arr[i]);
-	}
-	LIBFT_FREE(arr);
-	return (NULL);
-}
+static int __get_nwords(char const *s, char c);
 
 char	**ft_strsplit(char const *s, char c)
 {
-	unsigned int	i;
-	unsigned int	j;
-	unsigned int	start;
-	unsigned int	words;
-	char			**arr;
+	int		idx;
+	int		word_idx;
+	int		start_idx;
+	int		nwords;
+	char	**arr;
 
-	i = 0;
-	j = 0;
-	start = 0;
-	words = __calc(s, c);
+	start_idx = 0;
+	nwords = __get_nwords(s, c);
+
 	if (NULL == s)
-	{
 		return (NULL);
-	}
-	LIBFT_ALLOC(arr, sizeof(char *) * (words + 1));
-	while (j < words)
+	
+	LIBFT_ALLOC(arr, sizeof(char *) * (nwords + 1));
+
+	idx = 0;
+	word_idx = 0;
+	while (word_idx < nwords)
 	{
-		while (s[i] == c && s[i] != 0)
+		while (s[idx] == c && s[idx] != 0)
+			idx++;
+		
+		start_idx = idx;
+		while (s[idx] != c && s[idx] != 0)
+			idx++;
+		
+		arr[word_idx++] = ft_strsub(s, start_idx, (size_t)(idx - start_idx));
+	}
+	arr[word_idx] = 0;
+	
+	return (arr);
+}
+
+static int __get_nwords(char const *s, char c)
+{
+	int idx;
+	int nwords;
+
+	nwords = 0;
+
+	idx = 0;
+	if (s)
+	{
+		while (s[idx] == c && s[idx] != 0)
+			idx++;
+
+		while (s[idx] != 0)
 		{
-			i++;
-		}
-		start = i;
-		while (s[i] != c && s[i] != 0)
-		{
-			i++;
-		}
-		if (!(arr[j++] = ft_strsub(s, start, (size_t)(i - start))))
-		{
-			arr = __clean(arr, words);
+			nwords++;
+
+			while (s[idx] != c && s[idx] != 0)
+				idx++;
+
+			while (s[idx] == c && s[idx] != 0)
+				idx++;
 		}
 	}
-	(arr) ? (arr[j] = 0) : 0;
-	return (arr);
+	return (nwords);
 }
