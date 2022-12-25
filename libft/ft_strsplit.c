@@ -41,9 +41,11 @@ char	**ft_strsplit(char const *s, char c)
 		while (s[idx] != c && s[idx] != 0)
 			idx++;
 		
-		arr[word_idx++] = ft_strsub(s, start_idx, (size_t)(idx - start_idx));
+		arr[word_idx] = ft_strsub(s, start_idx, (size_t)(idx - start_idx));
+
+		word_idx++;
 	}
-	arr[word_idx] = 0;
+	arr[word_idx] = NULL;
 	
 	return (arr);
 }

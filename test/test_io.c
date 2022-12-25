@@ -12,7 +12,7 @@ static const char	*__lorem = "Cernantur iis sunt, voluptate export nulla \
 	est excepteur multos dolor excepteur quae id ut aute incididunt \
 	domesticarum eu malis a voluptate ubi ita esse pariatur offendit de \
 	quamquam quid qui commodo cohaerescant si do elit incurreret singulis, \
-	est ita consectetur.Ut veniam constias deserunt, nisi cupidatat est esse \
+	est ita consectetur. Ut veniam constias deserunt, nisi cupidatat est esse \
 	cillum. O id arbitrantur si eiusmod velit nostrud probant sed probant nisi \
 	constias si eram pariatur ubi coniunctione, magna voluptate se probant, \
 	iis eu tamen irure sunt id laborum tempor arbitror, excepteur ad noster. \

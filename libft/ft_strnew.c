@@ -17,5 +17,6 @@ char	*ft_strnew(size_t size)
 	char	*str;
 
 	LIBFT_ALLOC(str, size + 1);
+	
 	return (str);
 }

@@ -25,10 +25,10 @@ char	*ft_strrev(const char *s)
 	LIBFT_ALLOC(srev, len + 1);
 
 	idx = len-1;
-	while (*s != '\0')
+	while (*s != 0)
 		srev[idx--] = *s++;
 
-	srev[len] = '\0';
+	srev[len] = 0;
 
 	return (srev);
 }

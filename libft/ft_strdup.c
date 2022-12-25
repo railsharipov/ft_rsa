@@ -14,23 +14,23 @@
 
 char	*ft_strdup(const char *s)
 {
-	char	*ptr;
+	char	*sdup;
 	char	*ref;
 
 	if (NULL == s)
-	{
 		return (NULL);
-	}
-	LIBFT_ALLOC(ptr, ft_strlen(s) + 1);
-	if (NULL == ptr)
-	{
+	
+	LIBFT_ALLOC(sdup, ft_strlen(s) + 1);
+
+	if (NULL == sdup)
 		return (NULL);
-	}
-	ref = ptr;
+	
+	ref = sdup;
+
 	while (*s != '\0')
-	{
-		*ptr++ = *s++;
-	}
-	*ptr = '\0';
+		*sdup++ = *s++;
+	
+	*sdup = '\0';
+	
 	return (ref);
 }

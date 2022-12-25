@@ -17,17 +17,19 @@ char	*ft_strsub(char const *s, unsigned int start, size_t len)
 	size_t	i;
 	char	*subs;
 
+	if (NULL == s)
+		return (NULL);
+
 	subs = ft_strnew(len);
 
-	i = 0;
-	if (s && subs)
-	{
-		while (i < len)
-			subs[i++] = s[start++];
-			
-		subs[i] = 0;
+	if (NULL == subs)
+		return (NULL);
 
-		return (subs);
-	}
-	return (NULL);
+	i = 0;
+	while (i < len)
+		subs[i++] = s[start++];
+		
+	subs[i] = 0;
+
+	return (subs);
 }

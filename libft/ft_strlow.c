@@ -16,6 +16,7 @@ void	ft_strlow(char *s)
 {
 	if (!s)
 		return ;
+	
 	while (*s)
 	{
 		if (*s >= 'A' && *s <= 'Z')
