@@ -19,8 +19,10 @@ void	pf_format_di(t_pf *data, char len, va_list *arg)
 
 	val = 0;
 	type = data->type;
+
 	if (!(data->flag & PF_PREC))
 		data->prec = 1;
+
 	if (!len)
 		val = (int)va_arg(*arg, int);
 	else if (len & PF_HH)
@@ -35,6 +37,7 @@ void	pf_format_di(t_pf *data, char len, va_list *arg)
 		val = va_arg(*arg, intmax_t);
 	else if (len & PF_Z)
 		val = (size_t)va_arg(*arg, size_t);
+
 	pf_print_di(data, val, data->flag, 0);
 }
 
@@ -45,6 +48,7 @@ void	pf_format_oux(t_pf *data, char len, va_list *arg)
 
 	val = 0;
 	type = data->type;
+
 	if (!len)
 		val = (unsigned int)va_arg(*arg, unsigned int);
 	else if (len & PF_HH)
@@ -59,6 +63,7 @@ void	pf_format_oux(t_pf *data, char len, va_list *arg)
 		val = va_arg(*arg, uintmax_t);
 	else if (len & PF_Z)
 		val = (size_t)va_arg(*arg, size_t);
+
 	pf_print_oux(data, val, data->flag, 0);
 }
 
@@ -69,6 +74,7 @@ void	pf_format_c(t_pf *data, char len, va_list *arg)
 
 	wc = 0;
 	c = 0;
+
 	if (len & PF_L)
 	{
 		wc = va_arg(*arg, unsigned int);
@@ -88,16 +94,19 @@ void	pf_format_s(t_pf *data, char len, va_list *arg)
 
 	s = NULL;
 	ws = NULL;
+
 	if (len & PF_L)
 		ws = va_arg(*arg, unsigned int *);
 	else
 		s = va_arg(*arg, char *);
+
 	if (!s && !ws && !(data->flag & PF_PREC))
 	{
 		if (!(data->flag & PF_PREC))
 			pf_out(data, "(null)", 6);
 		return ;
 	}
+	
 	if (len & PF_L)
 		pf_print_ws(data, ws);
 	else

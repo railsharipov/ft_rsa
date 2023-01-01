@@ -16,5 +16,6 @@ int	ft_iseol(int c)
 {
 	if ((c == 10) || (c == 13))
 		return (1);
+	
 	return (0);
 }

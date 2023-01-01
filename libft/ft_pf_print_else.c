@@ -20,14 +20,20 @@ void	pf_print_else(t_pf *data, char flag, size_t i)
 		data->str_size = data->fwid;
 	else
 		data->str_size = 1;
+
 	data->space = data->fwid - 1;
+
 	if (!(s = malloc(data->str_size + 1)))
 		return ;
+
 	if (!(flag & PF_MINUS))
 		pf_oper(data, s, &i, (flag & PF_ZERO) ? ('0') : (' '));
+
 	s[i++] = data->type;
+
 	if (flag & PF_MINUS)
 		pf_oper(data, s, &i, (' '));
+		
 	s[i] = 0;
 	pf_out(data, s, i);
 	free(s);

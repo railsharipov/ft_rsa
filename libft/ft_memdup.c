@@ -17,10 +17,10 @@ void	*ft_memdup(void *src, size_t srcsize)
 	void	*dst;
 
 	if (NULL == src)
-	{
 		return (NULL);
-	}
+	
 	LIBFT_ALLOC(dst, srcsize);
 	ft_memcpy(dst, src, srcsize);
+	
 	return (dst);
 }

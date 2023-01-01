@@ -16,9 +16,9 @@ void	pf_print_wc(t_pf *data, unsigned int c)
 {
 	char	*s;
 
-	s = NULL;
 	s = pf_convert_to_utf_8(&c, 1, data->prec);
 	pf_print_c(data, s, c ? ft_strlen(s) : 1);
+
 	if (s)
 		free(s);
 }

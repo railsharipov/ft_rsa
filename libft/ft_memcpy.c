@@ -21,10 +21,12 @@ void	*ft_memcpy(void *dst, const void *src, size_t srcsize)
 	ix = 0;
 	p1 = (unsigned char *)dst;
 	p2 = (unsigned char *)src;
+
 	while (ix < srcsize)
 	{
 		p1[ix] = p2[ix];
 		ix++;
 	}
+
 	return (dst);
 }

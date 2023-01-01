@@ -14,9 +14,10 @@
 
 void	ft_strup(char *s)
 {
-	if (!s)
+	if (NULL == s)
 		return ;
-	while (*s)
+	
+	while (*s != 0)
 	{
 		if (*s >= 'a' && *s <= 'z')
 			*s = *s - 32;

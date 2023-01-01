@@ -14,10 +14,8 @@
 
 int	ft_isalpha(int c)
 {
-	unsigned int	x;
-
-	x = (unsigned int)c;
-	if ((x >= 65 && x <= 90) || (x >= 97 && x <= 122))
+	if ((c >= 65 && c <= 90) || (c >= 97 && c <= 122))
 		return (1);
+	
 	return (0);
 }

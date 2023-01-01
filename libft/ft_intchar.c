@@ -19,6 +19,7 @@ char	*ft_intchar(char *buf, intmax_t integer, int int_bytes)
 
 	if (!buf)
 		return (NULL);
+	
 	j = 0;
 	while (j < int_bytes)
 	{
@@ -26,5 +27,6 @@ char	*ft_intchar(char *buf, intmax_t integer, int int_bytes)
 		buf[j] = (unsigned char)((integer >> shift) & 0xff);
 		j++;
 	}
+	
 	return (buf);
 }

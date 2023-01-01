@@ -12,39 +12,48 @@
 
 #include <libft.h>
 
-static char	*ft_getstr(char *str, int nb, int mult)
+void	__tostr(char *str, intmax_t nb, intmax_t mult)
 {
-	unsigned int	i;
+	int	i;
 
 	i = 0;
+
 	if (nb < 0)
 		str[i++] = '-';
+	
+	if (nb < 0)
+		nb = -nb;
+
 	while (mult)
 	{
-		str[i++] = (nb < 0) ? (-(nb / mult) + 48) : (nb / mult + 48);
+		str[i++] = nb / mult + 48;
 		nb = nb % mult;
 		mult = mult / 10;
 	}
+
 	str[i] = 0;
-	return (str);
 }
 
-char		*ft_itoa(int n)
+char	*ft_itoa(intmax_t n)
 {
-	char			*str;
-	int				nb;
-	int				digits;
-	int				mult;
+	intmax_t	nb;
+	intmax_t	mult;
+	char		*str;
+	int			len;
 
 	mult = 1;
-	digits = (n < 0) ? 2 : 1;
+	len = (n < 0) ? 2 : 1;
 	nb = n;
+
 	while (n / 10)
 	{
 		mult = mult * 10;
 		n = n / 10;
-		digits++;
+		len++;
 	}
-	LIBFT_ALLOC(str, digits + 1);
-	return (ft_getstr(str, nb, mult));
+
+	LIBFT_ALLOC(str, len + 1);
+	__tostr(str, nb, mult);
+
+	return (str);
 }

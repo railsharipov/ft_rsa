@@ -23,60 +23,76 @@ static int	__space_needed(intmax_t value, int base)
 		len++;
 		value = value / base;
 	}
+
 	return (len);
 }
 
-static int	*__create_arr(intmax_t val, int base, int len)
+void	__digit_arr(uint8_t *arr, intmax_t val, int base, int len)
 {
-	static int	arr[64];
+	if (val < 0)
+		val = -val;
 
 	len--;
 	while (val)
 	{
-		arr[len] = (val < 0) ? (-1 * (int)(val % base)) : (int)(val % base);
+		arr[len] = (uint8_t)(val % base);
 		val = val / base;
 		len--;
 	}
-	return (arr);
 }
 
-static char	*__create_str(int *arr, int len, int neg)
+void	__base_str(char *s, uint8_t *arr, int len, int is_neg)
 {
-	static	char	s[64];
-	int				i;
+	uint8_t	*p;
+	uint8_t	digit;
 
-	i = 0;
-	if (neg)
-		s[0] = '-';
-	while (i < len)
+	p = (uint8_t *)s;
+
+	if (is_neg)
+		*p++ = '-';
+
+	while (len--)
 	{
-		if (arr[i] >= 0 && arr[i] <= 9)
-			s[i + neg] = arr[i] + 48;
-		else if (arr[i] >= 10 && arr[i] <= 15)
-			s[i + neg] = arr[i] + 87;
-		i++;
+		digit = *arr++;
+
+		if (digit >= 0 && digit <= 9)
+			*p = digit + 48;
+		else if (digit >= 10 && digit <= 15)
+			*p = digit + 87;
+		
+		p++;
 	}
-	s[i + neg] = 0;
-	ft_bzero(arr, 64 * sizeof(int));
-	return (s);
+	
+	*p = 0;
 }
 
 char	*ft_itoa_base(intmax_t value, int base)
 {
-	int		neg;
+	int		is_neg;
 	int		len;
-	int		*arr;
+	uint8_t	arr[64];
+	char	*s;
 
-	arr = NULL;
 	len = 0;
-	neg = 0;
+	is_neg = 0;
+
+	if (base > 16)
+		return (ft_strdup("n/a"));
+
 	if (value == 0)
-		return ("0");
+		return (ft_strdup("0"));
+	
 	if (base != 10 && value < 0)
 		value = -value;
-	else if (value < 0)
-		neg = 1;
+	
+	if (base == 10 && value < 0)
+		is_neg = 1;
+	
 	len = __space_needed(value, base);
-	arr = __create_arr(value, base, len);
-	return (__create_str(arr, len, neg));
+	__digit_arr(arr, value, base, len);
+
+	LIBFT_ALLOC(s, len+1);
+	__base_str(s, arr, len, is_neg);
+
+	return (s);
 }

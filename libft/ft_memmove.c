@@ -22,9 +22,14 @@ void	*ft_memmove(void *dst, const void *src, size_t size)
 	p2 = (unsigned char *)src;
 	ix = 0;
 
+	// Check if destination address is "after" source address.
+	// If so, copy in reverse order to avoid destructive copy
+	// for overlapping strings
 	if (dst >= src)
+	{
 		while (size--)
 			p1[size] = p2[size];
+	}
 	else
 	{
 		while (ix < size)
@@ -33,5 +38,6 @@ void	*ft_memmove(void *dst, const void *src, size_t size)
 			ix++;
 		}
 	}
+	
 	return (dst);
 }

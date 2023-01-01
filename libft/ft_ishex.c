@@ -14,10 +14,8 @@
 
 int	ft_ishex(int c)
 {
-	unsigned int	x;
-
-	x = (unsigned int)c;
-	if (ft_isdigit(x) || (x >= 65 && x <= 70) || (x >= 97 && x <= 102))
+	if (ft_isdigit(c) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102))
 		return (1);
+	
 	return (0);
 }

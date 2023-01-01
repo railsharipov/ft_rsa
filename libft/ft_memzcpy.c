@@ -12,23 +12,20 @@
 
 #include <libft.h>
 
+// Copy destsize bytes from src to dest.
+// If destsize is bigger than srcsize,
+// set remaining bytes (destsize - srcsize) to zero
 void	*ft_memzcpy(void *dst, const void *src, size_t dstsize, size_t srcsize)
 {
-	size_t			ix;
-	unsigned char	*p1;
-	unsigned char	*p2;
+	if (dstsize > srcsize)
+	{
+		ft_memcpy(dst, src, srcsize);
+		ft_memset(dst + srcsize, 0, dstsize - srcsize);
+	}
+	else
+	{
+		ft_memcpy(dst, src, dstsize);
+	}
 
-	ix = 0;
-	p1 = (unsigned char *)dst;
-	p2 = (unsigned char *)src;
-	while (ix < srcsize && ix < dstsize)
-	{
-		p1[ix] = p2[ix];
-		ix++;
-	}
-	while (ix < dstsize)
-	{
-		p1[ix++] = 0;
-	}
 	return (dst);
 }

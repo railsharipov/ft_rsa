@@ -19,6 +19,7 @@ int		pf_ws_len(unsigned int *s)
 	len = 0;
 	while (s && s[len])
 		len++;
+	
 	return (len);
 }
 
@@ -27,10 +28,13 @@ void	pf_print_ws(t_pf *data, unsigned int *src)
 	char *s;
 
 	data->size = pf_ws_len(src);
+
 	if (data->prec < (int)data->size && data->flag & PF_PREC)
 		data->size = data->prec;
+
 	s = pf_convert_to_utf_8(src, data->size, data->prec);
 	pf_print_s(data, s, 0);
+	
 	if (s)
 		free(s);
 }

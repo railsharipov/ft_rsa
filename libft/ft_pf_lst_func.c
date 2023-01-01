@@ -33,20 +33,15 @@ t_pf	*pf_l_arg_new(int fd)
 {
 	t_pf	*new;
 
-	new = NULL;
-	if (!(new = malloc(sizeof(t_pf))))
+	if (NULL == (new = malloc(sizeof(t_pf))))
 		return (NULL);
+	
+	ft_bzero(new, sizeof(t_pf));
+
 	new->fd = fd;
-	new->buf = NULL;
-	new->flag = 0;
-	new->len = 0;
-	new->fwid = 0;
 	new->prec = -1;
 	new->type = -1;
-	new->num = 0;
-	new->size = 0;
-	new->str_size = 0;
-	new->space = 0;
 	new->base = 10;
+	
 	return (new);
 }

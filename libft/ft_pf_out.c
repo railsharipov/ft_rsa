@@ -19,11 +19,13 @@ void	pf_out(t_pf *data, const char *s, int size)
 	if (data->buf)
 	{
 		ptr = malloc(data->num+size+1);
+
 		if (ENOMEM == errno)
 		{
 			perror("FATAL ERROR :");
 			exit(-1);
 		}
+		
 		if (NULL != *(data->buf))
 		{
 			ft_memcpy(ptr, *(data->buf), data->num);
