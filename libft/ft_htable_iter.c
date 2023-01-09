@@ -33,12 +33,13 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 
 		while (NULL != item)
 		{
-			ft_queue_enqueue(queue, ft_node_dup(item));
+			ft_queue_enqueue(queue, ft_node_new(NULL, item, 0));
 			item = item->next;
 		}
 	}
+	
 	iter = ft_queue_peek(queue);
-	ft_queue_del(queue, NULL);
+	LIBFT_FREE(queue);
 
 	return (iter);
 }

@@ -18,6 +18,7 @@ static int	__iter_func(t_node *node, const void *ptr)
 
 	queue = (t_queue *)(ptr);
 	ft_queue_enqueue(queue, ft_node_new(NULL, node, 0));
+	
 	return (0);
 }
 
@@ -27,11 +28,12 @@ t_node	*ft_ntree_iter(t_node *ntree)
 	t_node	*iter;
 
 	if ((NULL == ntree) || (NULL == (queue = ft_queue_init())))
-	{
 		return (NULL);
-	}
-	ft_ntree_bfs(ntree, queue, __iter_func);
+	
+	ft_ntree_bfs(NULL, ntree, queue, __iter_func);
+
 	iter = ft_queue_peek(queue);
-	ft_queue_del(queue, NULL);
+	LIBFT_FREE(queue);
+
 	return (iter);
 }

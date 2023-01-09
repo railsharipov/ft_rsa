@@ -19,6 +19,7 @@ t_queue	*ft_queue_init(void)
 	LIBFT_ALLOC(new, sizeof(t_queue));
 	new->first = NULL;
 	new->last = NULL;
+
 	return (new);
 }
 
@@ -27,9 +28,8 @@ void	ft_queue_enqueue(t_queue *queue, t_node *node)
 	t_node	*tmp;
 
 	if ((NULL == queue) || (NULL == node))
-	{
 		return ;
-	}
+	
 	if (NULL == queue->last)
 	{
 		queue->last = node;
@@ -49,10 +49,10 @@ void	*ft_queue_dequeue(t_queue *queue)
 	void	*content;
 
 	if ((NULL == queue) || (NULL == queue->first))
-	{
 		return (NULL);
-	}
+	
 	node = queue->first;
+
 	if (queue->first == queue->last)
 	{
 		queue->first = NULL;
@@ -62,9 +62,11 @@ void	*ft_queue_dequeue(t_queue *queue)
 	{
 		queue->first = queue->first->next;
 	}
+
 	content = node->content;
 	LIBFT_FREE(node->key);
 	LIBFT_FREE(node);
+
 	return (content);
 }
 
@@ -72,24 +74,23 @@ t_node	*ft_queue_peek(t_queue *queue)
 {
 	if (NULL == queue)
 		return (NULL);
+	
 	return (queue->first);
 }
 
 int		ft_queue_is_empty(t_queue *queue)
 {
 	if ((NULL == queue) || (NULL == queue->first))
-	{
 		return (1);
-	}
+	
 	return (0);
 }
 
 int		ft_queue_size(t_queue *queue)
 {
 	if ((NULL == queue) || (NULL == queue->first))
-	{
 		return (0);
-	}
+	
 	return (ft_lst_size(queue->first));
 }
 

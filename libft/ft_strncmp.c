@@ -16,10 +16,8 @@ int		ft_strncmp(const char *s1, const char *s2, size_t n)
 {
 	size_t i;
 
-	if ((NULL == s1) || (NULL == s2))
-	{
-		return (INT_MIN);
-	}
+	// no null check, same as libc strcmp
+
 	i = 0;
 	while ((i < n) && (s1[i] || s2[i]))
 	{

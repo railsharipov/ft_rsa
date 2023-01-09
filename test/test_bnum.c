@@ -119,7 +119,7 @@ static void	__test_bnum_cleanup(void)
 static int	__test_bnum_num_to_hex(void)
 {
 	t_num		test_num;
-	char		digit_hex[16];
+	char		digit_hex[16+1];
 	uint64_t	digit;
 	char		*test_hex, *zero_test_hex, *ref_hex, *ref_hex_ptr;
 	size_t		hexsize, digit_hexsize;
@@ -137,14 +137,14 @@ static int	__test_bnum_num_to_hex(void)
 	idx = test_num.len - 1;
 
 	digit = test_num.val[idx--];
-	digit_hexsize = sprintf(digit_hex, "%llx", digit);
+	digit_hexsize = snprintf(digit_hex, sizeof(digit_hex), "%llx", digit);
 	ft_strncpy(ref_hex_ptr, digit_hex, digit_hexsize);
 	ref_hex_ptr += digit_hexsize;
 
 	while (idx >= 0)
 	{
 		digit = test_num.val[idx--];
-		digit_hexsize = sprintf(digit_hex, "%.15llx", digit);
+		digit_hexsize = snprintf(digit_hex, sizeof(digit_hex), "%.15llx", digit);
 		ft_strncpy(ref_hex_ptr, digit_hex, digit_hexsize);
 		ref_hex_ptr += digit_hexsize;
 	}

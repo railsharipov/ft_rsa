@@ -20,10 +20,7 @@ char	*ft_strsub(char const *s, unsigned int start, size_t len)
 	if (NULL == s)
 		return (NULL);
 
-	subs = ft_strnew(len);
-
-	if (NULL == subs)
-		return (NULL);
+	LIBFT_ALLOC(subs, len + 1);
 
 	i = 0;
 	while (i < len)

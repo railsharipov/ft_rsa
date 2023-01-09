@@ -12,52 +12,12 @@
 
 #include <libft.h>
 
+static t_node	*__lookup(void *memptr);
+static int		__push(const char *memkey, void *memptr, size_t memsize);
+static void		__clear(void);
+
 static t_node	*__memlist;
 int				global_ft_malloc_error;
-
-t_node	*__lookup(void *memptr)
-{
-	t_node *node;
-
-	node = __memlist;
-	while (node)
-	{
-		if (node->content == memptr)
-		{
-			return (node);
-		}
-		node = node->next;
-	}
-	return (NULL);
-}
-
-int	__push(const char *memkey, void *memptr, size_t memsize)
-{
-	t_node	*node;
-
-	if (NULL == (node = malloc(sizeof(t_node))))
-	{
-		return (LIBFT_MEM_FATAL);
-	}
-	node->key = (char *)memkey;
-	node->content = memptr;
-	node->size = memsize;
-	node->next = __memlist;
-	__memlist = node;
-	return (LIBFT_OK);
-}
-
-void	__clear(void)
-{
-	t_node	*node;
-
-	while (__memlist)
-	{
-		node = __memlist;
-		__memlist = __memlist->next;
-		free(node);
-	}
-}
 
 void	*ft_malloc(const char *memkey, size_t memsize)
 {
@@ -74,16 +34,19 @@ void	*ft_malloc(const char *memkey, size_t memsize)
 		global_ft_malloc_error = LIBFT_MEM_FATAL;
 		return (NULL);
 	}
+
 	if (NULL != (lookup_node = __lookup(memptr)))
 	{
 		global_ft_malloc_error = LIBFT_MEM_LEAK;
 		return (NULL);
 	}
+
 	if (LIBFT_OK != __push(memkey, memptr, memsize))
 	{
 		global_ft_malloc_error = LIBFT_MEM_FATAL;
 		return (NULL);
 	}
+
 	return (memptr);
 }
 
@@ -96,6 +59,7 @@ void	ft_free(const char *memkey, void *memptr)
 
 	node = __memlist;
 	prevnode = NULL;
+
 	while (node)
 	{
 		if (node->content == memptr)
@@ -103,19 +67,18 @@ void	ft_free(const char *memkey, void *memptr)
 		prevnode = node;
 		node = node->next;
 	}
+
 	if (NULL == node)
 	{
 		global_ft_malloc_error = LIBFT_MEM_DOUBLE_FREE;
 		return ;
 	}
+
 	if (NULL == prevnode)
-	{
 		__memlist = node->next;
-	}
 	else
-	{
 		prevnode->next = node->next;
-	}
+	
 	free(node->content);
 	free(node);
 }
@@ -123,4 +86,49 @@ void	ft_free(const char *memkey, void *memptr)
 void	ft_free_all(void)
 {
 	__clear();
+}
+
+static t_node *__lookup(void *memptr)
+{
+	t_node *node;
+
+	node = __memlist;
+
+	while (node)
+	{
+		if (node->content == memptr)
+			return (node);
+
+		node = node->next;
+	}
+
+	return (NULL);
+}
+
+static int __push(const char *memkey, void *memptr, size_t memsize)
+{
+	t_node *node;
+
+	if (NULL == (node = malloc(sizeof(t_node))))
+		return (LIBFT_MEM_FATAL);
+
+	node->key = (char *)memkey;
+	node->content = memptr;
+	node->size = memsize;
+	node->next = __memlist;
+	__memlist = node;
+
+	return (LIBFT_OK);
+}
+
+static void __clear(void)
+{
+	t_node *node;
+
+	while (__memlist)
+	{
+		node = __memlist;
+		__memlist = __memlist->next;
+		free(node);
+	}
 }

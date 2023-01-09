@@ -22,15 +22,14 @@ char	**ft_strsplit(char const *s, char c)
 	int		nwords;
 	char	**arr;
 
-	start_idx = 0;
-	nwords = __get_nwords(s, c);
-
 	if (NULL == s)
 		return (NULL);
-	
+
+	nwords = __get_nwords(s, c);
 	LIBFT_ALLOC(arr, sizeof(char *) * (nwords + 1));
 
 	idx = 0;
+	start_idx = 0;
 	word_idx = 0;
 	while (word_idx < nwords)
 	{
@@ -50,29 +49,27 @@ char	**ft_strsplit(char const *s, char c)
 	return (arr);
 }
 
-static int __get_nwords(char const *s, char c)
+static int __get_nwords(char const *s, char delim)
 {
 	int idx;
-	int nwords;
+	int num_delims;
 
-	nwords = 0;
+	num_delims = 0;
 
 	idx = 0;
-	if (s)
+	while (s[idx] != 0)
 	{
-		while (s[idx] == c && s[idx] != 0)
-			idx++;
-
-		while (s[idx] != 0)
-		{
-			nwords++;
-
-			while (s[idx] != c && s[idx] != 0)
-				idx++;
-
-			while (s[idx] == c && s[idx] != 0)
-				idx++;
-		}
+		if (s[idx] == delim)
+			num_delims++;
+		
+		idx++;
 	}
-	return (nwords);
+
+	if (idx == 0)
+		return (0);
+	
+	if (num_delims == 0)
+		return (1);
+
+	return (num_delims + 1);
 }

@@ -13,37 +13,28 @@
 #include <stddef.h>
 #include <libft.h>
 
-static void		__add_node(t_htbl *htbl, t_node *node, uint32_t hash);
-static t_node	*__get_node(t_htbl *htbl, uint32_t hash);
+static void 	__add_node(t_htbl *htbl, const char *key, void *content);
+static t_node 	*__get_node(t_htbl *htbl, const char *key);
 static void		__del_node_array(t_htbl *htbl);
 
 void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 {
-	t_node		*node;
+	t_node	*node;
 
 	if (NULL == htbl)
 		return ;
 	
-	node = ft_node_new(key, content, 0);
-
-	if (NULL == node)
-		return ;
-
-	node->hash = ft_hash((unsigned char *)key, ft_strlen(key));
-
-	__add_node(htbl, node, node->hash);
+	__add_node(htbl, key, content);
 }
 
 void	*(ft_htbl_get)(t_htbl *htbl, const char *key)
 {
-	t_node		*node;
-	uint32_t	hash;
+	t_node	*node;
 
 	if (NULL == htbl)
 		return (NULL);
 
-	hash = ft_hash((unsigned char *)key, ft_strlen(key));
-	node = __get_node(htbl, hash);
+	node = __get_node(htbl, key);
 
 	if (NULL == node)
 		return (NULL);
@@ -53,15 +44,12 @@ void	*(ft_htbl_get)(t_htbl *htbl, const char *key)
 
 void	(ft_htbl_assign)(t_htbl *htbl, void *content, const char *key)
 {
-	t_node		*node;
-	uint32_t	hash;
+	t_node	*node;
 
 	if (NULL == htbl)
 		return ;
 
-	hash = ft_hash((unsigned char *)key, ft_strlen(key));
-
-	node = __get_node(htbl, hash);
+	node = __get_node(htbl, key);
 
 	if (NULL == node)
 		return ;
@@ -79,56 +67,84 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 {
 	t_htbl new_htbl;
 	t_node *item;
+	t_node *iter;
+	t_node *node;
 	int idx;
 
-	new_htbl.size = MAX(LIBFT_HT_SIZE, LIBFT_HT_FACTOR * size);
+	new_htbl.size = MAX(LIBFT_HT_SIZE, size);
+	new_htbl.size = CEIL(new_htbl.size, LIBFT_HT_SIZE);
 
 	if (new_htbl.size <= htbl->size)
 		return;
 
 	LIBFT_ALLOC(new_htbl.arr, new_htbl.size * sizeof(void *));
 
-	for (item = ft_htbl_iter(htbl); item != NULL; item = item->next)
-		__add_node(&new_htbl, item, item->hash);
+	iter = ft_htbl_iter(htbl);
+	node = iter;
 
+	idx = 0;
+	while (node != NULL)
+	{
+		item = node->content;
+		__add_node(&new_htbl, item->key, item->content);
+		node = node->next;
+		idx++;
+	}
+
+	ft_lst_del(iter, NULL);
 	__del_node_array(htbl);
+
 	htbl->arr = new_htbl.arr;
 	htbl->size = new_htbl.size;
 }
 
-static void	__add_node(t_htbl *htbl, t_node *node, uint32_t hash)
+static void	__add_node(t_htbl *htbl, const char *key, void *content)
 {
-	int idx;
+	t_node		*node;
+	t_node		*tmp;
+	uint32_t	hash;
+	int 		idx;
 
+	hash = ft_hash((unsigned char *)key, ft_strlen(key));
 	idx = (int)(hash % (uint32_t)htbl->size);
+
+	node = ft_node_new(key, content, 0);
+	node->hash = hash;
 
 	if (NULL != htbl->arr[idx])
-		ft_lst_prepend((t_node **)(htbl->arr + idx), node);
+	{
+		tmp = __get_node(htbl, key);
+
+		if (NULL != tmp)
+			tmp->content = content;
+		else
+			ft_lst_prepend((t_node **)(htbl->arr + idx), node);
+	}
 	else
+	{
 		htbl->arr[idx] = node;
+	}
 }
 
-static t_node	*__get_node(t_htbl *htbl, uint32_t hash)
+static t_node	*__get_node(t_htbl *htbl, const char *key)
 {
-	t_node *node;
-	int idx;
+	t_node		*node;
+	uint32_t	hash;
+	int 		idx;
 
+	hash = ft_hash((unsigned char *)key, ft_strlen(key));
 	idx = (int)(hash % (uint32_t)htbl->size);
+
 	node = htbl->arr[idx];
 
-	if (NULL != node)
+	while (NULL != node)
 	{
-		if (NULL == node->next)
+		if (ft_strcmp(node->key, key) == 0)
 			return (node);
 
-		while (NULL != node)
-		{
-			if (node->hash == hash)
-				return (node);
-
-			node = node->next;
-		}
+		node = node->next;
 	}
+
 	return (NULL);
 }
 
@@ -146,21 +162,20 @@ static void	__del_node_array(t_htbl *htbl)
 	{
 		node = htbl->arr[idx];
 
-		if (NULL != node)
+		while (NULL != node)
 		{
-			while (NULL != node)
-			{
-				tmp = node;
-				node = node->next;
+			tmp = node;
+			node = node->next;
 
-				if (NULL != tmp->key)
-					LIBFT_FREE(tmp->key);
+			if (NULL != tmp->key)
+				LIBFT_FREE(tmp->key);
 
-				LIBFT_FREE(tmp);
-			}
+			LIBFT_FREE(tmp);
 		}
+
 		idx++;
 	}
+
 	LIBFT_FREE(htbl->arr);
 	htbl->arr = NULL;
 	htbl->size = 0;

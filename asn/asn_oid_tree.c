@@ -18,15 +18,16 @@ char	*asn_oid_tree_get_name(const char *oid)
 	name = NULL;
 
 	if (NULL == oid)
-	{
 		return (NULL);
-	}
+	
 	__oid_tree_init();
 
-	if (NULL != (node = ft_ntree_bfs(__oid_tree, oid, __f_find_oid)))
-	{
+	if (ft_ntree_bfs(&node, __oid_tree, oid, __f_find_oid) != 1)
+		return (NULL);
+
+	if (NULL != node)
 		name = ft_strdup(node->content);
-	}
+	
 	__oid_tree_del();
 
 	return (name);
@@ -40,15 +41,16 @@ char	*asn_oid_tree_get_oid(const char *name)
 	oid = NULL;
 
 	if (NULL == name)
-	{
 		return (NULL);
-	}
+	
 	__oid_tree_init();
 
-	if (NULL != (node = ft_ntree_bfs(__oid_tree, name, __f_find_name)))
-	{
+	if (ft_ntree_bfs(&node, __oid_tree, name, __f_find_name) != 1)
+		return (NULL);
+
+	if (NULL != node)
 		oid = ft_strdup(node->key);
-	}
+	
 	__oid_tree_del();
 
 	return (oid);
@@ -67,9 +69,8 @@ static int	__f_init(t_node *node, const void *farg)
 	(void)farg;
 
 	if (NULL == node)
-	{
 		return (0);
-	}
+	
 	keys = ft_strsplit(node->key, ':');
 	SSL_FREE(node->key);
 	SSL_CHECK(NULL != keys);
@@ -83,31 +84,27 @@ static int	__f_init(t_node *node, const void *farg)
 static void	__oid_tree_init(void)
 {
 	__oid_tree = ft_ntree_construct(MAP_ASN_OID_TREE);
-	ft_ntree_bfs(__oid_tree, NULL, __f_init);
+	ft_ntree_bfs(NULL, __oid_tree, NULL, __f_init);
 }
 
 static int	__f_find_oid(t_node *node, const void *farg)
 {
 	if (NULL == node)
-	{
 		return (0);
-	}
+	
 	if (!ft_strcmp(node->key, farg))
-	{
 		return (1);
-	}
+	
 	return (0);
 }
 
 static int	__f_find_name(t_node *node, const void *farg)
 {
 	if (NULL == node)
-	{
 		return (0);
-	}
+	
 	if (!ft_strcmp(node->content, farg))
-	{
 		return (1);
-	}
+	
 	return (0);
 }

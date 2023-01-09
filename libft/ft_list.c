@@ -16,24 +16,28 @@ void	ft_lst_append(t_node **lst, t_node *node)
 {
 	t_node	*tmp;
 
-	tmp = *lst;
-	if ((NULL == tmp) || (NULL == node))
+	if (NULL == lst || NULL == node)
+		return ;
+
+	if (NULL == *lst)
 	{
+		*lst = node;
 		return ;
 	}
+
+	tmp = *lst;
+
 	while (tmp->next)
-	{
 		tmp = tmp->next;
-	}
+	
 	tmp->next = node;
 }
 
 void	ft_lst_prepend(t_node **lst, t_node *node)
 {
-	if ((NULL == lst) || (NULL == node))
-	{
+	if (NULL == node || NULL == lst)
 		return ;
-	}
+	
 	node->next = *lst;
 	*lst = node;
 }
@@ -43,9 +47,8 @@ void	ft_lst_del_first(t_node **lst, void (*f_del)(t_node *))
 	t_node	*tmp;
 
 	if ((NULL == lst) || (NULL == *lst))
-	{
 		return ;
-	}
+	
 	tmp = *lst;
 	*lst = (*lst)->next;
 	ft_node_del(tmp, f_del);
@@ -57,24 +60,22 @@ void	ft_lst_del_last(t_node **lst, void (*f_del)(t_node *))
 	t_node	*prev;
 
 	if ((NULL == lst) || (NULL == *lst))
-	{
 		return ;
-	}
+	
 	prev = NULL;
 	cur = *lst;
+
 	while (cur->next)
 	{
 		prev = cur;
 		cur = cur->next;
 	}
+
 	if (NULL == prev)
-	{
 		*lst = NULL;
-	}
 	else
-	{
 		prev->next = NULL;
-	}
+	
 	ft_node_del(cur, f_del);
 }
 
@@ -84,28 +85,25 @@ void	ft_lst_del_one(t_node **lst, t_node *node, void (*f_del)(t_node *))
 	t_node	*prev;
 
 	if ((NULL == *lst) || (NULL == node))
-	{
 		return ;
-	}
+	
 	prev = NULL;
 	cur = *lst;
+
 	while ((NULL != cur) && (node != cur))
 	{
 		prev = cur;
 		cur = cur->next;
 	}
+
 	if (NULL == cur)
-	{
 		return ;
-	}
+	
 	if (NULL == prev)
-	{
 		*lst = cur->next;
-	}
 	else
-	{
 		prev->next = cur->next;
-	}
+	
 	ft_node_del(cur, f_del);
 }
 
@@ -119,6 +117,7 @@ int	ft_lst_size(t_node *lst)
 		size++;
 		lst = lst->next;
 	}
+
 	return (size);
 }
 
@@ -136,6 +135,9 @@ void	ft_lst_del(t_node *lst, void (*f_del)(t_node *))
 
 void	ft_lst_map(t_node *lst, void *farg, void (*f)(t_node *, void *))
 {
+	if (NULL == f)
+		return ;
+	
 	while (lst)
 	{
 		f(lst, farg);
@@ -148,14 +150,15 @@ t_htbl	*ft_lst_htable(t_node *lst)
 	t_htbl	*htbl;
 
 	if (NULL == lst)
-	{
 		return (NULL);
-	}
+	
 	htbl = ft_htbl_init(ft_lst_size(lst));
+
 	while (lst)
 	{
 		ft_htbl_add(htbl, lst->content, lst->key);
 		lst = lst->next;
 	}
+
 	return (htbl);
 }

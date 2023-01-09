@@ -19,6 +19,7 @@ static int	__calc_size_func(t_node *node, const void *farg)
 	(void)node;
 	size = (int *)farg;
 	*size = *size + 1;
+	
 	return (0);
 }
 
@@ -27,6 +28,7 @@ int	ft_ntree_size(t_node *node)
 	int	size;
 
 	size = 0;
-	ft_ntree_bfs(node, &size, __calc_size_func);
+	ft_ntree_bfs(NULL, node, &size, __calc_size_func);
+
 	return (size);
 }

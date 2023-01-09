@@ -12,47 +12,60 @@
 
 #include <libft.h>
 
-static void	__del_node_func(t_node *node)
-{
-	if (NULL == node)
-		return ;
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
+static void __del_node_func(t_node *node);
 
-void	*ft_ntree_bfs(
-	t_node *node, const void *farg, int (*f)(t_node *, const void *))
+int	ft_ntree_bfs(
+	t_node **res, t_node *node, const void *farg, int (*f)(t_node *, const void *))
 {
 	t_queue	*queue;
 	t_node	*child_node;
+	int		ret;
 
-	if ((NULL == node) || (NULL == f) || (NULL == (queue = ft_queue_init())))
-	{
-		return (NULL);
-	}
+	if ((NULL == node) || (NULL == f))
+		return (-1);
+
+	queue = ft_queue_init();
+
 	while (node)
 	{
 		ft_queue_enqueue(queue, ft_node_new(NULL, node, 0));
 		node = node->next;
 	}
+
 	while (!ft_queue_is_empty(queue))
 	{
 		node = ft_queue_dequeue(queue);
+
 		if (ft_node_is_parent(node))
 		{
 			child_node = node->nodes;
+
 			while (NULL != child_node)
 			{
 				ft_queue_enqueue(queue, ft_node_new(NULL, child_node, 0));
 				child_node = child_node->next;
 			}
 		}
-		if (f(node, farg) != 0)
-		{
-			break ;
-		}
-		node = NULL;
+
+		ret = f(node, farg);
+
+		if (ret != 0)
+			break;
 	}
+
 	ft_queue_del(queue, __del_node_func);
-	return (node);
+
+	if (res != NULL)
+		*res = (ret == 1) ? node : NULL;
+
+	return (ret);
+}
+
+static void __del_node_func(t_node *node)
+{
+	if (NULL == node)
+		return;
+
+	LIBFT_FREE(node->key);
+	LIBFT_FREE(node);
 }

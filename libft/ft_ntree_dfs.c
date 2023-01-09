@@ -12,35 +12,59 @@
 
 #include <libft.h>
 
-static void	__dfs_recur(
-	t_node *node, const void *farg, int (*f)(t_node *, const void *), void **ptr)
+static int __dfs_recur(t_node *node, const void *farg, int (*f)(t_node *, const void *), t_node **res);
+
+static int __depth;
+
+int	ft_ntree_dfs(
+	t_node **res, t_node *ntree, const void *farg, int (*f)(t_node *, const void *))
 {
-	if (NULL == node)
-	{
-		return ;
-	}
-	if (NULL == *ptr)
-	{
-		if (f(node, farg) != 0)
-		{
-			*ptr = node;
-			return ;
-		}
-		__dfs_recur(node->nodes, farg, f, ptr);
-		__dfs_recur(node->next, farg, f, ptr);
-	}
+	t_node	*node;
+	int		ret;
+
+	__depth = 0;
+
+	if ((NULL == ntree) || (NULL == f))
+		return (-1);
+
+	ret = __dfs_recur(ntree, farg, f, &node);
+
+	if (res != NULL)
+		*res = node;
+
+	return (ret);
 }
 
-void	*ft_ntree_dfs(
-	t_node *node, const void *farg, int (*f)(t_node *, const void *))
+int ft_ntree_dfs_cur_depth(void)
 {
-	void	*ptr;
+	return (__depth);
+}
 
-	if ((NULL == node) || (NULL == f))
+static int __dfs_recur(
+	t_node *node, const void *farg, int (*f)(t_node *, const void *), t_node **res)
+{
+	int ret;
+
+	if (NULL == node)
 	{
-		return (NULL);
+		*res = NULL;
+		return (0);
 	}
-	ptr = NULL;
-	__dfs_recur(node, farg, f, &ptr);
-	return (ptr);
+
+	if ((ret = f(node, farg)) != 0)
+	{
+		*res = (ret == 1) ? node : NULL;
+		return (ret);
+	}
+
+	__depth++;
+
+	ret = __dfs_recur(node->nodes, farg, f, res);
+
+	__depth--;
+
+	if (ret == 0)
+		ret = __dfs_recur(node->next, farg, f, res);
+
+	return (ret);
 }

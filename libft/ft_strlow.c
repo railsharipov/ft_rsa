@@ -12,15 +12,24 @@
 
 #include <libft.h>
 
-void	ft_strlow(char *s)
+char	*ft_strlow(char *s)
 {
-	if (!s)
-		return ;
+	char	*s_low;
+	size_t	idx;
+
+	if (NULL == s)
+		return (NULL);
 	
-	while (*s)
+	s_low = ft_strdup(s);
+
+	idx = 0;
+	while (s_low[idx] != '\0')
 	{
-		if (*s >= 'A' && *s <= 'Z')
-			*s = *s + 32;
-		s++;
+		if (s_low[idx] >= 'A' && s_low[idx] <= 'Z')
+			s_low[idx] = s_low[idx] + 32;
+
+		idx++;
 	}
+
+	return (s_low);
 }

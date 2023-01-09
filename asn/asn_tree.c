@@ -14,9 +14,8 @@ t_node	*asn_tree(const char *map)
 	__error_status = SSL_OK;
 
 	tree = ft_ntree_construct(map);
-	ft_ntree_bfs(tree, NULL, __init_func);
 
-	if (__error_status != SSL_OK)
+	if (ft_ntree_bfs(NULL, tree, NULL, __init_func) < 0)
 	{
 		ft_ntree_del(tree, __del_func);
 		return (NULL);
@@ -40,7 +39,7 @@ static int	__init_func(t_node *node, const void *p)
 	num_strings = ft_2darray_len_null_terminated((void **)strings);
 
 	if (NULL == strings || num_strings != 2)
-		return (__abort_with_error());
+		return (-1);
 
 	ft_strncpy(type_key, strings[0], sizeof(type_key)-1);
 	ft_strncpy(description, strings[1], sizeof(description)-1);
@@ -50,7 +49,7 @@ static int	__init_func(t_node *node, const void *p)
 	item = asn_item_init();
 
 	if (SSL_OK != asn_item_set_type(item, type_key))
-		return (__abort_with_error());
+		return (-1);
 
 	item->description = ft_strdup(description);
 	node->content = item;
@@ -64,10 +63,4 @@ static void	__del_func(t_node *node)
 
 	if (NULL != node->content)
 		asn_item_del((t_iasn *)node->content);
-}
-
-static int	__abort_with_error()
-{
-	__error_status = SSL_FAIL;
-	return (-1);
 }

@@ -14,7 +14,8 @@
 
 int   ft_node_is_parent(t_node *node)
 {
-  if (NULL == node)
-    return (0);
-  return (NULL != node->nodes);
+	if (NULL == node)
+		return (0);
+
+	return (NULL != node->nodes);
 }

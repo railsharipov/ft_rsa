@@ -14,6 +14,7 @@
 
 void	pf_print_s(t_pf *data, char *src, size_t i)
 {
+	char	*temp;
 	char	*s;
 
 	data->size = ft_strlen(src);
@@ -35,8 +36,16 @@ void	pf_print_s(t_pf *data, char *src, size_t i)
 
 	if (src)
 	{
-		ft_memzcpy(s + i, src, data->str_size, data->size);
-		(data->type == 'q') ? ft_strup(s + i) : NULL;
+		ft_memzcpy(s + i, src, data->str_size - i, data->size);
+
+		if (data->type == 'q')
+		{
+			// 'q' means uppercase format
+			temp = ft_strup(s + i);
+			ft_strcpy(s + i, temp);
+			free(temp);
+		}
+
 		i += data->size;
 	}
 

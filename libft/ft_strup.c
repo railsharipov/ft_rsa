@@ -12,15 +12,24 @@
 
 #include <libft.h>
 
-void	ft_strup(char *s)
+char *ft_strup(char *s)
 {
+	char *s_up;
+	size_t idx;
+
 	if (NULL == s)
-		return ;
-	
-	while (*s != 0)
+		return (NULL);
+
+	s_up = ft_strdup(s);
+
+	idx = 0;
+	while (s_up[idx] != '\0')
 	{
-		if (*s >= 'a' && *s <= 'z')
-			*s = *s - 32;
-		s++;
+		if (s_up[idx] >= 'a' && s_up[idx] <= 'z')
+			s_up[idx] = s_up[idx] - 32;
+
+		idx++;
 	}
+
+	return (s_up);
 }

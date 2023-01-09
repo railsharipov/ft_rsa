@@ -12,21 +12,19 @@
 
 #include <libft.h>
 
-char	*ft_intchar(char *buf, intmax_t integer, int int_bytes)
+void	ft_intbytes(char *buf, intmax_t integer, int intsize)
 {
-	int		j;
+	int		idx;
 	int		shift;
 
 	if (!buf)
-		return (NULL);
+		return ;
 	
-	j = 0;
-	while (j < int_bytes)
+	idx = 0;
+	while (idx < intsize)
 	{
-		shift = (int_bytes - j - 1) * 8;
-		buf[j] = (unsigned char)((integer >> shift) & 0xff);
-		j++;
+		shift = (intsize - idx - 1) * 8;
+		buf[idx] = (unsigned char)((integer >> shift) & 0xff);
+		idx++;
 	}
-	
-	return (buf);
 }

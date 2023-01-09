@@ -32,10 +32,9 @@ void	__digit_arr(uint8_t *arr, intmax_t val, int base, int len)
 	if (val < 0)
 		val = -val;
 
-	len--;
-	while (val)
+	while (len)
 	{
-		arr[len] = (uint8_t)(val % base);
+		arr[len-1] = (uint8_t)(val % base);
 		val = val / base;
 		len--;
 	}
@@ -91,7 +90,7 @@ char	*ft_itoa_base(intmax_t value, int base)
 	len = __space_needed(value, base);
 	__digit_arr(arr, value, base, len);
 
-	LIBFT_ALLOC(s, len+1);
+	LIBFT_ALLOC(s, len+1 + (int)(is_neg)); // extra for hypen symbol
 	__base_str(s, arr, len, is_neg);
 
 	return (s);

@@ -30,7 +30,6 @@
 # define LIBFT_BUFF				256
 # define LIBFT_ERRBUF			1024
 # define LIBFT_HT_SIZE			512
-# define LIBFT_HT_FACTOR		16
 
 # define COLOR_RED				"\x1b[31m"
 # define COLOR_GREEN			"\x1b[32m"
@@ -64,6 +63,8 @@
 # define NBYTES_TO_NBITS(X)				((X)*CHAR_BIT)
 
 # define IS_OF_TYPE(X, T)		_Generic((X), T:1, default:0)
+
+# define DO_NOTHING				(void)0;
 
 /* Overload macros on number of args */
 # define SEL12(_1, _2, MACRO_NAME, ...) MACRO_NAME
@@ -130,6 +131,7 @@ void		(ft_htbl_assign)(t_htbl *, void *, const char *);
 void		ft_htbl_bin_add(t_htbl *, void *, const void *, size_t);
 void		*ft_htbl_bin_get(t_htbl *, const void *, size_t);
 void		ft_htbl_bin_assign(t_htbl *, void *, const void *, size_t);
+void 		ft_htbl_resize(t_htbl *htbl, int size);
 
 # define 	_HADD1(...) ft_htbl_bin_add(__VA_ARGS__)
 # define 	_HADD2(...) ft_htbl_add(__VA_ARGS__)
@@ -162,7 +164,8 @@ t_stack		*ft_stack_init(void);
 void		*ft_stack_pop(t_stack *);
 void		ft_stack_push(t_stack *, const char *, void *, size_t);
 t_node		*ft_stack_peek(t_stack *);
-int			ft_stack_size(t_stack *);
+int 		ft_stack_is_empty(t_stack *);
+int 		ft_stack_size(t_stack *);
 void		ft_stack_clear(t_stack *);
 void		ft_stack_del(t_stack *, void (*f_del)(t_node *));
 t_htbl		*ft_stack_htable(t_stack *);
@@ -178,8 +181,9 @@ void		ft_queue_del(t_queue *, void (*f)(t_node *));
 t_htbl		*ft_queue_htable(t_queue *);
 
 t_node		*ft_ntree_construct(const char *);
-void		*ft_ntree_dfs(t_node *, const void *, int (*f)(t_node *, const void *));
-void		*ft_ntree_bfs(t_node *, const void *, int (*f)(t_node *, const void *));
+int 		ft_ntree_dfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
+int			ft_ntree_dfs_cur_depth(void);
+int			ft_ntree_bfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
 void		ft_ntree_del(t_node *, void (*f_del)(t_node *));
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);
@@ -189,10 +193,8 @@ t_htbl		*ft_ntree_to_set(t_node *);
 void		*ft_memset(void *b, int c, size_t len);
 void		ft_bzero(void *s, size_t n);
 void		*ft_memcpy(void *dst, const void *src, size_t n);
-void		*ft_memccpy(void *dst, const void *src, int c, size_t n);
 void		*ft_memzcpy(void *dst, const void *src, size_t, size_t);
 void		*ft_memmove(void *dst, const void *src, size_t len);
-void		*ft_memchr(const void *s, int c, size_t n);
 int			ft_memcmp(const void *s1, const void *s2, size_t n);
 void		*ft_memdup(void *, size_t);
 size_t		ft_strlen(const char *s);
@@ -204,8 +206,6 @@ char		*ft_strcat(char *s1, const char *s2);
 char		*ft_strncat(char *s1, const char *s2, size_t n);
 char		*ft_strchr(const char *s, int c);
 char		*ft_strrchr(const char *s, int c);
-char		*ft_strstr(const char *haystack, const char *needle);
-char		*ft_strnstr(const char *, const char *, size_t);
 int			ft_strcmp(const char *s1, const char *s2);
 int			ft_strncmp(const char *s1, const char *s2, size_t n);
 long long	ft_atoi(const char *str);
@@ -225,31 +225,23 @@ int			ft_str_isdigit(const char *s);
 int			ft_str_isascii(const char *s);
 int			ft_str_isprint(const char *s);
 int			ft_str_ishex(const char *s);
-void		ft_strup(char *s);
-void		ft_strlow(char *s);
+char		*ft_strup(char *s);
+char		*ft_strlow(char *s);
 int			ft_toupper(int c);
 int			ft_tolower(int c);
-char		*ft_strnew(size_t size);
 char		*ft_strsub(char const *s, unsigned int start, size_t len);
 char		*ft_strjoin(char const *s1, char const *s2);
-char		*ft_strtrim(char const *s);
 char		**ft_strsplit(char const *s, char c);
 char		*ft_itoa(intmax_t n);
 char		*ft_itoa_base(intmax_t value, int base);
-void		ft_putchar(char c);
 void		ft_putstr(char const *s);
-int			ft_putendl(char const *, size_t);
-int			ft_putendl_fd(int fd, char const *, size_t);
-void		ft_putnbr(int n);
-void		ft_putchar_fd(char c, int fd);
 void		ft_putstr_fd(int fd, char const *s);
-void		ft_putnbr_fd(int fd, int n);
 int			get_next_line(int fd, char **line);
 int			ft_printf(const char *format, ...);
 char		*ft_binhex(const void *bin, size_t binsize);
 void		ft_hexbin(void *bin, const char *hex, size_t hexsize);
 void		ft_revbits(void *src, size_t size);
-char		*ft_intchar(char *buf, intmax_t integer, int int_bytes);
+void		ft_intbytes(char *buf, intmax_t integer, int intsize);
 void		ft_2darray_del(void **, int);
 void 		ft_2darray_del_null_terminated(void **);
 int			ft_2darray_len_null_terminated(void **);
@@ -267,7 +259,7 @@ extern int	global_ft_malloc_error;
 	{ \
 		ft_printf("%@fatal memory error %d\n", global_ft_malloc_error); \
 		ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
-		ft_exit(); \
+		exit(-1); \
 	} \
 	while (0)
 
@@ -337,7 +329,7 @@ extern int	global_ft_malloc_error;
 		if (ENOMEM == errno) \
 		{ \
 			perror(TXT_RED("fatal memory error")); \
-			ft_exit(); \
+			exit(errno); \
 		} \
 	} \
 	while (0)

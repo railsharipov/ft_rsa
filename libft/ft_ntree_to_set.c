@@ -15,6 +15,7 @@
 static int	__htable_func(t_node *node, const void *farg)
 {
 	ft_htbl_add((t_htbl *)farg, node->content, node->key);
+	
 	return (0);
 }
 
@@ -26,7 +27,7 @@ t_htbl	*ft_ntree_to_set(t_node *node)
 		return (NULL);
 	
 	htbl = ft_htbl_init(ft_ntree_size(node));
-	ft_ntree_bfs(node, htbl, __htable_func);
+	ft_ntree_bfs(NULL, node, htbl, __htable_func);
 	
 	return (htbl);
 }

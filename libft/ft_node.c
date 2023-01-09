@@ -41,22 +41,6 @@ t_node	*ft_node_new(const char *key, void *content, size_t size)
 	return (node);
 }
 
-t_node	*ft_node_dup(t_node *node)
-{
-	t_node	*node_dup;
-
-	LIBFT_ALLOC(node_dup, sizeof(t_node));
-
-	if (NULL == node_dup)
-		return (NULL);
-	
-	ft_memcpy(node_dup, node, sizeof(t_node));
-	node_dup->next = NULL;
-	node_dup->nodes = NULL;
-
-	return (node_dup);
-}
-
 void 	ft_node_del(t_node *node, void (*f_del)(t_node *))
 {
 	if (NULL == node)
