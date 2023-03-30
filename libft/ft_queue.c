@@ -17,19 +17,20 @@ t_queue	*ft_queue_init(void)
 	t_queue	*new;
 
 	LIBFT_ALLOC(new, sizeof(t_queue));
-	new->first = NULL;
-	new->last = NULL;
 
 	return (new);
 }
 
-void	ft_queue_enqueue(t_queue *queue, t_node *node)
+void	ft_queue_enqueue(t_queue *queue, const char *key, void *content, size_t size)
 {
+	t_node	*node;
 	t_node	*tmp;
 
-	if ((NULL == queue) || (NULL == node))
+	if (NULL == queue)
 		return ;
 	
+	node = ft_node_new(key, content, size);
+
 	if (NULL == queue->last)
 	{
 		queue->last = node;
@@ -94,13 +95,51 @@ int		ft_queue_size(t_queue *queue)
 	return (ft_lst_size(queue->first));
 }
 
-void	ft_queue_del(t_queue *queue, void (*f_del)(t_node *))
+int	ft_queue_del(t_queue *queue, int (*f_del)(t_node *))
 {
 	if (NULL == queue)
-		return ;
+		return (LIBFT_ERR);
 	
-	ft_lst_del(ft_queue_peek(queue), f_del);
+	if (LIBFT_OK != ft_lst_del(ft_queue_peek(queue), f_del))
+		return (LIBFT_ERR);
+
 	LIBFT_FREE(queue);
+
+	return (LIBFT_OK);
+}
+
+int	ft_queue_del_node(t_queue *queue, t_node *node, int (*f_del)(t_node *))
+{
+	t_node *cur;
+	t_node *prev;
+
+	if ((NULL == queue) || (NULL == queue->first))
+		return (LIBFT_ERR);
+
+	if (NULL == node)
+		return (LIBFT_ERR);
+
+	prev = NULL;
+	cur = queue->first;
+
+	while ((NULL != cur) && (node != cur))
+	{
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if (NULL == cur)
+		return (LIBFT_OK);
+
+	if (NULL == prev)
+		queue->first = cur->next;
+	else
+		prev->next = cur->next;
+	
+	if (cur == queue->last)
+		queue->last = prev;
+
+	return (ft_node_del(cur, f_del));
 }
 
 t_htbl	*ft_queue_htable(t_queue *queue)

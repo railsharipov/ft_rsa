@@ -57,6 +57,36 @@ void	(ft_htbl_assign)(t_htbl *htbl, void *content, const char *key)
 	node->content = content;
 }
 
+void	(ft_htbl_erase)(t_htbl *htbl, const char *key)
+{
+	t_node		*node;
+	t_node		*list;
+	uint32_t	hash;
+	int 		idx;
+
+	if (NULL == htbl)
+		return;
+
+	hash = ft_hash((unsigned char *)key, ft_strlen(key));
+	idx = (int)(hash % (uint32_t)htbl->size);
+
+	list = htbl->arr[idx];
+	node = list;
+
+	while (NULL != node)
+	{
+		if (ft_strcmp(node->key, key) == 0)
+			break ;
+
+		node = node->next;
+	}
+
+	if (node != NULL)
+		ft_lst_del_one(&list, node, NULL);
+
+	htbl->arr[idx] = list;
+}
+
 void	ft_htbl_del(t_htbl *htbl)
 {
 	__del_node_array(htbl);

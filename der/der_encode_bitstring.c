@@ -6,8 +6,7 @@
 /*
 /	Content shall be encoded as a bitstring, that is, first content
 /	octet shall be an extra octet containing the number of unused
-/	trailing bits. Encoding of the bitstring is a subject for
-/	higher level functions.
+/	trailing bits.
 */
 
 int der_encode_bitstring(t_ostring *osbuf, void *content, size_t size)

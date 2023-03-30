@@ -1,22 +1,24 @@
 #include <ft_ssl.h>
 #include <ssl_asn.h>
 
-static void	__f_del(t_node *node)
+static int	__f_del(t_node *node)
 {
 	if (NULL == node)
-	{
-		return ;
-	}
+		return (0);
+	
 	asn_item_del(node->content);
 	SSL_FREE(node->key);
 	SSL_FREE(node);
+
+	return (0);
 }
 
-void	asn_tree_del(t_node *tree)
+int	asn_tree_del(t_node *tree)
 {
 	if (NULL == tree)
-	{
-		return ;
-	}
+		return (SSL_ERROR(INVALID_INPUT));
+	
 	ft_ntree_del(tree, __f_del);
+
+	return (SSL_OK);
 }

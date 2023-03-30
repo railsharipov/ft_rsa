@@ -42,25 +42,26 @@ void	ft_lst_prepend(t_node **lst, t_node *node)
 	*lst = node;
 }
 
-void	ft_lst_del_first(t_node **lst, void (*f_del)(t_node *))
+int	ft_lst_del_first(t_node **lst, int (*f_del)(t_node *))
 {
 	t_node	*tmp;
 
 	if ((NULL == lst) || (NULL == *lst))
-		return ;
+		return (LIBFT_ERR);
 	
 	tmp = *lst;
 	*lst = (*lst)->next;
-	ft_node_del(tmp, f_del);
+
+	return (ft_node_del(tmp, f_del));
 }
 
-void	ft_lst_del_last(t_node **lst, void (*f_del)(t_node *))
+int	ft_lst_del_last(t_node **lst, int (*f_del)(t_node *))
 {
 	t_node	*cur;
 	t_node	*prev;
 
 	if ((NULL == lst) || (NULL == *lst))
-		return ;
+		return (LIBFT_ERR);
 	
 	prev = NULL;
 	cur = *lst;
@@ -76,16 +77,16 @@ void	ft_lst_del_last(t_node **lst, void (*f_del)(t_node *))
 	else
 		prev->next = NULL;
 	
-	ft_node_del(cur, f_del);
+	return (ft_node_del(cur, f_del));
 }
 
-void	ft_lst_del_one(t_node **lst, t_node *node, void (*f_del)(t_node *))
+int	ft_lst_del_one(t_node **lst, t_node *node, int (*f_del)(t_node *))
 {
 	t_node	*cur;
 	t_node	*prev;
 
-	if ((NULL == *lst) || (NULL == node))
-		return ;
+	if (NULL == lst || NULL == *lst || NULL == node)
+		return (LIBFT_ERR);
 	
 	prev = NULL;
 	cur = *lst;
@@ -97,14 +98,14 @@ void	ft_lst_del_one(t_node **lst, t_node *node, void (*f_del)(t_node *))
 	}
 
 	if (NULL == cur)
-		return ;
+		return (LIBFT_OK);
 	
 	if (NULL == prev)
 		*lst = cur->next;
 	else
 		prev->next = cur->next;
 	
-	ft_node_del(cur, f_del);
+	return (ft_node_del(cur, f_del));
 }
 
 int	ft_lst_size(t_node *lst)
@@ -121,7 +122,7 @@ int	ft_lst_size(t_node *lst)
 	return (size);
 }
 
-void	ft_lst_del(t_node *lst, void (*f_del)(t_node *))
+int	ft_lst_del(t_node *lst, int (*f_del)(t_node *))
 {
 	t_node	*tmp;
 
@@ -129,20 +130,28 @@ void	ft_lst_del(t_node *lst, void (*f_del)(t_node *))
 	{
 		tmp = lst;
 		lst = lst->next;
-		ft_node_del(tmp, f_del);
+
+		if (LIBFT_OK != ft_node_del(tmp, f_del))
+			return (LIBFT_ERR);
 	}
+
+	return (LIBFT_OK);
 }
 
-void	ft_lst_map(t_node *lst, void *farg, void (*f)(t_node *, void *))
+int	ft_lst_map(t_node *lst, void *farg, int (*f)(t_node *, void *))
 {
 	if (NULL == f)
-		return ;
+		return (LIBFT_ERR);
 	
 	while (lst)
 	{
-		f(lst, farg);
+		if (LIBFT_OK != f(lst, farg))
+			return (LIBFT_ERR);
+		
 		lst = lst->next;
 	}
+
+	return (LIBFT_OK);
 }
 
 t_htbl	*ft_lst_htable(t_node *lst)

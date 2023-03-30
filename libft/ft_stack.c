@@ -17,7 +17,6 @@ t_stack	*ft_stack_init(void)
 	t_stack	*stack;
 
 	LIBFT_ALLOC(stack, sizeof(t_stack));
-	stack->top = NULL;
 	
 	return (stack);
 }
@@ -32,7 +31,9 @@ void	*ft_stack_pop(t_stack *stack)
 
 	node = stack->top;
 	content = node->content;
+
 	stack->top = stack->top->next;
+
 	LIBFT_FREE(node->key);
 	LIBFT_FREE(node);
 
@@ -49,8 +50,7 @@ void	ft_stack_push(
 	
 	node = ft_node_new(key, content, size);
 
-	if (NULL != node)
-		ft_lst_prepend(&stack->top, node);
+	ft_lst_prepend(&stack->top, node);
 }
 
 t_node	*ft_stack_peek(t_stack *stack)
@@ -77,15 +77,18 @@ int		ft_stack_size(t_stack *stack)
 	return (ft_lst_size(stack->top));
 }
 
-void	ft_stack_del(t_stack *stack, void (*f_del)(t_node *))
+int	ft_stack_del(t_stack *stack, int (*f_del)(t_node *))
 {
 	if (NULL == stack)
-		return ;
+		return (LIBFT_ERR);
 	
-	if (NULL != f_del)
-		ft_lst_del(stack->top, f_del);
+
+	if (LIBFT_OK != ft_lst_del(stack->top, f_del))
+		return (LIBFT_ERR);
 	
 	LIBFT_FREE(stack);
+
+	return (LIBFT_OK);
 }
 
 t_htbl	*ft_stack_htable(t_stack *stack)

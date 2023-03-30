@@ -17,7 +17,7 @@ static int	__iter_func(t_node *node, const void *ptr)
 	t_queue	*queue;
 
 	queue = (t_queue *)(ptr);
-	ft_queue_enqueue(queue, ft_node_new(NULL, node, 0));
+	ft_queue_enqueue(queue, NULL, node, 0);
 	
 	return (0);
 }

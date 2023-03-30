@@ -6,8 +6,7 @@
 /*
 /	Encoding shall be a bitstring encoding, that is, first encoding
 /	octet shall be an octet containing the number of unused trailing
-/	bits of the bitstring. Decoding of the bitstring is a subject for
-/	higher level functions.
+/	bits of the bitstring.
 */
 
 int  der_decode_bitstring(t_ostring *osbuf, uint8_t *enc, size_t size)

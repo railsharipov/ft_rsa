@@ -18,10 +18,6 @@ t_node	*ft_node_init(void)
 
 	LIBFT_ALLOC(node, sizeof(t_node));
 
-	if (NULL == node)
-		return (NULL);
-	
-	ft_bzero(node, sizeof(t_node));
 	return (node);
 }
 
@@ -41,18 +37,16 @@ t_node	*ft_node_new(const char *key, void *content, size_t size)
 	return (node);
 }
 
-void 	ft_node_del(t_node *node, void (*f_del)(t_node *))
-{
-	if (NULL == node)
-		return ;
-	
+int	ft_node_del(t_node *node, int (*f_del)(t_node *))
+{	
 	if (NULL != f_del)
-	{
-		f_del(node);
-	}
-	else
+		return (f_del(node));
+	
+	if (NULL != node)
 	{
 		LIBFT_FREE(node->key);
 		LIBFT_FREE(node);
 	}
+
+	return (LIBFT_OK);
 }

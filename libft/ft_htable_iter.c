@@ -33,7 +33,7 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 
 		while (NULL != item)
 		{
-			ft_queue_enqueue(queue, ft_node_new(NULL, item, 0));
+			ft_queue_enqueue(queue, NULL, item, 0);
 			item = item->next;
 		}
 	}

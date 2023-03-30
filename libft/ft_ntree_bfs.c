@@ -28,7 +28,7 @@ int	ft_ntree_bfs(
 
 	while (node)
 	{
-		ft_queue_enqueue(queue, ft_node_new(NULL, node, 0));
+		ft_queue_enqueue(queue, NULL, node, 0);
 		node = node->next;
 	}
 
@@ -42,7 +42,7 @@ int	ft_ntree_bfs(
 
 			while (NULL != child_node)
 			{
-				ft_queue_enqueue(queue, ft_node_new(NULL, child_node, 0));
+				ft_queue_enqueue(queue, NULL, child_node, 0);
 				child_node = child_node->next;
 			}
 		}
@@ -53,19 +53,10 @@ int	ft_ntree_bfs(
 			break;
 	}
 
-	ft_queue_del(queue, __del_node_func);
+	ft_queue_del(queue, NULL);
 
 	if (res != NULL)
 		*res = (ret == 1) ? node : NULL;
 
 	return (ret);
-}
-
-static void __del_node_func(t_node *node)
-{
-	if (NULL == node)
-		return;
-
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
 }

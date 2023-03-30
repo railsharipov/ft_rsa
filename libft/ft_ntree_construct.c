@@ -35,13 +35,29 @@ static t_node *__create_recur(char **key, int *idx);
 //
 // Curly brackets are NOT included in node keys.
 //
+// Node struct is defined as:
+//
+// typedef struct 		s_node
+// {
+// 		uint64_t 		hash;
+// 		char 			*key;
+// 		void 			*content;
+// 		size_t 			size;
+// 		struct s_node 	*next;
+// 		struct s_node 	*nodes;
+// } 					t_node;
+//
+// Nodes that have the same parent node are linked using linked list.
+// <next> pointer points to a next node in this linked list.
+// <nodes> pointer points to linked list containing child nodes.
+//
 // Example: "colors{ RGB{ 25 27 30 } RGBA{ 32 35 40 0.5 } } sizes{ S M L }"
 //
-//					colors         ------>       sizes
-//				/			\					/  \   \
-//			RGB				RGBA				S   M   L
-//		/	|	\		/	|	\	\
-//		25	27	30		32	35	40	0.5
+//							colors         ------>       sizes
+//						/			\					/  \   \
+//					RGB	  			RGBA				S   M   L
+//				/	|	\		/	|	\	\
+//			   25	27	30		32	35	40	0.5
 
 t_node *ft_ntree_construct(const char *map)
 {

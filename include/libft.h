@@ -128,6 +128,7 @@ void		ft_htbl_del(t_htbl *);
 void		(ft_htbl_add)(t_htbl *, void *, const char *);
 void		*(ft_htbl_get)(t_htbl *, const char *);
 void		(ft_htbl_assign)(t_htbl *, void *, const char *);
+void		(ft_htbl_erase)(t_htbl *htbl, const char *key);
 void		ft_htbl_bin_add(t_htbl *, void *, const void *, size_t);
 void		*ft_htbl_bin_get(t_htbl *, const void *, size_t);
 void		ft_htbl_bin_assign(t_htbl *, void *, const void *, size_t);
@@ -147,17 +148,17 @@ void 		ft_htbl_resize(t_htbl *htbl, int size);
 t_node		*ft_node_init(void);
 t_node		*ft_node_new(const char *, void *, size_t);
 t_node 		*ft_node_dup(t_node *node);
-void 		ft_node_del(t_node *, void (*f_del)(t_node *));
+int 		ft_node_del(t_node *, int (*f_del)(t_node *));
 int			ft_node_is_parent(t_node *);
 
 void		ft_lst_append(t_node **, t_node *);
 void		ft_lst_prepend(t_node **, t_node *);
-void		ft_lst_del(t_node *, void (*f_del)(t_node *));
-void		ft_lst_del_first(t_node **, void (*f_del)(t_node *));
-void		ft_lst_del_last(t_node **, void (*f_del)(t_node *));
-void		ft_lst_del_one(t_node **, t_node *, void (*f_del)(t_node *));
+int			ft_lst_del(t_node *, int (*f_del)(t_node *));
+int			ft_lst_del_first(t_node **, int (*f_del)(t_node *));
+int			ft_lst_del_last(t_node **, int (*f_del)(t_node *));
+int			ft_lst_del_one(t_node **, t_node *, int (*f_del)(t_node *));
 int			ft_lst_size(t_node *);
-void		ft_lst_map(t_node *, void *farg, void (*f)(t_node *, void *));
+int			ft_lst_map(t_node *, void *farg, int (*f)(t_node *, void *));
 t_htbl		*ft_lst_htable(t_node *);
 
 t_stack		*ft_stack_init(void);
@@ -167,30 +168,30 @@ t_node		*ft_stack_peek(t_stack *);
 int 		ft_stack_is_empty(t_stack *);
 int 		ft_stack_size(t_stack *);
 void		ft_stack_clear(t_stack *);
-void		ft_stack_del(t_stack *, void (*f_del)(t_node *));
+int			ft_stack_del(t_stack *, int (*f_del)(t_node *));
 t_htbl		*ft_stack_htable(t_stack *);
 
 t_queue		*ft_queue_init(void);
-void		ft_queue_enqueue(t_queue *, t_node *);
+void		ft_queue_enqueue(t_queue *, const char *, void *, size_t);
 void		*ft_queue_dequeue(t_queue *);
 t_node		*ft_queue_peek(t_queue *);
 int			ft_queue_is_empty(t_queue *);
 int			ft_queue_size(t_queue *);
-void		ft_queue_del(t_queue *, void (*f)(t_node *));
-void		ft_queue_del(t_queue *, void (*f)(t_node *));
+int			ft_queue_del(t_queue *, int (*f)(t_node *));
+int 		ft_queue_del_node(t_queue *, t_node *, int (*f_del)(t_node *));
 t_htbl		*ft_queue_htable(t_queue *);
 
 t_node		*ft_ntree_construct(const char *);
 int 		ft_ntree_dfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
 int			ft_ntree_dfs_cur_depth(void);
 int			ft_ntree_bfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
-void		ft_ntree_del(t_node *, void (*f_del)(t_node *));
+int			ft_ntree_del(t_node *, int (*f_del)(t_node *));
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);
 t_node		*ft_ntree_iter(t_node *);
 t_htbl		*ft_ntree_to_set(t_node *);
 
-void		*ft_memset(void *b, int c, size_t len);
+void 		*ft_memset(void *b, int c, size_t len);
 void		ft_bzero(void *s, size_t n);
 void		*ft_memcpy(void *dst, const void *src, size_t n);
 void		*ft_memzcpy(void *dst, const void *src, size_t, size_t);
@@ -246,9 +247,6 @@ void		ft_2darray_del(void **, int);
 void 		ft_2darray_del_null_terminated(void **);
 int			ft_2darray_len_null_terminated(void **);
 char		*ft_2darray_strjoin(char **, size_t, const char *);
-
-int			ft_error(const char *, const char *);
-void		ft_exit(void);
 
 extern int	global_ft_malloc_error;
 

@@ -12,30 +12,24 @@
 
 #include <libft.h>
 
-static void	__f_default(t_node *node)
-{
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
-
-static void	__del_node_recur(t_node *node, void (*f_del)(t_node *))
+static int	__del_node_recur(t_node *node, int (*f_del)(t_node *))
 {
 	if (NULL == node)
-		return ;
+		return (LIBFT_OK);
 	
-	__del_node_recur(node->nodes, f_del);
-	__del_node_recur(node->next, f_del);
+	if (LIBFT_OK != __del_node_recur(node->nodes, f_del))
+		return (LIBFT_ERR);
 	
-	f_del(node);
+	if (LIBFT_OK != __del_node_recur(node->next, f_del))
+		return (LIBFT_ERR);
+	
+	return (ft_node_del(node, f_del));
 }
 
-void	ft_ntree_del(t_node *ntree, void (*f_del)(t_node *))
+int	ft_ntree_del(t_node *ntree, int (*f_del)(t_node *))
 {
 	if (NULL == ntree)
-		return ;
+		return (LIBFT_ERR);
 	
-	if (NULL == f_del)
-		f_del = __f_default;
-
-	__del_node_recur(ntree, f_del);
+	return (__del_node_recur(ntree, f_del));
 }

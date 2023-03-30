@@ -2,9 +2,11 @@
 #include <ssl_error.h>
 #include <ssl_asn.h>
 
-static void	__del_node(t_node *node)
+static int	__del_node(t_node *node)
 {
 	SSL_FREE(node);
+	
+	return (0);
 }
 
 int	asn_transform(t_node *src_tree, t_node *dest_tree)
