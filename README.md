@@ -2,13 +2,6 @@
 Simple crypto library. RSA, ASN.1, PEM, DER, DES, Base64, SHAx, MD5
 
 ## About
-
-*Note: Work in progress. Major changes lately.*
-
-*Note: Bugs and crashes are very probable.*
-
-*Note: Refer to standards (check out **References**).*
-
 The goals of this project:
 * Pseudo-random number generator
 * Password based key derivation
