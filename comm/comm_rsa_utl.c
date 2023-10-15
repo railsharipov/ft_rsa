@@ -100,7 +100,7 @@ static int	__setup_task(const char **opt)
 		opt++;
 	}
 
-	if (!io_is_init(&__inkey))
+	if (!io_is_initialized(&__inkey))
 		return (SSL_ERROR(INVALID_INPUT));
 
 	return (SSL_OK);

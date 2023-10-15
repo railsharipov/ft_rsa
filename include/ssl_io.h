@@ -78,7 +78,7 @@ typedef struct  s_io
 
 int				io_set_osbuf(t_iodes *, uint32_t flags, t_ostring *osbuf);
 int				io_open(t_iodes *, uint32_t flags, const char *);
-int				io_is_init(t_iodes *iodes);
+int				io_is_initialized(t_iodes *iodes);
 
 ssize_t			io_read(t_iodes *iodes, char *buf, size_t nbytes);
 ssize_t			io_sread(t_iodes *iodes, char *buf, size_t nbytes);

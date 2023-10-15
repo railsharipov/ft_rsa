@@ -34,12 +34,6 @@
 # define ASN_LEN_SHORT				0x0
 # define ASN_LEN_LONG				0x80
 
-enum	e_asn_lenform
-{
-	ASN_LEN_DEFINITE = 0,
-	ASN_LEN_INDEFINITE
-};
-
 # define ASN_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, ASN_ERROR_CTX))
 
 enum  e_asn_error
