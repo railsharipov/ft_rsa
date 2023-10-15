@@ -10,8 +10,5 @@ int der_encode_null(t_ostring *osbuf, void *content, size_t cont_nbits)
 	(void)content;
 	(void)cont_nbits;
 
-	osbuf->content = NULL;
-	osbuf->size = 0;
-
 	return (SSL_OK);
 }

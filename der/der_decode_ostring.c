@@ -11,8 +11,7 @@ int	der_decode_ostring(t_ostring *osbuf, uint8_t *enc, size_t size)
 	if (size == 0)
 		return (SSL_OK);
 
-	osbuf->content = ft_memdup(enc, size);
-	osbuf->size = size;
+	util_ostr_append(osbuf, enc, size);
 
 	return (SSL_OK);
 }

@@ -28,8 +28,7 @@ int der_encode_bitstring(t_ostring *osbuf, void *content, size_t size)
 
 	SSL_ALLOC(osbuf->content, size);
 
-	ft_memcpy(osbuf->content, content, size);
-	osbuf->size = size;
+	util_ostr_append(osbuf, content, size);
 
 	return (SSL_OK);
 }

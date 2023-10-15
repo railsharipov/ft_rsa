@@ -16,8 +16,6 @@ static int		__is_construct(t_iasn *item);
 static t_node	*__create_construct_node(t_iasn *);
 static t_node	*__create_primitive_node(t_iasn *);
 
-static inline t_node	*__null_error(int error);
-
 static const struct {
 	unsigned char	type;
 	int		(*f_read)(t_ostring *, unsigned char *, size_t);
@@ -65,10 +63,10 @@ static t_node	*__create_asn_tree(t_iodes *iodes)
 		return (NULL);
 
 	if (rbytes < 0)
-		return (__null_error(INVALID_DER_ENCODING));
+		goto error;
 
 	if (__read_content_octets(&item, iodes) < 0)
-		return (__null_error(UNSPECIFIED_ERROR));
+		goto error;
 
 	if (__is_construct(&item))
 		node = __create_construct_node(&item);
@@ -78,16 +76,13 @@ static t_node	*__create_asn_tree(t_iodes *iodes)
 	asn_item_clean(&item);
 
 	if (NULL == node)
-		return (__null_error(UNSPECIFIED_ERROR));
+		goto error;
 
 	node->next = __create_asn_tree(iodes);
-
 	return (node);
-}
 
-static inline t_node	*__null_error(int error)
-{
-	__err = error;
+error:
+	SSL_ERROR(INVALID_DER_ENCODING);
 	return (NULL);
 }
 
@@ -108,7 +103,7 @@ static ssize_t	__read_content_octets(t_iasn *item, t_iodes *iodes)
 
 	tbytes += rbytes;
 
-	if (ASN_LEN_INDEFINITE == lenform)
+	if (ASN_LEN_LONG == lenform && len == 0) // length is not known (indefinite form)
 		rbytes = __read_octets_indef(item, iodes);
 	else
 		rbytes = __read_octets(item, len, iodes);
@@ -171,8 +166,7 @@ static t_node	*__create_construct_node(t_iasn *item)
 	t_node		*child_nodes;
 	t_node		*node;
 
-	osbuf.content = item->content;
-	osbuf.size = item->size;
+	util_ostr_set_content(&osbuf, item->content, item->size);
 
 	if (SSL_OK != io_init(&temp_iodes, IO_READ|IO_OSBUF, &osbuf))
 		return (NULL);

@@ -100,8 +100,8 @@ static int	__encode_construct(t_node *node, t_iodes *iodes)
 	if (SSL_OK == ret)
 	{
 		item->tag |= ASN_ENCODE_CONSTRUCT;
-		item->content = osbuf.content;
-		item->size = osbuf.size;
+		item->content = util_ostr_get_content(&osbuf);
+		item->size = util_ostr_get_size(&osbuf);
 
 		ret = __encode_item(item, iodes);
 	}
@@ -132,7 +132,10 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 	if (SSL_OK != f_enc(&osbuf, item->content, item->size))
 		return (DER_ERROR(UNSPECIFIED_ERROR));
 
-	wbytes = der_write_octets(osbuf.content, osbuf.size, iodes);
+	wbytes = der_write_octets(
+		util_ostr_get_content(&osbuf), 
+		util_ostr_get_size(&osbuf),
+		iodes);
 
 	util_ostr_clean(&osbuf);
 

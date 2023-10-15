@@ -24,8 +24,7 @@ int  der_decode_bitstring(t_ostring *osbuf, uint8_t *enc, size_t size)
 	if (num_unused_bits > 7u)
 		return (DER_ERROR(INVALID_DER_ENCODING));
 
-	osbuf->content = ft_memdup(enc, size);
-	osbuf->size = size;
+	util_ostr_append(osbuf, enc, size);
 
 	return (SSL_OK);
 }
