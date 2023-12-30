@@ -189,7 +189,7 @@ int			ft_ntree_del(t_node *, int (*f_del)(t_node *));
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);
 t_node		*ft_ntree_iter(t_node *);
-t_htbl		*ft_ntree_to_set(t_node *);
+t_htbl		*ft_ntree_to_htable(t_node *);
 
 void 		*ft_memset(void *b, int c, size_t len);
 void		ft_bzero(void *s, size_t n);
@@ -198,6 +198,7 @@ void		*ft_memzcpy(void *dst, const void *src, size_t, size_t);
 void		*ft_memmove(void *dst, const void *src, size_t len);
 int			ft_memcmp(const void *s1, const void *s2, size_t n);
 void		*ft_memdup(void *, size_t);
+void		ft_strdel(char *s);
 size_t		ft_strlen(const char *s);
 char		*ft_strdup(const char *s1);
 char		*ft_strrev(const char *s);

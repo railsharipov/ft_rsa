@@ -10,7 +10,7 @@ static int	__f_keycmp(t_node *node, const void *key)
 	return (!ft_strcmp(node->key, (const char *)key));
 }
 
-void	*asn_tree_fetch(t_node *asn_tree, const char *key)
+void	*asn_tree_get(t_node *asn_tree, const char *key)
 {
 	t_node	*node;
 

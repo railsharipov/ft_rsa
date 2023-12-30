@@ -263,7 +263,7 @@ static void	__key_info(t_node *asn_key)
 	}
 	if (SSL_FLAG(RSA_MODULUS, __gflag))
 	{
-		asn_item = asn_tree_fetch(asn_key, "modulus");
+		asn_item = asn_tree_get(asn_key, "modulus");
 
 		if (NULL != asn_item)
 		{

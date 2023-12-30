@@ -1,33 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_ntree.c                                         :+:      :+:    :+:   */
+/*   ft_strcat.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/07/13 09:35:41 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/09/27 10:18:24 by rsharipo         ###   ########.fr       */
+/*   Created: 2018/07/10 16:59:37 by rsharipo          #+#    #+#             */
+/*   Updated: 2018/09/03 10:35:17 by rsharipo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <libft.h>
 
-static int	__htable_func(t_node *node, const void *farg)
+void	ft_strdel(char *s)
 {
-	ft_htbl_add((t_htbl *)farg, node->content, node->key);
-	
-	return (0);
-}
+	if (NULL == s)
+		return ;
 
-t_htbl	*ft_ntree_to_set(t_node *node)
-{
-	t_htbl	*htbl;
-
-	if (NULL == node)
-		return (NULL);
-	
-	htbl = ft_htbl_init(ft_ntree_size(node));
-	ft_ntree_bfs(NULL, node, htbl, __htable_func);
-	
-	return (htbl);
+	LIBFT_FREE(s);
 }

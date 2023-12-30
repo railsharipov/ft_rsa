@@ -55,7 +55,7 @@ struct s_node;
 
 struct s_node	*asn_tree(const char *);
 int				asn_tree_del(struct s_node *);
-void			*asn_tree_fetch(t_node *, const char *);
+void			*asn_tree_get(t_node *, const char *);
 t_htbl			*asn_tree_items(struct s_node *);
 void			asn_tree_items_del(t_htbl *);
 int 			asn_tree_der_encode(struct s_node *, struct s_der **);

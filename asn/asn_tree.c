@@ -3,7 +3,6 @@
 
 static int	__init_func(t_node *node, const void *p);
 static int	__del_func(t_node *node);
-static int	__abort_with_error();
 
 static int	__error_status;
 
@@ -63,6 +62,6 @@ static int	__del_func(t_node *node)
 
 	if (NULL != node->content)
 		asn_item_del((t_iasn *)node->content);
-	
+
 	return (0);
 }
