@@ -2,7 +2,7 @@
 
 /* Convert bignum to bytes, sign is ignored */
 
-void	num_to_bytes(const t_num *num, char **bin, size_t *binsize)
+void	num_to_bytes_u(const t_num *num, char **bin, size_t *binsize)
 {
 	size_t	nbits;
 	char	*bptr;
@@ -24,7 +24,7 @@ void	num_to_bytes(const t_num *num, char **bin, size_t *binsize)
 	while (idx++ < *binsize)
 	{
 		*bptr-- = *(copy.val) & 0xFF;
-		rsh_num_b_inpl(&copy, 8);
+		rsh_bit_inpl(&copy, 8);
 	}
 
 	clear_num(&copy);

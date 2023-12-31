@@ -20,7 +20,7 @@ int		prime_test(const t_num *num, int bits, int prob, int verbal)
 
 	for (idx = 0; idx < BNUM_PTAB_SIZE; idx++)
 	{
-		divmod_num_d(num, BNUM_PRIME_TAB[idx], NULL, &rem);
+		divmod_dig(num, BNUM_PRIME_TAB[idx], NULL, &rem);
 
 		if (rem == 0)
 			return (BNUM_FALSE);
@@ -28,7 +28,7 @@ int		prime_test(const t_num *num, int bits, int prob, int verbal)
  	if (verbal)
 		ft_printf("%@.");
 
-	set_num_ud(&rnd, 2);
+	set_dig_u(&rnd, 2);
 
 	if (!miller_rabin(num, &rnd))
 		return (BNUM_FALSE);
@@ -36,8 +36,8 @@ int		prime_test(const t_num *num, int bits, int prob, int verbal)
 	for (int i = 0; i < prob; i++)
 	{
 		do {
-			set_randnum(&rnd, 64);
-			set_randnum(&rnd, rnd.val[0] % (uint64_t)bits + 1ull);
+			set_rand(&rnd, 64);
+			set_rand(&rnd, rnd.val[0] % (uint64_t)bits + 1ull);
 		} while ((rnd.len == 1) && (rnd.val[0] < 2));
 
 		if (compare_num_u(&rnd, num) > 0)

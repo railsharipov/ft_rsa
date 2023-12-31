@@ -17,7 +17,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		if (NULL != d)
 			copy_num(a, d);
 		if (NULL != c)
-			set_num_ud(c, 0);
+			set_dig_u(c, 0);
 		return ;
 	}
 
@@ -28,20 +28,20 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	abs_num(b, &y);
 
 	shift = BNUM_DIGIT_BIT - lmbit_num(&y) % BNUM_DIGIT_BIT;
-	lsh_num_b_inpl(&x, shift);
-	lsh_num_b_inpl(&y, shift);
+	lsh_bit_inpl(&x, shift);
+	lsh_bit_inpl(&y, shift);
 
 	n = x.len-1;
 	t = y.len-1;
 
-	lsh_num_d_inpl(&y, n-t);
+	lsh_dig_inpl(&y, n-t);
 	while (compare_num(&x, &y) >= 0)
 	{
 		q.val[n-t] += 1u;
 		sub_num(&x, &y, &x);
 	}
 
-	rsh_num_d_inpl(&y, n-t);
+	rsh_dig_inpl(&y, n-t);
 
 	for (i = n; i >= t+1; i--)
 	{
@@ -70,7 +70,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 			t1.val[1] = y.val[t];
 			t1.len = 2;
 
-			mul_num_d(&t1, q.val[i-t-1], &t1);
+			mul_dig(&t1, q.val[i-t-1], &t1);
 
 			t2.val[0] = (i-2 < 0) ? (0u) : (x.val[i-2]);
 			t2.val[1] = (i-1 < 0) ? (0u) : (x.val[i-1]);
@@ -79,14 +79,14 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		}
 		while (compare_num_u(&t1, &t2) > 0);
 
-		mul_num_d(&y, q.val[i-t-1], &t1);
-		lsh_num_d_inpl(&t1, i-t-1);
+		mul_dig(&y, q.val[i-t-1], &t1);
+		lsh_dig_inpl(&t1, i-t-1);
 		sub_num(&x, &t1, &x);
 
 		if (x.sign == BNUM_NEG)
 		{
 			copy_num(&y, &t1);
-			lsh_num_d_inpl(&t1, i-t-1);
+			lsh_dig_inpl(&t1, i-t-1);
 			add_num(&x, &t1, &x);
 			q.val[i-t-1] = (q.val[i-t-1]-1) & BNUM_MAX_VAL;
 		}
@@ -104,7 +104,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	{
 		skip_zeros(&x);
 		x.sign = (BNUM_ZERO(&x)) ? (BNUM_POS):(asign);
-		rsh_num_b_inpl(&x, shift);
+		rsh_bit_inpl(&x, shift);
 		copy_num(&x, d);
 	}
 

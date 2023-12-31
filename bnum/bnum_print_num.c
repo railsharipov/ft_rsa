@@ -43,7 +43,7 @@ static void	___out_num(const t_num *num)
 	while (!(BNUM_ZERO(&copy)))
 	{
 		*--bptr = dstr[(*(copy.val) & 0xF)];
-		rsh_num_b_inpl(&copy, 4);
+		rsh_bit_inpl(&copy, 4);
 	}
 
 	if (num->sign == BNUM_NEG)

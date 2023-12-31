@@ -34,8 +34,8 @@ static int	__check_privexp(void)
 
 	init_num_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
-	sub_num_d(__items->prime1, 1, &p1);
-	sub_num_d(__items->prime2, 1, &q1);
+	sub_dig(__items->prime1, 1, &p1);
+	sub_dig(__items->prime2, 1, &q1);
 	lcm_num(&p1, &q1, &lcm);
 	mul_num(__items->pubexp, __items->privexp, &ed);
 	divmod_num(&ed, &lcm, NULL, &edmod);
@@ -61,22 +61,22 @@ static int	__check_crt_comps(void)
 
 	init_num_multi(&p1, &q1, &mul, &mod, &res, NULL);
 
-	sub_num_d(__items->prime1, 1, &p1);
-	sub_num_d(__items->prime2, 1, &q1);
+	sub_dig(__items->prime1, 1, &p1);
+	sub_dig(__items->prime2, 1, &q1);
 
 	res = SSL_OK;
 
-	if ((compare_num_d(__items->exponent1, 1) <= 0)
+	if ((compare_dig(__items->exponent1, 1) <= 0)
 		|| (compare_num(__items->exponent1, &p1) >= 0))
 	{
 		res = SSL_FAIL;
 	}
-	else if ((compare_num_d(__items->exponent2, 1) <= 0)
+	else if ((compare_dig(__items->exponent2, 1) <= 0)
 		|| (compare_num(__items->exponent2, &q1) >= 0))
 	{
 		res = SSL_FAIL;
 	}
-	else if ((compare_num_d(__items->coeff, 1) <= 0)
+	else if ((compare_dig(__items->coeff, 1) <= 0)
 		|| (compare_num(__items->coeff, __items->prime1) >= 0))
 	{
 		res = SSL_FAIL;
@@ -85,7 +85,7 @@ static int	__check_crt_comps(void)
 	mul_num(__items->exponent1, __items->pubexp, &mul);
 	divmod_num(&mul, &p1, NULL, &mod);
 
-	if (compare_num_d(&mod, 1))
+	if (compare_dig(&mod, 1))
 	{
 		res = SSL_FAIL;
 	}
@@ -93,7 +93,7 @@ static int	__check_crt_comps(void)
 	mul_num(__items->exponent2, __items->pubexp, &mul);
 	divmod_num(&mul, &q1, NULL, &mod);
 
-	if (compare_num_d(&mod, 1))
+	if (compare_dig(&mod, 1))
 	{
 		res = SSL_FAIL;
 	}
@@ -101,7 +101,7 @@ static int	__check_crt_comps(void)
 	mul_num(__items->coeff, __items->prime2, &mul);
 	divmod_num(&mul, __items->prime1, NULL, &mod);
 
-	if (compare_num_d(&mod, 1))
+	if (compare_dig(&mod, 1))
 	{
 		res = SSL_FAIL;
 	}
@@ -147,10 +147,10 @@ static int	__check_prime(t_num *prime)
 	if (!prime_test(prime, lmbit_num(prime), RM_TRIALS, SSL_FALSE))
 		res = SSL_FAIL;
 
-	sub_num_d(prime, 1, &p1);
+	sub_dig(prime, 1, &p1);
 	gcd_num(&p1, __items->pubexp, &gcd);
 
-	if (compare_num_d(&gcd, 1))
+	if (compare_dig(&gcd, 1))
 		res = SSL_FAIL;
 
 	clear_num_multi(&gcd, &p1, NULL);

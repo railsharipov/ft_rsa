@@ -28,7 +28,7 @@ void	bytes_to_num(t_num *num, const char *buf, int bufsize)
 	idx = 0;
 	while (idx < bufsize)
 	{
-		lsh_num_b_inpl(num, 8);
+		lsh_bit_inpl(num, 8);
 		*(num->val) |= octets[idx++];
 	}
 	skip_zeros(num);

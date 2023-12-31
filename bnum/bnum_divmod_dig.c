@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
+void	divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 {
 	t_num		q;
 	t_uint128	val;
@@ -28,7 +28,7 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 		if (NULL != c)
 		{
 			copy_num(a, c);
-			rsh_num_b_inpl(c, idx-1u);
+			rsh_bit_inpl(c, idx-1u);
 		}
 		if (NULL != d)
 			*d = a->val[0] & ((1ull << (idx-1u)) - 1u);
@@ -43,7 +43,7 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 		init_num(&x);
 		init_num(&r);
-		set_num_ud(&x, b);
+		set_dig_u(&x, b);
 
 		divmod_num(a, &x, &q, &r);
 

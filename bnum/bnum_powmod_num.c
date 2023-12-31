@@ -8,7 +8,7 @@ void	powmod_num(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 	int			thres[8] = { 0, 0, 36, 140, 450, 1303, 3529, INT_MAX };
 
 	if (BNUM_ZERO(e))
-		set_num_ud(res, 1);
+		set_dig_u(res, 1);
 	else if (BNUM_ONE(e))
 		copy_num(b, res);
 	else
@@ -25,8 +25,8 @@ void	powmod_num(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		for (i = 0; i < (1 << wsize); i++)
 			init_num(window + i);
 
-		set_num_ud(res, 1);
-		set_num_ud(window, 1);
+		set_dig_u(res, 1);
+		set_dig_u(window, 1);
 		divmod_num(b, m, NULL, window + 1);
 
 		for (i = 2; i < (1 << wsize); i++)

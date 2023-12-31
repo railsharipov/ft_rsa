@@ -3,7 +3,8 @@
 static const char	A[] = "0123456789abcdef";
 
 /* Convert bnum value to hexstring, sign is ignored */
-char	*num_to_hex(t_num *num)
+
+char	*num_to_hex_u(t_num *num)
 {
 	char		*hexrev, *hptr, *hex, *hexresult;
 	uint64_t	digit;

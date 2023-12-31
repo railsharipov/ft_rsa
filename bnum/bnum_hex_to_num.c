@@ -35,7 +35,7 @@ void	hex_to_num(t_num *num, const char *hex)
 
 	while (idx < hexsize)
 	{
-		lsh_num_b_inpl(num, 4);
+		lsh_bit_inpl(num, 4);
 		bitblock = (uint64_t)(hex[idx] - A[hex[idx] & 0x7F]);
 		num->val[0] |= bitblock;
 		idx++;

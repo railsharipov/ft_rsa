@@ -25,8 +25,8 @@ void	sqr_num_karatsuba(const t_num *a, t_num *res)
 	add_num_u(&a0a0, &a1a1, &t2);
 	sub_num_u(&t1, &t2, &t1);
 
-	lsh_num_d_inpl(&t1, hlen);
-	lsh_num_d_inpl(&a1a1, 2*hlen);
+	lsh_dig_inpl(&t1, hlen);
+	lsh_dig_inpl(&a1a1, 2*hlen);
 
 	add_num_u(&a0a0, &t1, &t1);
 	add_num_u(&a1a1, &t1, res);

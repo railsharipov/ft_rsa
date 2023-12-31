@@ -31,8 +31,8 @@ void	mul_num_karatsuba(const t_num *a, const t_num *b, t_num *res)
 	mul_num(&a0, &b0, &a0);
 	sub_num_u(&a0, &temp, &temp);
 
-	lsh_num_d_inpl(&a1b1, 2*hlen);
-	lsh_num_d_inpl(&temp, hlen);
+	lsh_dig_inpl(&a1b1, 2*hlen);
+	lsh_dig_inpl(&temp, hlen);
 
 	add_num_u(&a1b1, &temp, &a1b1);
 	add_num_u(&a1b1, &a0b0, res);

@@ -12,12 +12,12 @@ void	montgomery_norm(const t_num *mod, t_num *res)
 	}
 	else
 	{
-		set_num_ud(res, 1);
+		set_dig_u(res, 1);
 		bits = 1;
 	}
 	for (idx = bits-1; idx < BNUM_DIGIT_BIT; idx++)
 	{
-		lsh_num_b_inpl(res, 1);
+		lsh_bit_inpl(res, 1);
 
 		if (compare_num_u(res, mod) >= 0)
 			sub_num_u(res, mod, res);

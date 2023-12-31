@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	sub_num_ud(const t_num *a, uint64_t b, t_num *res)
+void	sub_dig_u(const t_num *a, uint64_t b, t_num *res)
 {
 	int i;
 

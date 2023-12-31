@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-int     compare_num_d(const t_num *a, uint64_t b)
+int     compare_dig(const t_num *a, uint64_t b)
 {
 	t_num	num;
 	int		res;
@@ -20,7 +20,7 @@ int     compare_num_d(const t_num *a, uint64_t b)
 	}
 
 	init_num(&num);
-	set_num_ud(&num, b);
+	set_dig_u(&num, b);
 
 	res = compare_num_u(a, &num);
 

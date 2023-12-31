@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	add_num_ud(const t_num *a, uint64_t digit, t_num *res)
+void	add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 {
 	int 	slen, i;
 

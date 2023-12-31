@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void    set_num_ud(t_num *num, uint64_t digit)
+void    set_dig_u(t_num *num, uint64_t digit)
 {
 	if (num->len < 2)
 	{

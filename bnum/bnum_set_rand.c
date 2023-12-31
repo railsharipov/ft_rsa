@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void    set_randnum(t_num *num, int bits)
+void    set_rand(t_num *num, int bits)
 {
 	int			fd, i, len;
 	uint64_t	min;
@@ -12,7 +12,7 @@ void    set_randnum(t_num *num, int bits)
 
 	if (len == 0)
 	{
-		set_num_ud(num, 0);
+		set_dig_u(num, 0);
 		return ;
 	}
 

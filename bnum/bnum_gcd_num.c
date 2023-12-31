@@ -32,8 +32,8 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 
 	k = BNUM_MIN(xk, yk);
 
-	rsh_num_b_inpl(&x, xk);
-	rsh_num_b_inpl(&y, yk);
+	rsh_bit_inpl(&x, xk);
+	rsh_bit_inpl(&y, yk);
 
 	while (!BNUM_ZERO(&y))
 	{
@@ -45,10 +45,10 @@ void	gcd_num(const t_num *a, const t_num *b, t_num *res)
 		yk = rmbit_num(&y) - 1;
 
 		if (yk > 0)
-			rsh_num_b_inpl(&y, yk);
+			rsh_bit_inpl(&y, yk);
 	}
 
-	lsh_num_b_inpl(&x, k);
+	lsh_bit_inpl(&x, k);
 	copy_num(&x, res);
 	clear_num(&x);
 	clear_num(&y);

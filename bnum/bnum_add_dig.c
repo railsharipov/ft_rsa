@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	sub_num_d(const t_num *a, uint64_t b, t_num *res)
+void	add_dig(const t_num *a, uint64_t b, t_num *res)
 {
 	t_num	tmp;
 
@@ -11,6 +11,6 @@ void	sub_num_d(const t_num *a, uint64_t b, t_num *res)
 	tmp.len = 2;
 
 	skip_zeros(&tmp);
-	sub_num(a, &tmp, res);
+	add_num(a, &tmp, res);
 	clear_num(&tmp);
 }

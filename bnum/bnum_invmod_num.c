@@ -20,10 +20,10 @@ void	invmod_num(const t_num *a, const t_num *b, t_num *res)
 
 	copy_num(&x, &u);
 	copy_num(&y, &v);
-	set_num_ud(&ta, 1u);
-	set_num_ud(&tb, 0u);
-	set_num_ud(&tc, 0u);
-	set_num_ud(&td, 1u);
+	set_dig_u(&ta, 1u);
+	set_dig_u(&tb, 0u);
+	set_dig_u(&tc, 0u);
+	set_dig_u(&td, 1u);
 
 	do {
 
@@ -66,10 +66,10 @@ void	invmod_num(const t_num *a, const t_num *b, t_num *res)
 
 	} while (!BNUM_ZERO(&u));
 
-	if (compare_num_d(&v, 1u) != 0)
+	if (compare_dig(&v, 1u) != 0)
 		BNUM_ERROR_EXIT("No inverse modulo");
 
-	while (compare_num_d(&tc, 0u) < 0)
+	while (compare_dig(&tc, 0u) < 0)
 		add_num(&tc, b, &tc);
 
 	while (compare_num(&tc, b) >= 0)

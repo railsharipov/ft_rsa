@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	lsh_num_b_inpl(t_num *num, int bits)
+void	lsh_bit_inpl(t_num *num, int bits)
 {
 	int			shifts, bit_shifts, slen;
 	uint64_t	carry, val;
@@ -12,11 +12,11 @@ void	lsh_num_b_inpl(t_num *num, int bits)
 
 	if (shifts >= num->size)
 	{
-		set_num_ud(num, 0);
+		set_dig_u(num, 0);
 		return ;
 	}
 
-	lsh_num_d_inpl(num, shifts);
+	lsh_dig_inpl(num, shifts);
 	slen = BNUM_MIN(num->size, num->len+1);
 	bit_shifts = bits % BNUM_DIGIT_BIT;
 

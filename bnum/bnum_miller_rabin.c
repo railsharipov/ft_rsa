@@ -8,10 +8,10 @@ int		miller_rabin(const t_num *num, const t_num *rnd)
 
 	init_num_multi(&np, &n1, &e, NULL);
 
-	sub_num_ud(num, 1, &n1);
+	sub_dig_u(num, 1, &n1);
 	copy_num(&n1, &e);
 	x = rmbit_num(&e);
-	rsh_num_b_inpl(&e, --x);
+	rsh_bit_inpl(&e, --x);
 	m_powmod_num(rnd, &e, num, &np);
 
 	res = BNUM_TRUE;

@@ -43,7 +43,7 @@ void	montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 	}
 
 	skip_zeros(num);
-	rsh_num_d_inpl(num, mod->len);
+	rsh_dig_inpl(num, mod->len);
 
 	if (compare_num_u(num, mod) >= 0)
 		sub_num_u(num, mod, num);

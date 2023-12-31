@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	lsh_num_d_inpl(t_num *num, int shifts)
+void	lsh_dig_inpl(t_num *num, int shifts)
 {
 	int	i;
 
