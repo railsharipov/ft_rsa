@@ -9,7 +9,7 @@ void	rsh_num_d_inpl(t_num *num, int shifts)
 
 	if (shifts >= num->len)
 	{
-		set_num_d(num, 0);
+		set_num_ud(num, 0);
 		return ;
 	}
 

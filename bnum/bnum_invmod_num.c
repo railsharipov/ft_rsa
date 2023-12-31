@@ -20,10 +20,10 @@ void	invmod_num(const t_num *a, const t_num *b, t_num *res)
 
 	copy_num(&x, &u);
 	copy_num(&y, &v);
-	set_num_d(&ta, 1u);
-	set_num_d(&tb, 0u);
-	set_num_d(&tc, 0u);
-	set_num_d(&td, 1u);
+	set_num_ud(&ta, 1u);
+	set_num_ud(&tb, 0u);
+	set_num_ud(&tc, 0u);
+	set_num_ud(&td, 1u);
 
 	do {
 

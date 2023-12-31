@@ -12,7 +12,7 @@ void    set_randnum(t_num *num, int bits)
 
 	if (len == 0)
 	{
-		set_num_d(num, 0);
+		set_num_ud(num, 0);
 		return ;
 	}
 

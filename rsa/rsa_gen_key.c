@@ -41,7 +41,7 @@ static void	__get_primes(int modsize, uint64_t seed)
 {
 	int	keysize;
 
-	set_num_d(__items->version, 0);
+	set_num_ud(__items->version, 0);
 
 	rand_mtw_init(seed);
 	keysize = modsize / 2;
@@ -62,7 +62,7 @@ static void	__get_exponents(void)
 	sub_num_d(__items->prime1, 1, &t1);
 	sub_num_d(__items->prime2, 1, &t2);
 	lcm_num(&t1, &t2, &t3);
-	set_num_d(__items->pubexp, RSA_EXPPUB);
+	set_num_ud(__items->pubexp, RSA_EXPPUB);
 	invmod_num(__items->pubexp, &t3, __items->privexp);
 	divmod_num(__items->privexp, &t1, NULL, __items->exponent1);
 	divmod_num(__items->privexp, &t2, NULL, __items->exponent2);

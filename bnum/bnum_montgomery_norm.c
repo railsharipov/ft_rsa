@@ -12,7 +12,7 @@ void	montgomery_norm(const t_num *mod, t_num *res)
 	}
 	else
 	{
-		set_num_d(res, 1);
+		set_num_ud(res, 1);
 		bits = 1;
 	}
 	for (idx = bits-1; idx < BNUM_DIGIT_BIT; idx++)

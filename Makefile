@@ -13,7 +13,7 @@
 NAME := ft_ssl
 
 MODULES := ssl error bnum parser comm io rand hash util base64 des asn der pem\
- rsa test
+ rsa test json
 LIBS := libft
 
 OBJ_PREFIX := obj

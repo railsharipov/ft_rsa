@@ -102,10 +102,10 @@ static int	__test_bnum_setup(void)
 	uint64_t	digit;
 
 	init_num(&__zero_num);
-	set_num_d(&__zero_num, 0);
+	set_num_ud(&__zero_num, 0);
 
 	init_num(&__one_num);
-	set_num_d(&__one_num, 1);
+	set_num_ud(&__one_num, 1);
 
 	return (SSL_OK);
 }
@@ -971,7 +971,7 @@ static int	__test_bnum_div_num_2d_inpl(void)
 
 	pass = TEST_ASSERT(compare_num(&num, &ref_num) == 0);
 
-	set_num_d(&num, 0);
+	set_num_ud(&num, 0);
 	div_num_2d_inpl(&num);
 
 	pass |= TEST_ASSERT(compare_num(&num, &__zero_num) == 0);
@@ -1010,7 +1010,7 @@ static int	__test_bnum_divmod_num(void)
 	pass = TEST_ASSERT(compare_num(&quot_num, &ref_quot_num) == 0);
 	pass |= TEST_ASSERT(compare_num(&rem_num, &ref_rem_num) == 0);
 
-	set_num_d(&num, 0);
+	set_num_ud(&num, 0);
 	divmod_num(&num, &div_num, &quot_num, &rem_num);
 
 	pass |= TEST_ASSERT(compare_num(&quot_num, &__zero_num) == 0);
@@ -1047,7 +1047,7 @@ static int	__test_bnum_divmod_num_d(void)
 	pass = TEST_ASSERT(compare_num(&quot_num, &ref_quot_num) == 0);
 	pass |= TEST_ASSERT(rem_digit == ref_rem_digit);
 
-	set_num_d(&num, 0);
+	set_num_ud(&num, 0);
 	divmod_num_d(&num, div_digit, &quot_num, &rem_digit);
 
 	pass |= TEST_ASSERT(compare_num(&quot_num, &__zero_num) == 0);

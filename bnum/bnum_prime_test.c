@@ -28,7 +28,7 @@ int		prime_test(const t_num *num, int bits, int prob, int verbal)
  	if (verbal)
 		ft_printf("%@.");
 
-	set_num_d(&rnd, 2);
+	set_num_ud(&rnd, 2);
 
 	if (!miller_rabin(num, &rnd))
 		return (BNUM_FALSE);

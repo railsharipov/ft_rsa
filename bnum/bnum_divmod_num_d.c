@@ -43,7 +43,7 @@ void	divmod_num_d(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 		init_num(&x);
 		init_num(&r);
-		set_num_d(&x, b);
+		set_num_ud(&x, b);
 
 		divmod_num(a, &x, &q, &r);
 

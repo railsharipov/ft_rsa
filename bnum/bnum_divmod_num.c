@@ -17,7 +17,7 @@ void	divmod_num(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		if (NULL != d)
 			copy_num(a, d);
 		if (NULL != c)
-			set_num_d(c, 0);
+			set_num_ud(c, 0);
 		return ;
 	}
 

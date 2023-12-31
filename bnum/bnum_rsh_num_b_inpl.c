@@ -14,7 +14,7 @@ void	rsh_num_b_inpl(t_num *num, int bits)
 
 	if (shifts >= num->len)
 	{
-		set_num_d(num, 0);
+		set_num_ud(num, 0);
 		return ;
 	}
 

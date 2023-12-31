@@ -20,7 +20,7 @@ int     compare_num_d(const t_num *a, uint64_t b)
 	}
 
 	init_num(&num);
-	set_num_d(&num, b);
+	set_num_ud(&num, b);
 
 	res = compare_num_u(a, &num);
 

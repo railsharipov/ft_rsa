@@ -7,7 +7,7 @@ void	mul_num_d(const t_num *a, uint64_t b, t_num *res)
 	if (a->len+1 > res->size)
 		increase_num_size(res, a->len+1);
 	if (b == 0)
-		set_num_d(res, 0);
+		set_num_ud(res, 0);
 	else
 	{
 		t_uint128	val, carry;

@@ -8,7 +8,7 @@ void	m_powmod_num(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 	int			thres[8] = { 0, 0, 36, 140, 450, 1303, 3529, INT_MAX };
 
 	if (BNUM_ZERO(e))
-		set_num_d(res, 1);
+		set_num_ud(res, 1);
 	else if (BNUM_ONE(e))
 		copy_num(b, res);
 	else

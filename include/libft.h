@@ -81,6 +81,16 @@ enum	e_libft_err
 	LIBFT_MEM_FATAL			= -5,
 };
 
+enum	e_libft_type
+{
+	LIBFT_INT,
+	LIBFT_UINT,
+	LIBFT_STRING,
+	LIBFT_OSTRING,
+	LIBFT_HTABLE,
+	LIBFT_ARRAY,
+};
+
 enum	e_libft_alloc_flag
 {
 	LIBFT_ALLOC_NONE = 0,
@@ -92,6 +102,7 @@ typedef uint32_t	t_bool;
 typedef struct		s_node
 {
 	uint64_t		hash;
+	uint8_t			type;
 	char			*key;
 	void			*content;
 	size_t			size;

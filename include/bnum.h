@@ -83,7 +83,7 @@ void	reset_num(t_num *);
 void	clear_num(t_num *);
 void	clear_num_multi(t_num *, ...);
 void	increase_num_size(t_num *, size_t newsize);
-void	set_num_d(t_num *, uint64_t);
+void	set_num_ud(t_num *, uint64_t);
 void	set_randnum(t_num *, int);
 void	copy_num(const t_num *, t_num *);
 int		compare_num(const t_num *, const t_num *);
