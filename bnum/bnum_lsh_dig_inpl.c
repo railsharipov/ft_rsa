@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	lsh_dig_inpl(t_num *num, int shifts)
+void	bnum_lsh_dig_inpl(t_num *num, int shifts)
 {
 	int	i;
 
@@ -15,5 +15,5 @@ void	lsh_dig_inpl(t_num *num, int shifts)
 	while (i >= 0)
 		num->val[i--] = 0;
 
-	skip_zeros(num);
+	bnum_skip_zeros(num);
 }

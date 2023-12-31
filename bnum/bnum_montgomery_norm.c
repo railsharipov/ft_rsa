@@ -1,26 +1,26 @@
 #include <bnum.h>
 
-void	montgomery_norm(const t_num *mod, t_num *res)
+void	bnum_montgomery_norm(const t_num *mod, t_num *res)
 {
 	int	idx, bits;
 
-	bits = lmbit_num(mod) % BNUM_DIGIT_BIT;
+	bits = bnum_lmbit(mod) % BNUM_DIGIT_BIT;
 
 	if (mod->len > 1)
 	{
-		exp2_num(res, (mod->len-1) * BNUM_DIGIT_BIT + bits-1);
+		bnum_exp2(res, (mod->len-1) * BNUM_DIGIT_BIT + bits-1);
 	}
 	else
 	{
-		set_dig_u(res, 1);
+		bnum_set_dig_u(res, 1);
 		bits = 1;
 	}
 	for (idx = bits-1; idx < BNUM_DIGIT_BIT; idx++)
 	{
-		lsh_bit_inpl(res, 1);
+		bnum_lsh_bit_inpl(res, 1);
 
-		if (compare_num_u(res, mod) >= 0)
-			sub_num_u(res, mod, res);
+		if (bnum_cmp_u(res, mod) >= 0)
+			bnum_sub_u(res, mod, res);
 	}
-	skip_zeros(res);
+	bnum_skip_zeros(res);
 }

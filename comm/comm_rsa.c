@@ -268,7 +268,7 @@ static void	__key_info(t_node *asn_key)
 		if (NULL != asn_item)
 		{
 			ft_putstr("Modulus=");
-			print_num(NULL, asn_item->content);
+			bnum_print(NULL, asn_item->content);
 		}
 	}
 }

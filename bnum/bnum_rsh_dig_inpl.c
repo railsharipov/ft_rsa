@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	rsh_dig_inpl(t_num *num, int shifts)
+void	bnum_rsh_dig_inpl(t_num *num, int shifts)
 {
 	int	i;
 
@@ -9,7 +9,7 @@ void	rsh_dig_inpl(t_num *num, int shifts)
 
 	if (shifts >= num->len)
 	{
-		set_dig_u(num, 0);
+		bnum_set_dig_u(num, 0);
 		return ;
 	}
 
@@ -19,5 +19,5 @@ void	rsh_dig_inpl(t_num *num, int shifts)
 	while (i < num->len)
 		num->val[i++] = 0;
 
-	skip_zeros(num);
+	bnum_skip_zeros(num);
 }

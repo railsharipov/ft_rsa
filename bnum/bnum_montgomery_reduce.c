@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
+void	bnum_montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 {
 	int idx, digs;
 
@@ -10,11 +10,11 @@ void	montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 		&& (num->len <= BNUM_MAX_WDIG)
 		&& (mod->len < BNUM_MAX_DIG_COMBA))
 	{
-		montgomery_fast_reduce(num, mod, rho);
+		bnum_montgomery_fast_reduce(num, mod, rho);
 		return ;
 	}
 
-	increase_num_size(num, digs);
+	bnum_increase_size(num, digs);
 	num->len = digs;
 
 	for (idx = 0; idx < mod->len; idx++)
@@ -42,9 +42,9 @@ void	montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 		}
 	}
 
-	skip_zeros(num);
-	rsh_dig_inpl(num, mod->len);
+	bnum_skip_zeros(num);
+	bnum_rsh_dig_inpl(num, mod->len);
 
-	if (compare_num_u(num, mod) >= 0)
-		sub_num_u(num, mod, num);
+	if (bnum_cmp_u(num, mod) >= 0)
+		bnum_sub_u(num, mod, num);
 }

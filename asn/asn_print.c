@@ -18,7 +18,7 @@ static void	__print_int_content(t_iasn *item, int space)
 	size_t	osize;
 	size_t	idx;
 
-	num_to_bytes_u(item->content, &octets, &osize);
+	bnum_to_bytes_u(item->content, &octets, &osize);
 
 	idx = 0;
 	while (idx < osize)

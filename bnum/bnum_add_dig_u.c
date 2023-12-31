@@ -1,13 +1,13 @@
 #include <bnum.h>
 
-void	add_dig_u(const t_num *a, uint64_t digit, t_num *res)
+void	bnum_add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 {
 	int 	slen, i;
 
 	slen = a->len+1;
 
 	if (slen > res->size)
-		increase_num_size(res, slen);
+		bnum_increase_size(res, slen);
 
 	{
 		const uint64_t	*aptr;
@@ -30,5 +30,5 @@ void	add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 		res->val[i] = 0;
 	}
 	res->len = slen;
-	skip_zeros(res);
+	bnum_skip_zeros(res);
 }

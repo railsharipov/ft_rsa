@@ -1,13 +1,13 @@
 #include <bnum.h>
 
-void	mul_dig(const t_num *a, uint64_t b, t_num *res)
+void	bnum_mul_dig(const t_num *a, uint64_t b, t_num *res)
 {
 	int	i;
 
 	if (a->len+1 > res->size)
-		increase_num_size(res, a->len+1);
+		bnum_increase_size(res, a->len+1);
 	if (b == 0)
-		set_dig_u(res, 0);
+		bnum_set_dig_u(res, 0);
 	else
 	{
 		t_uint128	val, carry;
@@ -26,6 +26,6 @@ void	mul_dig(const t_num *a, uint64_t b, t_num *res)
 
 		res->len = a->len+1;
 		res->sign = a->sign;
-		skip_zeros(res);
+		bnum_skip_zeros(res);
 	}
 }

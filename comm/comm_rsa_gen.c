@@ -17,17 +17,17 @@ static t_node		*__asn_pkey;
 static t_der		*__der_pkey;
 static t_pem		*__pem_pkey;
 
-static int	__set_rand(const char *, const t_task *);
+static int	__bnum_set_rand(const char *, const t_task *);
 static int	__init_io(const char *, const t_task *);
 
 static const t_task	T[] = {
 	/*	KEY			PTR			TFLAG	GFLAG	OFLAG				VAL	*/
-	{	"-rand",	__set_rand,	NONE,	NONE,	NONE,				1	},
+	{	"-rand",	__bnum_set_rand,	NONE,	NONE,	NONE,				1	},
 	{	"-o",		__init_io,	NONE,	NONE,	IO_WRITE|IO_FILE,	1	},
 	{	NULL,		NULL,		NONE,	NONE,	NONE,				0	}
 };
 
-static int	__set_rand(const char *opt, const t_task *task)
+static int	__bnum_set_rand(const char *opt, const t_task *task)
 {
 	__frand = opt;
 	return (SSL_OK);

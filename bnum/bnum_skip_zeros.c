@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void    skip_zeros(t_num *num)
+void    bnum_skip_zeros(t_num *num)
 {
 	while (num->len > 1 && num->val[num->len-1] == 0)
 		num->len--;

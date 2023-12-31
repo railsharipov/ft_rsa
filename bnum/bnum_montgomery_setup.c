@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	montgomery_setup(const t_num *num, uint64_t *rho)
+void	bnum_montgomery_setup(const t_num *num, uint64_t *rho)
 {
 	uint64_t	b, x;
 

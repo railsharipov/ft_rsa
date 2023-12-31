@@ -1,10 +1,10 @@
 #include <bnum.h>
 
-void    set_dig_u(t_num *num, uint64_t digit)
+void    bnum_set_dig_u(t_num *num, uint64_t digit)
 {
 	if (num->len < 2)
 	{
-		increase_num_size(num, 2);
+		bnum_increase_size(num, 2);
 	}
 	if (digit <= BNUM_MAX_VAL)
 	{

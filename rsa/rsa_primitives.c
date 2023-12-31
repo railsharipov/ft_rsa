@@ -9,7 +9,7 @@ int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 	{
 		return (RSA_ERROR(INVALID_OCTET_STRING_SIZE));
 	}
-	bytes_to_num(num, (char *)octets, osize);
+	bnum_bytes_to(num, (char *)octets, osize);
 
 	return (SSL_OK);
 }
@@ -23,7 +23,7 @@ int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 		return (RSA_ERROR(INVALID_INTEGER_SIZE));
 
 	SSL_ALLOC(*octets, osize);
-	num_to_bytes_u(num, &nstr, &nsize);
+	bnum_to_bytes_u(num, &nstr, &nsize);
 	ft_memcpy(*octets + osize-nsize, nstr, nsize);
 	SSL_FREE(nstr);
 

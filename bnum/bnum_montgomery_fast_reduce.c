@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
+void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 {
 	t_uint128	tw[BNUM_MAX_DIG];
 	int			idx;
@@ -10,7 +10,7 @@ void	montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 		BNUM_ERROR_EXIT("invalid number size");
 
 	if (num->size < mod->len + 1)
-		increase_num_size(num, mod->len + 1);
+		bnum_increase_size(num, mod->len + 1);
 
 	for (idx = 0; idx < num->len; idx++)
 		tw[idx] = num->val[idx];
@@ -60,8 +60,8 @@ void	montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 	}
 
 	num->len = mod->len+1;
-	skip_zeros(num);
+	bnum_skip_zeros(num);
 
-	if (compare_num_u(num, mod) >= 0)
-		sub_num_u(num, mod, num);
+	if (bnum_cmp_u(num, mod) >= 0)
+		bnum_sub_u(num, mod, num);
 }

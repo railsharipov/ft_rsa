@@ -29,7 +29,7 @@ static int __test_ft_strrev(void);
 static int __test_ft_strlow(void);
 static int __test_ft_strup(void);
 static int __test_ft_strsplit(void);
-static int __test_ft_2darray_len_null_terminated(void);
+static int __test_ft_2darray_len(void);
 static int __test_ft_2darray_strjoin(void);
 static int __test_ft_atoi(void);
 static int __test_ft_memcmp(void);
@@ -83,7 +83,7 @@ int test_libft(void)
 	res |= __test_ft_strrev();
 	res |= __test_ft_strlow();
 	res |= __test_ft_strup();
-	res |= __test_ft_2darray_len_null_terminated();
+	res |= __test_ft_2darray_len();
 	res |= __test_ft_2darray_strjoin();
 	res |= __test_ft_strsplit();
 	res |= __test_ft_atoi();
@@ -582,7 +582,7 @@ static int __test_ft_strup(void)
 	return (TEST_FAIL());
 }
 
-static int __test_ft_2darray_len_null_terminated(void)
+static int __test_ft_2darray_len(void)
 {
 	char *test_str_arr[] = {
 		"apple",

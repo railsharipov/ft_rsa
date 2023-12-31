@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
+void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 {
 	t_num		q;
 	t_uint128	val;
@@ -13,7 +13,7 @@ void	divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	if (b == 1 || BNUM_ZERO(a))
 	{
 		if (NULL != c)
-			copy_num(a, c);
+			bnum_copy(a, c);
 		if (NULL != d)
 			*d = 0;
 		return ;
@@ -27,33 +27,33 @@ void	divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 		if (NULL != c)
 		{
-			copy_num(a, c);
-			rsh_bit_inpl(c, idx-1u);
+			bnum_copy(a, c);
+			bnum_rsh_bit_inpl(c, idx-1u);
 		}
 		if (NULL != d)
 			*d = a->val[0] & ((1ull << (idx-1u)) - 1u);
 		return ;
 	}
 
-	init_num_with_size(&q, a->len);
+	bnum_init_with_size(&q, a->len);
 
 	if (b > BNUM_MAX_VAL)
 	{
 		t_num	x, r;
 
-		init_num(&x);
-		init_num(&r);
-		set_dig_u(&x, b);
+		bnum_init(&x);
+		bnum_init(&r);
+		bnum_set_dig_u(&x, b);
 
-		divmod_num(a, &x, &q, &r);
+		bnum_divmod(a, &x, &q, &r);
 
 		if (r.len == 2)
 			*d = (r.val[1] << BNUM_DIGIT_BIT) | (r.val[0] & BNUM_MAX_VAL);
 		else
 			*d = r.val[0] & BNUM_MAX_VAL;
 
-		copy_num(&q, c);
-		clear_num_multi(&x, &r, &q, NULL);
+		bnum_copy(&q, c);
+		bnum_clear_multi(&x, &r, &q, NULL);
 
 		return ;
 	}
@@ -82,11 +82,11 @@ void	divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	{
 		q.len = a->len;
 		q.sign = a->sign;
-		skip_zeros(&q);
-		copy_num(&q, c);
+		bnum_skip_zeros(&q);
+		bnum_copy(&q, c);
 	}
 	if (NULL != d)
 		*d = val & BNUM_MAX_VAL;
 
-	clear_num(&q);
+	bnum_clear(&q);
 }

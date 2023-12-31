@@ -2,7 +2,7 @@
 
 extern const uint64_t BNUM_PRIME_TAB[];
 
-int		prime_test(const t_num *num, int bits, int prob, int verbal)
+int		bnum_prime_test(const t_num *num, int bits, int prob, int verbal)
 {
 	t_num		rnd;
 	uint64_t	rem;
@@ -20,7 +20,7 @@ int		prime_test(const t_num *num, int bits, int prob, int verbal)
 
 	for (idx = 0; idx < BNUM_PTAB_SIZE; idx++)
 	{
-		divmod_dig(num, BNUM_PRIME_TAB[idx], NULL, &rem);
+		bnum_divmod_dig(num, BNUM_PRIME_TAB[idx], NULL, &rem);
 
 		if (rem == 0)
 			return (BNUM_FALSE);
@@ -28,21 +28,21 @@ int		prime_test(const t_num *num, int bits, int prob, int verbal)
  	if (verbal)
 		ft_printf("%@.");
 
-	set_dig_u(&rnd, 2);
+	bnum_set_dig_u(&rnd, 2);
 
-	if (!miller_rabin(num, &rnd))
+	if (!bnum_miller_rabin(num, &rnd))
 		return (BNUM_FALSE);
 
 	for (int i = 0; i < prob; i++)
 	{
 		do {
-			set_rand(&rnd, 64);
-			set_rand(&rnd, rnd.val[0] % (uint64_t)bits + 1ull);
+			bnum_set_rand(&rnd, 64);
+			bnum_set_rand(&rnd, rnd.val[0] % (uint64_t)bits + 1ull);
 		} while ((rnd.len == 1) && (rnd.val[0] < 2));
 
-		if (compare_num_u(&rnd, num) > 0)
-			sub_num_u(&rnd, num, &rnd);
-		if (!miller_rabin(num, &rnd))
+		if (bnum_cmp_u(&rnd, num) > 0)
+			bnum_sub_u(&rnd, num, &rnd);
+		if (!bnum_miller_rabin(num, &rnd))
 			return (BNUM_FALSE);
 		else if (verbal)
 			ft_printf("%@+");

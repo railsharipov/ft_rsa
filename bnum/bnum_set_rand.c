@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void    set_rand(t_num *num, int bits)
+void    bnum_set_rand(t_num *num, int bits)
 {
 	int			fd, i, len;
 	uint64_t	min;
@@ -12,7 +12,7 @@ void    set_rand(t_num *num, int bits)
 
 	if (len == 0)
 	{
-		set_dig_u(num, 0);
+		bnum_set_dig_u(num, 0);
 		return ;
 	}
 
@@ -22,7 +22,7 @@ void    set_rand(t_num *num, int bits)
 		BNUM_ERROR_EXIT(NULL);
 
 	if (len > num->size)
-		increase_num_size(num, len);
+		bnum_increase_size(num, len);
 
 	do {
 		read(fd, num->val, len * sizeof(uint64_t));

@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	rsh_bit_inpl(t_num *num, int bits)
+void	bnum_rsh_bit_inpl(t_num *num, int bits)
 {
 	int			shifts;
 	int			bit_shifts;
@@ -14,11 +14,11 @@ void	rsh_bit_inpl(t_num *num, int bits)
 
 	if (shifts >= num->len)
 	{
-		set_dig_u(num, 0);
+		bnum_set_dig_u(num, 0);
 		return ;
 	}
 
-	rsh_dig_inpl(num, shifts);
+	bnum_rsh_dig_inpl(num, shifts);
 	bit_shifts = bits % BNUM_DIGIT_BIT;
 
 	if (bit_shifts)
@@ -31,5 +31,5 @@ void	rsh_bit_inpl(t_num *num, int bits)
 			num->val[i] = val & BNUM_MAX_VAL;
 		}
 	}
-	skip_zeros(num);
+	bnum_skip_zeros(num);
 }

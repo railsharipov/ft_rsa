@@ -4,13 +4,13 @@
 void	rsa_key_items_del(t_rsa *key)
 {
 	key->tflag = 0;
-	del_num(key->version);
-	del_num(key->modulus);
-	del_num(key->pubexp);
-	del_num(key->privexp);
-	del_num(key->prime1);
-	del_num(key->prime2);
-	del_num(key->exponent1);
-	del_num(key->exponent2);
-	del_num(key->coeff);
+	bnum_del(key->version);
+	bnum_del(key->modulus);
+	bnum_del(key->pubexp);
+	bnum_del(key->privexp);
+	bnum_del(key->prime1);
+	bnum_del(key->prime2);
+	bnum_del(key->exponent1);
+	bnum_del(key->exponent2);
+	bnum_del(key->coeff);
 }

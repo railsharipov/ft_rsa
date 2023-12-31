@@ -48,7 +48,7 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	key->exponent1 = __asn_int(asn_items, "exponent1");
 	key->exponent2 = __asn_int(asn_items, "exponent2");
 	key->coeff = __asn_int(asn_items, "coefficient");
-	key->keysize = lmbit_num(key->modulus);
+	key->keysize = bnum_lmbit(key->modulus);
 
 	if ((NULL == key->version) || (NULL == key->modulus)
 		|| (NULL == key->pubexp) || (NULL == key->privexp)
@@ -78,8 +78,8 @@ static t_num	*__asn_int(t_htbl *htbl, const char *key)
 	content = (char *)item->content;
 	size = item->size;
 
-	num = create_num();
-	bytes_to_num(num, content, size);
+	num = bnum_create();
+	bnum_bytes_to(num, content, size);
 
 	return (num);
 }
@@ -93,7 +93,7 @@ static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	key->tflag = RSA_PUBKEY;
 	key->modulus = __asn_int(asn_items, "modulus");
 	key->pubexp = __asn_int(asn_items, "publicExponent");
-	key->keysize = lmbit_num(key->modulus);
+	key->keysize = bnum_lmbit(key->modulus);
 
 	if ((NULL == key->modulus) || (NULL == key->pubexp))
 	{

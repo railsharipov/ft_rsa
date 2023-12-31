@@ -66,10 +66,10 @@ static int	__eme_pkcs1_v1_5_concat(
 // RSA encryption primitive
 static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 {
-	if (compare_num_u(mes_rep, __items->modulus) >= 0)
+	if (bnum_cmp_u(mes_rep, __items->modulus) >= 0)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
 
-	m_powmod_num(mes_rep, __items->pubexp, __items->modulus, ciph_rep);
+	bnum_m_powmod(mes_rep, __items->pubexp, __items->modulus, ciph_rep);
 
 	return (SSL_OK);
 }
@@ -86,7 +86,7 @@ static int  __encrypt(
 
 	modsize = NBITS_TO_NBYTES(__items->keysize);
 
-	init_num_multi(&mes_rep, &ciph_rep, NULL);
+	bnum_init_multi(&mes_rep, &ciph_rep, NULL);
 
 	octets = NULL;
 	res = SSL_OK;
@@ -109,7 +109,7 @@ static int  __encrypt(
 	else if (SSL_OK != rsa_i2os(&ciph_rep, (unsigned char **)ciph, modsize))
 		res = SSL_FAIL;
 
-	clear_num_multi(&mes_rep, &ciph_rep, NULL);
+	bnum_clear_multi(&mes_rep, &ciph_rep, NULL);
 	SSL_FREE(octets);
 
 	if (SSL_OK != res)

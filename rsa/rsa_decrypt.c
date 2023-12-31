@@ -73,10 +73,10 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 
 static int	__decrypt_prim(t_num *ciph_rep, t_num *mes_rep)
 {
-	if (compare_num_u(ciph_rep, __items->modulus) >= 0)
+	if (bnum_cmp_u(ciph_rep, __items->modulus) >= 0)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
 
-	m_powmod_num(ciph_rep, __items->privexp, __items->modulus, mes_rep);
+	bnum_m_powmod(ciph_rep, __items->privexp, __items->modulus, mes_rep);
 
 	return (SSL_OK);
 }
@@ -92,7 +92,7 @@ static int	__decrypt(
 
 	osize = NBITS_TO_NBYTES(__items->keysize);
 
-	init_num_multi(&mes_rep, &ciph_rep, NULL);
+	bnum_init_multi(&mes_rep, &ciph_rep, NULL);
 
 	octets = NULL;
 	res = SSL_OK;
@@ -118,7 +118,7 @@ static int	__decrypt(
 		*messize = osize;
 	}
 
-	clear_num_multi(&mes_rep, &ciph_rep, NULL);
+	bnum_clear_multi(&mes_rep, &ciph_rep, NULL);
 	SSL_FREE(octets);
 
 	if (SSL_OK != res)

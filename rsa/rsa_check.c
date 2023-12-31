@@ -11,7 +11,7 @@ static int	__check_pubexp(void)
 	if (BNUM_EVEN(__items->pubexp))
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
 
-	if (lmbit_num(__items->pubexp) >= 256)
+	if (bnum_lmbit(__items->pubexp) >= 256)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
@@ -29,23 +29,23 @@ static int	__check_privexp(void)
 	if (BNUM_EVEN(__items->privexp))
 		res = SSL_FAIL;
 
-	if (lmbit_num(__items->privexp) <= lmbit_num(__items->modulus) / 2)
+	if (bnum_lmbit(__items->privexp) <= bnum_lmbit(__items->modulus) / 2)
 		res = SSL_FAIL;
 
-	init_num_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
+	bnum_init_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
-	sub_dig(__items->prime1, 1, &p1);
-	sub_dig(__items->prime2, 1, &q1);
-	lcm_num(&p1, &q1, &lcm);
-	mul_num(__items->pubexp, __items->privexp, &ed);
-	divmod_num(&ed, &lcm, NULL, &edmod);
+	bnum_sub_dig(__items->prime1, 1, &p1);
+	bnum_sub_dig(__items->prime2, 1, &q1);
+	bnum_lcm(&p1, &q1, &lcm);
+	bnum_mul(__items->pubexp, __items->privexp, &ed);
+	bnum_divmod(&ed, &lcm, NULL, &edmod);
 
-	if (compare_num(__items->privexp, &lcm) >= 0)
+	if (bnum_cmp(__items->privexp, &lcm) >= 0)
 		res = SSL_FAIL;
 	else if (!BNUM_ONE(&edmod))
 		res = SSL_FAIL;
 
-	clear_num_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
+	bnum_clear_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
 	if (SSL_OK != res)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
@@ -59,54 +59,54 @@ static int	__check_crt_comps(void)
 	t_num	mul, mod;
 	int		res;
 
-	init_num_multi(&p1, &q1, &mul, &mod, &res, NULL);
+	bnum_init_multi(&p1, &q1, &mul, &mod, &res, NULL);
 
-	sub_dig(__items->prime1, 1, &p1);
-	sub_dig(__items->prime2, 1, &q1);
+	bnum_sub_dig(__items->prime1, 1, &p1);
+	bnum_sub_dig(__items->prime2, 1, &q1);
 
 	res = SSL_OK;
 
-	if ((compare_dig(__items->exponent1, 1) <= 0)
-		|| (compare_num(__items->exponent1, &p1) >= 0))
+	if ((bnum_cmp_dig(__items->exponent1, 1) <= 0)
+		|| (bnum_cmp(__items->exponent1, &p1) >= 0))
 	{
 		res = SSL_FAIL;
 	}
-	else if ((compare_dig(__items->exponent2, 1) <= 0)
-		|| (compare_num(__items->exponent2, &q1) >= 0))
+	else if ((bnum_cmp_dig(__items->exponent2, 1) <= 0)
+		|| (bnum_cmp(__items->exponent2, &q1) >= 0))
 	{
 		res = SSL_FAIL;
 	}
-	else if ((compare_dig(__items->coeff, 1) <= 0)
-		|| (compare_num(__items->coeff, __items->prime1) >= 0))
-	{
-		res = SSL_FAIL;
-	}
-
-	mul_num(__items->exponent1, __items->pubexp, &mul);
-	divmod_num(&mul, &p1, NULL, &mod);
-
-	if (compare_dig(&mod, 1))
+	else if ((bnum_cmp_dig(__items->coeff, 1) <= 0)
+		|| (bnum_cmp(__items->coeff, __items->prime1) >= 0))
 	{
 		res = SSL_FAIL;
 	}
 
-	mul_num(__items->exponent2, __items->pubexp, &mul);
-	divmod_num(&mul, &q1, NULL, &mod);
+	bnum_mul(__items->exponent1, __items->pubexp, &mul);
+	bnum_divmod(&mul, &p1, NULL, &mod);
 
-	if (compare_dig(&mod, 1))
+	if (bnum_cmp_dig(&mod, 1))
 	{
 		res = SSL_FAIL;
 	}
 
-	mul_num(__items->coeff, __items->prime2, &mul);
-	divmod_num(&mul, __items->prime1, NULL, &mod);
+	bnum_mul(__items->exponent2, __items->pubexp, &mul);
+	bnum_divmod(&mul, &q1, NULL, &mod);
 
-	if (compare_dig(&mod, 1))
+	if (bnum_cmp_dig(&mod, 1))
 	{
 		res = SSL_FAIL;
 	}
 
-	clear_num_multi(&p1, &q1, &mul, &mod, &res, NULL);
+	bnum_mul(__items->coeff, __items->prime2, &mul);
+	bnum_divmod(&mul, __items->prime1, NULL, &mod);
+
+	if (bnum_cmp_dig(&mod, 1))
+	{
+		res = SSL_FAIL;
+	}
+
+	bnum_clear_multi(&p1, &q1, &mul, &mod, &res, NULL);
 
 	if (SSL_OK != res)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
@@ -121,13 +121,13 @@ static int	__check_modulus(void)
 
 	res = SSL_OK;
 
-	init_num(&tmod);
-	mul_num(__items->prime1, __items->prime2, &tmod);
+	bnum_init(&tmod);
+	bnum_mul(__items->prime1, __items->prime2, &tmod);
 
-	if (compare_num(__items->modulus, &tmod))
+	if (bnum_cmp(__items->modulus, &tmod))
 		res = SSL_FAIL;
 
-	clear_num(&tmod);
+	bnum_clear(&tmod);
 
 	if (SSL_OK != res)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
@@ -142,18 +142,18 @@ static int	__check_prime(t_num *prime)
 
 	res = SSL_OK;
 
-	init_num_multi(&gcd, &p1, NULL);
+	bnum_init_multi(&gcd, &p1, NULL);
 
-	if (!prime_test(prime, lmbit_num(prime), RM_TRIALS, SSL_FALSE))
+	if (!bnum_prime_test(prime, bnum_lmbit(prime), RM_TRIALS, SSL_FALSE))
 		res = SSL_FAIL;
 
-	sub_dig(prime, 1, &p1);
-	gcd_num(&p1, __items->pubexp, &gcd);
+	bnum_sub_dig(prime, 1, &p1);
+	bnum_gcd(&p1, __items->pubexp, &gcd);
 
-	if (compare_dig(&gcd, 1))
+	if (bnum_cmp_dig(&gcd, 1))
 		res = SSL_FAIL;
 
-	clear_num_multi(&gcd, &p1, NULL);
+	bnum_clear_multi(&gcd, &p1, NULL);
 
 	if (SSL_OK != res)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));

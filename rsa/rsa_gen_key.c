@@ -20,7 +20,7 @@ static void	__gen_prime(t_num *prime, int keysize)
 	mask = (1ULL<<((keysize-1)%BNUM_DIGIT_BIT+1))-1;
 
 	do {
-		reset_num(prime);
+		bnum_reset(prime);
 		prime->len = keysize/BNUM_DIGIT_BIT + (int)(keysize%BNUM_DIGIT_BIT!=0);
 
 		for (idx = 0; idx < prime->len; idx++)
@@ -34,14 +34,14 @@ static void	__gen_prime(t_num *prime, int keysize)
 		for (; idx < BNUM_MAX_DIG; idx++)
 			prime->val[idx] = 0;
 
-	} while (!prime_test(prime, keysize, RM_TRIALS, SSL_TRUE));
+	} while (!bnum_prime_test(prime, keysize, RM_TRIALS, SSL_TRUE));
 }
 
 static void	__get_primes(int modsize, uint64_t seed)
 {
 	int	keysize;
 
-	set_dig_u(__items->version, 0);
+	bnum_set_dig_u(__items->version, 0);
 
 	rand_mtw_init(seed);
 	keysize = modsize / 2;
@@ -49,25 +49,25 @@ static void	__get_primes(int modsize, uint64_t seed)
 	__gen_prime(__items->prime1, keysize);
 	__gen_prime(__items->prime2, modsize - keysize);
 
-	mul_num(__items->prime1, __items->prime2, __items->modulus);
-	invmod_num(__items->prime2, __items->prime1, __items->coeff);
+	bnum_mul(__items->prime1, __items->prime2, __items->modulus);
+	bnum_invmod(__items->prime2, __items->prime1, __items->coeff);
 }
 
 static void	__get_exponents(void)
 {
 	t_num	t1, t2, t3;
 
-	init_num_multi(&t1, &t2, &t3, NULL);
+	bnum_init_multi(&t1, &t2, &t3, NULL);
 
-	sub_dig(__items->prime1, 1, &t1);
-	sub_dig(__items->prime2, 1, &t2);
-	lcm_num(&t1, &t2, &t3);
-	set_dig_u(__items->pubexp, RSA_EXPPUB);
-	invmod_num(__items->pubexp, &t3, __items->privexp);
-	divmod_num(__items->privexp, &t1, NULL, __items->exponent1);
-	divmod_num(__items->privexp, &t2, NULL, __items->exponent2);
+	bnum_sub_dig(__items->prime1, 1, &t1);
+	bnum_sub_dig(__items->prime2, 1, &t2);
+	bnum_lcm(&t1, &t2, &t3);
+	bnum_set_dig_u(__items->pubexp, RSA_EXPPUB);
+	bnum_invmod(__items->pubexp, &t3, __items->privexp);
+	bnum_divmod(__items->privexp, &t1, NULL, __items->exponent1);
+	bnum_divmod(__items->privexp, &t2, NULL, __items->exponent2);
 
-	clear_num_multi(&t1, &t2, &t3, NULL);
+	bnum_clear_multi(&t1, &t2, &t3, NULL);
 }
 
 int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
