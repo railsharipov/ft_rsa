@@ -3,7 +3,7 @@
 void	bnum_sqr_comba(const t_num *a, t_num *res)
 {
 	uint64_t	*temp;
-	t_uint128	val, carry;
+	uint128_t	val, carry;
 	int 		idx, ndig, z;
 
 	carry = 0;
@@ -29,11 +29,11 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 
 		val = 0;
 		for (z = 0; z < n; z++)
-			val += (t_uint128) *aptr++ * *bptr--;
+			val += (uint128_t) *aptr++ * *bptr--;
 
 		val = (val<<1) + carry;
 		if (!(idx & 0x1))
-			val += (t_uint128) a->val[idx>>1] * a->val[idx>>1];
+			val += (uint128_t) a->val[idx>>1] * a->val[idx>>1];
 
 		temp[idx] = val & BNUM_MAX_VAL;
 		carry = val >> BNUM_DIGIT_BIT;

@@ -119,7 +119,7 @@ void	hash_sha512_update(t_hash *sha512, const char *buf, size_t bufsize)
 
 	var = sha512->var;
 	hash = sha512->hash;
-	*(t_uint128 *)sha512->msize += FLOOR(bufsize, SHA512_BLOCK_SIZE);
+	*(uint128_t *)sha512->msize += FLOOR(bufsize, SHA512_BLOCK_SIZE);
 
 	while (bufsize >= SHA512_BLOCK_SIZE)
 	{

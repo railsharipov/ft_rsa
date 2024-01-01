@@ -50,7 +50,7 @@
 	exit(0); \
 })
 
-typedef __uint128_t		t_uint128;
+typedef __uint128_t		uint128_t;
 typedef __int128_t		int128_t;
 
 typedef struct			s_num
@@ -66,7 +66,6 @@ void    bnum_add(const t_num *, const t_num *, t_num *);
 void    bnum_add_dig(const t_num *, uint64_t, t_num *);
 void    bnum_add_dig_u(const t_num *, uint64_t, t_num *);
 void    bnum_add_u(const t_num *, const t_num *, t_num *);
-void    bnum_bytes_to(t_num *, const char *, int);
 void    bnum_clear(t_num *);
 void    bnum_clear_multi(t_num *, ...);
 int     bnum_cmp(const t_num *, const t_num *);
@@ -81,7 +80,9 @@ void    bnum_divmod(const t_num *, const t_num *, t_num *, t_num *);
 void    bnum_divmod_dig(const t_num *, uint64_t, t_num *, uint64_t *);
 void    bnum_exp(const t_num *, uint64_t, t_num *);
 void    bnum_exp2(t_num *, int);
-void    bnum_from_hex(t_num *num, const char *hex);
+void    bnum_from_bytes_u(t_num *, const char *, int);
+void    bnum_from_dec(t_num *num, const char *dec);
+void    bnum_from_hex_u(t_num *num, const char *hex);
 void    bnum_gcd(const t_num *, const t_num *, t_num *);
 void    bnum_increase_size(t_num *, size_t newsize);
 void    bnum_increm_u(t_num *);
@@ -110,7 +111,7 @@ int     bnum_prime_test(const t_num *, int, int, int);
 void    bnum_print(const char *, const t_num *);
 void    bnum_print_bits(const t_num *);
 void    bnum_print_raw(const t_num *);
-void    bnum_reset(t_num *);
+void    bnum_bzero(t_num *);
 int     bnum_rmbit(const t_num *);
 void    bnum_rsh_bit_inpl(t_num *, int bits);
 void    bnum_rsh_dig_inpl(t_num *, int shifts);
@@ -127,6 +128,7 @@ void    bnum_sub_dig_u(const t_num *, uint64_t, t_num *);
 void    bnum_sub_u(const t_num *, const t_num *, t_num *);
 void    bnum_swap(t_num *, t_num *);
 void    bnum_to_bytes_u(const t_num *, char **, size_t *);
-char 	*bnum_to_hex_u(t_num *num);
+char 	*bnum_to_dec(const t_num *num);
+char 	*bnum_to_hex_u(const t_num *num);
 
 #endif

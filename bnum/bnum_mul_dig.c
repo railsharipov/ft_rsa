@@ -10,13 +10,13 @@ void	bnum_mul_dig(const t_num *a, uint64_t b, t_num *res)
 		bnum_set_dig_u(res, 0);
 	else
 	{
-		t_uint128	val, carry;
+		uint128_t	val, carry;
 
 		carry = 0;
 
 		for (i = 0; i < a->len+1; i++)
 		{
-			val = (t_uint128) a->val[i] * b + carry;
+			val = (uint128_t) a->val[i] * b + carry;
 			res->val[i] = val & BNUM_MAX_VAL;
 			carry = val >> BNUM_DIGIT_BIT;
 		}

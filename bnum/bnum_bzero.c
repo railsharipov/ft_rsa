@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-void	bnum_reset(t_num *num)
+void	bnum_bzero(t_num *num)
 {
 	int	idx;
 

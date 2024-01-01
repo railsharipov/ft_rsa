@@ -51,11 +51,11 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 			q.val[i-t-1] = BNUM_MAX_VAL;
 		else
 		{
-			t_uint128	val;
+			uint128_t	val;
 
-			val = ((t_uint128) x.val[i]) << BNUM_DIGIT_BIT;
-			val |= (t_uint128) x.val[i-1];
-			val /= (t_uint128) y.val[t];
+			val = ((uint128_t) x.val[i]) << BNUM_DIGIT_BIT;
+			val |= (uint128_t) x.val[i-1];
+			val /= (uint128_t) y.val[t];
 			q.val[i-t-1] = val;
 		}
 
@@ -64,7 +64,7 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		do
 		{
 			q.val[i-t-1] = (q.val[i-t-1]-1u) & BNUM_MAX_VAL;
-			bnum_reset(&t1);
+			bnum_bzero(&t1);
 
 			t1.val[0] = (t-1 < 0) ? (0u) : (y.val[t-1]);
 			t1.val[1] = y.val[t];

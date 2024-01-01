@@ -2,14 +2,17 @@
 
 static const char	A[] = "0123456789abcdef";
 
-/* Convert bnum value to hexstring, sign is ignored */
+/* Convert bnum value to hex number string, sign is ignored */
 
-char	*bnum_to_hex_u(t_num *num)
+char	*bnum_to_hex_u(const t_num *num)
 {
 	char		*hexrev, *hptr, *hex, *hexresult;
 	uint64_t	digit;
 	size_t		hexsize;
 	int			idx, idy, offset;
+
+	if (NULL == num)
+		return (NULL);
 
 	hexsize = NBITS_TO_NWORDS(num->len * BNUM_DIGIT_BIT, 4);
 	LIBFT_ALLOC(hexrev, hexsize+1);

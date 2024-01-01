@@ -168,7 +168,7 @@ int			ft_lst_del(t_node *, int (*f_del)(t_node *));
 int			ft_lst_del_first(t_node **, int (*f_del)(t_node *));
 int			ft_lst_del_last(t_node **, int (*f_del)(t_node *));
 int			ft_lst_del_one(t_node **, t_node *, int (*f_del)(t_node *));
-int			ft_lst_size(t_node *);
+size_t		ft_lst_size(t_node *);
 int			ft_lst_map(t_node *, void *farg, int (*f)(t_node *, void *));
 t_htbl		*ft_lst_htable(t_node *);
 

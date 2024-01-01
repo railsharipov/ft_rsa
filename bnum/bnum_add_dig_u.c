@@ -12,14 +12,14 @@ void	bnum_add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 	{
 		const uint64_t	*aptr;
 		uint64_t		*rptr;
-		t_uint128		carry, sum;
+		uint128_t		carry, sum;
 
 		aptr = a->val;
 		rptr = res->val;
-		carry = (t_uint128)digit;
+		carry = (uint128_t)digit;
 		for (i = 0; i < slen-1; i++)
 		{
-			sum = ((t_uint128)*aptr++) + carry;
+			sum = ((uint128_t)*aptr++) + carry;
 			*rptr++ = (uint64_t)(sum & BNUM_MAX_VAL);
 			carry = sum >> BNUM_DIGIT_BIT;
 		}

@@ -19,7 +19,7 @@ void	bnum_montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 
 	for (idx = 0; idx < mod->len; idx++)
 	{
-		t_uint128	t, u, mu;
+		uint128_t	t, u, mu;
 		int			idy;
 
 		mu = (num->val[idx] * rho) & BNUM_MAX_VAL;
@@ -27,8 +27,8 @@ void	bnum_montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 
 		for (idy = 0; idy < mod->len; idy++)
 		{
-			t = mu * (t_uint128)mod->val[idy]
-				+ u + (t_uint128)num->val[idx + idy];
+			t = mu * (uint128_t)mod->val[idy]
+				+ u + (uint128_t)num->val[idx + idy];
 
 			u = (t >> BNUM_DIGIT_BIT) & BNUM_MAX_VAL;
 			num->val[idx + idy] = (uint64_t)(t & BNUM_MAX_VAL);

@@ -17,5 +17,5 @@ void	bnum_montgomery_setup(const t_num *num, uint64_t *rho)
 	x *= 2u - b * x; // .. 2^64
 
 	/* rho = -1/num mod b */
-	*rho = ((t_uint128)BNUM_BASE - x) & BNUM_MAX_VAL;
+	*rho = ((uint128_t)BNUM_BASE - x) & BNUM_MAX_VAL;
 }

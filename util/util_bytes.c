@@ -36,11 +36,11 @@ uint64_t	util_bswap64(uint64_t x)
 	);
 }
 
-t_uint128	util_bswap128(t_uint128 x)
+uint128_t	util_bswap128(uint128_t x)
 {
-	t_uint128	y;
+	uint128_t	y;
 
-	y = ((t_uint128)(0xFF)) << 120;
+	y = ((uint128_t)(0xFF)) << 120;
 	return (
 		((x & y) >> 120)
 		| (((x & (y >> 8)) >> 104))

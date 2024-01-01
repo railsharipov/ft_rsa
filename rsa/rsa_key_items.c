@@ -79,7 +79,7 @@ static t_num	*__asn_int(t_htbl *htbl, const char *key)
 	size = item->size;
 
 	num = bnum_create();
-	bnum_bytes_to(num, content, size);
+	bnum_from_bytes_u(num, content, size);
 
 	return (num);
 }

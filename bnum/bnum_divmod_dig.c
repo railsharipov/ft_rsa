@@ -3,7 +3,7 @@
 void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 {
 	t_num		q;
-	t_uint128	val;
+	uint128_t	val;
 	uint64_t	digit;
 	int			idx;
 
@@ -65,12 +65,12 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 	for (; idx >= 0; idx--)
 	{
-		val = (val << BNUM_DIGIT_BIT) | ((t_uint128)a->val[idx]);
+		val = (val << BNUM_DIGIT_BIT) | ((uint128_t)a->val[idx]);
 
 		if (val >= b)
 		{
-			digit = val / (t_uint128)b;
-			val %= (t_uint128)b;
+			digit = val / (uint128_t)b;
+			val %= (uint128_t)b;
 		}
 		else
 			digit = 0u;

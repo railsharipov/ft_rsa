@@ -2,7 +2,7 @@
 
 /* Convert bytes representing unsigned integer to bignum */
 
-void	bnum_bytes_to(t_num *num, const char *buf, int bufsize)
+void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 {
 	unsigned char	*octets;
 	size_t			ndigits;

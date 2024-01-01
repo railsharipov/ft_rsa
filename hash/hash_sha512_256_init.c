@@ -10,7 +10,7 @@ static const t_sha512_256_word	HASH_INIT_VECT[] = {
 
 static t_sha512_256_word		var[SHA512_HASH_LEN];
 static t_sha512_256_word		hash[SHA512_HASH_LEN];
-static t_uint128				msize;
+static uint128_t				msize;
 
 static t_hash	sha512_256 = {
 	.var = &var,

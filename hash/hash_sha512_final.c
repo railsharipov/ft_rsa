@@ -16,7 +16,7 @@
 static const int	END_BYTE = 1 << 7;
 static const int	LEN_SIZE = 16;
 
-static void	__len_octets(t_uint128 msize_nbits, unsigned char *octets)
+static void	__len_octets(uint128_t msize_nbits, unsigned char *octets)
 {
 	octets[0] = (msize_nbits >> 120) & 0xFF;
 	octets[1] = (msize_nbits >> 112) & 0xFF;
@@ -52,14 +52,14 @@ void	hash_sha512_final(t_hash *sha512, const char *buf, size_t bufsize)
 {
 	char 		*pbuf;
 	int			pbsize;
-	t_uint128	msize_nbits;
+	uint128_t	msize_nbits;
 	unsigned char		msize_octets[LEN_SIZE];
 
 	if ((NULL == sha512) || (NULL == buf))
 		return ;
 
-	*(t_uint128 *)(sha512->msize) += bufsize;
-	msize_nbits = *(t_uint128 *)(sha512->msize) * CHAR_BIT;
+	*(uint128_t *)(sha512->msize) += bufsize;
+	msize_nbits = *(uint128_t *)(sha512->msize) * CHAR_BIT;
 	__len_octets(msize_nbits, msize_octets);
 
 	pbsize = CEIL(bufsize, SHA512_BLOCK_SIZE);

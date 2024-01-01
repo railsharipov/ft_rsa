@@ -20,7 +20,7 @@ static void	__gen_prime(t_num *prime, int keysize)
 	mask = (1ULL<<((keysize-1)%BNUM_DIGIT_BIT+1))-1;
 
 	do {
-		bnum_reset(prime);
+		bnum_set_dig_u(prime, 0u);
 		prime->len = keysize/BNUM_DIGIT_BIT + (int)(keysize%BNUM_DIGIT_BIT!=0);
 
 		for (idx = 0; idx < prime->len; idx++)

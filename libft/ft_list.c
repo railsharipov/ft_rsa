@@ -108,9 +108,9 @@ int	ft_lst_del_one(t_node **lst, t_node *node, int (*f_del)(t_node *))
 	return (ft_node_del(cur, f_del));
 }
 
-int	ft_lst_size(t_node *lst)
+size_t	ft_lst_size(t_node *lst)
 {
-	int	size;
+	size_t	size;
 
 	size = 0;
 	while (lst)

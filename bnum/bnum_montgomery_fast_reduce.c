@@ -2,7 +2,7 @@
 
 void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 {
-	t_uint128	tw[BNUM_MAX_DIG];
+	uint128_t	tw[BNUM_MAX_DIG];
 	int			idx;
 	int			slen;
 
@@ -16,7 +16,7 @@ void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 		tw[idx] = num->val[idx];
 
 	if (idx < 2 * mod->len + 1)
-		ft_bzero(tw + num->len, sizeof(t_uint128) * (2 * mod->len + 1 - idx));
+		ft_bzero(tw + num->len, sizeof(uint128_t) * (2 * mod->len + 1 - idx));
 
 	for (idx = 0; idx < mod->len; idx++)
 	{
@@ -26,21 +26,21 @@ void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 
 		{
 			const uint64_t	*tm;
-			t_uint128		*_tw;
+			uint128_t		*_tw;
 			int				idy;
 
 			tm = mod->val;
 			_tw = tw + idx;
 
 			for (idy = 0; idy < mod->len; idy++)
-				*_tw++ += (t_uint128) mu * *tm++;
+				*_tw++ += (uint128_t) mu * *tm++;
 		}
 
 		tw[idx+1] += tw[idx] >> BNUM_DIGIT_BIT;
 	}
 
 	{
-		t_uint128	*_tw, *_tw1;
+		uint128_t	*_tw, *_tw1;
 		uint64_t	*tn;
 
 		_tw = tw + idx;

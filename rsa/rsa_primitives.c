@@ -9,7 +9,7 @@ int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 	{
 		return (RSA_ERROR(INVALID_OCTET_STRING_SIZE));
 	}
-	bnum_bytes_to(num, (char *)octets, osize);
+	bnum_from_bytes_u(num, (char *)octets, osize);
 
 	return (SSL_OK);
 }

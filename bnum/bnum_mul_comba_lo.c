@@ -3,7 +3,7 @@
 void	bnum_mul_comba_lo(const t_num *a, const t_num *b, t_num *res, int ndig)
 {
 	uint64_t	*temp;
-	t_uint128	val;
+	uint128_t	val;
 	int 		idx, z;
 
 	val = 0;
@@ -27,7 +27,7 @@ void	bnum_mul_comba_lo(const t_num *a, const t_num *b, t_num *res, int ndig)
 		bptr = b->val + y;
 
 		for (z = 0; z < n; z++)
-			val += (t_uint128) *aptr++ * *bptr--;
+			val += (uint128_t) *aptr++ * *bptr--;
 
 		temp[idx] = val & BNUM_MAX_VAL;
 		val >>= BNUM_DIGIT_BIT;

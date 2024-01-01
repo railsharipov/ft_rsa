@@ -48,7 +48,7 @@ typedef	struct	s_ostring
 
 typedef uint32_t	t_bool;
 typedef t_ostring	t_bitstring;
-typedef __uint128_t	t_uint128;
+typedef __uint128_t	uint128_t;
 
 typedef struct	s_task
 {
@@ -88,7 +88,7 @@ size_t			util_ostr_get_size(t_ostring *ostring);
 
 uint32_t		util_bswap32(uint32_t);
 uint64_t		util_bswap64(uint64_t);
-t_uint128		util_bswap128(t_uint128);
+uint128_t		util_bswap128(uint128_t);
 void			util_xor(char *, char *, char *, size_t);
 int 			util_lmbit(uint64_t, int);
 int 			util_rmbit(uint64_t, int);

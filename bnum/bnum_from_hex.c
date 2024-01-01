@@ -12,7 +12,7 @@ static const int	A[128] = {
 	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
 };
 
-void	bnum_from_hex(t_num *num, const char *hex)
+void	bnum_from_hex_u(t_num *num, const char *hex)
 {
 	size_t		hexsize;
 	int			nbits;
@@ -24,15 +24,15 @@ void	bnum_from_hex(t_num *num, const char *hex)
 		return ;
 
 	hexsize = ft_strlen(hex);
-	nbits = CHAR_BIT * hexsize;
+	nbits = 4 * hexsize;
 	nwords = NBITS_TO_NWORDS(nbits, BNUM_DIGIT_BIT);
 
-	if (num->size < nwords)
+	if (num->size < nwords) {
 		bnum_increase_size(num, nwords);
+	}
+	bnum_set_dig_u(num, 0u);
 
-	bnum_reset(num);
 	idx = 0;
-
 	while (idx < hexsize)
 	{
 		bnum_lsh_bit_inpl(num, 4);
@@ -40,7 +40,6 @@ void	bnum_from_hex(t_num *num, const char *hex)
 		num->val[0] |= bitblock;
 		idx++;
 	}
-
 	num->len = nwords;
 	num->sign = BNUM_POS;
 	bnum_skip_zeros(num);
