@@ -1,6 +1,6 @@
 #include <bnum.h>
 
-/* Convert bignum to decimal number string, sign is ignored */
+/* Convert bignum to decimal number string */
 
 struct __s_digit_symbol {
 	char	c;
