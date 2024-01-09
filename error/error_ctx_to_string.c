@@ -14,12 +14,13 @@ static char	*__ERROR_CTX_NAMES[] = {
 	"pem",
 	"rand",
 	"rsa",
+	"json",
 };
 
 const char	*error_ctx_to_string(int error)
 {
 	struct s_error_ctx	error_ctx;
-	uint32_t						error_ctx_idx;
+	uint32_t			error_ctx_idx;
 
 	error_ctx_idx = GET_ERROR_CTX(error);
 
