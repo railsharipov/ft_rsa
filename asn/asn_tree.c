@@ -2,7 +2,7 @@
 #include <ssl_asn.h>
 
 static int	__init_func(t_node *node, const void *p);
-static int	__del_func(t_node *node);
+static void	__del_func(t_node *node);
 
 static int	__error_status;
 
@@ -56,12 +56,11 @@ static int	__init_func(t_node *node, const void *p)
 	return (0);
 }
 
-static int	__del_func(t_node *node)
+static void	__del_func(t_node *node)
 {
 	t_iasn	*item;
 
-	if (NULL != node->content)
+	if (NULL != node->content) {
 		asn_item_del((t_iasn *)node->content);
-
-	return (0);
+	}
 }
