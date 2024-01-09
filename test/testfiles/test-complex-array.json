@@ -1,0 +1,88 @@
+[
+  {
+    "/test/apiKey" : {
+      "post" : {
+        "tags" : [ "test" ],
+        "summary" : "Test JSON",
+        "description" : "",
+        "operationId" : "testJson",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "testId",
+            "in" : "path",
+            "required" : true,
+            "type" : "integer",
+            "format" : "int64"
+          },
+          {
+            "in" : "body",
+            "name" : "body",
+            "required" : false,
+            "schema" : {
+              "$ref" : "#/test/json"
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "Success",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          "400" : {
+            "description" : "Missing data in request"
+          },
+          "500" : {
+            "description" : "Something went wrong"
+          }
+        }
+      }
+    }
+  },
+  {
+    "/test/apiKey2" : {
+      "post" : {
+        "tags" : [ "test2" ],
+        "summary" : "Test 2nd JSON",
+        "description" : "",
+        "operationId" : "testJson2",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "testId2",
+            "in" : "path2",
+            "required" : true,
+            "type" : "integer",
+            "format" : "int32"
+          },
+          {
+            "in" : "body2",
+            "name" : "body2",
+            "required" : false,
+            "schema" : {
+              "$ref" : "#/test/json2"
+            }
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "description" : "Success 2nd",
+            "schema" : {
+              "type" : "string"
+            }
+          },
+          "400" : {
+            "description" : "Missing data in request 2nd"
+          },
+          "500" : {
+            "description" : "Something went wrong 2nd"
+          }
+        }
+      }
+    }
+  }
+]

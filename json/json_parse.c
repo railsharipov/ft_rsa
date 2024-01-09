@@ -3,7 +3,7 @@
 #include <ssl_map.h>
 #include <bnum.h>
 
-typedef ssize_t (*FUNC_JSON_PARSE)(const char *, t_node **);
+typedef ssize_t (*FUNC_JSON_PARSE)(const char *, t_node *);
 
 static t_htbl	*__htable;
 
@@ -115,7 +115,7 @@ ssize_t __parse(const char *s, t_node *node)
 		idx++;
 	}
 	open = s[idx];
-	ctx = ft_htbl_bin_get(__htable, open, sizeof(open));
+	ctx = ft_htbl_bin_get(__htable, &open, sizeof(open));
 
 	if (NULL == ctx) {
 		f_parse = __parse_number;

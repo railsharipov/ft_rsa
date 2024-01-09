@@ -31,6 +31,7 @@ enum	e_test_modules
 	DER_MODULE,
 	IO_MODULE,
 	LIBFT_MODULE,
+	JSON_MODULE,
 	NUMBER_OF_TEST_MODULES
 };
 
@@ -40,8 +41,8 @@ extern const char		*TEST_DESC_ARR[];
 extern const size_t		TEST_DESC_ARR_SIZE;
 
 int		test_info(int module_id, int verbose);
-int		test_assert(int bool, const char *func, const char *file, int line);
-int		test_get_testfile_content(const char *testfile_path, t_ostring *ostring);
+int		test_assert(int boolean, const char *func, const char *file, int line);
+int		test_get_testfile_content(const char *testfile_path, struct s_ostring *ostring);
 int		test_result(int res, int verbose, const char *func_name, const char *file_name);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 
@@ -50,5 +51,6 @@ int		test_io(void);
 int		test_base64(void);
 int		test_der(void);
 int		test_bnum(void);
+int		test_json(void);
 
 #endif

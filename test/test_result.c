@@ -11,7 +11,6 @@ int	test_result(
 		else
 			ft_printf("%@%s: " TXT_RED("TEST FAIL\n"), func_name);
 	}
-	
 	(void)file_name;
 
 	return (res);

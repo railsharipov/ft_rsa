@@ -9,6 +9,7 @@ const FUNC_TEST	TESTS[] = {
 	test_bnum,
 	test_base64,
 	test_der,
+	test_json,
 };
 
 const int	NUM_TESTS = sizeof(TESTS)/sizeof(FUNC_TEST);
@@ -18,7 +19,8 @@ const char	*TEST_DESC_ARR[] = {
 	"io",
 	"bnum",
 	"base64",
-	"der"
+	"der",
+	"json",
 };
 
 const size_t	TEST_DESC_ARR_SIZE = ARR_SIZE(TEST_DESC_ARR);
