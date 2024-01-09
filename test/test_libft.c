@@ -130,7 +130,7 @@ static int	__test_libft_setup(void)
 		domesticarum eu malis a voluptate ubi ita esse pariatur offendit de \
 		quamquam quid qui commodo cohaerescant si do elit incurreret singulis, \
 		est Ita Consectetur.";
-	
+
 	__s3 = "Ut veniam constias deserunt, nisi cupidatat est esse cillum.";
 
 	__slen1 = strlen(__s1);
@@ -672,7 +672,7 @@ static int __test_ft_strsplit(void)
 
 	for (int i = 0; i < ref_str_len; i++)
 		pass |= TEST_ASSERT(!strcmp(res[i], ref_str_arr[i]));
-	
+
 	ft_2darray_del_null_terminated((void **)res);
 
 	res = ft_strsplit("apple", ' ');
@@ -680,7 +680,7 @@ static int __test_ft_strsplit(void)
 	pass |= TEST_ASSERT(ft_2darray_len_null_terminated((void **)res) == 1);
 
 	pass |= TEST_ASSERT(!strcmp(res[0], "apple"));
-	
+
 	ft_2darray_del_null_terminated((void **)res);
 
 	if (SSL_OK == pass)
@@ -1315,13 +1315,13 @@ static int __test_get_next_line(void)
 			pass |= TEST_ASSERT(strlen(ref_line) == strlen(line));
 			pass |= TEST_ASSERT(strcmp(ref_line, line) == 0);
 		}
-		
+
 		if (NULL != ref_line)
 			free(ref_line);
-		
+
 		if (NULL != line)
 			free(line);
-		
+
 		ref_line = NULL;
 		linecapp = 0;
 		line = NULL;
@@ -1343,7 +1343,7 @@ static int __test_ft_node(void)
 	char *content = "some-content";
 	int pass = SSL_OK;
 
-	node = ft_node_init();
+	node = ft_node_create();
 	pass |= TEST_ASSERT(node != NULL);
 
 	ft_node_del(node, NULL);
@@ -1368,7 +1368,7 @@ static int __func_for_test_ft_list(t_node *node, void *farg)
 {
 	if (NULL == node)
 		return (LIBFT_OK);
-	
+
 	node->content = NULL;
 	node->size = 0;
 
@@ -1418,7 +1418,7 @@ static int __test_ft_list(void)
 
 		if (node_key != NULL)
 			free(node_key);
-		
+
 		idx++;
 	}
 
@@ -1439,29 +1439,19 @@ static int __test_ft_list(void)
 
 		if (node_key != NULL)
 			free(node_key);
-		
+
 		tmp_node = tmp_node->next;
 		idx++;
 	}
 
 	// check list delete first node
-	ret = ft_lst_del_first(NULL, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_ERR);
-
-	ret = ft_lst_del_first(&lst, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_OK);
-
+	ft_lst_del_first(&lst, NULL);
 	lst_size = ft_lst_size(lst);
 	pass |= TEST_ASSERT(lst_size == nwords-1);
 	pass |= TEST_ASSERT(strcmp((char *)lst->content, words[1]) == 0);
 
 	// check list delete last node
-	ret = ft_lst_del_last(NULL, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_ERR);
-
-	ret = ft_lst_del_last(&lst, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_OK);
-
+	ft_lst_del_last(&lst, NULL);
 	lst_size = ft_lst_size(lst);
 	pass |= TEST_ASSERT(lst_size == nwords - 2);
 
@@ -1497,7 +1487,7 @@ static int __test_ft_list(void)
 
 		if (node_key != NULL)
 			free(node_key);
-		
+
 		idx++;
 	}
 
@@ -1514,14 +1504,7 @@ static int __test_ft_list(void)
 	pass |= TEST_ASSERT(tmp_node != NULL);
 
 	// test list delete node
-	ret = ft_lst_del_one(NULL, tmp_node, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_ERR);
-
-	ret = ft_lst_del_one(&lst, NULL, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_ERR);
-
-	ret = ft_lst_del_one(&lst, tmp_node, NULL);
-	pass |= TEST_ASSERT(ret == LIBFT_OK);
+	ft_lst_del_one(&lst, tmp_node, NULL);
 
 	// search for deleted node
 	tmp_node = lst;
@@ -1585,7 +1568,7 @@ static int __test_ft_stack(void)
 
 		if (key != NULL)
 			free(key);
-		
+
 		idx++;
 	}
 
@@ -1598,12 +1581,12 @@ static int __test_ft_stack(void)
 
 	if (SSL_OK != pass)
 		return (TEST_FAIL());
-	
+
 	while (!ft_stack_is_empty(stack))
 	{
 		if (--idx < 0)
 			break ;
-		
+
 		content = ft_stack_pop(stack);
 		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
 	}
@@ -1654,7 +1637,7 @@ static int __test_ft_queue(void)
 
 		if (key != NULL)
 			free(key);
-		
+
 		idx++;
 	}
 
@@ -1667,13 +1650,13 @@ static int __test_ft_queue(void)
 
 	if (SSL_OK != pass)
 		return (TEST_FAIL());
-	
+
 	idx = 0;
 	while (!ft_queue_is_empty(queue))
 	{
 		if (idx >= nwords)
 			break ;
-		
+
 		content = ft_queue_dequeue(queue);
 		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
 
@@ -1821,22 +1804,22 @@ static int __test_ft_htbl(void)
 
 		if (content_parts == NULL)
 			break ;
-		
+
 		nparts = ft_2darray_len_null_terminated((void **)content_parts);
 
 		if (nparts == 2)
 			test_num = atoi(content_parts[1]);
-		
+
 		ft_2darray_del_null_terminated((void **)content_parts);
 
 		if (nparts != 2 || test_num > nwords-1)
 			break ;
-		
+
 		word_ht[test_num] += 1;
 
 		if (strcmp(content, test_content[test_num]) != 0)
 			break ;
-		
+
 		node = node->next;
 		idx++;
 	}
@@ -1850,7 +1833,7 @@ static int __test_ft_htbl(void)
 	{
 		if (word_ht[idx] != 1)
 			break ;
-		
+
 		idx++;
 	}
 
@@ -1984,7 +1967,7 @@ static int __test_ft_htbl_conversion(void)
 	}
 
 	htbl = ft_lst_htable(lst);
-	
+
 	idx = 0;
 	while (idx < nwords)
 	{
@@ -2003,7 +1986,7 @@ static int __test_ft_htbl_conversion(void)
 	ft_htbl_del(htbl);
 
 	htbl = ft_queue_htable(queue);
-	
+
 	idx = 0;
 	while (idx < nwords)
 	{
@@ -2022,7 +2005,7 @@ static int __test_ft_htbl_conversion(void)
 	ft_htbl_del(htbl);
 
 	htbl = ft_stack_htable(stack);
-	
+
 	idx = 0;
 	while (idx < nwords)
 	{
@@ -2039,7 +2022,7 @@ static int __test_ft_htbl_conversion(void)
 	}
 
 	ft_htbl_del(htbl);
-	
+
 	ft_lst_del(lst, NULL);
 	ft_queue_del(queue, NULL);
 	ft_stack_del(stack, NULL);
@@ -2064,7 +2047,7 @@ static int __test_ft_ntree_dfs_depth_func(t_node *node, const void *farg)
 		return (-1);
 
 	(void)farg;
-	
+
 	if (NULL != node->key)
 	{
 		key_parts = ft_strsplit(node->key, ':');
@@ -2098,7 +2081,7 @@ static int __test_ft_ntree_dfs_order_func(t_node *node, const void *farg)
 		return (-1);
 
 	words = (char ***)farg;
-	
+
 	if (NULL != node->key)
 	{
 		if (**words == NULL)
@@ -2106,7 +2089,7 @@ static int __test_ft_ntree_dfs_order_func(t_node *node, const void *farg)
 
 		if (strcmp(**words, node->key) != 0)
 			return (-1);
-		
+
 		*words = *words + 1;
 	}
 
@@ -2121,7 +2104,7 @@ static int __test_ft_ntree_helper_func(t_node *node, const void *farg)
 
 	if (NULL == node)
 		return (-1);
-	
+
 	if (NULL != node->key)
 	{
 		word_ht = (t_htbl *)farg;
@@ -2133,7 +2116,7 @@ static int __test_ft_ntree_helper_func(t_node *node, const void *farg)
 			return (-3);
 
 		*counter_ptr += 1;
-	}	
+	}
 
 	return (0);
 }
@@ -2268,7 +2251,7 @@ static int __test_ft_ntree(void)
 	while (idx < nwords)
 		if (counter_arr[idx++] != 1)
 			break;
-	
+
 	pass |= TEST_ASSERT(idx == nwords);
 
 	//
