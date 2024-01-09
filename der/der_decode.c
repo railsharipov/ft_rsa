@@ -174,7 +174,7 @@ static t_node	*__create_construct_node(t_iasn *item)
 	if (NULL == (child_nodes = __create_asn_tree(&temp_iodes)))
 		return (NULL);
 
-	node = ft_node_init();
+	node = ft_node_create();
 	node->nodes = child_nodes;
 
 	return (node);
@@ -184,7 +184,7 @@ static t_node	*__create_primitive_node(t_iasn *item)
 {
 	t_node	*node;
 
-	node = ft_node_init();
+	node = ft_node_create();
 	node->content = asn_item_dup(item);
 	node->size = sizeof(t_iasn);
 
