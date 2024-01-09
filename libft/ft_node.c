@@ -12,7 +12,18 @@
 
 #include <libft.h>
 
-t_node	*ft_node_init(void)
+void	(ft_node_init)(t_node *node)
+{
+	ft_bzero(node, sizeof(t_node));
+}
+
+void	ft_node_init_with_f_del(t_node *node, FUNC_NODE_DEL f_del)
+{
+	ft_bzero(node, sizeof(t_node));
+	node->f_del = f_del;
+}
+
+t_node *(ft_node_create)(void)
 {
 	t_node	*node;
 
@@ -21,15 +32,25 @@ t_node	*ft_node_init(void)
 	return (node);
 }
 
-t_node	*ft_node_new(const char *key, void *content, size_t size)
+t_node *ft_node_create_with_f_del(FUNC_NODE_DEL f_del)
 {
 	t_node	*node;
 
-	node = ft_node_init();
+	LIBFT_ALLOC(node, sizeof(t_node));
+	node->f_del = f_del;
+
+	return (node);
+}
+
+t_node	*(ft_node_new)(const char *key, void *content, size_t size)
+{
+	t_node	*node;
+
+	node = ft_node_create();
 
 	if (NULL == node)
 		return (NULL);
-	
+
 	node->key = ft_strdup(key);
 	node->content = content;
 	node->size = size;
@@ -37,16 +58,37 @@ t_node	*ft_node_new(const char *key, void *content, size_t size)
 	return (node);
 }
 
-int	ft_node_del(t_node *node, int (*f_del)(t_node *))
-{	
-	if (NULL != f_del)
-		return (f_del(node));
-	
-	if (NULL != node)
-	{
-		LIBFT_FREE(node->key);
-		LIBFT_FREE(node);
-	}
+t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, FUNC_NODE_DEL f_del)
+{
+	t_node	*node;
 
-	return (LIBFT_OK);
+	node = ft_node_create_with_f_del(f_del);
+
+	if (NULL == node)
+		return (NULL);
+
+	node->key = ft_strdup(key);
+	node->content = content;
+	node->size = size;
+
+	return (node);
+}
+
+void	(ft_node_del)(t_node *node)
+{
+	if (NULL != node) {
+		if (NULL != node->f_del) {
+			node->f_del(node);
+		} else {
+			LIBFT_FREE(node->key);
+			LIBFT_FREE(node);
+		}
+	}
+}
+
+void ft_node_del_with_f_del(t_node *node, FUNC_NODE_DEL f_del)
+{
+	if (NULL != node) {
+		f_del(node);
+	}
 }

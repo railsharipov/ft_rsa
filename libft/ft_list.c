@@ -16,53 +16,51 @@ void	ft_lst_append(t_node **lst, t_node *node)
 {
 	t_node	*tmp;
 
-	if (NULL == lst || NULL == node)
+	if (NULL == lst || NULL == node) {
 		return ;
-
+	}
 	if (NULL == *lst)
 	{
 		*lst = node;
 		return ;
 	}
-
 	tmp = *lst;
 
-	while (tmp->next)
+	while (tmp->next) {
 		tmp = tmp->next;
-	
+	}
 	tmp->next = node;
 }
 
 void	ft_lst_prepend(t_node **lst, t_node *node)
 {
-	if (NULL == node || NULL == lst)
+	if (NULL == node || NULL == lst) {
 		return ;
-	
+	}
 	node->next = *lst;
 	*lst = node;
 }
 
-int	ft_lst_del_first(t_node **lst, int (*f_del)(t_node *))
+void	ft_lst_del_first(t_node **lst, FUNC_NODE_DEL f_del)
 {
 	t_node	*tmp;
 
-	if ((NULL == lst) || (NULL == *lst))
-		return (LIBFT_ERR);
-	
+	if ((NULL == lst) || (NULL == *lst)) {
+		return ;
+	}
 	tmp = *lst;
 	*lst = (*lst)->next;
-
-	return (ft_node_del(tmp, f_del));
+	ft_node_del(tmp, f_del);
 }
 
-int	ft_lst_del_last(t_node **lst, int (*f_del)(t_node *))
+void	ft_lst_del_last(t_node **lst, FUNC_NODE_DEL f_del)
 {
 	t_node	*cur;
 	t_node	*prev;
 
-	if ((NULL == lst) || (NULL == *lst))
-		return (LIBFT_ERR);
-	
+	if ((NULL == lst) || (NULL == *lst)) {
+		return ;
+	}
 	prev = NULL;
 	cur = *lst;
 
@@ -71,23 +69,22 @@ int	ft_lst_del_last(t_node **lst, int (*f_del)(t_node *))
 		prev = cur;
 		cur = cur->next;
 	}
-
-	if (NULL == prev)
+	if (NULL == prev) {
 		*lst = NULL;
-	else
+	} else {
 		prev->next = NULL;
-	
-	return (ft_node_del(cur, f_del));
+	}
+	ft_node_del(cur, f_del);
 }
 
-int	ft_lst_del_one(t_node **lst, t_node *node, int (*f_del)(t_node *))
+void	ft_lst_del_one(t_node **lst, t_node *node, FUNC_NODE_DEL f_del)
 {
 	t_node	*cur;
 	t_node	*prev;
 
-	if (NULL == lst || NULL == *lst || NULL == node)
-		return (LIBFT_ERR);
-	
+	if (NULL == lst || NULL == *lst || NULL == node) {
+		return ;
+	}
 	prev = NULL;
 	cur = *lst;
 
@@ -96,16 +93,15 @@ int	ft_lst_del_one(t_node **lst, t_node *node, int (*f_del)(t_node *))
 		prev = cur;
 		cur = cur->next;
 	}
-
-	if (NULL == cur)
-		return (LIBFT_OK);
-	
-	if (NULL == prev)
+	if (NULL == cur) {
+		return ;
+	}
+	if (NULL == prev) {
 		*lst = cur->next;
-	else
+	} else {
 		prev->next = cur->next;
-	
-	return (ft_node_del(cur, f_del));
+	}
+	ft_node_del(cur, f_del);
 }
 
 size_t	ft_lst_size(t_node *lst)
@@ -122,7 +118,7 @@ size_t	ft_lst_size(t_node *lst)
 	return (size);
 }
 
-int	ft_lst_del(t_node *lst, int (*f_del)(t_node *))
+void	ft_lst_del(t_node *lst, FUNC_NODE_DEL f_del)
 {
 	t_node	*tmp;
 
@@ -130,27 +126,22 @@ int	ft_lst_del(t_node *lst, int (*f_del)(t_node *))
 	{
 		tmp = lst;
 		lst = lst->next;
-
-		if (LIBFT_OK != ft_node_del(tmp, f_del))
-			return (LIBFT_ERR);
+		ft_node_del(tmp, f_del);
 	}
-
-	return (LIBFT_OK);
 }
 
 int	ft_lst_map(t_node *lst, void *farg, int (*f)(t_node *, void *))
 {
-	if (NULL == f)
+	if (NULL == f) {
 		return (LIBFT_ERR);
-	
+	}
 	while (lst)
 	{
-		if (LIBFT_OK != f(lst, farg))
+		if (LIBFT_OK != f(lst, farg)) {
 			return (LIBFT_ERR);
-		
+		}
 		lst = lst->next;
 	}
-
 	return (LIBFT_OK);
 }
 
@@ -158,9 +149,9 @@ t_htbl	*ft_lst_htable(t_node *lst)
 {
 	t_htbl	*htbl;
 
-	if (NULL == lst)
+	if (NULL == lst) {
 		return (NULL);
-	
+	}
 	htbl = ft_htbl_init(ft_lst_size(lst));
 
 	while (lst)

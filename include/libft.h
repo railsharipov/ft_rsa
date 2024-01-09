@@ -66,10 +66,14 @@
 
 # define DO_NOTHING				(void)0;
 
-/* Overload macros on number of args */
-# define SEL12(_1, _2, MACRO_NAME, ...) MACRO_NAME
-# define SEL23(_1, _2, _3, MACRO_NAME, ...) MACRO_NAME
-# define SEL34(_1, _2, _3, _4, MACRO_NAME, ...) MACRO_NAME
+/* Overload macros on number of args (up to 10 args) */
+# define __NARG__(...)	__NARG_I_(__VA_ARGS__ __VA_OPT__(,) 10,9,8,7,6,5,4,3,2,1,0)
+# define __NARG_I_(...)	__ARG_N(__VA_ARGS__)
+# define __ARG_N(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,N,...) N
+
+# define _VFUNC_(name, n)	name##n
+# define _VFUNC(name, n)	_VFUNC_(name, n)
+# define VFUNC(func, ...)	_VFUNC(func, __NARG__(__VA_ARGS__)) (__VA_ARGS__)
 
 enum	e_libft_err
 {
@@ -108,6 +112,7 @@ typedef struct		s_node
 	size_t			size;
 	struct s_node	*next;
 	struct s_node	*nodes;
+	void			(*f_del)(struct s_node *); /* FUNC_NODE_DEL */
 }					t_node;
 
 typedef struct		s_queue
@@ -127,6 +132,8 @@ typedef struct		s_htbl
 	int				size;
 }					t_htbl;
 
+typedef	void (*FUNC_NODE_DEL)(t_node *);
+
 void		*ft_malloc(const char *memkey, size_t memsize);
 void		ft_free(const char *memkey, void *memptr);
 void		ft_free_all(void);
@@ -145,29 +152,47 @@ void		*ft_htbl_bin_get(t_htbl *, const void *, size_t);
 void		ft_htbl_bin_assign(t_htbl *, void *, const void *, size_t);
 void 		ft_htbl_resize(t_htbl *htbl, int size);
 
-# define 	_HADD1(...) ft_htbl_bin_add(__VA_ARGS__)
-# define 	_HADD2(...) ft_htbl_add(__VA_ARGS__)
-# define 	_HGET1(...) ft_htbl_bin_get(__VA_ARGS__)
-# define 	_HGET2(...) ft_htbl_get(__VA_ARGS__)
-# define 	_HASG1(...) ft_htbl_bin_assign(__VA_ARGS__)
-# define 	_HASG2(...) ft_htbl_assign(__VA_ARGS__)
+# define 	ft_htbl_add4(...) ft_htbl_bin_add(__VA_ARGS__)
+# define 	ft_htbl_add3(...) ft_htbl_add(__VA_ARGS__)
+# define 	ft_htbl_get3(...) ft_htbl_bin_get(__VA_ARGS__)
+# define 	ft_htbl_get2(...) ft_htbl_get(__VA_ARGS__)
+# define 	ft_htbl_assign4(...) ft_htbl_bin_assign(__VA_ARGS__)
+# define 	ft_htbl_assign3(...) ft_htbl_assign(__VA_ARGS__)
 
-# define 	ft_htbl_add(...) SEL34(__VA_ARGS__, _HADD1, _HADD2)(__VA_ARGS__)
-# define 	ft_htbl_get(...) SEL23(__VA_ARGS__, _HGET1, _HGET2)(__VA_ARGS__)
-# define 	ft_htbl_assign(...) SEL34(__VA_ARGS__, _HASG1, _HASG2)(__VA_ARGS__)
+# define	ft_htbl_add(...) VFUNC(ft_htbl_add, __VA_ARGS__)
+# define	ft_htbl_get(...) VFUNC(ft_htbl_get, __VA_ARGS__)
+# define	ft_htbl_assign(...) VFUNC(ft_htbl_assign, __VA_ARGS__)
 
-t_node		*ft_node_init(void);
-t_node		*ft_node_new(const char *, void *, size_t);
-t_node 		*ft_node_dup(t_node *node);
-int 		ft_node_del(t_node *, int (*f_del)(t_node *));
+void 		(ft_node_init)(t_node *);
+t_node		*(ft_node_create)(void);
+t_node		*(ft_node_new)(const char *, void *, size_t);
+void 		(ft_node_del)(t_node *);
+void 		ft_node_init_with_f_del(t_node *, FUNC_NODE_DEL);
+t_node		*ft_node_create_with_f_del(FUNC_NODE_DEL);
+t_node		*ft_node_new_with_f_del(const char *, void *, size_t, FUNC_NODE_DEL);
+void 		ft_node_del_with_f_del(t_node *, FUNC_NODE_DEL);
 int			ft_node_is_parent(t_node *);
+
+# define 	ft_node_init2(...) ft_node_init_with_f_del(__VA_ARGS__)
+# define 	ft_node_init1(...) ft_node_init(__VA_ARGS__)
+# define 	ft_node_create1(...) ft_node_create_with_f_del(__VA_ARGS__)
+# define 	ft_node_create0(...) ft_node_create(__VA_ARGS__)
+# define 	ft_node_new4(...) ft_node_new_with_f_del(__VA_ARGS__)
+# define 	ft_node_new3(...) ft_node_new(__VA_ARGS__)
+# define 	ft_node_del2(...) ft_node_del_with_f_del(__VA_ARGS__)
+# define 	ft_node_del1(...) ft_node_del(__VA_ARGS__)
+
+# define	ft_node_init(...) VFUNC(ft_node_init, __VA_ARGS__)
+# define	ft_node_create(...) VFUNC(ft_node_create, __VA_ARGS__)
+# define 	ft_node_new(...) VFUNC(ft_node_new, __VA_ARGS__)
+# define 	ft_node_del(...) VFUNC(ft_node_del, __VA_ARGS__)
 
 void		ft_lst_append(t_node **, t_node *);
 void		ft_lst_prepend(t_node **, t_node *);
-int			ft_lst_del(t_node *, int (*f_del)(t_node *));
-int			ft_lst_del_first(t_node **, int (*f_del)(t_node *));
-int			ft_lst_del_last(t_node **, int (*f_del)(t_node *));
-int			ft_lst_del_one(t_node **, t_node *, int (*f_del)(t_node *));
+void		ft_lst_del(t_node *, FUNC_NODE_DEL);
+void		ft_lst_del_first(t_node **, FUNC_NODE_DEL);
+void		ft_lst_del_last(t_node **, FUNC_NODE_DEL);
+void		ft_lst_del_one(t_node **, t_node *, FUNC_NODE_DEL);
 size_t		ft_lst_size(t_node *);
 int			ft_lst_map(t_node *, void *farg, int (*f)(t_node *, void *));
 t_htbl		*ft_lst_htable(t_node *);
@@ -179,7 +204,7 @@ t_node		*ft_stack_peek(t_stack *);
 int 		ft_stack_is_empty(t_stack *);
 int 		ft_stack_size(t_stack *);
 void		ft_stack_clear(t_stack *);
-int			ft_stack_del(t_stack *, int (*f_del)(t_node *));
+void		ft_stack_del(t_stack *, FUNC_NODE_DEL);
 t_htbl		*ft_stack_htable(t_stack *);
 
 t_queue		*ft_queue_init(void);
@@ -188,15 +213,15 @@ void		*ft_queue_dequeue(t_queue *);
 t_node		*ft_queue_peek(t_queue *);
 int			ft_queue_is_empty(t_queue *);
 int			ft_queue_size(t_queue *);
-int			ft_queue_del(t_queue *, int (*f)(t_node *));
-int 		ft_queue_del_node(t_queue *, t_node *, int (*f_del)(t_node *));
+void		ft_queue_del(t_queue *, FUNC_NODE_DEL);
+void		ft_queue_del_node(t_queue *, t_node *, FUNC_NODE_DEL);
 t_htbl		*ft_queue_htable(t_queue *);
 
 t_node		*ft_ntree_construct(const char *);
 int 		ft_ntree_dfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
 int			ft_ntree_dfs_cur_depth(void);
 int			ft_ntree_bfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
-int			ft_ntree_del(t_node *, int (*f_del)(t_node *));
+void		ft_ntree_del(t_node *, FUNC_NODE_DEL);
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);
 t_node		*ft_ntree_iter(t_node *);

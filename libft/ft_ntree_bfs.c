@@ -14,24 +14,24 @@
 
 static void __del_node_func(t_node *node);
 
-int	ft_ntree_bfs(
-	t_node **res, t_node *node, const void *farg, int (*f)(t_node *, const void *))
+int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, int (*f)(t_node *, const void *))
 {
 	t_queue	*queue;
 	t_node	*child_node;
+	t_node	*result_node;
 	int		ret;
 
-	if ((NULL == node) || (NULL == f))
+	if (NULL == node || NULL == f) {
 		return (-1);
-
+	}
 	queue = ft_queue_init();
+	result_node = NULL;
 
 	while (node)
 	{
 		ft_queue_enqueue(queue, NULL, node, 0);
 		node = node->next;
 	}
-
 	while (!ft_queue_is_empty(queue))
 	{
 		node = ft_queue_dequeue(queue);
@@ -46,17 +46,19 @@ int	ft_ntree_bfs(
 				child_node = child_node->next;
 			}
 		}
-
 		ret = f(node, farg);
 
-		if (ret != 0)
-			break;
+		if (ret < 0) {
+			break ;
+		} else if (ret == 1) {
+			result_node = node;
+			break ;
+		}
 	}
-
+	if (res != NULL) {
+		*res = result_node;
+	}
 	ft_queue_del(queue, NULL);
-
-	if (res != NULL)
-		*res = (ret == 1) ? node : NULL;
 
 	return (ret);
 }

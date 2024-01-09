@@ -19,7 +19,7 @@ static int	__calc_size_func(t_node *node, const void *farg)
 	(void)node;
 	size = (int *)farg;
 	*size = *size + 1;
-	
+
 	return (0);
 }
 

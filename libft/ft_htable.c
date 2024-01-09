@@ -23,7 +23,7 @@ void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 
 	if (NULL == htbl)
 		return ;
-	
+
 	__add_node(htbl, key, content);
 }
 
@@ -38,7 +38,7 @@ void	*(ft_htbl_get)(t_htbl *htbl, const char *key)
 
 	if (NULL == node)
 		return (NULL);
-	
+
 	return (node->content);
 }
 
@@ -53,7 +53,7 @@ void	(ft_htbl_assign)(t_htbl *htbl, void *content, const char *key)
 
 	if (NULL == node)
 		return ;
-	
+
 	node->content = content;
 }
 
@@ -184,9 +184,9 @@ static void	__del_node_array(t_htbl *htbl)
 	t_node *tmp;
 	int idx;
 
-	if (NULL == htbl)
+	if (NULL == htbl) {
 		return;
-
+	}
 	idx = 0;
 	while (idx < htbl->size)
 	{
@@ -197,15 +197,15 @@ static void	__del_node_array(t_htbl *htbl)
 			tmp = node;
 			node = node->next;
 
-			if (NULL != tmp->key)
+			if (tmp->f_del != NULL) {
+				tmp->f_del(tmp);
+			} else {
 				LIBFT_FREE(tmp->key);
-
-			LIBFT_FREE(tmp);
+				LIBFT_FREE(tmp);
+			}
 		}
-
 		idx++;
 	}
-
 	LIBFT_FREE(htbl->arr);
 	htbl->arr = NULL;
 	htbl->size = 0;
