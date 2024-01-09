@@ -8,7 +8,7 @@ struct __s_digit_symbol {
 
 t_node	*__get_decimal_digit_list(const t_num *num);
 char	*__get_decimal_num_string(t_node *list);
-int 	__f_del_node(t_node *);
+void 	__f_del_node(t_node *);
 
 char	*bnum_to_dec(const t_num *num)
 {
@@ -23,6 +23,7 @@ char	*bnum_to_dec(const t_num *num)
 	}
 	list = __get_decimal_digit_list(num);
 	s = __get_decimal_num_string(list);
+
 	ft_lst_del(list, __f_del_node);
 
 	return (s);
@@ -78,7 +79,7 @@ char	*__get_decimal_num_string(t_node *list) {
 	return (s);
 }
 
-int __f_del_node(t_node *node) {
+void __f_del_node(t_node *node) {
 	LIBFT_FREE(node->content);
-	return (0);
+	LIBFT_FREE(node);
 }
