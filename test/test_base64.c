@@ -29,9 +29,9 @@ int	test_base64(void)
 
 static int	__test_base64_setup(void)
 {
-	if (SSL_OK != test_get_testfile_content(__binary_file_path, &__binary))
+	if (SSL_OK != test_get_file_content(__binary_file_path, &__binary))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	if (SSL_OK != test_get_testfile_content(__base64_file_path, &__base64))
+	if (SSL_OK != test_get_file_content(__base64_file_path, &__base64))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	if (__binary.size == 0 || __base64.size == 0)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
