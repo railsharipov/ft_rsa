@@ -18,10 +18,15 @@ int	comm_test(const char **opt, const char *name)
 		TEST_INFO(idx);
 
 		f_test = TESTS[idx];
+
+		if (NULL == f_test) {
+			return SSL_ERROR(UNSPECIFIED_ERROR);
+		}
 		ret[idx] = f_test();
 
-		if (IS_ERROR(ret[idx]))
+		if (IS_ERROR(ret[idx])) {
 			return SSL_ERROR(UNSPECIFIED_ERROR);
+		}
 
 		idx++;
 	}
