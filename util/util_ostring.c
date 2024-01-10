@@ -78,7 +78,7 @@ void	util_ostr_prepend(t_ostring *ostring, void *content, size_t size)
 	ostring->size += size;
 }
 
-char 	*util_ostr_to_str(t_ostring *ostring, size_t idx, size_t len)
+char 	*util_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len)
 {
 	char	*str;
 
@@ -87,13 +87,13 @@ char 	*util_ostr_to_str(t_ostring *ostring, size_t idx, size_t len)
 
 	if (idx >= ostring->size)
 		return NULL;
-	
-	if (idx + len + 1 > ostring->size)
-		len = ostring->size - idx - 1;
 
-	SSL_ALLOC(str, len);
+	len = MIN(len, ostring->size - idx);
+
+	SSL_ALLOC(str, len + 1);
 	ft_memcpy(str, ostring->content + idx, len);
-	
+	str[len] = 0;
+
 	return str;
 }
 

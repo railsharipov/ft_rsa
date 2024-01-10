@@ -42,7 +42,7 @@ extern const size_t		TEST_DESC_ARR_SIZE;
 
 int		test_info(int module_id, int verbose);
 int		test_assert(int boolean, const char *func, const char *file, int line);
-int		test_get_testfile_content(const char *testfile_path, struct s_ostring *ostring);
+int		test_get_file_content(const char *testfile_path, struct s_ostring *ostring);
 int		test_result(int res, int verbose, const char *func_name, const char *file_name);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 

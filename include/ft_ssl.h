@@ -81,7 +81,7 @@ void			util_ostr_del(t_ostring *);
 void			util_ostr_clean(t_ostring *);
 void			util_ostr_append(t_ostring *ostring, void *content, size_t size);
 void			util_ostr_prepend(t_ostring *ostring, void *content, size_t size);
-char			*util_ostr_to_str(t_ostring *ostring, size_t idx, size_t len);
+char			*util_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len);
 void			util_ostr_set_content(t_ostring *ostring, void *content, size_t size);
 void			*util_ostr_get_content(t_ostring *ostring);
 size_t			util_ostr_get_size(t_ostring *ostring);

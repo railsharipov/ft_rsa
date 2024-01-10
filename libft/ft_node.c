@@ -88,7 +88,11 @@ void	(ft_node_del)(t_node *node)
 
 void ft_node_del_with_f_del(t_node *node, FUNC_NODE_DEL f_del)
 {
-	if (NULL != node) {
-		f_del(node);
+	if (NULL != f_del) {
+		if (NULL != node) {
+			f_del(node);
+		}
+	} else {
+		(ft_node_del)(node);
 	}
 }

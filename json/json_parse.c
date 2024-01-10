@@ -15,27 +15,41 @@ ssize_t __parse_array(const char *, t_node *);
 ssize_t __parse_object(const char *, t_node *);
 ssize_t __parse_string(const char *, t_node *);
 ssize_t __parse_number(const char *, t_node *);
-ssize_t __null(const char *, t_node *);
+ssize_t __parse_boolean(const char *, t_node *);
+ssize_t __parse_null(const char *, t_node *);
 
 void	__delete(t_node *);
 void	__delete_array(t_node *);
 void	__delete_object(t_node *);
 void	__delete_string(t_node *);
 void	__delete_number(t_node *);
+void	__delete_boolean(t_node *);
+void	__delete_null(t_node *);
 
 typedef struct		s_json_ctx
 {
-	FUNC_JSON_PARSE f;
+	FUNC_JSON_PARSE f_parse;
 	char 			open;
 	char 			close;
 }					t_json_ctx;
 
 static const t_json_ctx T[] = {
-    {	__parse,		'{', 	'}',   	},
-    {	__parse_array,	'[', 	']',   	},
-    {	__parse_string,	'"', 	'"',   	},
-    {	__parse_string,	'\'', 	'\'',	},
-    {	__null,			'\0', 	'\0',	},
+    {	__parse_object,		'{', 	'}',   	},
+    {	__parse_array,		'[', 	']',   	},
+    {	__parse_string,		'"', 	'"',   	},
+    {	__parse_boolean,	't', 	0,   	},
+    {	__parse_boolean,	'f', 	0,   	},
+    {	__parse_null,		'n', 	0,		},
+    {	__parse_number,		'0', 	0,   	},
+    {	__parse_number,		'1', 	0,   	},
+    {	__parse_number,		'2', 	0,   	},
+    {	__parse_number,		'3', 	0,   	},
+    {	__parse_number,		'4', 	0,   	},
+    {	__parse_number,		'5', 	0,   	},
+    {	__parse_number,		'6', 	0,   	},
+    {	__parse_number,		'7', 	0,   	},
+    {	__parse_number,		'8', 	0,   	},
+    {	__parse_number,		'9', 	0,   	},
 };
 
 int json_parse(const char *s, t_node **node)
@@ -45,24 +59,24 @@ int json_parse(const char *s, t_node **node)
 	ssize_t	rbytes;
 
 	if (NULL == s || NULL == node) {
-        return SSL_ERROR(INVALID_INPUT);
+        return JSON_ERROR(INVALID_INPUT);
 	}
 
     *node = NULL;
 
 	if (SSL_OK != __init_htable()) {
-		return SSL_ERROR(UNSPECIFIED_ERROR);
+		return JSON_ERROR(UNSPECIFIED_ERROR);
 	}
 	json_node = ft_node_create();
 	rbytes = __parse(s, json_node);
 
 	if (rbytes < 0) {
 		__delete(json_node);
-		return SSL_ERROR(PARSE_JSON_FAILED);
+		return JSON_ERROR(PARSE_JSON_FAILED);
 	}
 	if (!__is_ws_only(s + rbytes)) {
 		__delete(json_node);
-		return SSL_ERROR(UNEXPECTED_CHARS_AT_THE_END);
+		return JSON_ERROR(UNEXPECTED_CHARS_AT_THE_END);
 	}
 	*node = json_node;
     ft_htbl_del(__htable);
@@ -78,7 +92,7 @@ int	__init_htable(void)
     ht_size = sizeof(T)/sizeof(T[0]);
 
 	if (NULL == (__htable = ft_htbl_init(ht_size))) {
-		return (SSL_ERROR(MEMORY_ERROR));
+		return (JSON_ERROR(MEMORY_ERROR));
 	}
 
 	idx = 0;
@@ -118,11 +132,10 @@ ssize_t __parse(const char *s, t_node *node)
 	ctx = ft_htbl_bin_get(__htable, &open, sizeof(open));
 
 	if (NULL == ctx) {
-		f_parse = __parse_number;
-		open = 0;
-		close = 0;
+		JSON_ERROR(INVALID_FORMAT);
+		return (-1);
 	} else {
-		f_parse = ctx->f;
+		f_parse = ctx->f_parse;
 		close = ctx->close;
 	}
 
@@ -136,7 +149,7 @@ ssize_t __parse(const char *s, t_node *node)
 	rbytes = f_parse(s + idx, node);
 
 	if (rbytes <= 0) {
-		SSL_ERROR(UNSPECIFIED_ERROR);
+		JSON_ERROR(INVALID_FORMAT);
 		return (-1);
 	} else {
 		idx += rbytes;
@@ -147,7 +160,7 @@ ssize_t __parse(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] != close) {
-			SSL_ERROR(UNEXPECTED_END_OF_CONTENT);
+			JSON_ERROR(UNEXPECTED_END_OF_CONTENT);
 			return (-1);
 		} else {
 			idx++;
@@ -168,7 +181,7 @@ ssize_t __parse_number(const char *s, t_node *node)
         idx++;
     }
 	if (!ft_isdigit(s[idx])) {
-		SSL_ERROR(INVALID_FORMAT);
+		JSON_ERROR(INVALID_FORMAT);
 		return (-1);
 	}
     while (ft_isdigit(s[idx])) {
@@ -194,7 +207,7 @@ ssize_t __parse_string(const char *s, t_node *node)
 	ssize_t idx;
 
 	idx = 0;
-	while (s[idx] != '\0' && s[idx] != '\'' && s[idx] != '"') {
+	while (s[idx] != '\0' && s[idx] != '"') {
 		idx++;
 	}
 	node->content = ft_strsub(s, 0, idx);
@@ -203,6 +216,40 @@ ssize_t __parse_string(const char *s, t_node *node)
 	node->f_del = __delete_string;
 
 	return (idx);
+}
+
+ssize_t __parse_null(const char *s, t_node *node)
+{
+	if (!ft_strncmp(s, "null", ft_strlen("null"))) {
+		JSON_ERROR(INVALID_FORMAT);
+		return (-1);
+	}
+	node->content = NULL;
+	node->size = 0;
+	node->type = JSON_NULL;
+	node->f_del = __delete_null;
+
+	return (0);
+}
+
+ssize_t __parse_boolean(const char *s, t_node *node)
+{
+	uint8_t	boolean;
+
+	if (!ft_strncmp(s, "false", ft_strlen("false"))) {
+		boolean = 0u;
+	} else if (!ft_strncmp(s, "true", ft_strlen("true"))) {
+		boolean = 1u;
+	} else {
+		JSON_ERROR(INVALID_FORMAT);
+		return (-1);
+	}
+	node->content = ft_memdup(&boolean, sizeof(boolean));
+	node->size = sizeof(boolean);
+	node->type = JSON_BOOLEAN;
+	node->f_del = __delete_boolean;
+
+	return (0);
 }
 
 ssize_t __parse_object(const char *s, t_node *node)
@@ -222,13 +269,13 @@ ssize_t __parse_object(const char *s, t_node *node)
 		rbytes = __parse(s + idx, key_node);
 
 		if (rbytes < 0) {
-			SSL_ERROR(INVALID_FORMAT);
+			JSON_ERROR(INVALID_FORMAT);
 			goto err;
 		}
 		idx += rbytes;
 
 		if (key_node->type != JSON_CSTR) {
-			SSL_ERROR(INVALID_FORMAT);
+			JSON_ERROR(INVALID_FORMAT);
 			goto err;
 		}
 
@@ -236,7 +283,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] != ':') {
-			SSL_ERROR(INVALID_FORMAT);
+			JSON_ERROR(INVALID_FORMAT);
 			goto err;
 		} else {
 			idx++;
@@ -246,7 +293,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 		rbytes = __parse(s + idx, content_node);
 
 		if (rbytes < 0) {
-			SSL_ERROR(INVALID_FORMAT);
+			JSON_ERROR(INVALID_FORMAT);
 			goto err;
 		}
 		idx += rbytes;
@@ -298,7 +345,7 @@ ssize_t __parse_array(const char *s, t_node *node)
 		rbytes = __parse(s + idx, content_node);
 
 		if (rbytes < 0) {
-			SSL_ERROR(INVALID_FORMAT);
+			JSON_ERROR(INVALID_FORMAT);
 			goto err;
 		}
 		idx += rbytes;
@@ -328,18 +375,13 @@ err:
 	return (-1);
 }
 
-ssize_t __null(const char *s, t_node *node)
-{
-	node->content = NULL;
-	node->size = 0;
-	node->type = JSON_NULL;
-
-	return (0);
-}
-
 void	__delete(t_node *node) {
 	if (node->type == JSON_CSTR) {
 		__delete_string(node);
+	} else if (node->type == JSON_NULL) {
+		__delete_null(node);
+	} else if (node->type == JSON_BOOLEAN) {
+		__delete_boolean(node);
 	} else if (node->type == JSON_NUMBER) {
 		__delete_number(node);
 	} else if (node->type == JSON_OBJECT) {
@@ -367,6 +409,19 @@ void	__delete_object(t_node *node)
 }
 
 void	__delete_string(t_node *node)
+{
+	LIBFT_FREE(node->content);
+	LIBFT_FREE(node->key);
+	LIBFT_FREE(node);
+}
+
+void	__delete_null(t_node *node)
+{
+	LIBFT_FREE(node->key);
+	LIBFT_FREE(node);
+}
+
+void	__delete_boolean(t_node *node)
 {
 	LIBFT_FREE(node->content);
 	LIBFT_FREE(node->key);

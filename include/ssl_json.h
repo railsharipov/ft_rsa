@@ -1,6 +1,8 @@
 #ifndef SSL_JSON_H
 # define SSL_JSON_H
 
+# define JSON_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, JSON_ERROR_CTX))
+
 enum e_json_error
 {
 	INVALID_JSON_TYPE = 1,
@@ -15,6 +17,7 @@ enum e_json_type{
     JSON_OBJECT,
     JSON_CSTR,
     JSON_NUMBER,
+    JSON_BOOLEAN,
     JSON_NULL,
 };
 
