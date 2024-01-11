@@ -22,5 +22,6 @@ enum e_json_type{
 };
 
 int     json_parse(const char *s, t_node **node);
+void	json_del(t_node *node);
 
 #endif

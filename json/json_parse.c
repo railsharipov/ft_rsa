@@ -85,6 +85,14 @@ int json_parse(const char *s, t_node **node)
     return SSL_OK;
 }
 
+void	json_del(t_node *node)
+{
+	if (NULL == node) {
+		return ;
+	}
+	__delete(node);
+}
+
 int	__init_htable(void)
 {
     int idx;
@@ -228,10 +236,10 @@ ssize_t __parse_null(const char *s, t_node *node)
 	idx = 0;
 
 	if (!ft_strncmp(s, s_null, slen_null)) {
+		idx += slen_null;
+	} else {
 		JSON_ERROR(INVALID_FORMAT);
 		return (-1);
-	} else {
-		idx += slen_null;
 	}
 	node->content = NULL;
 	node->size = 0;
@@ -395,7 +403,8 @@ err:
 	return (-1);
 }
 
-void	__delete(t_node *node) {
+void	__delete(t_node *node)
+{
 	if (node->type == JSON_CSTR) {
 		__delete_string(node);
 	} else if (node->type == JSON_NULL) {
