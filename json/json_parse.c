@@ -18,14 +18,6 @@ ssize_t __parse_number(const char *, t_node *);
 ssize_t __parse_boolean(const char *, t_node *);
 ssize_t __parse_null(const char *, t_node *);
 
-void	__delete(t_node *);
-void	__delete_array(t_node *);
-void	__delete_object(t_node *);
-void	__delete_string(t_node *);
-void	__delete_number(t_node *);
-void	__delete_boolean(t_node *);
-void	__delete_null(t_node *);
-
 typedef struct		s_json_ctx
 {
 	FUNC_JSON_PARSE f_parse;
@@ -72,25 +64,17 @@ int json_parse(const char *s, t_node **node)
 	rbytes = __parse(s, json_node);
 
 	if (rbytes < 0) {
-		__delete(json_node);
+		json_del(json_node);
 		return JSON_ERROR(PARSE_JSON_FAILED);
 	}
 	if (!__is_ws_only(s + rbytes)) {
-		__delete(json_node);
+		json_del(json_node);
 		return JSON_ERROR(UNEXPECTED_CHARS_AT_THE_END);
 	}
 	*node = json_node;
     ft_htbl_del(__htable);
 
     return SSL_OK;
-}
-
-void	json_del(t_node *node)
-{
-	if (NULL == node) {
-		return ;
-	}
-	__delete(node);
 }
 
 int	__init_htable(void)
@@ -203,7 +187,7 @@ ssize_t __parse_number(const char *s, t_node *node)
 	node->content = num;
 	node->size = sizeof(t_num);
 	node->type = JSON_NUMBER;
-	node->f_del = __delete_number;
+	node->f_del = json_del;
 
 	SSL_FREE(sub_s);
 
@@ -221,7 +205,7 @@ ssize_t __parse_string(const char *s, t_node *node)
 	node->content = ft_strsub(s, 0, idx);
 	node->size = (size_t)idx;
 	node->type = JSON_CSTR;
-	node->f_del = __delete_string;
+	node->f_del = json_del;
 
 	return (idx);
 }
@@ -244,7 +228,7 @@ ssize_t __parse_null(const char *s, t_node *node)
 	node->content = NULL;
 	node->size = 0;
 	node->type = JSON_NULL;
-	node->f_del = __delete_null;
+	node->f_del = json_del;
 
 	return (idx);
 }
@@ -275,7 +259,7 @@ ssize_t __parse_boolean(const char *s, t_node *node)
 	node->content = ft_memdup(&boolean, sizeof(boolean));
 	node->size = sizeof(boolean);
 	node->type = JSON_BOOLEAN;
-	node->f_del = __delete_boolean;
+	node->f_del = json_del;
 
 	return (idx);
 }
@@ -343,7 +327,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 	node->content = htbl;
 	node->size = sizeof(t_htbl);
 	node->type = JSON_OBJECT;
-	node->f_del = __delete_object;
+	node->f_del = json_del;
 
 	return (idx);
 err:
@@ -394,72 +378,11 @@ ssize_t __parse_array(const char *s, t_node *node)
 	node->content = list;
 	node->size = sizeof(t_node);
 	node->type = JSON_ARRAY;
-	node->f_del = __delete_array;
+	node->f_del = json_del;
 
 	return (idx);
 err:
 	ft_node_del(content_node);
 	ft_lst_del(list, NULL);
 	return (-1);
-}
-
-void	__delete(t_node *node)
-{
-	if (node->type == JSON_CSTR) {
-		__delete_string(node);
-	} else if (node->type == JSON_NULL) {
-		__delete_null(node);
-	} else if (node->type == JSON_BOOLEAN) {
-		__delete_boolean(node);
-	} else if (node->type == JSON_NUMBER) {
-		__delete_number(node);
-	} else if (node->type == JSON_OBJECT) {
-		__delete_object(node);
-	} else if (node->type == JSON_ARRAY) {
-		__delete_array(node);
-	} else {
-		LIBFT_FREE(node->key);
-		LIBFT_FREE(node);
-	}
-}
-
-void	__delete_array(t_node *node)
-{
-	ft_lst_del((t_node *)(node->content), __delete);
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
-
-void	__delete_object(t_node *node)
-{
-	ft_htbl_del((t_htbl *)(node->content));
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
-
-void	__delete_string(t_node *node)
-{
-	LIBFT_FREE(node->content);
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
-
-void	__delete_null(t_node *node)
-{
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
-
-void	__delete_boolean(t_node *node)
-{
-	LIBFT_FREE(node->content);
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
-}
-
-void	__delete_number(t_node *node)
-{
-	bnum_del((t_num *)(node->content));
-	LIBFT_FREE(node->key);
-	LIBFT_FREE(node);
 }
