@@ -6,9 +6,9 @@ void	bnum_add_u(const t_num *a, const t_num *b, t_num *res)
 
 	slen = BNUM_MAX(a->len, b->len)+1;
 
-	if (slen > BNUM_MAX_DIG)
+	if (slen > res->len) {
 		bnum_increase_size(res, slen);
-
+	}
 	{
 		const uint64_t	*aptr, *bptr;
 		uint64_t		carry, *rptr;

@@ -12,25 +12,30 @@
 
 #include <libft.h>
 
-char	*ft_strdup(const char *s)
+char	*ft_strndup(const char *s, size_t n)
 {
 	char	*sdup;
-	char	*ref;
+	size_t	len;
+	size_t	slen;
+	size_t	idx;
 
-	if (NULL == s)
+	if (NULL == s) {
 		return (NULL);
+	}
+	slen = ft_strlen(s);
+	len = MIN(n, slen);
 
-	LIBFT_ALLOC(sdup, ft_strlen(s) + 1);
+	LIBFT_ALLOC(sdup, len + 1);
 
-	if (NULL == sdup)
+	if (NULL == sdup) {
 		return (NULL);
+	}
+	idx = 0;
+	while (idx < len) {
+		sdup[idx] = s[idx];
+		idx++;
+	}
+	sdup[len] = 0;
 
-	ref = sdup;
-
-	while (*s != '\0')
-		*sdup++ = *s++;
-
-	*sdup = '\0';
-
-	return (ref);
+	return (sdup);
 }

@@ -40,6 +40,7 @@ static const t_json_ctx T[] = {
     {	__parse_boolean,	't', 	0,   	},
     {	__parse_boolean,	'f', 	0,   	},
     {	__parse_null,		'n', 	0,		},
+    {	__parse_number,		'-', 	0,   	},
     {	__parse_number,		'0', 	0,   	},
     {	__parse_number,		'1', 	0,   	},
     {	__parse_number,		'2', 	0,   	},
@@ -139,7 +140,7 @@ ssize_t __parse(const char *s, t_node *node)
 		close = ctx->close;
 	}
 
-	if (open != 0) {
+	if (close != 0) {
 		idx++;
 	}
 	while (ft_iseolws(s[idx])) {
@@ -189,7 +190,6 @@ ssize_t __parse_number(const char *s, t_node *node)
     }
     sub_s = ft_strsub(s, 0, idx);
     num = bnum_create();
-	bnum_init(num);
 	bnum_from_dec(num, sub_s);
 
 	node->content = num;
@@ -220,26 +220,46 @@ ssize_t __parse_string(const char *s, t_node *node)
 
 ssize_t __parse_null(const char *s, t_node *node)
 {
-	if (!ft_strncmp(s, "null", ft_strlen("null"))) {
+	const char	*s_null = "null";
+	size_t	slen_null;
+	size_t	idx;
+
+	slen_null = ft_strlen(s_null);
+	idx = 0;
+
+	if (!ft_strncmp(s, s_null, slen_null)) {
 		JSON_ERROR(INVALID_FORMAT);
 		return (-1);
+	} else {
+		idx += slen_null;
 	}
 	node->content = NULL;
 	node->size = 0;
 	node->type = JSON_NULL;
 	node->f_del = __delete_null;
 
-	return (0);
+	return (idx);
 }
 
 ssize_t __parse_boolean(const char *s, t_node *node)
 {
+	const char	*s_false = "false";
+	const char	*s_true = "true";
 	uint8_t	boolean;
+	size_t	slen_false;
+	size_t	slen_true;
+	size_t	idx;
 
-	if (!ft_strncmp(s, "false", ft_strlen("false"))) {
+	slen_false = ft_strlen(s_false);
+	slen_true = ft_strlen(s_true);
+	idx = 0;
+
+	if (!ft_strncmp(s, s_false, slen_false)) {
 		boolean = 0u;
-	} else if (!ft_strncmp(s, "true", ft_strlen("true"))) {
+		idx += slen_false;
+	} else if (!ft_strncmp(s, s_true, slen_true)) {
 		boolean = 1u;
+		idx += slen_true;
 	} else {
 		JSON_ERROR(INVALID_FORMAT);
 		return (-1);
@@ -249,7 +269,7 @@ ssize_t __parse_boolean(const char *s, t_node *node)
 	node->type = JSON_BOOLEAN;
 	node->f_del = __delete_boolean;
 
-	return (0);
+	return (idx);
 }
 
 ssize_t __parse_object(const char *s, t_node *node)

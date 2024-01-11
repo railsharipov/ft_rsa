@@ -12,7 +12,7 @@ void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 	if (NULL == num || NULL == buf)
 		return ;
 
-	bnum_init(num);
+	bnum_set_dig_u(num, 0u);
 
 	if (bufsize == 0)
 		return ;

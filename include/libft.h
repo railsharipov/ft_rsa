@@ -236,7 +236,8 @@ int			ft_memcmp(const void *s1, const void *s2, size_t n);
 void		*ft_memdup(void *, size_t);
 void		ft_strdel(char *s);
 size_t		ft_strlen(const char *s);
-char		*ft_strdup(const char *s1);
+char		*ft_strdup(const char *s);
+char		*ft_strndup(const char *s, size_t n);
 char		*ft_strrev(const char *s);
 char		*ft_strcpy(char *dst, const char *src);
 char		*ft_strncpy(char *dst, const char *src, size_t len);
@@ -289,12 +290,11 @@ extern int	global_ft_malloc_error;
 
 # if defined (LIBFT_MEM_ALLOC)
 
-#  define EXIT_WITH_MEM_ERROR() \
+#  define MEM_ERROR() \
 	do \
 	{ \
-		ft_printf("%@fatal memory error %d\n", global_ft_malloc_error); \
+		ft_printf("%@critical memory error %d\n", global_ft_malloc_error); \
 		ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
-		exit(-1); \
 	} \
 	while (0)
 
@@ -304,12 +304,12 @@ extern int	global_ft_malloc_error;
 		if (NULL != PTR) \
 		{ \
 			ft_free(#PTR, PTR); \
-			PTR = NULL; \
 			\
 			if (LIBFT_OK != global_ft_malloc_error) \
 			{ \
-				EXIT_WITH_MEM_ERROR() \
+				MEM_ERROR() \
 			} \
+			PTR = NULL; \
 		} \
 	} \
 	while (0)
@@ -320,7 +320,8 @@ extern int	global_ft_malloc_error;
 		PTR = ft_malloc(#PTR, SZ); \
 		if (LIBFT_OK != global_ft_malloc_error) \
 		{ \
-			EXIT_WITH_MEM_ERROR() \
+			MEM_ERROR() \
+			PTR = NULL; \
 		} \
 	} \
 	while (0)
@@ -332,9 +333,10 @@ extern int	global_ft_malloc_error;
 		NEWPTR = ft_malloc(#PTR "_realloc_", NSZ); \
 		if (LIBFT_OK != global_ft_malloc_error) \
 		{ \
-			EXIT_WITH_MEM_ERROR() \
+			MEM_ERROR() \
+			NEWPTR = NULL; \
 		} \
-		if (NULL != PTR) \
+		if (NULL != PTR && NULL != NEWPTR) \
 		{ \
 			ft_memcpy(NEWPTR, PTR, SZ); \
 			ft_free(#PTR, PTR); \
@@ -360,11 +362,14 @@ extern int	global_ft_malloc_error;
 	do \
 	{ \
 		PTR = malloc(SZ); \
-		ft_bzero(PTR, SZ); \
 		if (ENOMEM == errno) \
 		{ \
-			perror(TXT_RED("fatal memory error")); \
-			exit(errno); \
+			perror(TXT_RED("critical memory error")); \
+			PTR = NULL; \
+		} \
+		else \
+		{ \
+			ft_bzero(PTR, SZ); \
 		} \
 	} \
 	while (0)
@@ -374,7 +379,7 @@ extern int	global_ft_malloc_error;
 	{ \
 		void	*NEWPTR; \
 		LIBFT_ALLOC(NEWPTR, NSZ); \
-		if (NULL != PTR) \
+		if (NULL != PTR && NULL != NEWPTR) \
 		{ \
 			ft_memcpy(NEWPTR, PTR, SZ); \
 			free(PTR); \
