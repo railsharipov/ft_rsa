@@ -2,15 +2,18 @@
 #include <ssl_json.h>
 #include <ssl_test.h>
 #include <ssl_io.h>
+#include <bnum.h>
 
 static int	__test_json_setup(void);
 static void	__test_json_cleanup(void);
 
 static int	__test_json_parse_simple_string(void);
+static int	__test_json_parse_simple_number(void);
+static int	__test_json_parse_simple_boolean(void);
 
 static const char	*__simple_null_json_file_path = "test/testfiles/json/simple-null.json";
-static const char	*__simple_false_json_file_path = "test/testfiles/json/simple-boolean-false.json";
-static const char	*__simple_true_json_file_path = "test/testfiles/json/simple-boolean-true.json";
+static const char	*__simple_false_json_file_path = "test/testfiles/json/simple-false.json";
+static const char	*__simple_true_json_file_path = "test/testfiles/json/simple-true.json";
 static const char	*__simple_number_json_file_path = "test/testfiles/json/simple-number.json";
 static const char	*__simple_string_json_file_path = "test/testfiles/json/simple-string.json";
 static const char	*__complex_object_json_file_path = "test/testfiles/json/complex-object.json";
@@ -28,10 +31,14 @@ int	test_json(void)
 {
 	int	res;
 
-	if (SSL_OK != __test_json_setup())
+	if (SSL_OK != __test_json_setup()) {
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	}
+	res = SSL_OK;
 
-	res = __test_json_parse_simple_string();
+	res |= __test_json_parse_simple_string();
+	res |= __test_json_parse_simple_number();
+	res |= __test_json_parse_simple_boolean();
 
 	__test_json_cleanup();
 
@@ -73,14 +80,118 @@ static void	__test_json_cleanup(void)
 static int	__test_json_parse_simple_string(void)
 {
 	t_node	*node;
-	char	*json_str;
+	char	*json_s, *ref_s;
+	size_t	json_slen, ref_slen;
 	int		ret;
 	int		pass;
 
-	json_str = util_ostr_to_cstr(&__simple_string_json, 0, __simple_string_json.size);
-	ret = json_parse(json_str, &node);
+	pass = SSL_OK;
+	node = NULL;
 
-	pass = TEST_ASSERT(SSL_OK == ret);
+	json_s = util_ostr_to_cstr(&__simple_string_json, 0, __simple_string_json.size);
+	json_slen = ft_strlen(json_s);
+	assert(json_slen >= 2);
+	assert(json_s[0] == '"');
+	assert(json_s[json_slen-1] == '"');
+
+	ret = json_parse(json_s, &node);
+	pass |= TEST_ASSERT(SSL_OK == ret);
+
+	ref_s = ft_strndup(json_s+1, json_slen-2);
+	ref_slen = ft_strlen(ref_s);
+
+	pass |= TEST_ASSERT(node->type == JSON_CSTR);
+	pass |= TEST_ASSERT(node->size == ref_slen);
+	pass |= TEST_ASSERT(node->content != NULL);
+	pass |= TEST_ASSERT(ft_strcmp(node->content, ref_s) == 0);
+	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_json_parse_simple_number(void)
+{
+	t_node	*node;
+	char	*json_s;
+	size_t	json_slen;
+	t_num	*ref_num;
+	int		ret;
+	int		pass;
+
+	pass = SSL_OK;
+	node = NULL;
+
+	json_s = util_ostr_to_cstr(&__simple_number_json, 0, __simple_number_json.size);
+	json_slen = ft_strlen(json_s);
+
+	ret = json_parse(json_s, &node);
+	pass |= TEST_ASSERT(SSL_OK == ret);
+
+	ref_num = bnum_create();
+	bnum_from_dec(ref_num, json_s);
+
+	pass |= TEST_ASSERT(node->type == JSON_NUMBER);
+	pass |= TEST_ASSERT(node->size == sizeof(t_num));
+	pass |= TEST_ASSERT(node->content != NULL);
+	pass |= TEST_ASSERT(bnum_cmp((t_num *)node->content, ref_num) == 0);
+	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_json_parse_simple_boolean(void)
+{
+	t_node	*node;
+	char	*json_s;
+	size_t	json_slen;
+	int		ret;
+	int		pass;
+
+	pass = SSL_OK;
+
+	// Test false boolean
+	node = NULL;
+
+	json_s = util_ostr_to_cstr(&__simple_false_json, 0, __simple_false_json.size);
+	json_slen = ft_strlen(json_s);
+
+	ret = json_parse(json_s, &node);
+	pass |= TEST_ASSERT(SSL_OK == ret);
+
+	if (SSL_OK != ret) {
+		return (TEST_FAIL());
+	}
+
+	pass |= TEST_ASSERT(node->type == JSON_BOOLEAN);
+	pass |= TEST_ASSERT(node->size == sizeof(uint8_t));
+	pass |= TEST_ASSERT(node->content != NULL);
+	pass |= TEST_ASSERT(*(uint8_t *)node->content == 0u);
+	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	// Test true boolean
+	node = NULL;
+
+	json_s = util_ostr_to_cstr(&__simple_true_json, 0, __simple_true_json.size);
+	json_slen = ft_strlen(json_s);
+
+	ret = json_parse(json_s, &node);
+	pass |= TEST_ASSERT(SSL_OK == ret);
+
+	if (SSL_OK != ret) {
+		return (TEST_FAIL());
+	}
+
+	pass |= TEST_ASSERT(node->type == JSON_BOOLEAN);
+	pass |= TEST_ASSERT(node->size == sizeof(uint8_t));
+	pass |= TEST_ASSERT(node->content != NULL);
+	pass |= TEST_ASSERT(*(uint8_t *)node->content == 1u);
+	pass |= TEST_ASSERT(node->f_del != NULL);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());
