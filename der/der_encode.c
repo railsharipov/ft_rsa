@@ -123,7 +123,7 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 	tag = item->tag;
 	tagnum = item->tagnum;
 
-	if (NULL == (f_enc = ft_htbl_get(__func_htable, &tagnum, sizeof(tagnum))))
+	if (NULL == (f_enc = ft_htbl_get_rawkey(__func_htable, &tagnum, sizeof(tagnum))))
 		return (DER_ERROR(INVALID_ASN_TYPE_TAG));
 
 	if (SSL_OK != der_write_tag(tag, tagnum, iodes))
@@ -152,10 +152,9 @@ static void	__init_func_htable(void)
 
 	htbl = ft_htbl_init(sizeof(T)/sizeof(*T));
 
-	for (idx = 0; idx < sizeof(T)/sizeof(*T); idx++)
-		ft_htbl_add(
-			htbl, T[idx].f_enc, &(T[idx].tagnum), sizeof(T[idx].tagnum));
-
+	for (idx = 0; idx < sizeof(T)/sizeof(*T); idx++) {
+		ft_htbl_add_rawkey(htbl, T[idx].f_enc, &(T[idx].tagnum), sizeof(T[idx].tagnum));
+	}
 	__func_htable = htbl;
 }
 

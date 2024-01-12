@@ -72,7 +72,7 @@ int		ft_stack_size(t_stack *stack)
 	return (ft_lst_size(stack->top));
 }
 
-void	ft_stack_del(t_stack *stack, FUNC_NODE_DEL f_del)
+void	ft_stack_del(t_stack *stack, FUNC_CONTENT_DEL f_del)
 {
 	if (NULL == stack) {
 		return ;

@@ -57,7 +57,7 @@ static int __test_ft_list(void);
 static int __test_ft_stack(void);
 static int __test_ft_queue(void);
 static int __test_ft_htbl(void);
-static int __test_ft_htbl_bin(void);
+static int __test_ft_htbl_rawkey(void);
 static int __test_ft_htbl_conversion(void);
 static int __test_ft_ntree(void);
 
@@ -112,7 +112,7 @@ int test_libft(void)
 	res |= __test_ft_stack();
 	res |= __test_ft_queue();
 	res |= __test_ft_htbl();
-	res |= __test_ft_htbl_bin();
+	res |= __test_ft_htbl_rawkey();
 	res |= __test_ft_htbl_conversion();
 	res |= __test_ft_ntree();
 
@@ -1839,7 +1839,7 @@ static int __test_ft_htbl(void)
 
 	pass |= TEST_ASSERT(idx == nwords);
 
-	ft_htbl_erase(htbl, words[3]);
+	ft_htbl_del_key(htbl, words[3]);
 	content = ft_htbl_get(htbl, words[3]);
 
 	pass |= TEST_ASSERT(content == NULL);
@@ -1854,7 +1854,7 @@ static int __test_ft_htbl(void)
 	return (TEST_FAIL());
 }
 
-static int __test_ft_htbl_bin(void)
+static int __test_ft_htbl_rawkey(void)
 {
 	t_htbl *htbl;
 	void *content;
@@ -1893,8 +1893,8 @@ static int __test_ft_htbl_bin(void)
 	idx = 0;
 	while (idx < nwords)
 	{
-		ft_htbl_add(htbl, words[idx], words[idx], len_arr[idx]);
-		content = ft_htbl_get(htbl, words[idx], len_arr[idx]);
+		ft_htbl_add_rawkey(htbl, words[idx], words[idx], len_arr[idx]);
+		content = ft_htbl_get_rawkey(htbl, words[idx], len_arr[idx]);
 		pass |= TEST_ASSERT(content != NULL);
 		pass |= TEST_ASSERT(memcmp(content, words[idx], len_arr[idx]) == 0);
 
@@ -1906,8 +1906,8 @@ static int __test_ft_htbl_bin(void)
 	idx = 0;
 	while (idx < nwords)
 	{
-		ft_htbl_assign(htbl, word, words[idx], len_arr[idx]);
-		content = ft_htbl_get(htbl, words[idx], len_arr[idx]);
+		ft_htbl_assign_rawkey(htbl, word, words[idx], len_arr[idx]);
+		content = ft_htbl_get_rawkey(htbl, words[idx], len_arr[idx]);
 		pass |= TEST_ASSERT(content != NULL);
 
 		if (content)

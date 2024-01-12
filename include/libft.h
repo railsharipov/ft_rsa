@@ -112,7 +112,7 @@ typedef struct		s_node
 	size_t			size;
 	struct s_node	*next;
 	struct s_node	*nodes;
-	void			(*f_del)(struct s_node *); /* FUNC_NODE_DEL */
+	void			(*f_del)(void *); /* FUNC_CONTENT_DEL */
 }					t_node;
 
 typedef struct		s_queue
@@ -132,45 +132,62 @@ typedef struct		s_htbl
 	int				size;
 }					t_htbl;
 
-typedef	void (*FUNC_NODE_DEL)(t_node *);
+typedef	void (*FUNC_CONTENT_DEL)(void *content);
 
 void		*ft_malloc(const char *memkey, size_t memsize);
 void		ft_free(const char *memkey, void *memptr);
 void		ft_free_all(void);
 
 uint32_t	ft_hash(const unsigned char *, size_t);
+
 void		*ft_htbl_init(int);
 t_node		*ft_htbl_iter(t_htbl *);
-void		ft_htbl_del(t_htbl *);
-
 void		(ft_htbl_add)(t_htbl *, void *, const char *);
-void		*(ft_htbl_get)(t_htbl *, const char *);
+void		(ft_htbl_add_rawkey)(t_htbl *, void *, const void *, size_t);
 void		(ft_htbl_assign)(t_htbl *, void *, const char *);
-void		(ft_htbl_erase)(t_htbl *htbl, const char *key);
-void		ft_htbl_bin_add(t_htbl *, void *, const void *, size_t);
-void		*ft_htbl_bin_get(t_htbl *, const void *, size_t);
-void		ft_htbl_bin_assign(t_htbl *, void *, const void *, size_t);
+void		(ft_htbl_assign_rawkey)(t_htbl *, void *, const void *, size_t);
+void		(ft_htbl_del)(t_htbl *);
+void		(ft_htbl_del_key)(t_htbl *htbl, const char *key);
+void		(ft_htbl_del_rawkey)(t_htbl *htbl, const char *key, const void *, size_t);
+void		ft_htbl_add_with_f_del(t_htbl *, void *, const char *, FUNC_CONTENT_DEL);
+void		ft_htbl_add_rawkey_with_f_del(t_htbl *, void *, const void *, size_t, FUNC_CONTENT_DEL);
+void		ft_htbl_assign_with_f_del(t_htbl *, void *, const char *, FUNC_CONTENT_DEL);
+void		ft_htbl_assign_rawkey_with_f_del(t_htbl *, void *, const void *, size_t, FUNC_CONTENT_DEL);
+void		ft_htbl_del_with_f_del(t_htbl *, FUNC_CONTENT_DEL);
+void		ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, FUNC_CONTENT_DEL);
+void		ft_htbl_del_rawkey_with_f_del(t_htbl *htbl, const char *key, const void *, size_t, FUNC_CONTENT_DEL);
+void		*ft_htbl_get(t_htbl *, const char *);
+void		*ft_htbl_get_rawkey(t_htbl *, const void *, size_t);
 void 		ft_htbl_resize(t_htbl *htbl, int size);
 
-# define 	ft_htbl_add4(...) ft_htbl_bin_add(__VA_ARGS__)
+# define 	ft_htbl_add4(...) ft_htbl_add_with_f_del(__VA_ARGS__)
 # define 	ft_htbl_add3(...) ft_htbl_add(__VA_ARGS__)
-# define 	ft_htbl_get3(...) ft_htbl_bin_get(__VA_ARGS__)
-# define 	ft_htbl_get2(...) ft_htbl_get(__VA_ARGS__)
-# define 	ft_htbl_assign4(...) ft_htbl_bin_assign(__VA_ARGS__)
+# define 	ft_htbl_add_rawkey5(...) ft_htbl_add_rawkey_with_f_del(__VA_ARGS__)
+# define 	ft_htbl_add_rawkey4(...) ft_htbl_add_rawkey(__VA_ARGS__)
+# define 	ft_htbl_assign4(...) ft_htbl_assign_with_f_del(__VA_ARGS__)
 # define 	ft_htbl_assign3(...) ft_htbl_assign(__VA_ARGS__)
-
+# define 	ft_htbl_assign_rawkey5(...) ft_htbl_assign_rawkey_with_f_del(__VA_ARGS__)
+# define 	ft_htbl_assign_rawkey4(...) ft_htbl_assign_rawkey(__VA_ARGS__)
+# define 	ft_htbl_del2(...) ft_htbl_del_with_f_del(__VA_ARGS__)
+# define 	ft_htbl_del1(...) ft_htbl_del(__VA_ARGS__)
+# define 	ft_htbl_del_key3(...) ft_htbl_del_key_with_f_del(__VA_ARGS__)
+# define 	ft_htbl_del_key2(...) ft_htbl_del_key(__VA_ARGS__)
+# define 	ft_htbl_del_rawkey4(...) ft_htbl_del_rawkey_with_f_del(__VA_ARGS__)
+# define 	ft_htbl_del_rawkey3(...) ft_htbl_del_rawkey(__VA_ARGS__)
 # define	ft_htbl_add(...) VFUNC(ft_htbl_add, __VA_ARGS__)
-# define	ft_htbl_get(...) VFUNC(ft_htbl_get, __VA_ARGS__)
+# define	ft_htbl_add_rawkey(...) VFUNC(ft_htbl_add_rawkey, __VA_ARGS__)
 # define	ft_htbl_assign(...) VFUNC(ft_htbl_assign, __VA_ARGS__)
+# define	ft_htbl_assign_rawkey(...) VFUNC(ft_htbl_assign_rawkey, __VA_ARGS__)
+# define	ft_htbl_del(...) VFUNC(ft_htbl_del, __VA_ARGS__)
 
 void 		(ft_node_init)(t_node *);
 t_node		*(ft_node_create)(void);
 t_node		*(ft_node_new)(const char *, void *, size_t);
 void 		(ft_node_del)(t_node *);
-void 		ft_node_init_with_f_del(t_node *, FUNC_NODE_DEL);
-t_node		*ft_node_create_with_f_del(FUNC_NODE_DEL);
-t_node		*ft_node_new_with_f_del(const char *, void *, size_t, FUNC_NODE_DEL);
-void 		ft_node_del_with_f_del(t_node *, FUNC_NODE_DEL);
+void 		ft_node_init_with_f_del(t_node *, FUNC_CONTENT_DEL);
+t_node		*ft_node_create_with_f_del(FUNC_CONTENT_DEL);
+t_node		*ft_node_new_with_f_del(const char *, void *, size_t, FUNC_CONTENT_DEL);
+void 		ft_node_del_with_f_del(t_node *, FUNC_CONTENT_DEL);
 int			ft_node_is_parent(t_node *);
 
 # define 	ft_node_init2(...) ft_node_init_with_f_del(__VA_ARGS__)
@@ -189,10 +206,10 @@ int			ft_node_is_parent(t_node *);
 
 void		ft_lst_append(t_node **, t_node *);
 void		ft_lst_prepend(t_node **, t_node *);
-void		ft_lst_del(t_node *, FUNC_NODE_DEL);
-void		ft_lst_del_first(t_node **, FUNC_NODE_DEL);
-void		ft_lst_del_last(t_node **, FUNC_NODE_DEL);
-void		ft_lst_del_one(t_node **, t_node *, FUNC_NODE_DEL);
+void		ft_lst_del(t_node *, FUNC_CONTENT_DEL);
+void		ft_lst_del_first(t_node **, FUNC_CONTENT_DEL);
+void		ft_lst_del_last(t_node **, FUNC_CONTENT_DEL);
+void		ft_lst_del_one(t_node **, t_node *, FUNC_CONTENT_DEL);
 size_t		ft_lst_size(t_node *);
 int			ft_lst_map(t_node *, void *farg, int (*f)(t_node *, void *));
 t_htbl		*ft_lst_htable(t_node *);
@@ -203,8 +220,7 @@ void		ft_stack_push(t_stack *, const char *, void *, size_t);
 t_node		*ft_stack_peek(t_stack *);
 int 		ft_stack_is_empty(t_stack *);
 int 		ft_stack_size(t_stack *);
-void		ft_stack_clear(t_stack *);
-void		ft_stack_del(t_stack *, FUNC_NODE_DEL);
+void		ft_stack_del(t_stack *, FUNC_CONTENT_DEL);
 t_htbl		*ft_stack_htable(t_stack *);
 
 t_queue		*ft_queue_init(void);
@@ -213,15 +229,15 @@ void		*ft_queue_dequeue(t_queue *);
 t_node		*ft_queue_peek(t_queue *);
 int			ft_queue_is_empty(t_queue *);
 int			ft_queue_size(t_queue *);
-void		ft_queue_del(t_queue *, FUNC_NODE_DEL);
-void		ft_queue_del_node(t_queue *, t_node *, FUNC_NODE_DEL);
+void		ft_queue_del(t_queue *, FUNC_CONTENT_DEL);
+void		ft_queue_del_node(t_queue *, t_node *, FUNC_CONTENT_DEL);
 t_htbl		*ft_queue_htable(t_queue *);
 
 t_node		*ft_ntree_construct(const char *);
 int 		ft_ntree_dfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
 int			ft_ntree_dfs_cur_depth(void);
 int			ft_ntree_bfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
-void		ft_ntree_del(t_node *, FUNC_NODE_DEL);
+void		ft_ntree_del(t_node *, FUNC_CONTENT_DEL);
 void		ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
 int			ft_ntree_size(t_node *);
 t_node		*ft_ntree_iter(t_node *);

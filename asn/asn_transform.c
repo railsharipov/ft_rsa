@@ -2,11 +2,6 @@
 #include <ssl_error.h>
 #include <ssl_asn.h>
 
-static void	__del_node(t_node *node)
-{
-	SSL_FREE(node);
-}
-
 int	asn_transform(t_node *src_tree, t_node *dest_tree)
 {
 	t_htbl	*dest_items;
@@ -42,7 +37,7 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 		}
 		src_iter = src_iter->next;
 	}
-	ft_lst_del(src_ref, __del_node);
+	ft_lst_del(src_ref, NULL);
 
 	return (SSL_OK);
 }

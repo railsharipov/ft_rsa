@@ -12,7 +12,7 @@
 
 #include <libft.h>
 
-static void	__del_node_recur(t_node *node, FUNC_NODE_DEL f_del)
+static void	__del_node_recur(t_node *node, FUNC_CONTENT_DEL f_del)
 {
 	if (NULL == node) {
 		return ;
@@ -22,7 +22,7 @@ static void	__del_node_recur(t_node *node, FUNC_NODE_DEL f_del)
 	ft_node_del(node, f_del);
 }
 
-void	ft_ntree_del(t_node *ntree, FUNC_NODE_DEL f_del)
+void	ft_ntree_del(t_node *ntree, FUNC_CONTENT_DEL f_del)
 {
 	if (NULL == ntree) {
 		return ;

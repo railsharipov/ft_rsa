@@ -88,7 +88,7 @@ int		ft_queue_size(t_queue *queue)
 	return (ft_lst_size(queue->first));
 }
 
-void	ft_queue_del(t_queue *queue, FUNC_NODE_DEL f_del)
+void	ft_queue_del(t_queue *queue, FUNC_CONTENT_DEL f_del)
 {
 	if (NULL == queue) {
 		return ;
@@ -97,7 +97,7 @@ void	ft_queue_del(t_queue *queue, FUNC_NODE_DEL f_del)
 	LIBFT_FREE(queue);
 }
 
-void	ft_queue_del_node(t_queue *queue, t_node *node, FUNC_NODE_DEL f_del)
+void	ft_queue_del_node(t_queue *queue, t_node *node, FUNC_CONTENT_DEL f_del)
 {
 	t_node *cur;
 	t_node *prev;

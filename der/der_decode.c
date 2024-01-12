@@ -197,10 +197,9 @@ static void	__init_func_htable(void)
 
 	htbl = ft_htbl_init(sizeof(T)/sizeof(*T));
 
-	for (int idx = 0; idx < sizeof(T)/sizeof(*T); idx++)
-		ft_htbl_add(
-			htbl, T[idx].f_read, &(T[idx].type), sizeof(T[idx].type));
-
+	for (int idx = 0; idx < sizeof(T)/sizeof(*T); idx++) {
+		ft_htbl_add_rawkey(htbl, T[idx].f_read, &(T[idx].type), sizeof(T[idx].type));
+	}
 	__func_htable = htbl;
 }
 

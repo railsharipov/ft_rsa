@@ -18,6 +18,13 @@ ssize_t __parse_number(const char *, t_node *);
 ssize_t __parse_boolean(const char *, t_node *);
 ssize_t __parse_null(const char *, t_node *);
 
+void	__delete_array(void *content);
+void	__delete_object(void *content);
+void	__delete_string(void *content);
+void	__delete_number(void *content);
+void	__delete_boolean(void *content);
+void	__delete_null(void *content);
+
 typedef struct		s_json_ctx
 {
 	FUNC_JSON_PARSE f_parse;
@@ -90,7 +97,7 @@ int	__init_htable(void)
 
 	idx = 0;
     while (idx < ht_size) {
-		ft_htbl_bin_add(__htable, (void *)&(T[idx]), &(T[idx].open), sizeof(T[idx].open));
+		ft_htbl_add_rawkey(__htable, (void *)&(T[idx]), &(T[idx].open), sizeof(T[idx].open));
 		idx++;
     }
 	return (SSL_OK);
@@ -122,7 +129,7 @@ ssize_t __parse(const char *s, t_node *node)
 		idx++;
 	}
 	open = s[idx];
-	ctx = ft_htbl_bin_get(__htable, &open, sizeof(open));
+	ctx = ft_htbl_get_rawkey(__htable, &open, sizeof(open));
 
 	if (NULL == ctx) {
 		JSON_ERROR(INVALID_FORMAT);
@@ -187,7 +194,7 @@ ssize_t __parse_number(const char *s, t_node *node)
 	node->content = num;
 	node->size = sizeof(t_num);
 	node->type = JSON_NUMBER;
-	node->f_del = json_del;
+	node->f_del = __delete_number;
 
 	SSL_FREE(sub_s);
 
@@ -205,7 +212,7 @@ ssize_t __parse_string(const char *s, t_node *node)
 	node->content = ft_strsub(s, 0, idx);
 	node->size = (size_t)idx;
 	node->type = JSON_CSTR;
-	node->f_del = json_del;
+	node->f_del = __delete_string;
 
 	return (idx);
 }
@@ -228,7 +235,7 @@ ssize_t __parse_null(const char *s, t_node *node)
 	node->content = NULL;
 	node->size = 0;
 	node->type = JSON_NULL;
-	node->f_del = json_del;
+	node->f_del = __delete_null;
 
 	return (idx);
 }
@@ -259,7 +266,7 @@ ssize_t __parse_boolean(const char *s, t_node *node)
 	node->content = ft_memdup(&boolean, sizeof(boolean));
 	node->size = sizeof(boolean);
 	node->type = JSON_BOOLEAN;
-	node->f_del = json_del;
+	node->f_del = __delete_boolean;
 
 	return (idx);
 }
@@ -327,7 +334,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 	node->content = htbl;
 	node->size = sizeof(t_htbl);
 	node->type = JSON_OBJECT;
-	node->f_del = json_del;
+	node->f_del = __delete_object;
 
 	return (idx);
 err:
@@ -378,11 +385,41 @@ ssize_t __parse_array(const char *s, t_node *node)
 	node->content = list;
 	node->size = sizeof(t_node);
 	node->type = JSON_ARRAY;
-	node->f_del = json_del;
+	node->f_del = __delete_array;
 
 	return (idx);
 err:
 	ft_node_del(content_node);
 	ft_lst_del(list, NULL);
 	return (-1);
+}
+
+void	__delete_array(void *content)
+{
+	ft_lst_del((t_node *)(content), NULL);
+}
+
+void	__delete_object(void *content)
+{
+	ft_htbl_del((t_htbl *)(content));
+}
+
+void	__delete_string(void *content)
+{
+	LIBFT_FREE(content);
+}
+
+void	__delete_null(void *content)
+{
+	return ;
+}
+
+void	__delete_boolean(void *content)
+{
+	LIBFT_FREE(content);
+}
+
+void	__delete_number(void *content)
+{
+	bnum_del((t_num *)(content));
 }

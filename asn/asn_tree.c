@@ -2,7 +2,7 @@
 #include <ssl_asn.h>
 
 static int	__init_func(t_node *node, const void *p);
-static void	__del_func(t_node *node);
+static void	__f_del_content(void *content);
 
 static int	__error_status;
 
@@ -16,7 +16,7 @@ t_node	*asn_tree(const char *map)
 
 	if (ft_ntree_bfs(NULL, tree, NULL, __init_func) < 0)
 	{
-		ft_ntree_del(tree, __del_func);
+		ft_ntree_del(tree, __f_del_content);
 		return (NULL);
 	}
 
@@ -56,11 +56,7 @@ static int	__init_func(t_node *node, const void *p)
 	return (0);
 }
 
-static void	__del_func(t_node *node)
+static void	__f_del_content(void *content)
 {
-	t_iasn	*item;
-
-	if (NULL != node->content) {
-		asn_item_del((t_iasn *)node->content);
-	}
+	asn_item_del((t_iasn *)content);
 }

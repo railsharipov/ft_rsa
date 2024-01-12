@@ -15,35 +15,51 @@
 
 static char		*__to_cstring(char *raw, size_t rawsize);
 
-void	ft_htbl_bin_add(
-	t_htbl *htbl, void *content, const void *bin, size_t binsize)
+void	ft_htbl_add_rawkey(t_htbl *htbl, void *content, const void *rawkey, size_t rksize)
 {
 	char	*cskey;
 
-	cskey = __to_cstring((char *)bin, binsize);
+	cskey = __to_cstring((char *)rawkey, rksize);
 	(ft_htbl_add)(htbl, content, (const char *)cskey);
 	LIBFT_FREE(cskey);
 }
 
-void	*ft_htbl_bin_get(t_htbl *htbl, const void *bin, size_t binsize)
+void	ft_htbl_add_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del)
+{
+	char	*cskey;
+
+	cskey = __to_cstring((char *)rawkey, rksize);
+	ft_htbl_add_with_f_del(htbl, content, (const char *)cskey, f_del);
+	LIBFT_FREE(cskey);
+}
+
+void	*ft_htbl_get_rawkey(t_htbl *htbl, const void *rawkey, size_t rksize)
 {
 	char	*cskey;
 	void	*content;
 
-	cskey = __to_cstring((char *)bin, binsize);
-	content = (ft_htbl_get)(htbl, (const char *)cskey);
+	cskey = __to_cstring((char *)rawkey, rksize);
+	content = ft_htbl_get(htbl, (const char *)cskey);
 	LIBFT_FREE(cskey);
-	
+
 	return (content);
 }
 
-void	ft_htbl_bin_assign(
-	t_htbl *htbl, void *content, const void *bin, size_t binsize)
+void	ft_htbl_assign_rawkey(t_htbl *htbl, void *content, const void *rawkey, size_t rksize)
 {
 	char	*cskey;
 
-	cskey = __to_cstring((char *)bin, binsize);
+	cskey = __to_cstring((char *)rawkey, rksize);
 	(ft_htbl_assign)(htbl, content, (const char *)cskey);
+	LIBFT_FREE(cskey);
+}
+
+void	ft_htbl_assign_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del)
+{
+	char	*cskey;
+
+	cskey = __to_cstring((char *)rawkey, rksize);
+	ft_htbl_assign_with_f_del(htbl, content, (const char *)cskey, f_del);
 	LIBFT_FREE(cskey);
 }
 
@@ -53,15 +69,14 @@ static char	*__to_cstring(char *raw, size_t rawsize)
 	size_t ix;
 
 	LIBFT_ALLOC(cskey, rawsize + 1);
-
 	ix = 0;
-	while (ix < rawsize)
-	{
-		if (raw[ix] == 0)
-			cskey[ix] = '=';
-		else
-			cskey[ix] = raw[ix];
 
+	while (ix < rawsize) {
+		if (raw[ix] == 0) {
+			cskey[ix] = '=';
+		} else {
+			cskey[ix] = raw[ix];
+		}
 		ix++;
 	}
 	cskey[rawsize] = 0;
