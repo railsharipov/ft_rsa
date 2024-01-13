@@ -1,4 +1,5 @@
-#include <ft_ssl.h>
+#include <ssl/ssl.h>
+#include <libft/ntree.h>
 
 t_htbl	*asn_tree_items(t_node *tree)
 {

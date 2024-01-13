@@ -1,6 +1,9 @@
 #ifndef SSL_IO_H
 # define SSL_IO_H
 
+# include <stdint.h>
+# include <libft/string.h>
+
 # define IO_BUFSIZE (256 * 1024)
 
 # if (IO_BUFSIZE > (256 * 1024))

@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <string.h>
+#include <libft/std.h>
 
 // Copy destsize bytes from src to dest.
 // If destsize is bigger than srcsize set extra bytes (destsize - srcsize) to zero
@@ -25,6 +26,5 @@ void	*ft_memzcpy(void *dst, const void *src, size_t dstsize, size_t srcsize)
 	{
 		ft_memcpy(dst, src, dstsize);
 	}
-
 	return (dst);
 }

@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 char	*ft_strrev(const char *s)
 {

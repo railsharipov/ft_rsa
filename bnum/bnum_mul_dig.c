@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_mul_dig(const t_num *a, uint64_t b, t_num *res)
 {

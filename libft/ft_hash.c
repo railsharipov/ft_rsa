@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/std.h>
 
 uint32_t ft_hash(const unsigned char *key, size_t keysize)
 {

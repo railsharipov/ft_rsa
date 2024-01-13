@@ -1,4 +1,6 @@
-#include <bnum.h>
+#include <util/bnum.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
 
 void    bnum_set_rand(t_num *num, int bits)
 {

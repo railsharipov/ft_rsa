@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 const uint64_t BNUM_PRIME_TAB[] = {
 	0x0002, 0x0003, 0x0005, 0x0007, 0x000B, 0x000D, 0x0011, 0x0013,

@@ -1,5 +1,6 @@
-#include <ft_ssl.h>
-#include <parser.h>
+#include <util/parser.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 // Remove wspace in character array
 // wspace = LF / CR / SP / HT / VT / FF
@@ -10,20 +11,17 @@ void	parser_del_eolws(const char *arr, int asize, char **p, int *psize)
 	char	*res;
 	int		ix;
 
-	SSL_CHECK(NULL != arr);
-	SSL_CHECK(NULL != p);
-
-	SSL_ALLOC(res, asize);
+	if (NULL == arr || NULL == p) {
+		return ;
+	}
+	LIBFT_ALLOC(res, asize);
 	rptr = res;
 
-	for (ix = 0; ix < asize;)
-	{
-		while ((ix < asize) && (!ft_iseolws(arr[ix])))
-		{
+	for (ix = 0; ix < asize;) {
+		while ((ix < asize) && (!ft_iseolws(arr[ix]))) {
 			*rptr++ = arr[ix++];
 		}
-		while ((ix < asize) && (ft_iseolws(arr[ix])))
-		{
+		while ((ix < asize) && (ft_iseolws(arr[ix]))) {
 			ix++;
 		}
 	}

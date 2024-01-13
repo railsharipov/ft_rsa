@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/stack.h>
+#include <libft/list.h>
+#include <libft/alloc.h>
 
 t_stack	*ft_stack_init(void)
 {

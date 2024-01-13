@@ -10,7 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <libft/std.h>
 
 void	pf_out(t_pf *data, const char *s, int size)
 {
@@ -25,7 +29,6 @@ void	pf_out(t_pf *data, const char *s, int size)
 			perror("FATAL ERROR :");
 			exit(-1);
 		}
-		
 		if (NULL != *(data->buf))
 		{
 			ft_memcpy(ptr, *(data->buf), data->num);

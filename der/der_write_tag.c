@@ -1,8 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_der.h>
-#include <ssl_asn.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/der.h>
+#include <ssl/asn.h>
+#include <util/io.h>
+#include <libft/bytes.h>
 
 static int		__tag_is_complex(int);
 static ssize_t	__write_complex_tag(uint8_t, uint32_t, t_iodes *);
@@ -49,7 +50,7 @@ static ssize_t	__write_complex_tag(
 	int		tag_num_nbits;
 	int		idx;
 
-	tag_num_nbits = util_lmbit(tag_num, 8 * sizeof(tag_num));
+	tag_num_nbits = ft_uint_lmbit(tag_num, 8 * sizeof(tag_num));
 	tag_num_nbytes = CEIL(tag_num_nbits, 7) / 7;
 
 	// additional octet for tag flags

@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 int		pf_is_flag(char c, char *flag)
 {
@@ -26,7 +27,7 @@ int		pf_is_flag(char c, char *flag)
 		(c == '+') ? (check |= PF_PLUS) : 0;
 		(c == 32) ? (check |= PF_SPACE) : 0;
 		(c == 39) ? (check |= PF_APOS) : 0;
-		
+
 		*flag |= check;
 
 		return (1);
@@ -75,7 +76,7 @@ void	pf_get_data(t_pf *data, const char *s, int *i)
 	else if (s[*i] >= '0' && s[*i] <= '9')
 	{
 		data->fwid = (int)ft_atoi(s + *i);
-		
+
 		while (s[*i] && s[*i] >= '0' && s[*i] <= '9')
 			*i += 1;
 	}

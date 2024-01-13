@@ -1,7 +1,7 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_pem.h>
-#include <parser.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/pem.h>
+#include <util/parser.h>
 
 static char	*__preen;
 static char	*__posten;
@@ -63,13 +63,13 @@ int	pem_remove_encap(
 
 	if (NULL != __preen)
 		free(__preen);
-	
+
 	if (NULL != __posten)
 		free(__posten);
 
 	if ((bidx < 0) || (eidx < 0) || (bidx > eidx))
 		return (PEM_ERROR(INVALID_PEM_ENCAPSULATION));
-	
+
 	*consize = eidx - (bidx + __presize);
 	*content = ft_memdup(pem->content + (bidx + __presize), *consize);
 

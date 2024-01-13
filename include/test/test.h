@@ -2,7 +2,8 @@
 # define SSL_TEST_H
 
 # include <assert.h>
-# include <printnl.h>
+# include <libft/string.h>
+# include <util/printnl.h>
 
 # define TEST_ENABLE_VERBOSE
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
@@ -42,7 +43,7 @@ extern const size_t		TEST_DESC_ARR_SIZE;
 
 int		test_info(int module_id, int verbose);
 int		test_assert(int boolean, const char *func, const char *file, int line);
-int		test_get_file_content(const char *testfile_path, struct s_ostring *ostring);
+int		test_get_file_content(const char *testfile_path, t_ostring *ostring);
 int		test_result(int res, int verbose, const char *func_name, const char *file_name);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 

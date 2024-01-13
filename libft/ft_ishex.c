@@ -10,12 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
 
 int	ft_ishex(int c)
 {
 	if (ft_isdigit(c) || (c >= 65 && c <= 70) || (c >= 97 && c <= 102))
 		return (1);
-	
+
 	return (0);
 }

@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_sub_u(const t_num *a, const t_num *b, t_num *res)
 {

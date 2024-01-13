@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_hash.h>
+#include <ssl/ssl.h>
+#include <ssl/hash.h>
 
 void	hash_sha384_update(t_hash *sha384, const char *buf, size_t bufsize)
 {

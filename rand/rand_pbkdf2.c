@@ -10,11 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_des.h>
-#include <ssl_hash.h>
-#include <ssl_rand.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/des.h>
+#include <ssl/hash.h>
+#include <ssl/rand.h>
 #include <pwd.h>
 
 static char	__buf[160];

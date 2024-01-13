@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 void	pf_oux_to_s(t_pf *data, char *s, uintmax_t n, size_t *i)
 {
@@ -28,7 +30,7 @@ void	pf_oux_to_s(t_pf *data, char *s, uintmax_t n, size_t *i)
 			s[*i + j] = val + 48;
 		else if (val >= 10 && val <= 15)
 			s[*i + j] = val + ((data->type == 'X') ? 55 : 87);
-		
+
 		n = n / (uintmax_t)(data->base);
 	}
 
@@ -96,7 +98,7 @@ void	pf_print_oux(t_pf *data, uintmax_t n, char flag, size_t i)
 
 	if (flag & PF_MINUS)
 		pf_oper(data, s, &i, (' '));
-		
+
 	s[i] = 0;
 	pf_out(data, s, i);
 	free(s);

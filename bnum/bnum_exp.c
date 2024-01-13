@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_exp(const t_num *base, uint64_t expo, t_num *res)
 {

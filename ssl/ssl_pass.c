@@ -1,6 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
 #include <pwd.h>
+#include <unistd.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <libft/string.h>
 
 static const int	__SSL_PASS_LEN = 128;
 static char			__pass[__SSL_PASS_LEN + 1];

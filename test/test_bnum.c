@@ -1,8 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_rand.h>
-#include <bnum.h>
-#include <ssl_test.h>
-#include <printnl.h>
+#include <ssl/ssl.h>
+#include <ssl/rand.h>
+#include <util/bnum.h>
+#include <test/test.h>
+#include <util/printnl.h>
+#include <libft/bytes.h>
 
 static t_num	__zero_num;
 static t_num	__one_num;
@@ -598,7 +599,7 @@ static int	__test_bnum_from_bytes_u(void)
 	binsize = NBITS_TO_NBYTES(4 * hexsize);
 	SSL_ALLOC(bin, binsize);
 
-	ft_hexbin(bin, hex, hexsize);
+	ft_hex_to_bytes(bin, hex, hexsize);
 
 	bnum_init(&test_num);
 	bnum_from_bytes_u(&test_num, bin, binsize);
@@ -630,7 +631,7 @@ static int	__test_bnum_to_bytes_u(void)
 	bnum_from_hex_u(&test_num, hex);
 	bnum_to_bytes_u(&test_num, &bin, &binsize);
 
-	test_hex = ft_binhex(bin, binsize);
+	test_hex = ft_bytes_to_hex(bin, binsize);
 
 	pass |= TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
 

@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_div2_inpl(t_num *num)
 {

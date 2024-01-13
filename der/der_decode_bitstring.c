@@ -1,7 +1,7 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_der.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/der.h>
+#include <ssl/asn.h>
 
 /*
 /	Encoding shall be a bitstring encoding, that is, first encoding
@@ -24,7 +24,7 @@ int  der_decode_bitstring(t_ostring *osbuf, uint8_t *enc, size_t size)
 	if (num_unused_bits > 7u)
 		return (DER_ERROR(INVALID_DER_ENCODING));
 
-	util_ostr_append(osbuf, enc, size);
+	ft_ostr_append(osbuf, enc, size);
 
 	return (SSL_OK);
 }

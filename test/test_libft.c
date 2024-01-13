@@ -1,9 +1,19 @@
-#include <ft_ssl.h>
-#include <libft.h>
 #include <string.h>
-#include <ssl_test.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <ssl/ssl.h>
+#include <test/test.h>
+#include <libft/std.h>
+#include <libft/node.h>
+#include <libft/list.h>
+#include <libft/stack.h>
+#include <libft/queue.h>
+#include <libft/ntree.h>
+#include <libft/2darray.h>
+#include <libft/bytes.h>
 
 static char 	*__s1;
 static char 	*__s2;
@@ -48,9 +58,9 @@ static int __test_ft_str_isascii(void);
 static int __test_ft_str_isdigit(void);
 static int __test_ft_str_ishex(void);
 static int __test_ft_str_isprint(void);
-static int __test_ft_binhex(void);
-static int __test_ft_hexbin(void);
-static int __test_ft_intbytes(void);
+static int __test_ft_bytes_to_hex(void);
+static int __test_ft_hex_to_bytes(void);
+static int __test_ft_uint_to_bytes(void);
 static int __test_get_next_line(void);
 static int __test_ft_node(void);
 static int __test_ft_list(void);
@@ -103,9 +113,9 @@ int test_libft(void)
 	res |= __test_ft_str_isdigit();
 	res |= __test_ft_str_ishex();
 	res |= __test_ft_str_isprint();
-	res |= __test_ft_binhex();
-	res |= __test_ft_hexbin();
-	res |= __test_ft_intbytes();
+	res |= __test_ft_bytes_to_hex();
+	res |= __test_ft_hex_to_bytes();
+	res |= __test_ft_uint_to_bytes();
 	res |= __test_get_next_line();
 	res |= __test_ft_node();
 	res |= __test_ft_list();
@@ -1222,20 +1232,20 @@ static int __test_ft_str_isprint(void)
 	return (TEST_FAIL());
 }
 
-static int __test_ft_binhex(void)
+static int __test_ft_bytes_to_hex(void)
 {
 	int pass = SSL_OK;
 	char *test_str;
 	char octets[] = {9, 1, 127, 3, 15, 0};
 	char *ref_str = "9017f030f00";
 
-	test_str = ft_binhex(NULL, 20);
+	test_str = ft_bytes_to_hex(NULL, 20);
 	pass |= TEST_ASSERT(test_str == NULL);
 
-	test_str = ft_binhex(octets, 0);
+	test_str = ft_bytes_to_hex(octets, 0);
 	pass |= TEST_ASSERT(test_str == NULL);
 
-	test_str = ft_binhex(octets, sizeof(octets));
+	test_str = ft_bytes_to_hex(octets, sizeof(octets));
 	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	free(test_str);
 
@@ -1245,14 +1255,14 @@ static int __test_ft_binhex(void)
 	return (TEST_FAIL());
 }
 
-static int __test_ft_hexbin(void)
+static int __test_ft_hex_to_bytes(void)
 {
 	int pass = SSL_OK;
 	char ref_str[6] = {9, 1, 127, 3, 15, 0};
 	char test_str[6] = {0};
 	char *hex = "9017f030f00";
 
-	ft_hexbin(test_str, hex, strlen(hex));
+	ft_hex_to_bytes(test_str, hex, strlen(hex));
 	pass |= TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
 	if (SSL_OK == pass)
@@ -1261,20 +1271,20 @@ static int __test_ft_hexbin(void)
 	return (TEST_FAIL());
 }
 
-static int __test_ft_intbytes(void)
+static int __test_ft_uint_to_bytes(void)
 {
-	intmax_t integer = 3271454934;
-	intmax_t zero = 0;
+	uint32_t num = 3271454934;
+	uint32_t zero = 0;
 	char ref_str[6] = {194, 254, 112, 214};
 	char buf[4] = {0};
 	int pass = SSL_OK;
 
-	ft_intbytes(buf, integer, 4);
+	ft_uint_to_bytes(buf, num, sizeof(num));
 	pass |= ft_strncmp(buf, ref_str, sizeof(buf));
 
 	bzero(buf, sizeof(buf));
 	bzero(ref_str, sizeof(ref_str));
-	ft_intbytes(buf, zero, 4);
+	ft_uint_to_bytes(buf, zero, sizeof(zero));
 	pass |= ft_strncmp(buf, ref_str, sizeof(buf));
 
 	if (SSL_OK == pass)
@@ -1367,12 +1377,12 @@ static int __test_ft_node(void)
 static int __func_for_test_ft_list(t_node *node, void *farg)
 {
 	if (NULL == node)
-		return (LIBFT_OK);
+		return (SSL_OK);
 
 	node->content = NULL;
 	node->size = 0;
 
-	return (LIBFT_OK);
+	return (SSL_OK);
 }
 
 static int __test_ft_list(void)

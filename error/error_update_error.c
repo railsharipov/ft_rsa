@@ -1,5 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
+#include <stdio.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
 
 static int	__error_is_set = SSL_FALSE;
 

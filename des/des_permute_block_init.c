@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_des.h>
+#include <ssl/ssl.h>
+#include <ssl/des.h>
 
 static const unsigned char	PMA[64] = {
 	58,	50,	42,	34,	26,	18,	10,	2,	60,	52,	44,	36,	28,	20,	12,	4,

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
 
 char	*ft_strncpy(char *dst, const char *src, size_t len)
 {
@@ -30,6 +30,6 @@ char	*ft_strncpy(char *dst, const char *src, size_t len)
 		i++;
 	}
 	dst[i] = 0;
-	
+
 	return (dst);
 }

@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_revbits.c                                       :+:      :+:    :+:   */
+/*   ft_bytes_reverse_bits.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,9 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <string.h>
 
-void	ft_revbits(void *ptr, size_t size)
+void	ft_bytes_reverse_bits(void *ptr, size_t size)
 {
 	unsigned char	*p;
 	unsigned char	num;

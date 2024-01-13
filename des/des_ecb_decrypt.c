@@ -10,11 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_rand.h>
-#include <ssl_base64.h>
-#include <ssl_des.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/rand.h>
+#include <ssl/base64.h>
+#include <ssl/des.h>
+#include <libft/bytes.h>
 
 static int		__is_salted;
 
@@ -104,7 +105,7 @@ static int	__decrypt(
 		des_permute_block((uint64_t *)*mes_ptr + ix, __ksched);
 		des_permute_block_final((uint64_t *)*mes_ptr + ix);
 
-		*(uint64_t *)(*mes_ptr + ix) = util_bswap64(*(uint64_t *)(*mes_ptr + ix));
+		*(uint64_t *)(*mes_ptr + ix) = ft_uint_bswap64(*(uint64_t *)(*mes_ptr + ix));
 		ix += 8;
 	}
 	if (SSL_OK != __remove_pad(mes_ptr, messize))

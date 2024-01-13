@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include <ft_printf.h>
+#include <libft/std.h>
 
 void	pf_l_arg_zero(t_pf *l)
 {
@@ -35,13 +35,13 @@ t_pf	*pf_l_arg_new(int fd)
 
 	if (NULL == (new = malloc(sizeof(t_pf))))
 		return (NULL);
-	
+
 	ft_bzero(new, sizeof(t_pf));
 
 	new->fd = fd;
 	new->prec = -1;
 	new->type = -1;
 	new->base = 10;
-	
+
 	return (new);
 }

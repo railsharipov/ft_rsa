@@ -1,6 +1,7 @@
-#include <ft_ssl.h>
-#include <ssl_io.h>
+#include <string.h>
 #include <stdarg.h>
+#include <unistd.h>
+#include <util/io.h>
 
 void	io_close_multi(t_iodes *iodes, ...)
 {

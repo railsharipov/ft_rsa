@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <libft/std.h>
 
 void	pf_format_di(t_pf *data, char len, va_list *arg)
 {
@@ -106,7 +106,6 @@ void	pf_format_s(t_pf *data, char len, va_list *arg)
 			pf_out(data, "(null)", 6);
 		return ;
 	}
-	
 	if (len & PF_L)
 		pf_print_ws(data, ws);
 	else

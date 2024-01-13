@@ -1,6 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_der.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/der.h>
+#include <util/io.h>
 
 static ssize_t	__read_octets_indef(t_iodes *in, t_iodes *out);
 
@@ -19,11 +19,11 @@ ssize_t	der_read_octets_indef(char **content, size_t *size, t_iodes *iodes)
 	rbytes = __read_octets_indef(iodes, &temp_iodes);
 
 	if (rbytes < 0)
-		util_ostr_clean(&osbuf);
+		ft_ostr_clean(&osbuf);
 
-	*content = util_ostr_get_content(&osbuf);
-	*size = util_ostr_get_size(&osbuf);
-	
+	*content = ft_ostr_get_content(&osbuf);
+	*size = ft_ostr_get_size(&osbuf);
+
 	io_close(&temp_iodes);
 
 	return (rbytes);

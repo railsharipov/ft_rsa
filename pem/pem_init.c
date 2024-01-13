@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_pem.h>
+#include <ssl/ssl.h>
+#include <ssl/pem.h>
 
 t_pem	*pem_init(void)
 {

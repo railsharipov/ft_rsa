@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 static void __flags(char *len, char *flag, char *type);
 static void __parse(t_pf *data, const char *s, va_list *arg);
@@ -27,10 +30,10 @@ int ft_printf(const char *format, ...)
 
 	if (NULL == (data = pf_l_arg_new(STDOUT_FILENO)))
 		return (-1);
-	
+
 	if (format)
 		__parse(data, format, &arg);
-	
+
 	num = data->num;
 	free(data);
 	data = NULL;
@@ -49,10 +52,10 @@ int ft_fprintf(int fd, const char *format, ...)
 
 	if ((fd < 0) || (NULL == (data = pf_l_arg_new(fd))))
 		return (-1);
-	
+
 	if (format)
 		__parse(data, format, &arg);
-	
+
 	num = data->num;
 	free(data);
 	data = NULL;
@@ -71,13 +74,13 @@ int ft_sprintf(char **buf, const char *format, ...)
 
 	if ((NULL == buf) || (NULL == (data = pf_l_arg_new(-1))))
 		return (-1);
-	
+
 	*buf = malloc(1);
 	data->buf = buf;
 
 	if (format)
 		__parse(data, format, &arg);
-	
+
 	num = data->num;
 	free(data);
 	data = NULL;
@@ -118,13 +121,13 @@ static void __format(t_pf *data, va_list *arg)
 
 	if (data->type == 'x' || data->type == 'X' || data->type == 'p')
 		data->base = 16;
-	
+
 	else if (data->type == 'o')
 		data->base = 8;
-	
+
 	if (data->type == '%')
 		pf_out(data, "%", 1);
-	
+
 	else if (data->type == '@')
 		data->fd = STDERR_FILENO;
 
@@ -158,10 +161,10 @@ static void	__parse(t_pf *data, const char *s, va_list *arg)
 
 		while (s[i] && s[i] != '%')
 			i++;
-		
+
 		if (i > start)
 			pf_out(data, s + start, i - start);
-		
+
 		if (s[i] == '%' && s[++i])
 		{
 			if (s[i] == '%' || s[i] == '@')

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
 
 static int __dfs_recur(t_node *node, const void *farg, int (*f)(t_node *, const void *), t_node **res);
 

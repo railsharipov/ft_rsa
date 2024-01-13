@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_hash.h>
+#include <ssl/ssl.h>
+#include <ssl/hash.h>
 
 void	hash_sha512_224_final(
 	t_hash *sha512_224, const char *buf, size_t bufsize)

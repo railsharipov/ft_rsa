@@ -1,4 +1,4 @@
-#include <ft_ssl.h>
+#include <ssl/ssl.h>
 
 int	rand_mseed(uint64_t *seed, int n)
 {
@@ -8,7 +8,7 @@ int	rand_mseed(uint64_t *seed, int n)
 
 	if ((n < 128) || (n > 1024))
 		n = 128;
-	
+
 	SSL_ALLOC(ptr, 1024);
 	num[0] = (uint64_t)ptr;
 
@@ -23,7 +23,7 @@ int	rand_mseed(uint64_t *seed, int n)
 		ptr = (void *)(num[idx]);
 		SSL_FREE(ptr);
 	}
-	
+
 	*seed = (uint64_t)ft_hash((unsigned char *)(num), sizeof(uint64_t)*n);
 	*seed |= ((uint64_t)ft_hash((unsigned char *)(seed), sizeof(uint64_t))) << 32;
 

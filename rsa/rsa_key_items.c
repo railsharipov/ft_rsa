@@ -1,7 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_asn.h>
-#include <ssl_rsa.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/asn.h>
+#include <ssl/rsa.h>
+#include <libft/htable.h>
 
 static t_num	*__asn_int(t_htbl *htbl, const char *key);
 static int		__private_key_items(t_htbl *asn_items, t_rsa **rsa_key);
@@ -14,19 +15,19 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 
 	if ((NULL == asn_key) || (NULL == rsa_key))
 		return (RSA_ERROR(INVALID_INPUT));
-	
+
 	if (NULL == (asn_items = asn_tree_items(asn_key)))
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
-	
+
 	if (!ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
 		ret = __private_key_items(asn_items, rsa_key);
-	
+
 	else if (!ft_strcmp(asn_key->key, "PUBLIC_KEY"))
 		ret = __public_key_items(asn_items, rsa_key);
-	
+
 	else
 		ret = RSA_ERROR(INVALID_INPUT);
-	
+
 	asn_tree_items_del(asn_items);
 
 	return (ret);

@@ -1,7 +1,8 @@
 #ifndef SSL_DES_H
 # define SSL_DES_H
 
-# include <ssl_io.h>
+# include <libft/string.h>
+# include <util/io.h>
 
 # define DES_MES_BLOCK_SIZE	8
 

@@ -10,40 +10,43 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <errno.h>
+#include <libft/std.h>
+#include <libft/node.h>
+#include <libft/alloc.h>
 
 static t_node	*__lookup(void *memptr);
 static int		__push(const char *memkey, void *memptr, size_t memsize);
 static void		__clear(void);
 
 static t_node	*__memlist;
-int				global_ft_malloc_error;
+int				global_libft_alloc_error;
 
 void	*ft_malloc(const char *memkey, size_t memsize)
 {
 	void	*memptr;
 	t_node	*lookup_node;
 
-	global_ft_malloc_error = LIBFT_OK;
+	global_libft_alloc_error = LIBFT_MEM_OK;
 
 	memptr = malloc(memsize);
 	ft_bzero(memptr, memsize);
 
 	if (ENOMEM == errno)
 	{
-		global_ft_malloc_error = LIBFT_MEM_FATAL;
+		global_libft_alloc_error = LIBFT_MEM_FATAL;
 		return (NULL);
 	}
 
 	if (NULL != (lookup_node = __lookup(memptr)))
 	{
-		global_ft_malloc_error = LIBFT_MEM_LEAK;
+		global_libft_alloc_error = LIBFT_MEM_LEAK;
 		return (NULL);
 	}
 
-	if (LIBFT_OK != __push(memkey, memptr, memsize))
+	if (LIBFT_MEM_OK != __push(memkey, memptr, memsize))
 	{
-		global_ft_malloc_error = LIBFT_MEM_FATAL;
+		global_libft_alloc_error = LIBFT_MEM_FATAL;
 		return (NULL);
 	}
 
@@ -55,7 +58,7 @@ void	ft_free(const char *memkey, void *memptr)
 	t_node	*node;
 	t_node	*prevnode;
 
-	global_ft_malloc_error = LIBFT_OK;
+	global_libft_alloc_error = LIBFT_MEM_OK;
 
 	node = __memlist;
 	prevnode = NULL;
@@ -70,7 +73,7 @@ void	ft_free(const char *memkey, void *memptr)
 
 	if (NULL == node)
 	{
-		global_ft_malloc_error = LIBFT_MEM_DOUBLE_FREE;
+		global_libft_alloc_error = LIBFT_MEM_DOUBLE_FREE;
 		return ;
 	}
 
@@ -78,7 +81,7 @@ void	ft_free(const char *memkey, void *memptr)
 		__memlist = node->next;
 	else
 		prevnode->next = node->next;
-	
+
 	free(node->content);
 	free(node);
 }
@@ -118,7 +121,7 @@ static int __push(const char *memkey, void *memptr, size_t memsize)
 	node->next = __memlist;
 	__memlist = node;
 
-	return (LIBFT_OK);
+	return (LIBFT_MEM_OK);
 }
 
 static void __clear(void)

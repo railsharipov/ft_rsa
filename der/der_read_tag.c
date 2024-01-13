@@ -1,8 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_der.h>
-#include <ssl_asn.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/der.h>
+#include <ssl/asn.h>
+#include <util/io.h>
 
 static int	__tag_is_complex(uint32_t);
 

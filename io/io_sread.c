@@ -1,6 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
+#include <stdint.h>
+#include <libft/string.h>
+#include <util/io.h>
 
 static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {
@@ -20,7 +20,7 @@ static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 	while ((rbytes < nbytes) && (iodes->seek < osbuf->size))
 	{
 		buf[rbytes] = osbuf->content[iodes->seek++];
-		rbytes += IS_NONZERO_32(*buf ^ delim);
+		rbytes += IS_NONZERO_INT32(*buf ^ delim);
 	}
 
 	return (rbytes);

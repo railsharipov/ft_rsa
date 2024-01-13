@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/list.h>
 
 void	ft_lst_append(t_node **lst, t_node *node)
 {
@@ -133,16 +133,16 @@ void	ft_lst_del(t_node *lst, FUNC_CONTENT_DEL f_del)
 int	ft_lst_map(t_node *lst, void *farg, int (*f)(t_node *, void *))
 {
 	if (NULL == f) {
-		return (LIBFT_ERR);
+		return (-1);
 	}
 	while (lst)
 	{
-		if (LIBFT_OK != f(lst, farg)) {
-			return (LIBFT_ERR);
+		if (f(lst, farg) < 0) {
+			return (-1);
 		}
 		lst = lst->next;
 	}
-	return (LIBFT_OK);
+	return (0);
 }
 
 t_htbl	*ft_lst_htable(t_node *lst)

@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_hexbin.c                                        :+:      :+:    :+:   */
+/*   ft_hex_to_bytes.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/alloc.h>
 
 static const int	A[128] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
@@ -23,7 +24,7 @@ static const int	A[128] = {
 	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
 };
 
-void	ft_hexbin(void *bin, const char *hex, size_t hexsize)
+void	ft_hex_to_bytes(void *bin, const char *hex, size_t hexsize)
 {
 	unsigned char	*buf;
 	unsigned char	*ptr;

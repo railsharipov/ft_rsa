@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_binhex.c                                        :+:      :+:    :+:   */
+/*   ft_bytes_to_hex.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,14 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/alloc.h>
+#include <libft/string.h>
 
 static const char	A[16] = {
 	'0', '1', '2', '3', '4', '5', '6', '7',
 	'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 };
 
-char	*ft_binhex(const void *bin, size_t binsize)
+char	*ft_bytes_to_hex(const void *bin, size_t binsize)
 {
 	unsigned char	*bptr;
 	char			*hptr;

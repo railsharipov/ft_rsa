@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_test.h>
+#include <ssl/ssl.h>
+#include <test/test.h>
 
 int	comm_test(const char **opt, const char *name)
 {

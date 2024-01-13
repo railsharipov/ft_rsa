@@ -1,6 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
+#include <util/io.h>
 
 static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 {
@@ -23,7 +23,7 @@ static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 	offset = MIN(nbytes, (iodes->seek % width));
 	wbytes = 0;
 
-	SSL_REALLOC(osbuf->content, osbuf->size, osbuf->size + 2*nbytes);
+	LIBFT_REALLOC(osbuf->content, osbuf->size, osbuf->size + 2*nbytes);
 	obufptr = osbuf->content + osbuf->size;
 
 	/* Finish last line if it's not [width] bytes long */
@@ -62,7 +62,7 @@ static ssize_t __swrite(t_iodes *iodes, const char *buf, size_t nbytes)
 	if (NULL == osbuf)
 		return (-1);
 
-	SSL_REALLOC(osbuf->content, nbytes, nbytes + osbuf->size);
+	LIBFT_REALLOC(osbuf->content, nbytes, nbytes + osbuf->size);
 	obufptr = osbuf->content + osbuf->size;
 
 	wbytes = 0;

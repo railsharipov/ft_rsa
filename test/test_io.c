@@ -1,6 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_io.h>
-#include <ssl_test.h>
+#include <ssl/ssl.h>
+#include <util/io.h>
+#include <test/test.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 static int	__test_io_setup(void);
 static int	__test_io_init(void);

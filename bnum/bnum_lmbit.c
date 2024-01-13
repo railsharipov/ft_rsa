@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 int bnum_lmbit(const t_num *num)
 {

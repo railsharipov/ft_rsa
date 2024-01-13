@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
 
 char	*ft_strlow(char *s)
 {
@@ -19,7 +19,7 @@ char	*ft_strlow(char *s)
 
 	if (NULL == s)
 		return (NULL);
-	
+
 	s_low = ft_strdup(s);
 
 	idx = 0;

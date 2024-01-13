@@ -1,7 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <util/io.h>
+#include <libft/node.h>
+#include <libft/htable.h>
 
 static void	__init_func_htable(void);
 static void	__del_func_htable(void);
@@ -100,13 +102,13 @@ static int	__encode_construct(t_node *node, t_iodes *iodes)
 	if (SSL_OK == ret)
 	{
 		item->tag |= ASN_ENCODE_CONSTRUCT;
-		item->content = util_ostr_get_content(&osbuf);
-		item->size = util_ostr_get_size(&osbuf);
+		item->content = ft_ostr_get_content(&osbuf);
+		item->size = ft_ostr_get_size(&osbuf);
 
 		ret = __encode_item(item, iodes);
 	}
 
-	util_ostr_clean(&osbuf);
+	ft_ostr_clean(&osbuf);
 	io_close(&temp_iodes);
 
 	return (ret);
@@ -133,11 +135,11 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 		return (DER_ERROR(UNSPECIFIED_ERROR));
 
 	wbytes = der_write_octets(
-		util_ostr_get_content(&osbuf), 
-		util_ostr_get_size(&osbuf),
+		ft_ostr_get_content(&osbuf), 
+		ft_ostr_get_size(&osbuf),
 		iodes);
 
-	util_ostr_clean(&osbuf);
+	ft_ostr_clean(&osbuf);
 
 	if (wbytes < 0)
 		return (DER_ERROR(UNSPECIFIED_ERROR));

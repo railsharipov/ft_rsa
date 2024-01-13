@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 int bnum_cmp(const t_num *a, const t_num *b)
 {
@@ -9,7 +9,7 @@ int bnum_cmp(const t_num *a, const t_num *b)
 		else
 			return (-1);
 	}
-	
+
 	if (BNUM_POS == a->sign)
 		return (bnum_cmp_u(a, b));
 	else

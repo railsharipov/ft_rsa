@@ -11,7 +11,10 @@
 /* ************************************************************************** */
 
 #include <stddef.h>
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/htable.h>
+#include <libft/queue.h>
+#include <libft/alloc.h>
 
 t_node	*ft_htbl_iter(t_htbl *htbl)
 {
@@ -22,10 +25,10 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 
 	if ((NULL == htbl) || (NULL == htbl->arr))
 		return (NULL);
-	
+
 	if (NULL == (queue = ft_queue_init()))
 		return (NULL);
-	
+
 	idx = 0;
 	while (idx < htbl->size)
 	{
@@ -37,7 +40,7 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 			item = item->next;
 		}
 	}
-	
+
 	iter = ft_queue_peek(queue);
 	LIBFT_FREE(queue);
 

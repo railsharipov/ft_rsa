@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_increase_size(t_num *num, size_t newsize)
 {
@@ -8,7 +8,7 @@ void	bnum_increase_size(t_num *num, size_t newsize)
 	if (newsize < 2 * num->size)
 		newsize = 2 * num->size;
 
-	LIBFT_REALLOC(
+	BNUM_REALLOC(
 		num->val, num->size * sizeof(uint64_t), newsize * sizeof(uint64_t));
 	num->size = newsize;
 }

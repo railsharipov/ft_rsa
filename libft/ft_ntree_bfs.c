@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/queue.h>
 
 static void __del_node_func(t_node *node);
 

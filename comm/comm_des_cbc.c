@@ -1,8 +1,10 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
-#include <ssl_des.h>
-#include <ssl_base64.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <util/io.h>
+#include <ssl/des.h>
+#include <ssl/base64.h>
+#include <libft/htable.h>
+#include <libft/bytes.h>
 
 static char	*__keyhex;
 static char	*__salthex;
@@ -53,7 +55,7 @@ int	comm_des_cbc(const char **opt, const char *name_comm)
 	if (NULL == opt)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (NULL == (__des_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+	if (NULL == (__des_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
@@ -69,7 +71,7 @@ int	comm_des_cbc(const char **opt, const char *name_comm)
 		ret = __run_task();
 
 	io_close_multi(&__in, &__out, NULL);
-	util_task_htable_del(__des_htable);
+	ssl_task_htable_del(__des_htable);
 
 	if (SSL_OK != ret)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
@@ -237,11 +239,11 @@ static int	__write_output(const char *output, size_t outsize)
 static void	__dump_vectors(void)
 {
 	ft_printf("salt=");
-	util_puthex(__des->salt, 8, 0, 0);
+	ft_bytes_dump_hex(__des->salt, 8, 0, 0);
 	ft_printf("key=");
-	util_puthex(__des->key, 8, 0, 0);
+	ft_bytes_dump_hex(__des->key, 8, 0, 0);
 	ft_printf("iv=");
-	util_puthex(__des->vect, 8, 0, 0);
+	ft_bytes_dump_hex(__des->vect, 8, 0, 0);
 }
 
 static int	__enc(t_ostring *mes, t_ostring *ciph)

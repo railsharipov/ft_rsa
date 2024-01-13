@@ -10,16 +10,18 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/alloc.h>
+#include <libft/string.h>
+#include <libft/2darray.h>
 
 void	ft_2darray_del(void **arr, int arr_len)
 {
 	if (NULL == arr)
 		return ;
-	
+
 	while (arr_len > 0)
 		LIBFT_FREE(arr[arr_len--]);
-	
+
 	LIBFT_FREE(arr);
 }
 
@@ -46,11 +48,11 @@ int 	ft_2darray_len_null_terminated(void **arr)
 
 	if (NULL == arr)
 		return (0);
-	
+
 	len = 0;
 	while (NULL != *arr++)
 		len++;
-	
+
 	return (len);
 }
 
@@ -65,14 +67,14 @@ char	*ft_2darray_strjoin(char **str_arr, size_t str_arr_len, const char *delim)
 
 	if (NULL == str_arr || str_arr_len == 0)
 		return (NULL);
-	
+
 	joined_size = 0;
 	delim_size = ft_strlen(delim);
 
 	ix = 0;
 	while (ix < str_arr_len)
 		joined_size += ft_strlen(str_arr[ix++]);
-	
+
 	joined_size += delim_size * (str_arr_len-1);
 
 	LIBFT_ALLOC(joined_str, joined_size+1);

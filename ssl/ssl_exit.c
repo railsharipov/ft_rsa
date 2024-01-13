@@ -1,5 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/fcntl.h>
+#include <libft/alloc.h>
 
 void	ssl_exit(uint32_t error)
 {
@@ -16,11 +20,6 @@ void	ssl_exit(uint32_t error)
 				write(STDOUT_FILENO, buf, rbytes);
 			}
 			close(fd);
-		}
-		else
-		{
-			ft_printf("@invalid user input, refer to readme at "
-				"https://github.com/nugliar/ft_rsa");
 		}
 	}
 	else if (MEMORY_ERROR == error)

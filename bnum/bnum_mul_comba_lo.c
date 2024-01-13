@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_mul_comba_lo(const t_num *a, const t_num *b, t_num *res, int ndig)
 {
@@ -12,7 +12,7 @@ void	bnum_mul_comba_lo(const t_num *a, const t_num *b, t_num *res, int ndig)
 	if (ndig > res->size)
 		bnum_increase_size(res, ndig);
 
-	LIBFT_ALLOC(temp, sizeof(uint64_t) * ndig);
+	BNUM_ALLOC(temp, sizeof(uint64_t) * ndig);
 
 	for (int idx = 0; idx < ndig; idx++)
 	{
@@ -42,5 +42,5 @@ void	bnum_mul_comba_lo(const t_num *a, const t_num *b, t_num *res, int ndig)
 	res->sign = a->sign * b->sign;
 	bnum_skip_zeros(res);
 
-	LIBFT_FREE(temp);
+	BNUM_FREE(temp);
 }

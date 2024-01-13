@@ -1,8 +1,10 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
-#include <ssl_des.h>
-#include <ssl_base64.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <util/io.h>
+#include <ssl/des.h>
+#include <ssl/base64.h>
+#include <libft/htable.h>
+#include <libft/bytes.h>
 
 static char	*__keyhex;
 static char	*__salthex;
@@ -51,22 +53,24 @@ int	comm_des_ecb(const char **opt, const char *name_comm)
 	if (NULL == opt)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (NULL == (__des_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+	if (NULL == (__des_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	
+
 	if (SSL_OK != io_init(&__out, IO_WRITE|IO_STDOUT))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	__gflag = DES_E;
 
-	if (SSL_OK == (ret = __setup_task(opt)))
+	ret = __setup_task(opt);
+
+	if (SSL_OK == ret)
 		ret = __run_task();
 
 	io_close_multi(&__in, &__out, NULL);
-	util_task_htable_del(__des_htable);
+	ssl_task_htable_del(__des_htable);
 
 	if (SSL_OK != ret)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
@@ -119,10 +123,13 @@ static int __run_task(void)
 	else
 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
 
-	if ((NULL != __pass) && (SSL_OK != ssl_setpass(__pass)))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+	if (NULL != __pass)
+		if (SSL_OK != ssl_setpass(__pass))
+			return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (SSL_OK == (ret = f_op(&input, &output)))
+	ret = f_op(&input, &output);
+
+	if (SSL_OK == ret)
 		ret = __write_output((char *)output.content, output.size);
 
 	ssl_unsetpass();
@@ -142,25 +149,20 @@ static int	__get_input(char **input, size_t *insize)
 	*input = NULL;
 	*insize = 0;
 
-	// if input is in base64 format (flag DES_A [-a])
-	// set input stream delimeter to '\n'
-	if (SSL_FLAG(DES_A | DES_D, __gflag))
-	{
+	// if input is in base64 format set input stream delimeter to '\n'
+	if (SSL_FLAG(DES_A | DES_D, __gflag)) {
 		__in.delim = '\n';
 	}
-	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0)
-	{
+	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
 		SSL_REALLOC(*input, *insize, (*insize) + rbytes);
 		ft_memcpy(*input + *insize, buf, rbytes);
 		*insize += rbytes;
 	}
-	if (rbytes < 0)
-	{
+	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 	}
-
 	return (SSL_OK);
 }
 
@@ -185,9 +187,9 @@ static int	__write_output(const char *output, size_t outsize)
 static void	__dump_vectors(void)
 {
 	ft_printf("salt=");
-	util_puthex(__des->salt, 8, 0, 0);
+	ft_bytes_dump_hex(__des->salt, 8, 0, 0);
 	ft_printf("key=");
-	util_puthex(__des->key, 8, 0, 0);
+	ft_bytes_dump_hex(__des->key, 8, 0, 0);
 }
 
 static int	__init_io(const char *opt, const t_task *task)

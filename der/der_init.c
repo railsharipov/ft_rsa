@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_der.h>
+#include <ssl/ssl.h>
+#include <ssl/der.h>
 
 t_der *der_init(void)
 {

@@ -1,7 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_test.h>
-#include <ssl_io.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <test/test.h>
+#include <util/io.h>
 
 int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 {

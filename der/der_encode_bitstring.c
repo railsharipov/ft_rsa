@@ -1,7 +1,7 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
 
 /*
 /	Content shall be encoded as a bitstring, that is, first content
@@ -28,7 +28,7 @@ int der_encode_bitstring(t_ostring *osbuf, void *content, size_t size)
 
 	SSL_ALLOC(osbuf->content, size);
 
-	util_ostr_append(osbuf, content, size);
+	ft_ostr_append(osbuf, content, size);
 
 	return (SSL_OK);
 }

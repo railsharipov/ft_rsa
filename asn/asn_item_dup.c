@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
 
 t_iasn	*asn_item_dup(t_iasn *item)
 {

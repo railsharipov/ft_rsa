@@ -1,7 +1,7 @@
 #ifndef SSL_CHECK_H
 # define SSL_CHECK_H
 
-# include <ft_printf.h>
+# include <libft/std.h>
 
 # define SSL_CHECK(STATE) \
 	do \

@@ -1,4 +1,6 @@
-#include <bnum.h>
+#include <util/bnum.h>
+#include <libft/list.h>
+#include <libft/string.h>
 
 /* Convert bignum to decimal number string */
 
@@ -43,14 +45,14 @@ t_node	*__get_decimal_digit_list(const t_num *num) {
 
 	while (!BNUM_ZERO(&copy))
 	{
-		LIBFT_ALLOC(sym, sizeof(struct __s_digit_symbol));
+		BNUM_ALLOC(sym, sizeof(struct __s_digit_symbol));
 		bnum_divmod_dig(&copy, 10u, &copy, &dig);
 		sym->c = (char)(dig + 48u);
 		ft_lst_prepend(&list, ft_node_new(NULL, sym, 0));
 	}
 	if (sign == BNUM_NEG)
 	{
-		LIBFT_ALLOC(sym, sizeof(struct __s_digit_symbol));
+		BNUM_ALLOC(sym, sizeof(struct __s_digit_symbol));
 		sym->c = '-';
 		ft_lst_prepend(&list, ft_node_new(NULL, sym, 0));
 	}
@@ -66,7 +68,7 @@ char	*__get_decimal_num_string(t_node *list) {
 	size_t		idx;
 
 	slen = ft_lst_size(list);
-	LIBFT_ALLOC(s, slen + 1);
+	BNUM_ALLOC(s, slen + 1);
 
 	node = list;
 	idx = 0;
@@ -80,5 +82,5 @@ char	*__get_decimal_num_string(t_node *list) {
 }
 
 void __f_del_content(void *content) {
-	LIBFT_FREE(content);
+	BNUM_FREE(content);
 }

@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "locale.h": "c",
+        "common.h": "c",
+        "alloc.h": "c"
+    }
+}

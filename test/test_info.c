@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_test.h>
+#include <ssl/ssl.h>
+#include <test/test.h>
 
 int	test_info(int module_id, int verbose)
 {

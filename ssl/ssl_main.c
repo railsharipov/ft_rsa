@@ -10,11 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_base64.h>
-#include <ssl_des.h>
-#include <ssl_hash.h>
-#include <ssl_rsa.h>
+#include <ssl/ssl.h>
+#include <ssl/base64.h>
+#include <ssl/des.h>
+#include <ssl/hash.h>
+#include <ssl/rsa.h>
+#include <libft/string.h>
 
 static const struct {
 	char			*name_comm;

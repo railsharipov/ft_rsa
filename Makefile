@@ -12,7 +12,7 @@
 
 NAME := ft_ssl
 
-MODULES := ssl error bnum parser comm io rand hash util base64 des asn der pem\
+MODULES := ssl error bnum parser comm io rand hash base64 des asn der pem\
  rsa test json
 LIBS := libft
 

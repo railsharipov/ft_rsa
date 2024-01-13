@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 static int __get_nwords(char const *s, char c);
 
@@ -35,17 +36,17 @@ char	**ft_strsplit(char const *s, char c)
 	{
 		while (s[idx] == c && s[idx] != 0)
 			idx++;
-		
+
 		start_idx = idx;
 		while (s[idx] != c && s[idx] != 0)
 			idx++;
-		
+
 		arr[word_idx] = ft_strsub(s, start_idx, (size_t)(idx - start_idx));
 
 		word_idx++;
 	}
 	arr[word_idx] = NULL;
-	
+
 	return (arr);
 }
 
@@ -61,13 +62,13 @@ static int __get_nwords(char const *s, char delim)
 	{
 		if (s[idx] == delim)
 			num_delims++;
-		
+
 		idx++;
 	}
 
 	if (idx == 0)
 		return (0);
-	
+
 	if (num_delims == 0)
 		return (1);
 

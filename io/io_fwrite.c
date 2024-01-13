@@ -1,6 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
+#include <unistd.h>
+#include <util/io.h>
 
 static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 {

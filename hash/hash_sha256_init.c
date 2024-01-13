@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_hash.h>
+#include <ssl/ssl.h>
+#include <ssl/hash.h>
 
 static const t_sha256_word	HASH_INIT_VECT[] = {
 	0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,

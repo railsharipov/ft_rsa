@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <unistd.h>
+#include <libft/std.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 static int __line_complete;
 
@@ -53,7 +56,7 @@ int	get_next_line(int fd, char **line)
 
 	if ((NULL == line) || (fd < 0))
 		return (-1);
-	
+
 	LIBFT_ALLOC(*line, 1);
 
 	tbytes = 0;
@@ -69,6 +72,6 @@ int	get_next_line(int fd, char **line)
 
 	if (rbytes < 0)
 		return (-1);
-	
+
 	return (tbytes);
 }

@@ -11,7 +11,11 @@
 /* ************************************************************************** */
 
 #include <stddef.h>
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/htable.h>
+#include <libft/list.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 static uint32_t	__calculate_hash(const char *key);
 static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, FUNC_CONTENT_DEL f_del);

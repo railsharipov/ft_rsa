@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_mul_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 {
@@ -12,7 +12,7 @@ void	bnum_mul_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 	if (ndig > res->size)
 		bnum_increase_size(res, ndig);
 
-	LIBFT_ALLOC(temp, sizeof(uint64_t) * ndig);
+	BNUM_ALLOC(temp, sizeof(uint64_t) * ndig);
 
 	dig = BNUM_MAX(0, dig-2);
 
@@ -44,5 +44,5 @@ void	bnum_mul_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 	res->sign = a->sign * b->sign;
 	bnum_skip_zeros(res);
 
-	LIBFT_FREE(temp);
+	BNUM_FREE(temp);
 }

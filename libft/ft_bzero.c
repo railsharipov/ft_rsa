@@ -10,12 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <string.h>
+#include <libft/std.h>
 
 void	ft_bzero(void *s, size_t n)
 {
 	if ((NULL == s) || (n == 0))
 		return ;
-	
+
 	ft_memset(s, 0, n);
 }

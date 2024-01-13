@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void    bnum_skip_zeros(t_num *num)
 {

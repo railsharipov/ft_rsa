@@ -10,9 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_hash.h>
+#include <unistd.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/hash.h>
+#include <libft/htable.h>
+#include <libft/bytes.h>
 
 # undef FUNC_HASH
 # define FUNC_HASH(S)	hash_ ## S ## _init ,\
@@ -89,7 +92,7 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 	char	*sformat;
 
 	sformat = NULL;
-	hexhash = ft_binhex(__hash->hash, __hash->size);
+	hexhash = ft_bytes_to_hex(__hash->hash, __hash->size);
 
 	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag))
 	{
@@ -191,7 +194,7 @@ int	comm_hash(const char **opt, const char *name_comm)
 	if (SSL_OK != __init_hash_func_by_name(name_comm))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (NULL == (hash_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+	if (NULL == (hash_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (NULL == *opt)
@@ -199,7 +202,7 @@ int	comm_hash(const char **opt, const char *name_comm)
 	else
 		ret = __next_task(opt);
 
-	util_task_htable_del(hash_htable);
+	ssl_task_htable_del(hash_htable);
 
 	return (ret);
 }

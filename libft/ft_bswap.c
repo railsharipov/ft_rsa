@@ -10,9 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
+#include <libft/bytes.h>
 
-uint32_t	util_bswap32(uint32_t x)
+uint32_t	ft_uint_bswap32(uint32_t x)
 {
 	return (
 		((x & 0xFF000000) >> 24)
@@ -22,7 +22,7 @@ uint32_t	util_bswap32(uint32_t x)
 	);
 }
 
-uint64_t	util_bswap64(uint64_t x)
+uint64_t	ft_uint_bswap64(uint64_t x)
 {
 	return (
 		((x & 0xFF00000000000000) >> 56)
@@ -36,7 +36,7 @@ uint64_t	util_bswap64(uint64_t x)
 	);
 }
 
-uint128_t	util_bswap128(uint128_t x)
+uint128_t	ft_uint_bswap128(uint128_t x)
 {
 	uint128_t	y;
 
@@ -58,94 +58,4 @@ uint128_t	util_bswap128(uint128_t x)
 		| (((x & (y >> 104)) >> 88))
 		| (((x & (y >> 112)) >> 104))
 	);
-}
-
-void		util_xor(char *res, char *buf1, char *buf2, size_t size)
-{
-	size_t	i;
-
-	i = 0;
-	while (i < size)
-	{
-		res[i] = buf1[i] ^ buf2[i];
-		i++;
-	}
-}
-
-int			util_lmbit(uint64_t num, int bits)
-{
-	bits = MIN(bits, 8 * sizeof(num));
-
-	for (int i = bits; i > 0; i--)
-	{
-		if ((((uint64_t)1)<<(i-1)) & num)
-			return (i);
-	}
-	return (0);
-}
-
-uint64_t	util_bytes_to_uint64(char *bytes, int nbytes)
-{
-	uint64_t	num;
-	int			idx;
-
-	num = 0;
-	nbytes = MIN(nbytes, sizeof(uint64_t));
-
-	idx = 0;
-	while (idx < nbytes)
-	{
-		num <<= 8;
-		num |= (uint64_t)bytes[idx++];
-	}
-	return (num);
-}
-
-int			util_rmbit(uint64_t num, int bits)
-{
-	for (int i = 1; i <= bits; i++)
-	{
-		if ((1<<(i-1)) & num)
-			return (i);
-	}
-	return (0);
-}
-
-void		util_lshift_bytes(unsigned char *bytes, int size, int shift)
-{
-	unsigned char	*ptr;
-	unsigned int	tmp;
-	unsigned int	rem;
-
-	if ((NULL == bytes) || (shift <= 0))
-		return ;
-
-	ptr = bytes + size-1;
-	rem = 0;
-
-	while (size-- > 0)
-	{
-		tmp = *ptr;
-		*ptr = (*ptr << shift) | rem;
-		rem = tmp >> (CHAR_BIT-shift);
-		ptr--;
-	}
-}
-
-void		util_rshift_bytes(unsigned char *bytes, int size, int shift)
-{
-	unsigned int	tmp;
-	unsigned int	rem;
-
-	if ((NULL == bytes) || (shift <= 0))
-		return ;
-
-	rem = 0;
-
-	while (size-- > 0)
-	{
-		tmp = *bytes;
-		*bytes = (*bytes >> shift) | rem;
-		rem = tmp << (CHAR_BIT-shift);
-	}
 }

@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_pem.h>
+#include <ssl/ssl.h>
+#include <ssl/pem.h>
 
 void  pem_del(t_pem *pem)
 {

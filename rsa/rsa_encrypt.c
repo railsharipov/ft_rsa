@@ -1,9 +1,10 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_asn.h>
-#include <ssl_rsa.h>
-#include <ssl_rand.h>
-#include <bnum.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/asn.h>
+#include <ssl/rsa.h>
+#include <ssl/rand.h>
+#include <util/bnum.h>
+#include <libft/node.h>
 
 static t_rsa	*__items;
 

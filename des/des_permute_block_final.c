@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_des.h>
+#include <ssl/ssl.h>
+#include <ssl/des.h>
 
 static const unsigned char	PCA[64] = {
 	40,	8,	48,	16,	56,	24,	64,	32,	39,	7,	47,	15,	55,	23,	63,	31,

@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <libft/std.h>
 
 void	pf_di_to_s(t_pf *data, char *s, intmax_t n, size_t *i)
 {
@@ -73,7 +74,7 @@ void	pf_print_di(t_pf *data, intmax_t n, char flag, size_t i)
 
 	if (flag & PF_ZERO)
 		pf_oper(data, s, &i, (n < 0) ? ('-') : ('+'));
-		
+
 	if (!(flag & PF_MINUS))
 		pf_oper(data, s, &i, (flag & PF_ZERO) ? ('0') : (' '));
 
@@ -87,7 +88,7 @@ void	pf_print_di(t_pf *data, intmax_t n, char flag, size_t i)
 		pf_oper(data, s, &i, (' '));
 
 	s[i] = 0;
-	
+
 	pf_out(data, s, i);
 	free(s);
 }

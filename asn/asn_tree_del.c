@@ -1,5 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
+#include <libft/ntree.h>
 
 static void	__f_del_content(void *content)
 {

@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
 
 void	asn_item_del(t_iasn *item)
 {

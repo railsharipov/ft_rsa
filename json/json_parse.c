@@ -1,7 +1,10 @@
-#include <ft_ssl.h>
-#include <ssl_json.h>
-#include <ssl_map.h>
-#include <bnum.h>
+#include <util/json.h>
+#include <util/bnum.h>
+#include <libft/htable.h>
+#include <libft/alloc.h>
+#include <libft/error.h>
+#include <libft/string.h>
+#include <libft/list.h>
 
 typedef ssize_t (*FUNC_JSON_PARSE)(const char *, t_node *);
 
@@ -59,13 +62,13 @@ int json_parse(const char *s, t_node **node)
 	ssize_t	rbytes;
 
 	if (NULL == s || NULL == node) {
-        return JSON_ERROR(INVALID_INPUT);
+        return JSON_ERROR("invalid input");
 	}
 
     *node = NULL;
 
-	if (SSL_OK != __init_htable()) {
-		return JSON_ERROR(UNSPECIFIED_ERROR);
+	if (LIBFT_OK != __init_htable()) {
+		return JSON_ERROR("unspecified error");
 	}
 	json_node = ft_node_create();
 	rbytes = __parse(s, json_node);
@@ -81,7 +84,7 @@ int json_parse(const char *s, t_node **node)
 	*node = json_node;
     ft_htbl_del(__htable);
 
-    return SSL_OK;
+    return LIBFT_OK;
 }
 
 int	__init_htable(void)
@@ -92,7 +95,7 @@ int	__init_htable(void)
     ht_size = sizeof(T)/sizeof(T[0]);
 
 	if (NULL == (__htable = ft_htbl_init(ht_size))) {
-		return (JSON_ERROR(MEMORY_ERROR));
+		return (LIBFT_ERR);
 	}
 
 	idx = 0;
@@ -100,7 +103,7 @@ int	__init_htable(void)
 		ft_htbl_add_rawkey(__htable, (void *)&(T[idx]), &(T[idx].open), sizeof(T[idx].open));
 		idx++;
     }
-	return (SSL_OK);
+	return (LIBFT_OK);
 }
 
 int	__is_ws_only(const char *s)
@@ -132,7 +135,7 @@ ssize_t __parse(const char *s, t_node *node)
 	ctx = ft_htbl_get_rawkey(__htable, &open, sizeof(open));
 
 	if (NULL == ctx) {
-		JSON_ERROR(INVALID_FORMAT);
+		JSON_ERROR("invalid format");
 		return (-1);
 	} else {
 		f_parse = ctx->f_parse;
@@ -149,7 +152,7 @@ ssize_t __parse(const char *s, t_node *node)
 	rbytes = f_parse(s + idx, node);
 
 	if (rbytes <= 0) {
-		JSON_ERROR(INVALID_FORMAT);
+		JSON_ERROR("invalid format");
 		return (-1);
 	} else {
 		idx += rbytes;
@@ -160,7 +163,7 @@ ssize_t __parse(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] != close) {
-			JSON_ERROR(UNEXPECTED_END_OF_CONTENT);
+			JSON_ERROR("unexpected end of content");
 			return (-1);
 		} else {
 			idx++;
@@ -181,7 +184,7 @@ ssize_t __parse_number(const char *s, t_node *node)
         idx++;
     }
 	if (!ft_isdigit(s[idx])) {
-		JSON_ERROR(INVALID_FORMAT);
+		JSON_ERROR("invalid format");
 		return (-1);
 	}
     while (ft_isdigit(s[idx])) {
@@ -196,7 +199,7 @@ ssize_t __parse_number(const char *s, t_node *node)
 	node->type = JSON_NUMBER;
 	node->f_del = __delete_number;
 
-	SSL_FREE(sub_s);
+	LIBFT_FREE(sub_s);
 
     return (idx);
 }
@@ -229,7 +232,7 @@ ssize_t __parse_null(const char *s, t_node *node)
 	if (!ft_strncmp(s, s_null, slen_null)) {
 		idx += slen_null;
 	} else {
-		JSON_ERROR(INVALID_FORMAT);
+		JSON_ERROR("invalid format");
 		return (-1);
 	}
 	node->content = NULL;
@@ -260,7 +263,7 @@ ssize_t __parse_boolean(const char *s, t_node *node)
 		boolean = 1u;
 		idx += slen_true;
 	} else {
-		JSON_ERROR(INVALID_FORMAT);
+		JSON_ERROR("invalid format");
 		return (-1);
 	}
 	node->content = ft_memdup(&boolean, sizeof(boolean));
@@ -288,13 +291,13 @@ ssize_t __parse_object(const char *s, t_node *node)
 		rbytes = __parse(s + idx, key_node);
 
 		if (rbytes < 0) {
-			JSON_ERROR(INVALID_FORMAT);
+			JSON_ERROR("invalid format");
 			goto err;
 		}
 		idx += rbytes;
 
 		if (key_node->type != JSON_CSTR) {
-			JSON_ERROR(INVALID_FORMAT);
+			JSON_ERROR("invalid format");
 			goto err;
 		}
 
@@ -302,7 +305,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] != ':') {
-			JSON_ERROR(INVALID_FORMAT);
+			JSON_ERROR("invalid format");
 			goto err;
 		} else {
 			idx++;
@@ -312,7 +315,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 		rbytes = __parse(s + idx, content_node);
 
 		if (rbytes < 0) {
-			JSON_ERROR(INVALID_FORMAT);
+			JSON_ERROR("invalid format");
 			goto err;
 		}
 		idx += rbytes;
@@ -324,10 +327,10 @@ ssize_t __parse_object(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] == ',') {
-			next = SSL_TRUE;
+			next = 1;
 			idx++;
 		} else {
-			next = SSL_FALSE;
+			next = 0;
 		}
 	} while (next);
 
@@ -364,7 +367,7 @@ ssize_t __parse_array(const char *s, t_node *node)
 		rbytes = __parse(s + idx, content_node);
 
 		if (rbytes < 0) {
-			JSON_ERROR(INVALID_FORMAT);
+			JSON_ERROR("invalid format");
 			goto err;
 		}
 		idx += rbytes;
@@ -375,10 +378,10 @@ ssize_t __parse_array(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] == ',') {
-			next = SSL_TRUE;
+			next = 1;
 			idx++;
 		} else {
-			next = SSL_FALSE;
+			next = 0;
 		}
 	} while (next);
 

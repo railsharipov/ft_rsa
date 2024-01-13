@@ -10,9 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_base64.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/base64.h>
+#include <libft/htable.h>
 
 static int	__get_task(const char **opt);
 static int	__run_task(void);
@@ -45,7 +46,7 @@ int	comm_base64(const char **opt, const char *name_comm)
 	if (NULL == opt)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (NULL == (__b64_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+	if (NULL == (__b64_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	io_init(&__in, IO_READ|IO_STDIN);
@@ -57,7 +58,7 @@ int	comm_base64(const char **opt, const char *name_comm)
 		ret = __run_task();
 
 	io_close_multi(&__in, &__out, NULL);
-	util_task_htable_del(__b64_htable);
+	ssl_task_htable_del(__b64_htable);
 
 	if (SSL_OK != ret)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));

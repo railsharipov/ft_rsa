@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
 
 int   ft_node_is_parent(t_node *node)
 {

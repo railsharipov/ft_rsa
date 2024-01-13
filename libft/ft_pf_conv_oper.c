@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 void	pf_oper(t_pf *data, char *s, size_t *i, char op)
 {
@@ -49,6 +50,5 @@ void	pf_oper(t_pf *data, char *s, size_t *i, char op)
 	{
 		ft_strcpy(s + *i, (data->type == 'X' ? "0X" : "0x"));
 	}
-	
 	*i += j;
 }

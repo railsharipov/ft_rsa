@@ -1,8 +1,10 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <util/io.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <libft/node.h>
+#include <libft/htable.h>
 
 static void		__init_func_htable(void);
 static void		__del_func_htable(void);
@@ -166,7 +168,7 @@ static t_node	*__create_construct_node(t_iasn *item)
 	t_node		*child_nodes;
 	t_node		*node;
 
-	util_ostr_set_content(&osbuf, item->content, item->size);
+	ft_ostr_set_content(&osbuf, item->content, item->size);
 
 	if (SSL_OK != io_init(&temp_iodes, IO_READ|IO_OSBUF, &osbuf))
 		return (NULL);

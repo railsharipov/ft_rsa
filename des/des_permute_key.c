@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_des.h>
+#include <ssl/ssl.h>
+#include <ssl/des.h>
+#include <libft/bytes.h>
 
 static const unsigned char	PKA[56] = {
 	57, 49, 41, 33, 25, 17, 9,  1,  58, 50, 42, 34, 26, 18,
@@ -26,7 +27,7 @@ void	des_permute_key(uint64_t *permut_key, unsigned char *key)
 	uint64_t	t_pkey;
 	int			ix;
 
-	t_key = util_bswap64(*(uint64_t *)(key));
+	t_key = ft_uint_bswap64(*(uint64_t *)(key));
 	t_pkey = 0;
 
 	ix = 0;

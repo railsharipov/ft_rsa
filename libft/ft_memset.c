@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <string.h>
 
 void	*ft_memset(void *buf, int c, size_t len)
 {
@@ -19,6 +19,6 @@ void	*ft_memset(void *buf, int c, size_t len)
 	i = 0;
 	while (i < len)
 		((unsigned char *)buf)[i++] = (unsigned char)c;
-	
+
 	return (buf);
 }

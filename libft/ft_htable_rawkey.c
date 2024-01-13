@@ -11,7 +11,9 @@
 /* ************************************************************************** */
 
 #include <stddef.h>
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/htable.h>
+#include <libft/alloc.h>
 
 static char		*__to_cstring(char *raw, size_t rawsize);
 

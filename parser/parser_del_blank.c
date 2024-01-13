@@ -1,5 +1,6 @@
-#include <ft_ssl.h>
-#include <parser.h>
+#include <util/parser.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 // Remove blank in character array
 // blank = HT / SP
@@ -8,25 +9,24 @@
 
 void parser_del_blank(const char *arr, int asize, char **p, int *psize)
 {
-  int   ix;
-  char  *rptr;
-  char  *res;
+	int   ix;
+	char  *rptr;
+	char  *res;
 
-  SSL_CHECK(NULL != arr);
-  SSL_CHECK(NULL != p);
+	if (NULL == arr || NULL == p) {
+		return ;
+	}
+	LIBFT_ALLOC(res, asize);
+  	rptr = res;
 
-	SSL_ALLOC(res, asize);
-  rptr = res;
-
-  for (ix = 0; ix < asize;)
-  {
-    while ((ix < asize) && (!ft_isblank(arr[ix])))
-      *rptr++ = arr[ix++];
-
-    while ((ix < asize) && (ft_isblank(arr[ix])))
-      ix++;
-  }
-
-  *p = res;
-  *psize = (int)(rptr - (res));
+	for (ix = 0; ix < asize;) {
+		while ((ix < asize) && (!ft_isblank(arr[ix]))) {
+			*rptr++ = arr[ix++];
+		}
+		while ((ix < asize) && (ft_isblank(arr[ix]))) {
+			ix++;
+		}
+	}
+	*p = res;
+	*psize = (int)(rptr - (res));
 }

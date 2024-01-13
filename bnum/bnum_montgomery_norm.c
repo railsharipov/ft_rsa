@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_montgomery_norm(const t_num *mod, t_num *res)
 {

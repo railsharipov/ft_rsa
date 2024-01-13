@@ -1,6 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_rand.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/rand.h>
 
 int	rand_useed(uint64_t *seed, int nbytes)
 {

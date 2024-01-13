@@ -13,15 +13,12 @@
 #ifndef FT_SSL_H
 # define FT_SSL_H
 
-# include <ssl_alloc.h>
-# include <ssl_check.h>
-# include <ssl_error.h>
-# include <ft_printf.h>
-# include <libft.h>
+# include <ssl/alloc.h>
+# include <ssl/error.h>
+# include <test/check.h>
+# include <libft/htable.h>
 
 # define SSL_FLAG(F,X)		((int)(((X)&(F))==(F)))
-# define IS_NONZERO_32(X)	((((X)|(0-(X)))>>31)&1)
-# define IS_NONZERO_64(X)	((((X)|(0-(X)))>>63)&1)
 
 # define NONE	0
 
@@ -39,15 +36,7 @@ enum	e_status
 
 typedef int		(*FUNC_COM)(const char **, const char *);
 
-typedef	struct	s_ostring
-{
-	char		*content;
-	size_t		size;
-}				t_ostring;
-
-
 typedef uint32_t	t_bool;
-typedef t_ostring	t_bitstring;
 typedef __uint128_t	uint128_t;
 
 typedef struct	s_task
@@ -74,32 +63,7 @@ int				comm_rsa(const char **, const char *);
 int				comm_rsa_utl(const char **, const char *);
 int				comm_test(const char **, const char *);
 
-t_ostring		*util_ostr_init(void);
-t_ostring		*util_ostr_new(size_t);
-t_ostring		*util_ostr_dup(t_ostring *);
-void			util_ostr_del(t_ostring *);
-void			util_ostr_clean(t_ostring *);
-void			util_ostr_append(t_ostring *ostring, void *content, size_t size);
-void			util_ostr_prepend(t_ostring *ostring, void *content, size_t size);
-char			*util_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len);
-void			util_ostr_set_content(t_ostring *ostring, void *content, size_t size);
-void			*util_ostr_get_content(t_ostring *ostring);
-size_t			util_ostr_get_size(t_ostring *ostring);
-
-uint32_t		util_bswap32(uint32_t);
-uint64_t		util_bswap64(uint64_t);
-uint128_t		util_bswap128(uint128_t);
-void			util_xor(char *, char *, char *, size_t);
-int 			util_lmbit(uint64_t, int);
-int 			util_rmbit(uint64_t, int);
-uint64_t		util_bytes_to_uint64(char *bytes, int nbytes);
-void			util_lshift_bytes(unsigned char *, int, int);
-void			util_rshift_bytes(unsigned char *, int, int);
-void			util_puthex(void *, int, int, int);
-void			util_hexdump(int fd, void *ptr, size_t size);
-t_htbl  		*util_task_htable(const t_task *, int);
-void			util_task_htable_del(const t_htbl *);
-void			util_print_intbits(uint64_t, int, int);
-void			util_print_strbits(void *, size_t);
+t_htbl  		*ssl_task_htable(const t_task *, int);
+void			ssl_task_htable_del(const t_htbl *);
 
 #endif

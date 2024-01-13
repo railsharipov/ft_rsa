@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_rsa.h>
+#include <ssl/ssl.h>
+#include <ssl/rsa.h>
 
 void	rsa_key_items_del(t_rsa *key)
 {

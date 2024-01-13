@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
 
 static void	__del_node_recur(t_node *node, FUNC_CONTENT_DEL f_del)
 {

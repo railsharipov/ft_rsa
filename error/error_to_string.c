@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
 
 # define	SIZE_OF_TABLE(TABLE)	sizeof(TABLE) / sizeof(void *)
 # define	ERROR_CTX(TABLE)		{TABLE, SIZE_OF_TABLE(TABLE)}
@@ -66,14 +66,6 @@ static char	*__RSA_ERROR_MESSAGES[] = {
 	"invalid integer size",
 };
 
-static char	*__JSON_ERROR_MESSAGES[] = {
-	"invalid json type",
-	"parse json failed",
-	"invalid format",
-	"unexpected end of content",
-	"unexpected characters at the end",
-};
-
 static struct s_error_ctx __ERROR_CTX_TABLE[] = {
 	ERROR_CTX(__SSL_ERROR_MESSAGES),
 	ERROR_CTX(__ASN_ERROR_MESSAGES),
@@ -85,7 +77,6 @@ static struct s_error_ctx __ERROR_CTX_TABLE[] = {
 	ERROR_CTX(__PEM_ERROR_MESSAGES),
 	ERROR_CTX(__RAND_ERROR_MESSAGES),
 	ERROR_CTX(__RSA_ERROR_MESSAGES),
-	ERROR_CTX(__JSON_ERROR_MESSAGES),
 };
 
 static size_t	__ERROR_CTX_TABLE_SIZE =

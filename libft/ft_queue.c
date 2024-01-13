@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/queue.h>
+#include <libft/list.h>
+#include <libft/alloc.h>
 
 t_queue	*ft_queue_init(void)
 {

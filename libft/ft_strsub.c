@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 char	*ft_strsub(char const *s, unsigned int start, size_t len)
 {
@@ -25,7 +26,7 @@ char	*ft_strsub(char const *s, unsigned int start, size_t len)
 	i = 0;
 	while (i < len)
 		subs[i++] = s[start++];
-		
+
 	subs[i] = 0;
 
 	return (subs);

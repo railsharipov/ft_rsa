@@ -1,6 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/asn.h>
+#include <libft/ntree.h>
+#include <libft/list.h>
+#include <libft/string.h>
 
 int	asn_transform(t_node *src_tree, t_node *dest_tree)
 {

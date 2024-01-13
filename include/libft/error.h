@@ -1,30 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_intchar.c                                       :+:      :+:    :+:   */
+/*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/25 15:35:40 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/09/25 15:53:42 by rsharipo         ###   ########.fr       */
+/*   Created: 2018/07/09 13:36:51 by rsharipo          #+#    #+#             */
+/*   Updated: 2018/10/13 09:00:28 by rsharipo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#ifndef LIBFT_ERROR_H
+# define LIBFT_ERROR_H
 
-void	ft_intbytes(char *buf, intmax_t integer, int intsize)
+typedef enum	e_libft_err
 {
-	int		idx;
-	int		shift;
+	LIBFT_OK = 0,
+	LIBFT_ERR,
+}				t_libft_err;
 
-	if (!buf)
-		return ;
-	
-	idx = 0;
-	while (idx < intsize)
-	{
-		shift = (intsize - idx - 1) * 8;
-		buf[idx] = (unsigned char)((integer >> shift) & 0xff);
-		idx++;
-	}
-}
+#endif

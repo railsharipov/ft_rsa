@@ -10,12 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/htable.h>
+#include <libft/ntree.h>
 
 static int	__htable_func(t_node *node, const void *farg)
 {
 	ft_htbl_add((t_htbl *)farg, node->content, node->key);
-	
+
 	return (0);
 }
 
@@ -25,9 +27,9 @@ t_htbl	*ft_ntree_to_htable(t_node *node)
 
 	if (NULL == node)
 		return (NULL);
-	
+
 	htbl = ft_htbl_init(ft_ntree_size(node));
 	ft_ntree_bfs(NULL, node, htbl, __htable_func);
-	
+
 	return (htbl);
 }

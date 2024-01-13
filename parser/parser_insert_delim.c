@@ -1,5 +1,6 @@
-#include <ft_ssl.h>
-#include <parser.h>
+#include <util/parser.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 void	parser_insert_delim(char **arr, size_t *asize, int delim, int step)
 {
@@ -9,28 +10,22 @@ void	parser_insert_delim(char **arr, size_t *asize, int delim, int step)
 	int		ix;
 	int		iy;
 
-	SSL_CHECK(NULL != arr);
-	SSL_CHECK(NULL != asize);
-
-	if ((step <= 0) || (*asize <= 0) || (NULL == *arr))
-	{
+	if (NULL == arr || NULL == *arr || NULL == asize || *asize == 0 || step <= 0) {
 		return ;
 	}
 	rsize = *asize + (*asize / step) + (int)(*asize % step != 0);
-	SSL_ALLOC(res, rsize);
+	LIBFT_ALLOC(res, rsize);
 	rptr = res;
 
-	for (ix = 0; ix < *asize;)
-	{
+	for (ix = 0; ix < *asize;) {
 		iy = 0;
-		while ((ix < *asize) && (iy < step))
-		{
+		while ((ix < *asize) && (iy < step)) {
 			*rptr++ = (*arr)[ix++];
 			iy++;
 		}
 		*rptr++ = delim;
 	}
-	SSL_FREE(*arr);
+	LIBFT_FREE(*arr);
 	*arr = res;
 	*asize = rsize;
 }

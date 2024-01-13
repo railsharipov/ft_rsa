@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 char	*ft_strjoin(char const *s1, char const *s2)
 {
@@ -20,7 +21,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 	if (NULL == s1 && NULL == s2)
 		return (NULL);
-	
+
 	if (NULL == s1 || NULL == s2)
 	{
 		if (NULL == s1)

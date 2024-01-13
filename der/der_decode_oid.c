@@ -1,7 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <libft/2darray.h>
 
 static int	__get_obj_id_string(char **, unsigned char *, size_t);
 static int	__get_sub_ids(uint32_t *, int *, unsigned char *, size_t);

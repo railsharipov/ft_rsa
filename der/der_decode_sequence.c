@@ -1,6 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_der.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/der.h>
+#include <ssl/asn.h>
 
 int	der_decode_sequence(t_ostring *osbuf, uint8_t *enc, size_t size)
 {

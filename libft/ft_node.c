@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/alloc.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 void	(ft_node_init)(t_node *node)
 {

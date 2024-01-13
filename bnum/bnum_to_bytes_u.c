@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 /* Convert bignum to bytes, sign is ignored */
 
@@ -14,7 +14,7 @@ void	bnum_to_bytes_u(const t_num *num, char **bin, size_t *binsize)
 
 	nbits = bnum_lmbit(num);
 	*binsize = NBITS_TO_NBYTES(nbits);
-	LIBFT_ALLOC(*bin, *binsize);
+	BNUM_ALLOC(*bin, *binsize);
 
 	bptr = *bin + *binsize-1;
 	bnum_init(&copy);

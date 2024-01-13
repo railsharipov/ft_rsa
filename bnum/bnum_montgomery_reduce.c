@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 {

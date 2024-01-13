@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/alloc.h>
+#include <libft/string.h>
+#include <libft/2darray.h>
 
 static t_node *__create_recur(char **key, int *idx);
 
@@ -87,7 +90,7 @@ static t_node *__create_recur(char **key, int *idx)
 
 	if (NULL == key[*idx])
 		return (NULL);
-	
+
 	if (!ft_strcmp(key[*idx], "}"))
 	{
 		(*idx)++;

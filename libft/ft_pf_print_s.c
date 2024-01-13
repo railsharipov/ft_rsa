@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 void	pf_print_s(t_pf *data, char *src, size_t i)
 {
@@ -51,7 +53,7 @@ void	pf_print_s(t_pf *data, char *src, size_t i)
 
 	if (data->flag & PF_MINUS)
 		pf_oper(data, s, &i, (' '));
-		
+
 	s[i] = 0;
 	pf_out(data, s, i);
 	free(s);

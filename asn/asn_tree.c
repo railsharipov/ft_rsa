@@ -1,5 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
+#include <libft/node.h>
+#include <libft/ntree.h>
+#include <libft/2darray.h>
+#include <libft/string.h>
 
 static int	__init_func(t_node *node, const void *p);
 static void	__f_del_content(void *content);

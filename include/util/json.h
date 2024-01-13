@@ -1,7 +1,10 @@
 #ifndef SSL_JSON_H
 # define SSL_JSON_H
 
-# define JSON_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, JSON_ERROR_CTX))
+# include <libft/node.h>
+# include <libft/std.h>
+
+# define JSON_ERROR(MES)	ft_printf("%@%s, %s:%d: %s\n", __func__, __FILE__, __LINE__, MES);
 
 enum e_json_error
 {

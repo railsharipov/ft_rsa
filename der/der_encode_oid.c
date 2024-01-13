@@ -1,7 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <libft/2darray.h>
+#include <libft/bytes.h>
 
 static int	__get_obj_id_octets(char **, size_t *, char *);
 static int	__check_sub_ids(char **, int);
@@ -120,7 +122,7 @@ static void	__encode_sub_ids(
 	while (num_sub_ids-- > 0)
 	{
 		sub_id = *sub_ids++;
-		sub_id_enc_nbits = util_lmbit(sub_id, 8*sizeof(sub_id));
+		sub_id_enc_nbits = ft_uint_lmbit(sub_id, 8*sizeof(sub_id));
 		sub_id_enc_size = NBITS_TO_NWORDS(sub_id_enc_nbits, 7);
 
 		SSL_ALLOC(sub_id_enc, sub_id_enc_size);

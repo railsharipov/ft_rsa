@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 void	ft_strdel(char *s)
 {

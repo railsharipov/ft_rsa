@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_io.h>
+#include <unistd.h>
+#include <util/io.h>
 
 static ssize_t __fread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {
@@ -26,7 +26,7 @@ static ssize_t __fread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 		{
 			buf[tbytes] = *tbufptr;
 			// if character is delimiter, do not increment
-			tbytes += (size_t)IS_NONZERO_32(*tbufptr ^ delim);
+			tbytes += (size_t)IS_NONZERO_INT32(*tbufptr ^ delim);
 			tbufptr++;
 			rbytes--;
 		}

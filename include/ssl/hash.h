@@ -1,7 +1,7 @@
 #ifndef SSL_HASH_H
 # define SSL_HASH_H
 
-# include <ssl_io.h>
+# include <util/io.h>
 
 typedef uint32_t	t_md5_word;
 typedef uint32_t	t_sha1_word;

@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
-#include <stdlib.h>
+#include <libft/std.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 static int	__space_needed(intmax_t value, int base)
 {
@@ -58,10 +59,9 @@ void	__base_str(char *s, uint8_t *arr, int len, int is_neg)
 			*p = digit + 48;
 		else if (digit >= 10 && digit <= 15)
 			*p = digit + 87;
-		
+
 		p++;
 	}
-	
 	*p = 0;
 }
 
@@ -80,13 +80,13 @@ char	*ft_itoa_base(intmax_t value, int base)
 
 	if (value == 0)
 		return (ft_strdup("0"));
-	
+
 	if (base != 10 && value < 0)
 		value = -value;
-	
+
 	if (base == 10 && value < 0)
 		is_neg = 1;
-	
+
 	len = __space_needed(value, base);
 	__digit_arr(arr, value, base, len);
 

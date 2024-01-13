@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/node.h>
 
 static void	__f_default(t_node *node, int space)
 {
@@ -22,7 +23,6 @@ static void	__f_default(t_node *node, int space)
 			ft_printf("%s\n", node->key, node->content);
 		else
 			ft_printf("%-25.25s %p\n", node->key, node->content);
-		
 	}
 }
 
@@ -31,7 +31,7 @@ static void	__print_recur(
 {
 	if (NULL == node)
 		return ;
-	
+
 	f_print(node, *space);
 
 	(*space)++;
@@ -51,6 +51,6 @@ void	ft_ntree_print(t_node *ntree, void (*f_print)(t_node *, int))
 
 	if (NULL == f_print)
 		f_print = __f_default;
-	
+
 	__print_recur(ntree, &space, f_print);
 }

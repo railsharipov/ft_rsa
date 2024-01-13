@@ -10,7 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/queue.h>
+#include <libft/ntree.h>
+#include <libft/alloc.h>
 
 static int	__iter_func(t_node *node, const void *ptr)
 {

@@ -1,10 +1,11 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_rand.h>
-#include <ssl_pem.h>
-#include <ssl_base64.h>
-#include <ssl_des.h>
-#include <parser.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/rand.h>
+#include <ssl/pem.h>
+#include <ssl/base64.h>
+#include <ssl/des.h>
+#include <util/parser.h>
+#include <libft/bytes.h>
 
 static const char	*PEM_PROC = "Proc-Type: 4,ENCRYPTED\n";
 static const char	*DEK_INFO = "DEK-Info: DES-CBC,";
@@ -59,14 +60,14 @@ static void	__crypt_header(char **chead, size_t *chsize)
 	char	*vecthex;
 
 	SSL_ALLOC(*chead, ft_strlen(PEM_PROC) + ft_strlen(DEK_INFO) + 16 + 2);
-	vecthex = ft_binhex(__vect, sizeof(__vect));
+	vecthex = ft_bytes_to_hex(__vect, sizeof(__vect));
 
 	*chsize = 0;
 	__concat(*chead, chsize, PEM_PROC, ft_strlen(PEM_PROC));
 	__concat(*chead, chsize, DEK_INFO, ft_strlen(DEK_INFO));
 	__concat(*chead, chsize, vecthex, ft_strlen(vecthex));
 	__concat(*chead, chsize, "\n\n", 2);
-	
+
 	SSL_FREE(vecthex);
 }
 

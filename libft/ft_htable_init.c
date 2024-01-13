@@ -11,7 +11,9 @@
 /* ************************************************************************** */
 
 #include <stddef.h>
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/htable.h>
+#include <libft/alloc.h>
 
 void *ft_htbl_init(int size)
 {
@@ -21,7 +23,7 @@ void *ft_htbl_init(int size)
 
 	htbl->size = MAX(LIBFT_HT_SIZE, size);
 	htbl->size = CEIL(htbl->size, LIBFT_HT_SIZE);
-	
+
 	LIBFT_ALLOC(htbl->arr, htbl->size * sizeof(void *));
 
 	return (htbl);

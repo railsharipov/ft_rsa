@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/std.h>
+#include <libft/alloc.h>
 
 void	__tostr(char *str, intmax_t nb, intmax_t mult)
 {
@@ -20,7 +21,7 @@ void	__tostr(char *str, intmax_t nb, intmax_t mult)
 
 	if (nb < 0)
 		str[i++] = '-';
-	
+
 	if (nb < 0)
 		nb = -nb;
 

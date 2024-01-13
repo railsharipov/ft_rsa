@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
 
 char	*ft_strchr(const char *s, int c)
 {
@@ -19,7 +19,7 @@ char	*ft_strchr(const char *s, int c)
 
 	if (NULL == s)
 		return (NULL);
-	
+
 	i = 0;
 	slen = ft_strlen(s);
 
@@ -27,7 +27,7 @@ char	*ft_strchr(const char *s, int c)
 	{
 		if (s[i] == (char)c)
 			return ((char *)(s + i));
-		
+
 		i++;
 	}
 

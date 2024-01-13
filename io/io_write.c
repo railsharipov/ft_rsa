@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_io.h>
+#include <string.h>
+#include <util/io.h>
 
 ssize_t	io_write(t_iodes *iodes, const char *buf, size_t nbytes)
 {

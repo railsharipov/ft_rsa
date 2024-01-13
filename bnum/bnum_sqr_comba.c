@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_sqr_comba(const t_num *a, t_num *res)
 {
@@ -12,7 +12,7 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 	if (ndig > res->size)
 		bnum_increase_size(res, ndig);
 
-	LIBFT_ALLOC(temp, sizeof(uint64_t) * BNUM_MAX_DIG);
+	BNUM_ALLOC(temp, sizeof(uint64_t) * BNUM_MAX_DIG);
 
 	for (int idx = 0; idx < ndig; idx++)
 	{
@@ -48,5 +48,5 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 	res->sign = BNUM_POS;
 	bnum_skip_zeros(res);
 
-	LIBFT_FREE(temp);
+	BNUM_FREE(temp);
 }

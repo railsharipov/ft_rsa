@@ -1,9 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
-#include <ssl_rand.h>
-#include <ssl_test.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <ssl/rand.h>
+#include <test/test.h>
+#include <util/io.h>
 
 static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);
@@ -157,7 +157,7 @@ static void	__test_der_cleanup(void)
 // 	int		len_size;
 //
 // 	len = 12354;
-// 	len_size = NBITS_TO_NBYTES(util_lmbit(len, 8 * sizeof(len)));
+// 	len_size = NBITS_TO_NBYTES(ft_uint_lmbit(len, 8 * sizeof(len)));
 //
 // 	der = der_init();
 // 	ret = der_append_len(der, len);
@@ -169,7 +169,7 @@ static void	__test_der_cleanup(void)
 // 	pass |= TEST_ASSERT(len_size == (der->content[0] & 0x7F));
 // 	pass |= TEST_ASSERT(len_size == der->size - 1);
 // 	pass |= TEST_ASSERT(
-// 		len == util_bytes_to_uint64((char *)der->content + 1, der->size - 1));
+// 		len == ft_bytes_to_uint((char *)der->content + 1, der->size - 1));
 //
 // 	if (SSL_OK == pass)
 // 		return (TEST_PASS());

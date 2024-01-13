@@ -1,6 +1,7 @@
-#include <ft_ssl.h>
-#include <ssl_io.h>
-#include <ssl_error.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <util/io.h>
+#include <libft/std.h>
 
 typedef struct	s_io_param
 {
@@ -29,34 +30,34 @@ int	io_open(t_iodes *iodes, uint32_t flags, const char *filename)
 	int 		insize;
 
 	if (NULL == iodes)
-		return (IO_ERROR(INVALID_INPUT));
+		return (-1);
 
 	ft_bzero(iodes, sizeof(t_iodes));
 
 	if (NULL == (param = __get_param(flags)))
-		return (IO_ERROR(INVALID_IO_PARAMETERS));
+		return (-1);
 
 	iodes->fd = param->fd;
 
-	if (SSL_FLAG(IO_FILE, flags))
+	if (FLAG(IO_FILE, flags))
 	{
 		if (NULL == filename)
-			return (IO_ERROR(INVALID_IO_PARAMETERS));
+			return (-1);
 
-		if (SSL_FLAG(IO_READ, flags))
+		if (FLAG(IO_READ, flags))
 			iodes->fd = open(filename, O_RDONLY, 0644);
-		else if (SSL_FLAG(IO_WRITE, flags))
+		else if (FLAG(IO_WRITE, flags))
 			iodes->fd = open(filename, O_TRUNC|O_RDWR|O_CREAT, 0644);
 		else
-			return (IO_ERROR(INVALID_IO_PARAMETERS));
+			return (-1);
 	}
 
 	if (iodes->fd < 0)
-		return (IO_ERROR(UNSPECIFIED_ERROR));
+		return (-1);
 
 	iodes->mode = IO_MODE_FILDES;
 
-	return (SSL_OK);
+	return (0);
 }
 
 static t_io_param	*__get_param(uint32_t flags)

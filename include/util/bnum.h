@@ -4,8 +4,8 @@
 # include <inttypes.h>
 # include <stddef.h>
 # include <sys/errno.h>
-# include <libft.h>
-# include <ft_printf.h>
+# include <libft/std.h>
+# include <libft/alloc.h>
 
 # define SSL_PRIME_TEST
 
@@ -49,6 +49,10 @@
 		ft_printf("%@%s\n", MES); \
 	exit(0); \
 })
+
+# define BNUM_ALLOC(PTR, SZ)		LIBFT_ALLOC(PTR, SZ)
+# define BNUM_REALLOC(PTR, SZ, NSZ)	LIBFT_REALLOC(PTR, SZ, NSZ)
+# define BNUM_FREE(PTR)				LIBFT_FREE(PTR)
 
 typedef __uint128_t		uint128_t;
 typedef __int128_t		int128_t;

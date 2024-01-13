@@ -1,6 +1,9 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
-#include <bnum.h>
+#include <unistd.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
+#include <util/bnum.h>
+#include <libft/ntree.h>
+#include <libft/bytes.h>
 
 static const int	INDENT_SPACE_CNT = 4;
 
@@ -24,7 +27,7 @@ static void	__print_int_content(t_iasn *item, int space)
 	while (idx < osize)
 	{
 		__print_space(space);
-		util_puthex(octets+idx, MIN(15, osize-idx), 0, ':');
+		ft_bytes_dump_hex(octets+idx, MIN(15, osize-idx), 0, ':');
 		idx += 15;
 	}
 	SSL_FREE(octets);
@@ -38,7 +41,7 @@ static void	__print_content(t_iasn *item, int space)
 	while (idx < item->size)
 	{
 		__print_space(space);
-		util_puthex(item->content+idx, MIN(15, item->size-idx), 0, ':');
+		ft_bytes_dump_hex(item->content+idx, MIN(15, item->size-idx), 0, ':');
 		idx += 15;
 	}
 }

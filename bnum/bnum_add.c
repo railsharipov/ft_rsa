@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_add(const t_num *a, const t_num *b, t_num *res)
 {

@@ -1,5 +1,6 @@
-#include <ft_ssl.h>
-#include <parser.h>
+#include <util/parser.h>
+#include <libft/string.h>
+#include <libft/alloc.h>
 
 // Remove empty lines in character array.
 // Since, in linux enviroment, CR and LF are interpreted
@@ -16,31 +17,30 @@ static const int CR = 0xD;
 
 void parser_del_empty_lines(const char *arr, int asize, char **p, int *psize)
 {
-  int   ix;
-  char  *rptr;
-  char  *res;
+  	int   ix;
+  	char  *rptr;
+  	char  *res;
 
-  SSL_CHECK(NULL != arr);
-  SSL_CHECK(NULL != p);
+	if (NULL == arr || NULL == p) {
+		return ;
+	}
+	LIBFT_ALLOC(res, asize);
+	rptr = res;
 
-	SSL_ALLOC(res, asize);
-  rptr = res;
-
-  for (ix = 0; (ix < asize) && (ft_iseol(arr[ix]));)
-    ix++;
-
-  for (; ix < asize;)
-  {
-    while ((ix < asize) && (!ft_iseol(arr[ix])))
-      *rptr++ = arr[ix++];
-
-    while ((ix < asize) && (ft_iseol(arr[ix])))
-      ix++;
-
-    if (ix < asize)
-      *rptr++ = LF;
-  }
-
-  *p = res;
-  *psize = (int)(rptr - (res));
+	for (ix = 0; (ix < asize) && (ft_iseol(arr[ix]));) {
+		ix++;
+	}
+	while (ix < asize) {
+		while ((ix < asize) && (!ft_iseol(arr[ix]))) {
+			*rptr++ = arr[ix++];
+		}
+		while ((ix < asize) && (ft_iseol(arr[ix]))) {
+			ix++;
+		}
+		if (ix < asize) {
+			*rptr++ = LF;
+		}
+	}
+	*p = res;
+	*psize = (int)(rptr - (res));
 }

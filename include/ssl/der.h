@@ -1,6 +1,9 @@
 #ifndef SSL_DER_H
 # define SSL_DER_H
 
+#include <stdint.h>
+#include <libft/string.h>
+
 # define DER_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, DER_ERROR_CTX))
 
 enum	e_der_error

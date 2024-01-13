@@ -1,12 +1,15 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_io.h>
-#include <ssl_rand.h>
-#include <ssl_rsa.h>
-#include <ssl_map.h>
-#include <ssl_asn.h>
-#include <ssl_pem.h>
-#include <ssl_der.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <util/io.h>
+#include <ssl/rand.h>
+#include <ssl/rsa.h>
+#include <ssl/map.h>
+#include <ssl/asn.h>
+#include <ssl/pem.h>
+#include <ssl/der.h>
+#include <libft/node.h>
+#include <libft/htable.h>
+#include <libft/bytes.h>
 
 static char		*TYPE_RSA_PRIVATE_KEY = "RSA PRIVATE KEY";
 static char		*TYPE_X509_PUBLIC_KEY = "PUBLIC KEY";
@@ -50,7 +53,7 @@ int	comm_rsa_utl(const char **opt, const char *name_comm)
 	if (NULL == opt)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
-	if (NULL == (__rsa_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+	if (NULL == (__rsa_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != io_init(&__in, IO_READ_STDIN))
@@ -67,7 +70,7 @@ int	comm_rsa_utl(const char **opt, const char *name_comm)
 		ret = __run_task();
 
 	io_close_multi(&__in, &__out, &__inkey, NULL);
-	util_task_htable_del(__rsa_htable);
+	ssl_task_htable_del(__rsa_htable);
 
 	if (SSL_OK != ret)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
@@ -171,7 +174,7 @@ static int	__write_output(char *output, size_t outsize)
 {
 	if (SSL_FLAG(RSA_HEXDUMP, __gflag))
 	{
-		util_hexdump(__out.fd, output, outsize);
+		ft_bytes_write_hex(__out.fd, output, outsize);
 	}
 	else if (io_write(&__out, output, outsize) < 0)
 	{

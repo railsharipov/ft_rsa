@@ -1,4 +1,5 @@
-#include <bnum.h>
+#include <util/bnum.h>
+#include <libft/string.h>
 
 static const char	A[] = "0123456789abcdef";
 
@@ -15,7 +16,7 @@ char	*bnum_to_hex_u(const t_num *num)
 		return (NULL);
 
 	hexsize = NBITS_TO_NWORDS(num->len * BNUM_DIGIT_BIT, 4);
-	LIBFT_ALLOC(hexrev, hexsize+1);
+	BNUM_ALLOC(hexrev, hexsize+1);
 
 	hptr = hexrev;
 	idx = 0;
@@ -41,8 +42,8 @@ char	*bnum_to_hex_u(const t_num *num)
 		offset++;
 
 	hexresult = ft_strdup(hex + offset);
-	LIBFT_FREE(hexrev);
-	LIBFT_FREE(hex);
+	BNUM_FREE(hexrev);
+	BNUM_FREE(hex);
 
 	return (hexresult);
 }

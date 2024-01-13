@@ -1,8 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_json.h>
-#include <ssl_test.h>
-#include <ssl_io.h>
-#include <bnum.h>
+#include <ssl/ssl.h>
+#include <test/test.h>
+#include <util/json.h>
+#include <util/io.h>
+#include <util/bnum.h>
 
 static int	__test_json_setup(void);
 static void	__test_json_cleanup(void);
@@ -90,7 +90,7 @@ static int	__test_json_parse_simple_string(void)
 	pass = SSL_OK;
 	node = NULL;
 
-	json_s = util_ostr_to_cstr(&__simple_string_json, 0, __simple_string_json.size);
+	json_s = ft_ostr_to_cstr(&__simple_string_json, 0, __simple_string_json.size);
 	json_slen = ft_strlen(json_s);
 	assert(json_slen >= 2);
 	assert(json_s[0] == '"');
@@ -107,6 +107,9 @@ static int	__test_json_parse_simple_string(void)
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(ft_strcmp(node->content, ref_s) == 0);
 	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	SSL_FREE(json_s);
+	json_del(node);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());
@@ -126,7 +129,7 @@ static int	__test_json_parse_simple_number(void)
 	pass = SSL_OK;
 	node = NULL;
 
-	json_s = util_ostr_to_cstr(&__simple_number_json, 0, __simple_number_json.size);
+	json_s = ft_ostr_to_cstr(&__simple_number_json, 0, __simple_number_json.size);
 	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
@@ -140,6 +143,9 @@ static int	__test_json_parse_simple_number(void)
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(bnum_cmp((t_num *)node->content, ref_num) == 0);
 	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	SSL_FREE(json_s);
+	json_del(node);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());
@@ -160,7 +166,7 @@ static int	__test_json_parse_simple_boolean(void)
 	// Test false boolean
 	node = NULL;
 
-	json_s = util_ostr_to_cstr(&__simple_false_json, 0, __simple_false_json.size);
+	json_s = ft_ostr_to_cstr(&__simple_false_json, 0, __simple_false_json.size);
 	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
@@ -176,10 +182,13 @@ static int	__test_json_parse_simple_boolean(void)
 	pass |= TEST_ASSERT(*(uint8_t *)node->content == 0u);
 	pass |= TEST_ASSERT(node->f_del != NULL);
 
+	SSL_FREE(json_s);
+	json_del(node);
+
 	// Test true boolean
 	node = NULL;
 
-	json_s = util_ostr_to_cstr(&__simple_true_json, 0, __simple_true_json.size);
+	json_s = ft_ostr_to_cstr(&__simple_true_json, 0, __simple_true_json.size);
 	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
@@ -194,6 +203,9 @@ static int	__test_json_parse_simple_boolean(void)
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(*(uint8_t *)node->content == 1u);
 	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	SSL_FREE(json_s);
+	json_del(node);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());
@@ -211,7 +223,7 @@ static int	__test_json_parse_simple_null(void)
 
 	pass = SSL_OK;
 
-	json_s = util_ostr_to_cstr(&__simple_null_json, 0, __simple_null_json.size);
+	json_s = ft_ostr_to_cstr(&__simple_null_json, 0, __simple_null_json.size);
 	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
@@ -225,6 +237,9 @@ static int	__test_json_parse_simple_null(void)
 	pass |= TEST_ASSERT(node->size == 0);
 	pass |= TEST_ASSERT(node->content == NULL);
 	pass |= TEST_ASSERT(node->f_del != NULL);
+
+	SSL_FREE(json_s);
+	json_del(node);
 
 	if (SSL_OK == pass)
 		return (TEST_PASS());

@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_des.h>
+#include <ssl/ssl.h>
+#include <ssl/des.h>
+#include <libft/bytes.h>
 
 static t_des			__des;
 static unsigned char	__key[8];
@@ -54,17 +55,17 @@ t_des	*des_hexinit(
 
 	if (NULL != keyhex)
 	{
-		ft_hexbin(__key, keyhex, MIN(16, ft_strlen(keyhex)));
+		ft_hex_to_bytes(__key, keyhex, MIN(16, ft_strlen(keyhex)));
 		__des.vflag |= DES_K;
 	}
 	if (NULL != salthex)
 	{
-		ft_hexbin(__salt, salthex, MIN(16, ft_strlen(salthex)));
+		ft_hex_to_bytes(__salt, salthex, MIN(16, ft_strlen(salthex)));
 		__des.vflag |= DES_S;
 	}
 	if (NULL != vecthex)
 	{
-		ft_hexbin(__vect, vecthex, MIN(16, ft_strlen(vecthex)));
+		ft_hex_to_bytes(__vect, vecthex, MIN(16, ft_strlen(vecthex)));
 		__des.vflag |= DES_V;
 	}
 	__des.key = __key;

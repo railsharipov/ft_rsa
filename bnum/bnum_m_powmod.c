@@ -1,4 +1,5 @@
-#include <bnum.h>
+#include <util/bnum.h>
+#include <limits.h>
 
 void	bnum_m_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 {
@@ -20,7 +21,7 @@ void	bnum_m_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		for (wsize = 0; i > thres[wsize];)
 			wsize++;
 
-		LIBFT_ALLOC(window, (1 << wsize) * sizeof(t_num));
+		BNUM_ALLOC(window, (1 << wsize) * sizeof(t_num));
 
 		for (i = 0; i < (1 << wsize); i++)
 			bnum_init(window + i);
@@ -109,6 +110,6 @@ void	bnum_m_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		for (i = 0; i < (1 << wsize); i++)
 			bnum_clear(window + i);
 
-		LIBFT_FREE(window);
+		BNUM_FREE(window);
 	}
 }

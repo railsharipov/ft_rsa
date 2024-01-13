@@ -1,7 +1,7 @@
 #ifndef SSL_ERROR_H
 # define SSL_ERROR_H
 
-# include <ft_printf.h>
+# include <string.h>
 # include <sys/errno.h>
 
 # define SSL_ENABLE_DEBUG_ERROR_MESSAGES
@@ -67,7 +67,6 @@ enum	e_error_ctx
 const char	*error_to_string(int error);
 const char	*error_ctx_to_string(int error);
 int	error_update_error(int error);
-int error_dump_error(
-	int error, const char *func_name, const char *file_name, int line_number);
+int error_dump_error(int error, const char *func_name, const char *file_name, int line_number);
 
 #endif

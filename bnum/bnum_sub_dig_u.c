@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_sub_dig_u(const t_num *a, uint64_t b, t_num *res)
 {

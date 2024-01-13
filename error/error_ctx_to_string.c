@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
 
 # define	SIZE_OF_ARRAY(ARRAY)	sizeof(ARRAY) / sizeof(void *)
 
@@ -14,7 +14,6 @@ static char	*__ERROR_CTX_NAMES[] = {
 	"pem",
 	"rand",
 	"rsa",
-	"json",
 };
 
 const char	*error_ctx_to_string(int error)

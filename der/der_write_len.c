@@ -1,7 +1,8 @@
-#include <ft_ssl.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <util/io.h>
+#include <libft/bytes.h>
 
 static int		__is_long_form(size_t len);
 static ssize_t	__write_long_form(size_t len, t_iodes *iodes);
@@ -36,7 +37,7 @@ static ssize_t	__write_long_form(size_t len, t_iodes *iodes)
 	int		len_nbits;
 	int		idx;
 
-	len_nbits = util_lmbit(len, 8 * sizeof(len));
+	len_nbits = ft_uint_lmbit(len, 8 * sizeof(len));
 	len_nbytes = NBITS_TO_NBYTES(len_nbits);
 
 	// additional octet for long form flag

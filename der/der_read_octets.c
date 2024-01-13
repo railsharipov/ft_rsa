@@ -1,6 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_der.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/der.h>
+#include <util/io.h>
 
 ssize_t	der_read_octets(char *content, size_t size, t_iodes *iodes)
 {

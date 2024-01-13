@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_hash.h>
+#include <ssl/ssl.h>
+#include <ssl/hash.h>
 
 static const t_sha224_word	HASH_INIT_VECT[] = {
 	0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,

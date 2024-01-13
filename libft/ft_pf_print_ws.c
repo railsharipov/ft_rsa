@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <libft/std.h>
 
 int		pf_ws_len(unsigned int *s)
 {
@@ -19,7 +20,7 @@ int		pf_ws_len(unsigned int *s)
 	len = 0;
 	while (s && s[len])
 		len++;
-	
+
 	return (len);
 }
 
@@ -34,7 +35,7 @@ void	pf_print_ws(t_pf *data, unsigned int *src)
 
 	s = pf_convert_to_utf_8(src, data->size, data->prec);
 	pf_print_s(data, s, 0);
-	
+
 	if (s)
 		free(s);
 }

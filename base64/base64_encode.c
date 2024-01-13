@@ -10,10 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_base64.h>
-#include <bnum.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/base64.h>
+#include <util/bnum.h>
 
 static const unsigned char	MES_BLOCK_SIZE = 3;
 static const unsigned char	B64_BLOCK_SIZE = 4;

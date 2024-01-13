@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 int     bnum_cmp_dig(const t_num *a, uint64_t b)
 {

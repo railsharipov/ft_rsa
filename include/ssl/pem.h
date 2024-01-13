@@ -1,6 +1,8 @@
 #ifndef SSL_PEM_H
 # define SSL_PEM_H
 
+#include <libft/string.h>
+
 # define PEM_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, PEM_ERROR_CTX))
 
 enum	e_pem_error

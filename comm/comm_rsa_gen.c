@@ -1,11 +1,13 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_rsa.h>
-#include <ssl_asn.h>
-#include <ssl_der.h>
-#include <ssl_pem.h>
-#include <ssl_rand.h>
-#include <ssl_io.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/rsa.h>
+#include <ssl/asn.h>
+#include <ssl/der.h>
+#include <ssl/pem.h>
+#include <ssl/rand.h>
+#include <util/io.h>
+#include <libft/node.h>
+#include <libft/htable.h>
 
 static t_htbl		*__rsa_htable;
 
@@ -125,7 +127,7 @@ int	comm_rsa_gen(const char **opt, const char *name_comm)
 
 	if (NULL == opt)
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
-	if (NULL == (__rsa_htable = util_task_htable(T, sizeof(T)/sizeof(T[0]))))
+	if (NULL == (__rsa_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
 		return (SSL_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT))

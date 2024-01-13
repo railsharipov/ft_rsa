@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_test.h>
+#include <ssl/ssl.h>
+#include <test/test.h>
 
 int	test_result(
 	int res, int verbose, const char *func_name, const char *file_name)

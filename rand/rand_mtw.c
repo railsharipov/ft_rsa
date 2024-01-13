@@ -1,5 +1,5 @@
-#include <ft_ssl.h>
-#include <ssl_rand.h>
+#include <ssl/ssl.h>
+#include <ssl/rand.h>
 
 static uint64_t	MT[MT_N];
 static int		MT_IDX = MT_N+1;
@@ -15,7 +15,7 @@ static void __twist(void)
 		x = (MT[ix] & MT_HIMASK) | (MT[ix+1] & MT_LOMASK);
 		MT[ix] = MT[ix+MT_M] ^ ((x>>1)^xt[(x>>1)&1ULL]);
 	}
-	
+
 	for (; ix < (MT_N-1); ix++)
 	{
 		x = (MT[ix] & MT_HIMASK) | (MT[ix+1] & MT_LOMASK);
@@ -47,7 +47,7 @@ uint64_t	rand_mtw_extract()
 	{
 		if (MT_IDX > MT_N)
 			rand_mtw_init(5489ULL);
-		
+
 		__twist();
 	}
 
@@ -58,6 +58,6 @@ uint64_t	rand_mtw_extract()
 	y = y ^ (y >> MT_L);
 
 	MT_IDX += 1;
-	
+
 	return (y & MT_MASK);
 }

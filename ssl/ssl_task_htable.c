@@ -10,9 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
+#include <ssl/ssl.h>
+#include <libft/htable.h>
 
-t_htbl  *util_task_htable(const t_task *task, int size)
+t_htbl  *ssl_task_htable(const t_task *task, int size)
 {
 	t_htbl  *htbl;
 	int		ix;
@@ -33,7 +34,7 @@ t_htbl  *util_task_htable(const t_task *task, int size)
 	return (htbl);
 }
 
-void	util_task_htable_del(const t_htbl *htbl)
+void	ssl_task_htable_del(const t_htbl *htbl)
 {
 	if (NULL == htbl)
 		return ;

@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/node.h>
+#include <libft/ntree.h>
 
 static int	__calc_size_func(t_node *node, const void *farg)
 {

@@ -1,5 +1,7 @@
 #include <sys/ioctl.h>
-#include <bnum.h>
+#include <util/bnum.h>
+#include <libft/string.h>
+#include <unistd.h>
 
 static void	___in_bar(char *s, unsigned char c)
 {
@@ -33,7 +35,7 @@ static void	___out(const t_num *num)
 		ft_printf("0");
 
 	bufsize = num->len * (BNUM_INT_BIT / 4);
-	LIBFT_ALLOC(buf, bufsize + 1);
+	BNUM_ALLOC(buf, bufsize + 1);
 	ft_bzero(buf, bufsize + 1);
 
 	bnum_init(&copy);
@@ -53,7 +55,7 @@ static void	___out(const t_num *num)
 
 	ft_printf("%s\n", bptr);
 	bnum_clear(&copy);
-	LIBFT_FREE(buf);
+	BNUM_FREE(buf);
 }
 
 void	bnum_print(const char *prefix, const t_num *num)

@@ -1,6 +1,6 @@
-#include <ft_ssl.h>
-#include <ssl_base64.h>
-#include <ssl_test.h>
+#include <ssl/ssl.h>
+#include <ssl/base64.h>
+#include <test/test.h>
 
 static const char	*__binary_file_path = "test/testfiles/file";
 static const char	*__base64_file_path = "test/testfiles/base64_message.txt";

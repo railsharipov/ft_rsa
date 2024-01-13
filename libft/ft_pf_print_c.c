@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <libft/std.h>
 
 void	pf_print_c(t_pf *data, char *src, size_t size)
 {
@@ -40,7 +41,7 @@ void	pf_print_c(t_pf *data, char *src, size_t size)
 		pf_oper(data, s, &i, (' '));
 
 	s[i] = 0;
-	
+
 	pf_out(data, s, i);
 	free(s);
 }

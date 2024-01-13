@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_printf.h>
+#include <stdlib.h>
+#include <libft/std.h>
+#include <libft/string.h>
 
 void	pf_print_wc(t_pf *data, unsigned int c)
 {

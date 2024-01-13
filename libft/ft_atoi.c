@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <limits.h>
 
 static int	__is_blank(char c)
 {
@@ -32,12 +32,12 @@ long long	ft_atoi(const char *str)
 	i = 0;
 	while (__is_blank(str[i]))
 		i++;
-	
+
 	neg = (str[i] == '-') ? -1 : 1;
 
 	if (str[i] == '-' || str[i] == '+')
 		i++;
-	
+
 	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0)
 	{
 		nb = nb * 10;

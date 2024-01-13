@@ -1,7 +1,7 @@
-#include <ft_ssl.h>
-#include <ssl_error.h>
-#include <ssl_der.h>
-#include <ssl_asn.h>
+#include <ssl/ssl.h>
+#include <ssl/error.h>
+#include <ssl/der.h>
+#include <ssl/asn.h>
 
 int	der_encode_bool(t_ostring *osbuf, void *content, size_t size)
 {

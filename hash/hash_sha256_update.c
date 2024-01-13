@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_hash.h>
+#include <ssl/ssl.h>
+#include <ssl/hash.h>
+#include <libft/bytes.h>
 
 static t_sha256_word		sched[64];
 static t_sha256_word		*word;
@@ -47,7 +48,7 @@ static void	__update_sched(void)
 # if BYTE_ORDER == BIG_ENDIAN
 		sched[i] = word[i];
 # else
-		sched[i] = util_bswap32(word[i]);
+		sched[i] = ft_uint_bswap32(word[i]);
 # endif
 		i++;
 	}

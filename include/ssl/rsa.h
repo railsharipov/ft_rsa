@@ -1,8 +1,9 @@
 #ifndef SSL_RSA_H
 # define SSL_RSA_H
 
-# include <ssl_io.h>
-# include <bnum.h>
+# include <libft/string.h>
+# include <util/io.h>
+# include <util/bnum.h>
 
 # define RSA_EXPPUB 65537ULL
 # define RM_TRIALS  20

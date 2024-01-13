@@ -10,8 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ft_ssl.h>
-#include <ssl_hash.h>
+#include <ssl/ssl.h>
+#include <ssl/hash.h>
+#include <libft/bytes.h>
 
 static const int	END_BYTE = 1 << 7;
 static const int	LEN_SIZE = 8;
@@ -35,7 +36,7 @@ static void __swap_bytes_32(uint32_t *arr, size_t size)
 	ix = 0;
 	while (ix < size)
 	{
-		arr[ix] = util_bswap32(arr[ix]);
+		arr[ix] = ft_uint_bswap32(arr[ix]);
 		ix++;
 	}
 }

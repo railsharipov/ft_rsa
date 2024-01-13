@@ -1,4 +1,4 @@
-#include <bnum.h>
+#include <util/bnum.h>
 
 void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 {

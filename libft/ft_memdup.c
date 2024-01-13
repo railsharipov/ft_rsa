@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <string.h>
+#include <libft/alloc.h>
+#include <libft/std.h>
 
 void	*ft_memdup(void *src, size_t srcsize)
 {
@@ -18,9 +20,9 @@ void	*ft_memdup(void *src, size_t srcsize)
 
 	if (NULL == src)
 		return (NULL);
-	
+
 	LIBFT_ALLOC(dst, srcsize);
 	ft_memcpy(dst, src, srcsize);
-	
+
 	return (dst);
 }

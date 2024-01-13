@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <libft.h>
+#include <libft/string.h>
 
 char	*ft_strcpy(char *dst, const char *src)
 {
@@ -26,6 +26,6 @@ char	*ft_strcpy(char *dst, const char *src)
 		++i;
 	}
 	dst[i] = 0;
-	
+
 	return (dst);
 }
