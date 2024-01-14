@@ -61,24 +61,9 @@ typedef enum	e_pf_len
 int		    ft_printf(const char *format, ...);
 int		    ft_fprintf(int fd, const char *format, ...);
 int		    ft_sprintf(char **buf, const char *format, ...);
-
-t_pf	    *pf_l_arg_new(int fd);
-void	    pf_l_arg_zero(t_pf *data);
-void	    pf_out(t_pf *data, const char *s, int size);
-void	    pf_get_data(t_pf *data, const char *s, int *i);
-void	    pf_format_di(t_pf *data, char len, va_list *arg);
-void	    pf_format_oux(t_pf *data, char len, va_list *arg);
-void	    pf_format_s(t_pf *data, char len, va_list *arg);
-void	    pf_format_c(t_pf *data, char len, va_list *arg);
-void	    pf_print_di(t_pf *data, intmax_t n, char flag, size_t i);
-void	    pf_print_oux(t_pf *data, uintmax_t n, char flag, size_t i);
-void	    pf_print_c(t_pf *data, char *c, size_t size);
-void	    pf_print_wc(t_pf *data, unsigned int c);
-void	    pf_print_s(t_pf *data, char *src, size_t i);
-void	    pf_print_ws(t_pf *data, unsigned int *src);
-void	    pf_print_else(t_pf *data, char flag, size_t i);
-void	    pf_oper(t_pf *data, char *s, size_t *i, char op);
-char	    *pf_convert_to_utf_8(unsigned int *ws, int size, int prec);
+int		    ft_vprintf(const char *format, va_list arg);
+int		    ft_vfprintf(int fd, const char *format, va_list arg);
+int		    ft_vsprintf(char **buf, const char *format, va_list arg);
 
 void 		*ft_memset(void *b, int c, size_t len);
 void		ft_bzero(void *s, size_t n);
