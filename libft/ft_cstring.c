@@ -100,8 +100,6 @@ int	ft_str_isprint(const char *s)
 	return (1);
 }
 
-static int __get_nwords(char const *s, char c);
-
 char	**ft_strsplit(char const *s, char c)
 {
 	int		idx;
