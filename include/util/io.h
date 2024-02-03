@@ -16,13 +16,7 @@
 #   define IO_BUFSIZE 256
 # endif
 
-# define IO_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, IO_ERROR_CTX))
-
-enum	e_io_error
-{
-	INVALID_IO = 1,
-	INVALID_IO_PARAMETERS,
-};
+# define IO_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "io error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_io
 {

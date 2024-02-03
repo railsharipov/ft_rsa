@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rand.h>
 #include <ssl/base64.h>
 #include <ssl/des.h>
@@ -69,7 +68,7 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag)
 		if (SSL_OK != rand_pbkdf2(
 			__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL):(__vect)))
 		{
-			return (DES_ERROR(KEY_DERIVATION_ERROR));
+			return (DES_ERROR("key derivation error"));
 		}
 	}
 	if (!SSL_FLAG(DES_V, vflag))
@@ -129,7 +128,7 @@ static int	__decrypt(
 int	des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
-		return (DES_ERROR(INVALID_INPUT));
+		return (DES_ERROR(INVALID_INPUT_ERROR));
 
 	mes->content = NULL;
 	__salt = des->salt;
@@ -139,7 +138,7 @@ int	des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 	if (SSL_OK != __vectors(
 		(unsigned char *)(ciph->content), ciph->size, des->vflag))
 	{
-		return (DES_ERROR(INVALID_DES_ENCODING));
+		return (DES_ERROR("invalid des encryption"));
 	}
 
 	des_permute_key(&__permut_key, __key);

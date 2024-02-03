@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rsa.h>
 #include <ssl/asn.h>
 #include <util/bnum.h>
@@ -169,13 +168,13 @@ int	rsa_check(t_node *asn_key)
 	ret = SSL_OK;
 
 	if (NULL == asn_key)
-		return (RSA_ERROR(INVALID_INPUT));
+		return (RSA_ERROR(INVALID_INPUT_ERROR));
 
 	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
-		return (RSA_ERROR(INVALID_RSA_KEY_TYPE));
+		return (RSA_ERROR("invalid rsa key type: %s", asn_key->key));
 
 	if (SSL_OK != rsa_key_items(asn_key, &__items))
-		return (RSA_ERROR(INVALID_RSA_KEY));
+		return (RSA_ERROR("invalid rsa key"));
 
 	ret |= __check_pubexp();
 	ret |= __check_modulus();
@@ -185,7 +184,7 @@ int	rsa_check(t_node *asn_key)
 	ret |= __check_crt_comps();
 
 	if (SSL_OK != ret)
-		ret = RSA_ERROR(INVALID_RSA_KEY);
+		ret = RSA_ERROR("invalid rsa key");
 
 	SSL_FREE(__items);
 

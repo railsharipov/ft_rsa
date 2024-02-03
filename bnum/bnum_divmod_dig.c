@@ -8,7 +8,10 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	int			idx;
 
 	if (b == 0)
-		BNUM_ERROR_EXIT("division by zero");
+    {
+		BNUM_ERROR("division by zero");
+		return ;
+    };
 
 	if (b == 1 || BNUM_ZERO(a))
 	{

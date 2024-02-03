@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/des.h>
 #include <ssl/hash.h>
 #include <ssl/rand.h>
@@ -29,9 +28,9 @@ int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect)
 	char	*pass;
 
 	if (NULL == salt)
-		return (RAND_ERROR(INVALID_INPUT));
+		return (RAND_ERROR(INVALID_INPUT_ERROR));
 	if (NULL == (pass = ssl_getpass()))
-		return (RAND_ERROR(EXPECTED_PASSWORD_INPUT));
+		return (RAND_ERROR("expected password input"));
 
 	bufptr = __buf;
 	ft_memcpy(bufptr, pass, ft_strlen(pass));

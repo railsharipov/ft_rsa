@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <util/io.h>
 #include <ssl/asn.h>
 #include <ssl/der.h>
@@ -37,7 +36,7 @@ static int		__err;
 int	der_decode(t_node **tree, t_iodes *iodes)
 {
 	if (NULL == tree || NULL == iodes)
-		return (DER_ERROR(INVALID_INPUT));
+		return (DER_ERROR(INVALID_INPUT_ERROR));
 
 	__err = SSL_OK;
 	__init_func_htable();
@@ -84,7 +83,7 @@ static t_node	*__create_asn_tree(t_iodes *iodes)
 	return (node);
 
 error:
-	SSL_ERROR(INVALID_DER_ENCODING);
+	DER_ERROR("invalid der encoding");
 	return (NULL);
 }
 

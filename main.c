@@ -15,6 +15,7 @@
 #include <ssl/des.h>
 #include <ssl/hash.h>
 #include <ssl/rsa.h>
+#include <ssl/comm.h>
 #include <libft/string.h>
 
 static const struct {
@@ -60,21 +61,30 @@ static void	__get_command(
 	}
 }
 
+static int	__f_stderr_logger(const char *mes)
+{
+	ft_printf("%@%s\n", mes);
+	return (SSL_ERR);
+}
+
 int		main(int ac, const char **av)
 {
 	FUNC_COM	func_comm;
 	char		*name_comm;
 
-	if (ac < 2)
-		ssl_exit(USAGE_ERROR);
+	ssl_error_set_logger(__f_stderr_logger);
+	ssl_error_set_level(SSL_ERROR_LEVEL_DEBUG);
 
+	if (ac < 2) {
+		ssl_print_usage();
+		exit(1);
+	}
 	__get_command(&func_comm, &name_comm, av[1]);
 
-	if (NULL == name_comm)
-	{
-		ssl_exit(USAGE_ERROR);
+	if (NULL == name_comm) {
+		ssl_print_usage();
+		exit(1);
 	}
-
 	func_comm(av+2, name_comm);
 
 	return (0);

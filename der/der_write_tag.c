@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/der.h>
 #include <ssl/asn.h>
 #include <util/io.h>
@@ -25,7 +24,7 @@ Following octets:
 ssize_t	der_write_tag(uint8_t tag_flags, uint32_t tag_num, t_iodes *iodes)
 {
 	if (NULL == iodes || tag_num < 0)
-		return (DER_ERROR(INVALID_INPUT));
+		return (DER_ERROR(INVALID_INPUT_ERROR));
 
 	if (__tag_is_complex(tag_num))
 		__write_complex_tag(tag_flags, tag_num, iodes);

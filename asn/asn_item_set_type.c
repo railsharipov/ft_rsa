@@ -38,7 +38,7 @@ int	asn_item_set_type(t_iasn *item, char *type_key)
 	}
 	else
 	{
-		ret = ASN_ERROR(INVALID_INPUT);
+		ret = ASN_ERROR(INVALID_INPUT_ERROR);
 	}
 
 	ft_htbl_del(htable);

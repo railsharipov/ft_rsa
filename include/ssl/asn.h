@@ -1,6 +1,8 @@
 #ifndef ASN_SPECIFIC_H
 # define ASN_SPECIFIC_H
 
+# include <ssl/ssl.h>
+
 // ASN.1 - Abstract Syntax Notation One
 // Refer to X.208, X.209, X.608
 
@@ -34,12 +36,7 @@
 # define ASN_LEN_SHORT				0x0
 # define ASN_LEN_LONG				0x80
 
-# define ASN_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, ASN_ERROR_CTX))
-
-enum  e_asn_error
-{
-	INVALID_ASN_TREE = 1,
-};
+# define ASN_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "asn error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct	s_iasn
 {

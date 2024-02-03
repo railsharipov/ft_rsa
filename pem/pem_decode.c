@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rand.h>
 #include <ssl/base64.h>
 #include <ssl/pem.h>
@@ -209,17 +208,18 @@ static int __decode(void)
 
 int pem_decode(t_pem *pem, const char *type, t_ostring **content)
 {
-	SSL_CHECK(NULL != pem);
-	SSL_CHECK(NULL != content);
+	if (NULL != pem || NULL != content) {
+		return (PEM_ERROR(INVALID_INPUT_ERROR));
+	}
 	__encrypted = SSL_FALSE;
 	*content = NULL;
 
-	if (SSL_OK != pem_remove_encap(pem, type, &__content, &__consize))
-		return (PEM_ERROR(INVALID_PEM_ENCODING));
-
-	if (SSL_OK != __decode())
-		return (PEM_ERROR(INVALID_PEM_ENCODING));
-
+	if (SSL_OK != pem_remove_encap(pem, type, &__content, &__consize)) {
+		return (PEM_ERROR("invalid pem encoding"));
+	}
+	if (SSL_OK != __decode()) {
+		return (PEM_ERROR("invalid pem encoding"));
+	}
 	SSL_ALLOC(*content, sizeof(t_ostring));
 
 	(*content)->content = __content;

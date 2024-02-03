@@ -13,21 +13,19 @@ int	comm_test(const char **opt, const char *name)
 	ft_bzero(ret, sizeof(ret));
 	idx = 0;
 
-	while (idx < NUM_TESTS)
-	{
+	while (idx < NUM_TESTS) {
 		TEST_INFO(idx);
 
 		f_test = TESTS[idx];
 
 		if (NULL == f_test) {
-			return SSL_ERROR(UNSPECIFIED_ERROR);
+			return (TEST_ERROR(UNSPECIFIED_ERROR));
 		}
 		ret[idx] = f_test();
 
-		if (IS_ERROR(ret[idx])) {
-			return SSL_ERROR(UNSPECIFIED_ERROR);
+		if (SSL_OK != ret[idx]) {
+			return (TEST_ERROR(UNSPECIFIED_ERROR));
 		}
-
 		idx++;
 	}
 

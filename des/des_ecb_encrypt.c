@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rand.h>
 #include <ssl/base64.h>
 #include <ssl/des.h>
@@ -92,7 +91,7 @@ int	des_ecb_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
 	{
-		return (DES_ERROR(INVALID_INPUT));
+		return (DES_ERROR(INVALID_INPUT_ERROR));
 	}
 	ciph->content = NULL;
 	__salt = des->salt;

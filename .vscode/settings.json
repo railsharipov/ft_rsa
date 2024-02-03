@@ -2,6 +2,8 @@
     "files.associations": {
         "locale.h": "c",
         "common.h": "c",
-        "alloc.h": "c"
+        "alloc.h": "c",
+        "complex": "c",
+        "error.h": "c"
     }
 }

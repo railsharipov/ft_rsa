@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <util/io.h>
 #include <ssl/asn.h>
 #include <ssl/der.h>

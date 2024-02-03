@@ -1,15 +1,10 @@
 #ifndef SSL_PEM_H
 # define SSL_PEM_H
 
+#include <ssl/ssl.h>
 #include <libft/string.h>
 
-# define PEM_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, PEM_ERROR_CTX))
-
-enum	e_pem_error
-{
-	INVALID_PEM_ENCODING = 1,
-	INVALID_PEM_ENCAPSULATION,
-};
+# define PEM_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "pem error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct	s_pem
 {

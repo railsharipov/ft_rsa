@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/pem.h>
 #include <util/parser.h>
 
@@ -26,7 +25,9 @@ static void	__concat(t_pem *pem, char *content, size_t consize)
 
 void	pem_encap(t_pem **pem, const char *type, char *content, size_t consize)
 {
-	SSL_CHECK(NULL != pem);
+	if (NULL == pem) {
+		return ;
+	}
 	__pre_encap(type);
 	__post_encap(type);
 
@@ -51,9 +52,9 @@ int	pem_remove_encap(
 	int		bidx;
 	int		eidx;
 
-	SSL_CHECK(NULL != pem);
-	SSL_CHECK(NULL != content);
-	SSL_CHECK(NULL != consize);
+	if (NULL == pem || NULL == content || NULL == consize) {
+		return (PEM_ERROR(INVALID_INPUT_ERROR));
+	}
 	__pre_encap(type);
 	__post_encap(type);
 	*content = NULL;
@@ -61,15 +62,15 @@ int	pem_remove_encap(
 	bidx = parser_find(pem->content, pem->size, __preen, __presize);
 	eidx = parser_find(pem->content, pem->size, __posten, __postsize);
 
-	if (NULL != __preen)
+	if (NULL != __preen) {
 		free(__preen);
-
-	if (NULL != __posten)
+	}
+	if (NULL != __posten) {
 		free(__posten);
-
-	if ((bidx < 0) || (eidx < 0) || (bidx > eidx))
-		return (PEM_ERROR(INVALID_PEM_ENCAPSULATION));
-
+	}
+	if ((bidx < 0) || (eidx < 0) || (bidx > eidx)) {
+		return (PEM_ERROR("invalid pem encapsulation"));
+	}
 	*consize = eidx - (bidx + __presize);
 	*content = ft_memdup(pem->content + (bidx + __presize), *consize);
 

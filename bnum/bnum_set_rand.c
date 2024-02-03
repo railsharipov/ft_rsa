@@ -21,7 +21,10 @@ void    bnum_set_rand(t_num *num, int bits)
 	fd = open("/dev/random", O_RDONLY);
 
 	if (fd < 0)
-		BNUM_ERROR_EXIT(NULL);
+    {
+		BNUM_ERROR(NULL);
+		return ;
+    };
 
 	if (len > num->size)
 		bnum_increase_size(num, len);

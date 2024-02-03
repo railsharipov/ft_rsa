@@ -53,4 +53,10 @@
 # define IS_OF_TYPE(X, T)		_Generic((X), T:1, default:0)
 # define DO_NOTHING				(void)0;
 
+typedef enum	e_libft_status
+{
+	LIBFT_OK = 0,
+	LIBFT_ERR,
+}				t_libft_status;
+
 #endif

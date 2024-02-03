@@ -5,6 +5,8 @@
 # include <libft/string.h>
 # include <util/printnl.h>
 
+# define TEST_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "test error: ", MES __VA_OPT__(,) __VA_ARGS__)
+
 # define TEST_ENABLE_VERBOSE
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 

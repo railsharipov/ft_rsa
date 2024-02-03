@@ -1,7 +1,6 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <test/test.h>
 #include <util/io.h>
 
@@ -12,10 +11,10 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 	char	buf[IO_BUFSIZE];
 
 	if (NULL == testfile_path || NULL == ostring)
-		return (SSL_ERROR(INVALID_INPUT));
+		return (TEST_ERROR(INVALID_INPUT_ERROR));
 
 	if ((fd = open(testfile_path, O_RDONLY)) < 0)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	ostring->content = NULL;
 	ostring->size = 0;
@@ -28,7 +27,7 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 	}
 
 	if (nbytes < 0)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }

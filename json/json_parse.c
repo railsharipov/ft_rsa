@@ -10,7 +10,7 @@ typedef ssize_t (*FUNC_JSON_PARSE)(const char *, t_node *);
 
 static t_htbl	*__htable;
 
-int		__init_htable(void);
+void	__init_htable(void);
 int		__is_ws_only(const char *);
 
 ssize_t __parse(const char *, t_node *);
@@ -62,12 +62,13 @@ int json_parse(const char *s, t_node **node)
 	ssize_t	rbytes;
 
 	if (NULL == s || NULL == node) {
-        return JSON_ERROR("invalid input");
+        return JSON_ERROR(INVALID_INPUT_ERROR);
 	}
 
     *node = NULL;
+	__init_htable();
 
-	if (LIBFT_OK != __init_htable()) {
+	if (NULL == __htable) {
 		return JSON_ERROR("unspecified error");
 	}
 	json_node = ft_node_create();
@@ -75,19 +76,19 @@ int json_parse(const char *s, t_node **node)
 
 	if (rbytes < 0) {
 		json_del(json_node);
-		return JSON_ERROR(PARSE_JSON_FAILED);
+		return JSON_ERROR("json parse failed");
 	}
 	if (!__is_ws_only(s + rbytes)) {
 		json_del(json_node);
-		return JSON_ERROR(UNEXPECTED_CHARS_AT_THE_END);
+		return JSON_ERROR("unexpected characters at the end");
 	}
 	*node = json_node;
     ft_htbl_del(__htable);
 
-    return LIBFT_OK;
+    return (0);
 }
 
-int	__init_htable(void)
+void	__init_htable(void)
 {
     int idx;
     size_t ht_size;
@@ -95,7 +96,7 @@ int	__init_htable(void)
     ht_size = sizeof(T)/sizeof(T[0]);
 
 	if (NULL == (__htable = ft_htbl_init(ht_size))) {
-		return (LIBFT_ERR);
+		return ;
 	}
 
 	idx = 0;
@@ -103,7 +104,6 @@ int	__init_htable(void)
 		ft_htbl_add_rawkey(__htable, (void *)&(T[idx]), &(T[idx].open), sizeof(T[idx].open));
 		idx++;
     }
-	return (LIBFT_OK);
 }
 
 int	__is_ws_only(const char *s)

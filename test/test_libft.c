@@ -76,7 +76,7 @@ int test_libft(void)
 	int	res = SSL_OK;
 
 	if (SSL_OK != __test_libft_setup())
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	res |= __test_ft_strlen();
 	res |= __test_ft_strcmp();

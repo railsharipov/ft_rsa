@@ -3,17 +3,9 @@
 
 # include <libft/node.h>
 # include <libft/std.h>
+# include <ssl/ssl.h>
 
-# define JSON_ERROR(MES)	ft_printf("%@%s, %s:%d: %s\n", __func__, __FILE__, __LINE__, MES);
-
-enum e_json_error
-{
-	INVALID_JSON_TYPE = 1,
-	PARSE_JSON_FAILED,
-	INVALID_FORMAT,
-	UNEXPECTED_END_OF_CONTENT,
-	UNEXPECTED_CHARS_AT_THE_END,
-};
+# define JSON_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "json error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum e_json_type{
     JSON_ARRAY,

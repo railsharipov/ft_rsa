@@ -6,6 +6,7 @@
 # include <sys/errno.h>
 # include <libft/std.h>
 # include <libft/alloc.h>
+# include <libft/error.h>
 
 # define SSL_PRIME_TEST
 
@@ -41,14 +42,7 @@
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
 # define BNUM_SIGN(X)	(((X)->sign == BNUM_NEG)?(BNUM_NEG):(BNUM_POS))
 
-# define BNUM_ERROR_EXIT(MES) ({ \
-	ft_printf("bnum error in '%s', %s:%d\n", __func__, __FILE__, __LINE__); \
-	if (errno) \
-		perror(MES); \
-	else \
-		ft_printf("%@%s\n", MES); \
-	exit(0); \
-})
+# define BNUM_ERROR(MES, ...) ft_error_log(__func__, __FILE__, __LINE__, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define BNUM_ALLOC(PTR, SZ)		LIBFT_ALLOC(PTR, SZ)
 # define BNUM_REALLOC(PTR, SZ, NSZ)	LIBFT_REALLOC(PTR, SZ, NSZ)

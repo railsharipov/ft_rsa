@@ -5,7 +5,10 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 	t_num	x, y, u, v, ta, tb, tc, td;
 
 	if (BNUM_NEG == b->sign || BNUM_ZERO(b))
-		BNUM_ERROR_EXIT("No inverse modulo");
+    {
+		BNUM_ERROR("No inverse modulo");
+		return ;
+    };
 
 	bnum_init(&x);
 	bnum_init(&y);
@@ -14,7 +17,10 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 	bnum_divmod(a, b, NULL, &x);
 
 	if (BNUM_EVEN(&x) && BNUM_EVEN(&y))
-		BNUM_ERROR_EXIT("No inverse modulo: both numbers are even");
+    {
+		BNUM_ERROR("No inverse modulo: both numbers are even");
+		return ;
+    };
 
 	bnum_init_multi(&u, &v, &ta, &tb, &tc, &td, NULL);
 
@@ -67,7 +73,10 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 	} while (!BNUM_ZERO(&u));
 
 	if (bnum_cmp_dig(&v, 1u) != 0)
-		BNUM_ERROR_EXIT("No inverse modulo");
+    {
+		BNUM_ERROR("No inverse modulo");
+		return ;
+    };
 
 	while (bnum_cmp_dig(&tc, 0u) < 0)
 		bnum_add(&tc, b, &tc);

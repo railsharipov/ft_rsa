@@ -2,18 +2,10 @@
 # define SSL_DER_H
 
 #include <stdint.h>
+#include <ssl/ssl.h>
 #include <libft/string.h>
 
-# define DER_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, DER_ERROR_CTX))
-
-enum	e_der_error
-{
-	INVALID_ASN_OBJECT_ID = 1,
-	INVALID_ASN_TYPE_TAG,
-	INVALID_ASN_LEN_TAG,
-	INVALID_DER_ENCODING,
-	UNKNOWN_ASN_OBJECT_ID,
-};
+# define DER_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "der error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct		s_der
 {

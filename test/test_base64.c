@@ -18,7 +18,7 @@ int	test_base64(void)
 	int	res;
 
 	if (SSL_OK != __test_base64_setup())
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	res = __test_base64_encode();
 	res |= __test_base64_decode();
@@ -30,11 +30,11 @@ int	test_base64(void)
 static int	__test_base64_setup(void)
 {
 	if (SSL_OK != test_get_file_content(__binary_file_path, &__binary))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 	if (SSL_OK != test_get_file_content(__base64_file_path, &__base64))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 	if (__binary.size == 0 || __base64.size == 0)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }

@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/asn.h>
 #include <ssl/der.h>
 
@@ -19,12 +18,12 @@ int der_encode_bitstring(t_ostring *osbuf, void *content, size_t size)
 	// expected to be at least 1 byte
 
 	if (NULL == osbuf || NULL == content || size < 1)
-		return (DER_ERROR(INVALID_INPUT));
+		return (DER_ERROR(INVALID_INPUT_ERROR));
 
 	num_unused_bits = ((uint8_t *)content)[0];
 
 	if (num_unused_bits > 7u)
-		return (DER_ERROR(INVALID_INPUT));
+		return (DER_ERROR(INVALID_INPUT_ERROR));
 
 	SSL_ALLOC(osbuf->content, size);
 

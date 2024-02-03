@@ -54,7 +54,7 @@ int	test_bnum(void)
 	int	res;
 
 	if (SSL_OK != __test_bnum_setup())
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	res = __test_bnum_to_hex_u();
 	res |= __test_bnum_from_hex_u();

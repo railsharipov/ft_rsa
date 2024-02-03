@@ -10,7 +10,10 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	bsign = b->sign;
 
 	if (BNUM_ZERO(b))
-		BNUM_ERROR_EXIT("division by zero");
+    {
+		BNUM_ERROR("division by zero");
+		return ;
+    };
 
 	if (bnum_cmp_u(a, b) < 0)
 	{

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/base64.h>
 #include <libft/htable.h>
 
@@ -44,10 +43,10 @@ int	comm_base64(const char **opt, const char *name_comm)
 	int	ret;
 
 	if (NULL == opt)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	if (NULL == (__b64_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	io_init(&__in, IO_READ|IO_STDIN);
 	io_init(&__out, IO_WRITE|IO_STDOUT);
@@ -61,7 +60,7 @@ int	comm_base64(const char **opt, const char *name_comm)
 	ssl_task_htable_del(__b64_htable);
 
 	if (SSL_OK != ret)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 	return (SSL_OK);
 }
 
@@ -74,18 +73,18 @@ static int	__get_task(const char **opt)
 	while (NULL != *opt)
 	{
 		if (NULL == (task = ft_htbl_get(__b64_htable, *opt)))
-			return (SSL_ERROR(INVALID_INPUT));
+			return (BASE64_ERROR(INVALID_INPUT_ERROR));
 
 		__gflag |= task->gflag;
 
 		// if option flag is required
 		if (task->val)
 			if (NULL == * ++opt)
-				return (SSL_ERROR(EXPECTED_OPTION_FLAG));
+				return (BASE64_ERROR("expected option flag"));
 
 		if (NULL != (f_setup = task->ptr))
 			if (SSL_OK != f_setup(*opt, task))
-				return (SSL_ERROR(UNSPECIFIED_ERROR));
+				return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 		opt++;
 	}
@@ -101,13 +100,13 @@ static int	__run_task(void)
 	size_t	outsize;
 
 	if (SSL_OK != __get_input(&input, &insize))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != __f_b64(input, insize, &output, &outsize))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != __write_output(output, outsize))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -136,7 +135,7 @@ static int	__get_input(char **input, size_t *insize)
 	{
 		SSL_FREE(*input);
 		*insize = 0;
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 	}
 
 	return (SSL_OK);
@@ -148,11 +147,11 @@ static int	__write_output(const char *enc, size_t encsize)
 		__out.delim = 0;
 
 	if (io_write(&__out, enc, encsize) < 0)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	if (base64_encode == __f_b64)
 		if (io_write(&__out, "\n", 1) < 0)
-			return (SSL_ERROR(UNSPECIFIED_ERROR));
+			return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -170,7 +169,7 @@ static int	__set_op(const char *opt, const t_task *task)
 static int	__lbrk_io(const char *opt, const t_task *task)
 {
 	if (!ft_str_isdigit(opt))
-		return (SSL_ERROR(INVALID_OPTION_FLAG));
+		return (BASE64_ERROR("invalid option flag"));
 
 	(void)task;
 	__out.lwidth = ft_atoi(opt);
@@ -187,7 +186,7 @@ static int	__init_io(const char *opt, const t_task *task)
 	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 
 	if (SSL_OK != io_init(iodes, task->oflag, opt))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (BASE64_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }

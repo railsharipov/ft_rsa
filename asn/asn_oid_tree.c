@@ -76,7 +76,10 @@ static int	__f_init(t_node *node, const void *farg)
 
 	keys = ft_strsplit(node->key, ':');
 	SSL_FREE(node->key);
-	SSL_CHECK(NULL != keys);
+
+	if (NULL == keys) {
+		return (-1);
+	}
 	node->key = keys[0];
 	node->content = keys[1];
 	SSL_FREE(keys);

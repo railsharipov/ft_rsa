@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/asn.h>
 #include <ssl/base64.h>
 #include <ssl/der.h>
@@ -82,10 +81,10 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	res = SSL_OK;
 
 	if (NULL == asn_pkey)
-		return (RSA_ERROR(INVALID_INPUT));
+		return (RSA_ERROR(INVALID_INPUT_ERROR));
 
 	if (modsize < 64)
-		return (RSA_ERROR(INVALID_RSA_KEY_SIZE));
+		return (RSA_ERROR("invalid rsa key size"));
 
 	if (NULL == (pkey_tree = asn_tree(MAP_RSA_PRIVATE_KEY)))
 		res = SSL_FAIL;
@@ -99,7 +98,7 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	if (SSL_OK != res)
 	{
 		SSL_FREE(pkey_tree);
-		return (RSA_ERROR(FAILED_RSA_KEY_GENERATION));
+		return (RSA_ERROR("failed to generate rsa key"));
 	}
 
 	__get_primes(modsize, seed);

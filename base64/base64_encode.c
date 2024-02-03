@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/base64.h>
 #include <util/bnum.h>
 
@@ -56,7 +55,7 @@ int	base64_encode(const char *mes, size_t messize, char **enc, size_t *encsize)
 
 	if ((NULL == mes) || (NULL == enc) || (NULL == encsize))
 	{
-		return (BASE64_ERROR(INVALID_INPUT));
+		return (BASE64_ERROR(INVALID_INPUT_ERROR));
 	}
 	omes = (unsigned char *)(mes);
 	*encsize = CEIL(messize, MES_BLOCK_SIZE)/MES_BLOCK_SIZE * B64_BLOCK_SIZE;

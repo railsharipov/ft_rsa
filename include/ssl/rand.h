@@ -1,15 +1,11 @@
 #ifndef SSL_RAND_H
 # define SSL_RAND_H
 
+#include <ssl/ssl.h>
+
 # define RAND_DEV	"/dev/random"
 
-# define RAND_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, RAND_ERROR_CTX))
-
-enum	e_rand_error
-{
-	EXPECTED_PASSWORD_INPUT = 1,
-	INVALID_NUMBER_OF_BYTES_READ
-};
+# define RAND_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "rand error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MT_A		0xB5026F5AA96619E9
 # define MT_F		0x5851F42D4C957F2D

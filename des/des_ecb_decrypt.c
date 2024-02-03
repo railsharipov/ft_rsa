@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rand.h>
 #include <ssl/base64.h>
 #include <ssl/des.h>
@@ -120,13 +119,13 @@ int	des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
 	{
-		return (DES_ERROR(INVALID_INPUT));
+		return (DES_ERROR(INVALID_INPUT_ERROR));
 	}
 	mes->content = NULL;
 
 	if (ciph->size % DES_MES_BLOCK_SIZE != 0)
 	{
-		return (DES_ERROR(INVALID_DES_ENCODING));
+		return (DES_ERROR("invalid des encryption"));
 	}
 	__salt = des->salt;
 	__key = des->key;
@@ -134,7 +133,7 @@ int	des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 	if (SSL_OK != __vectors(
 		(unsigned char *)(ciph->content), ciph->size, des->vflag))
 	{
-		return (DES_ERROR(INVALID_DES_ENCODING));
+		return (DES_ERROR("invalid des encryption"));
 	}
 
 	des_permute_key(&__permut_key, __key);

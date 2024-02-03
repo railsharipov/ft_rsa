@@ -13,25 +13,38 @@
 #ifndef FT_SSL_H
 # define FT_SSL_H
 
+# include <string.h>
 # include <ssl/alloc.h>
-# include <ssl/error.h>
-# include <test/check.h>
 # include <libft/htable.h>
+# include <libft/error.h>
+
+# define SSL_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "ssl error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define SSL_FLAG(F,X)		((int)(((X)&(F))==(F)))
-
 # define NONE	0
 
-enum	e_boolean
+# define INVALID_INPUT_ERROR	"invalid input"
+# define UNSPECIFIED_ERROR		"unspecified error"
+# define UNEXPECTED_ERROR		"unexpected error"
+# define NOT_IMPLEMENTED_ERROR	"not implemented"
+
+enum	e_ssl_boolean
 {
 	SSL_FALSE	= 0,
 	SSL_TRUE	= 1,
 };
 
-enum	e_status
+enum	e_ssl_status
 {
 	SSL_FAIL	= -1,
-	SSL_OK		= 0
+	SSL_OK		= 0,
+	SSL_ERR		= 1,
+};
+
+enum	e_ssl_error_level
+{
+	SSL_ERROR_LEVEL_INFO = LIBFT_ERROR_LEVEL_INFO,
+	SSL_ERROR_LEVEL_DEBUG = LIBFT_ERROR_LEVEL_DEBUG,
 };
 
 typedef int		(*FUNC_COM)(const char **, const char *);
@@ -49,19 +62,15 @@ typedef struct	s_task
 	uint32_t	val;
 }				t_task;
 
-void			ssl_exit(uint32_t);
+FUNC_ERR_LOGGER	ssl_error_get_logger(void);
+void			ssl_error_set_logger(FUNC_ERR_LOGGER f_logger);
+void			ssl_error_set_level(uint8_t level);
+int				ssl_error_log(const char *func_name, const char *file_name, int line_number, const char *fmt_prefix, const char *fmt, ...);
+
+void			ssl_print_usage(void);
 char			*ssl_getpass(void);
 int				ssl_setpass(const char *);
 void			ssl_unsetpass(void);
-
-int				comm_base64(const char **, const char *);
-int				comm_hash(const char **, const char *);
-int				comm_des_ecb(const char **, const char *);
-int				comm_des_cbc(const char **, const char *);
-int				comm_rsa_gen(const char **, const char *);
-int				comm_rsa(const char **, const char *);
-int				comm_rsa_utl(const char **, const char *);
-int				comm_test(const char **, const char *);
 
 t_htbl  		*ssl_task_htable(const t_task *, int);
 void			ssl_task_htable_del(const t_htbl *);

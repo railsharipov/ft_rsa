@@ -7,7 +7,10 @@ void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 	int			slen;
 
 	if (num->len > BNUM_MAX_DIG)
-		BNUM_ERROR_EXIT("invalid number size");
+    {
+		BNUM_ERROR("invalid number size");
+		return ;
+    };
 
 	if (num->size < mod->len + 1)
 		bnum_increase_size(num, mod->len + 1);

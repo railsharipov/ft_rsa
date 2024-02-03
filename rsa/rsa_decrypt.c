@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/asn.h>
 #include <ssl/rsa.h>
 #include <ssl/rand.h>
@@ -135,22 +134,22 @@ int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key)
 	if ((NULL == ciph) || (NULL == ciph->content)
 		|| (NULL == mes) || (NULL == asn_key))
 	{
-		return (RSA_ERROR(INVALID_INPUT));
+		return (RSA_ERROR(INVALID_INPUT_ERROR));
 	}
 	mes->content = NULL;
 
 	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
 	{
-		return (RSA_ERROR(INVALID_RSA_KEY_TYPE));
+		return (RSA_ERROR("invalid rsa key type"));
 	}
 	if (SSL_OK != rsa_key_items(asn_key, &__items))
 	{
-		return (RSA_ERROR(INVALID_RSA_KEY));
+		return (RSA_ERROR("invalid rsa key"));
 	}
 	if (SSL_OK != __decrypt(
 		ciph->content, ciph->size, &(mes->content), &(mes->size)))
 	{
-		return (RSA_ERROR(INVALID_RSA_KEY));
+		return (RSA_ERROR("invalid rsa key"));
 	}
 	return (SSL_OK);
 }

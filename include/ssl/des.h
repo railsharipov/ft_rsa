@@ -1,18 +1,13 @@
 #ifndef SSL_DES_H
 # define SSL_DES_H
 
+# include <ssl/ssl.h>
 # include <libft/string.h>
 # include <util/io.h>
 
 # define DES_MES_BLOCK_SIZE	8
 
-# define DES_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, DES_ERROR_CTX))
-
-enum e_des_error
-{
-	INVALID_DES_ENCODING = 1,
-	KEY_DERIVATION_ERROR
-};
+# define DES_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "des error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_des
 {

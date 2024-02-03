@@ -1,5 +1,4 @@
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rand.h>
 #include <ssl/pem.h>
 #include <ssl/base64.h>
@@ -114,20 +113,16 @@ int	pem_encode(
 	char		*pemenc;
 	size_t		pemsize;
 
-	SSL_CHECK(NULL != pem);
-	SSL_CHECK(NULL != content);
-
+	if (NULL == pem || NULL == content) {
+		return (PEM_ERROR(INVALID_INPUT_ERROR));
+	}
 	*pem = NULL;
 
-	if (encrypt)
-	{
-		if (SSL_OK != __crypt_encode(content, &pemenc, &pemsize))
-		{
+	if (encrypt) {
+		if (SSL_OK != __crypt_encode(content, &pemenc, &pemsize)) {
 			return (PEM_ERROR(UNSPECIFIED_ERROR));
 		}
-	}
-	else if (SSL_OK != __encode(content, &pemenc, &pemsize))
-	{
+	} else if (SSL_OK != __encode(content, &pemenc, &pemsize)) {
 		return (PEM_ERROR(UNSPECIFIED_ERROR));
 	}
 	pem_encap(pem, type, pemenc, pemsize);

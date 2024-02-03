@@ -27,7 +27,7 @@ int	test_io(void)
 	int	res;
 
 	if (SSL_OK != __test_io_setup())
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
 
 	res = __test_io_init();
 	res |= __test_io_read();

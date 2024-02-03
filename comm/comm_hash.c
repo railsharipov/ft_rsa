@@ -12,7 +12,6 @@
 
 #include <unistd.h>
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/hash.h>
 #include <libft/htable.h>
 #include <libft/bytes.h>
@@ -82,7 +81,7 @@ static int	__init_hash_func_by_name(const char *name)
 	}
 
 	if (ix >= size)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_ERROR(UNSPECIFIED_ERROR));
 	return (SSL_OK);
 }
 
@@ -132,7 +131,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 	}
 
 	if (rbytes < 0)
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_FLAG(HASH_P, tflag))
 		write(1, buf, rbytes);
@@ -159,15 +158,15 @@ static int	__next_task(const char **opt)
 	if (NONE != task->tflag)
 	{
 		if (NULL == *opt)
-			return (SSL_ERROR(EXPECTED_OPTION_FLAG));
+			return (HASH_ERROR("expected option flag"));
 
 		if (SSL_OK != io_init(&__in, task->oflag, *opt))
-			return (SSL_ERROR(UNSPECIFIED_ERROR));
+			return (HASH_ERROR(UNSPECIFIED_ERROR));
 
 		__sarg = *opt;
 
 		if (SSL_OK != __run_task(task->tflag, __gflag))
-			return (SSL_ERROR(UNSPECIFIED_ERROR));
+			return (HASH_ERROR(UNSPECIFIED_ERROR));
 	}
 	io_close(&__in);
 
@@ -177,9 +176,9 @@ static int	__next_task(const char **opt)
 static int	__default_task(const char **opt)
 {
 	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_ERROR(UNSPECIFIED_ERROR));
 	if (SSL_OK != __run_task(NONE, HASH_Q))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_ERROR(UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -189,19 +188,21 @@ int	comm_hash(const char **opt, const char *name_comm)
 	int	ret;
 
 	__algo = (char *)name_comm;
-	SSL_CHECK(NULL != opt);
 
-	if (SSL_OK != __init_hash_func_by_name(name_comm))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-
-	if (NULL == (hash_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0]))))
-		return (SSL_ERROR(UNSPECIFIED_ERROR));
-
-	if (NULL == *opt)
+	if (NULL == opt) {
+		return HASH_ERROR(INVALID_INPUT_ERROR);
+	}
+	if (SSL_OK != __init_hash_func_by_name(name_comm)) {
+		return (HASH_ERROR(UNSPECIFIED_ERROR));
+	}
+	if (NULL == (hash_htable = ssl_task_htable(T, sizeof(T)/sizeof(T[0])))) {
+		return (HASH_ERROR(UNSPECIFIED_ERROR));
+	}
+	if (NULL == *opt) {
 		ret = __default_task(opt);
-	else
+	} else {
 		ret = __next_task(opt);
-
+	}
 	ssl_task_htable_del(hash_htable);
 
 	return (ret);

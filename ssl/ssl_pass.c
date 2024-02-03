@@ -1,7 +1,6 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <libft/string.h>
 
 static const int	__SSL_PASS_LEN = 128;
@@ -20,14 +19,14 @@ int	__passin(void)
 
 	if (inlen > __SSL_PASS_LEN)
 	{
-		ret = SSL_ERROR(INVALID_PASSWORD_SIZE);
+		ret = SSL_ERROR("invalid password size");
 	}
 	else
 	{
 		ft_memzcpy(__pass, input, sizeof(__pass), inlen);
 		input = getpass("confirm password:");
 		if (ft_strcmp(__pass, input))
-			ret = SSL_ERROR(PASSWORDS_NOT_IDENTICAL);
+			ret = SSL_ERROR("passwords don't match");
 	}
 	ft_bzero(input, _PASSWORD_LEN);
 
@@ -61,7 +60,7 @@ int		ssl_setpass(const char *passin)
 	}
 	if (passin_len > __SSL_PASS_LEN)
 	{
-		return (SSL_ERROR(INVALID_PASSWORD_SIZE));
+		return (SSL_ERROR("invalid password size"));
 	}
 	ft_memcpy(__pass, passin, passin_len);
 

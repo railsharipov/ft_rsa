@@ -27,6 +27,7 @@ DEP_DIRS += $(foreach dir, $(LIBS), $(addprefix $(DEP_PREFIX)/,$(dir)))
 
 SRCS := $(foreach dir, $(MODULES), $(wildcard $(dir)/$(dir)_*.c))
 SRCS += $(foreach dir, $(LIBS), $(wildcard $(dir)/*.c))
+SRCS += main.c
 
 OBJS := $(foreach file, $(SRCS:.c=.o), $(addprefix $(OBJ_PREFIX)/,$(file)))
 

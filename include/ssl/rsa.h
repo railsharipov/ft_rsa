@@ -1,6 +1,7 @@
 #ifndef SSL_RSA_H
 # define SSL_RSA_H
 
+# include <ssl/ssl.h>
 # include <libft/string.h>
 # include <util/io.h>
 # include <util/bnum.h>
@@ -8,17 +9,7 @@
 # define RSA_EXPPUB 65537ULL
 # define RM_TRIALS  20
 
-# define RSA_ERROR(ERROR)	SSL_ERROR(ADD_ERROR_CTX(ERROR, RSA_ERROR_CTX))
-
-enum	e_rsa_error
-{
-	INVALID_RSA_KEY_TYPE = 1,
-	INVALID_RSA_KEY,
-	INVALID_RSA_KEY_SIZE,
-	FAILED_RSA_KEY_GENERATION,
-	INVALID_OCTET_STRING_SIZE,
-	INVALID_INTEGER_SIZE,
-};
+# define RSA_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "rsa error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum  e_rsa
 {

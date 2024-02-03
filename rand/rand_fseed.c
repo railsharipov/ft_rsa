@@ -1,7 +1,6 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
 #include <ssl/ssl.h>
-#include <ssl/error.h>
 #include <ssl/rand.h>
 #include <util/io.h>
 #include <libft/2darray.h>
