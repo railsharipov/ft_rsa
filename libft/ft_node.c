@@ -98,3 +98,11 @@ void ft_node_del_with_f_del(t_node *node, FUNC_CONTENT_DEL f_del)
 		LIBFT_FREE(node);
 	}
 }
+
+int   ft_node_is_parent(t_node *node)
+{
+	if (NULL == node)
+		return (0);
+
+	return (NULL != node->nodes);
+}

@@ -14,8 +14,25 @@
 #include <libft/bytes.h>
 #include <libft/string.h>
 #include <libft/std.h>
+#include <libft/alloc.h>
 
 static const int	COL = 16;
+
+static const char	A[16] = {
+	'0', '1', '2', '3', '4', '5', '6', '7',
+	'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
+
+static const int	B[128] = {
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,
+	48,	48,	48,	48,	48,	48,	48,	48,	48,	48,	0,	0,	0,	0,	0,	0,
+	0,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,
+	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	55,	0,	0,	0,	0,	0,
+	0,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,
+	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
+};
 
 void	ft_bytes_xor(void *res, void *bytes1, void *bytes2, size_t size)
 {
@@ -198,4 +215,91 @@ void	ft_bytes_print_bits(void *ptr, size_t size)
 	}
 	if (i % 8 != 0)
 		write(1, "\n", 1);
+}
+
+void	ft_bytes_reverse_bits(void *ptr, size_t size)
+{
+	unsigned char	*p;
+	unsigned char	num;
+	size_t			i;
+	size_t			j;
+
+	p = ptr;
+	i = 0;
+	while (i < size)
+	{
+		num = 0;
+		j = 0;
+		while (j < 8)
+		{
+			if (p[i] & (1 << j))
+				num |= (1 << (7 - j));
+			j++;
+		}
+		p[i] = num;
+		i++;
+	}
+}
+
+char	*ft_bytes_to_hex(const void *bin, size_t binsize)
+{
+	unsigned char	*bptr;
+	char			*hptr;
+	char			*hex;
+	size_t			hexsize;
+	size_t			ix;
+
+	if (NULL == bin || binsize == 0)
+		return (NULL);
+
+	hexsize = 2*binsize;
+	LIBFT_ALLOC(hex, hexsize+1);
+	hptr = hex;
+	bptr = (unsigned char *)bin;
+
+	for (ix = 0; ix < binsize; ix++)
+	{
+		*hptr++ = A[bptr[ix]>>4];
+		*hptr++ = A[bptr[ix]&0xF];
+	}
+	*hptr = 0;
+
+	ix = 0;
+	while (hex[ix] == '0' && ix < hexsize-1)
+		ix++;
+
+	hptr = hex;
+	hex = ft_strdup(hptr + ix);
+	LIBFT_FREE(hptr);
+
+	return (hex);
+}
+
+void	ft_hex_to_bytes(void *bin, const char *hex, size_t hexsize)
+{
+	unsigned char	*buf;
+	unsigned char	*ptr;
+	size_t			bufsize;
+	ssize_t			ix;
+
+	if ((NULL == hex) || (NULL == bin))
+		return ;
+
+	bufsize = 2 * NBITS_TO_NBYTES(4 * hexsize);
+	LIBFT_ALLOC(buf, bufsize);
+	ft_bzero(buf, bufsize);
+
+	ptr = (unsigned char *)buf+bufsize-1;
+
+	for (ix = hexsize-1; ix >= 0; ix--)
+		*ptr-- = hex[ix] - B[hex[ix] & 0x7F];
+
+	ptr = (unsigned char *)buf;
+
+	for (ix = 0; ix < bufsize/2; ix++)
+	{
+		((unsigned char *)bin)[ix] = *ptr++ << 4;
+		((unsigned char *)bin)[ix] |= *ptr++;
+	}
+	LIBFT_FREE(buf);
 }

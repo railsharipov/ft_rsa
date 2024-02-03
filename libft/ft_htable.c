@@ -16,6 +16,7 @@
 #include <libft/list.h>
 #include <libft/string.h>
 #include <libft/alloc.h>
+#include <libft/queue.h>
 
 static uint32_t	__calculate_hash(const char *key);
 static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, FUNC_CONTENT_DEL f_del);
@@ -26,6 +27,20 @@ static t_node	*__get_node_from_htable(t_htbl *htbl, const char *key);
 static t_node	*__get_node_from_list(t_node *list, const char *key);
 static int		__get_htable_array_idx(t_htbl *htbl, uint32_t hash);
 static void		__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del);
+
+void *ft_htbl_init(int size)
+{
+	t_htbl	*htbl;
+
+	LIBFT_ALLOC(htbl, sizeof(t_htbl));
+
+	htbl->size = MAX(LIBFT_HT_SIZE, size);
+	htbl->size = CEIL(htbl->size, LIBFT_HT_SIZE);
+
+	LIBFT_ALLOC(htbl->arr, htbl->size * sizeof(void *));
+
+	return (htbl);
+}
 
 void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 {
@@ -303,4 +318,35 @@ static void	__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
 	LIBFT_FREE(htbl->arr);
 	htbl->arr = NULL;
 	htbl->size = 0;
+}
+
+t_node	*ft_htbl_iter(t_htbl *htbl)
+{
+	t_queue	*queue;
+	t_node	*iter;
+	t_node	*item;
+	int		idx;
+
+	if ((NULL == htbl) || (NULL == htbl->arr))
+		return (NULL);
+
+	if (NULL == (queue = ft_queue_init()))
+		return (NULL);
+
+	idx = 0;
+	while (idx < htbl->size)
+	{
+		item = htbl->arr[idx++];
+
+		while (NULL != item)
+		{
+			ft_queue_enqueue(queue, NULL, item, 0);
+			item = item->next;
+		}
+	}
+
+	iter = ft_queue_peek(queue);
+	LIBFT_FREE(queue);
+
+	return (iter);
 }
