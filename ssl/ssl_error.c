@@ -27,7 +27,7 @@ int	ssl_error_log(const char *func_name, const char *file_name, int line_number,
 	va_start(va_arg, fmt);
 	prefixed_fmt = ft_strjoin(fmt_prefix, fmt);
 
-	ret = ft_verror_log(func_name, file_name, line_number, fmt, va_arg);
+	ret = ft_verror_log(func_name, file_name, line_number, prefixed_fmt, va_arg);
 
 	SSL_FREE(prefixed_fmt);
 	va_end(va_arg);

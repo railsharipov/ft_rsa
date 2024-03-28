@@ -18,6 +18,6 @@ void	pem_clear(t_pem *);
 int		pem_encode(t_ostring *, t_pem **, const char *type, t_bool encrypt);
 int		pem_decode(t_pem *, const char *type, t_ostring **);
 void	pem_encap(t_pem **, const char *type, char *, size_t);
-int		pem_remove_encap(t_pem *pem, const char *type, char **con, size_t *);
+int		pem_decap(t_pem *pem, const char *type, char **con, size_t *);
 
 #endif

@@ -41,8 +41,10 @@ static int	__init_func(t_node *node, const void *p)
 	strings = ft_strsplit(node->key, ':');
 	num_strings = ft_2darray_len_null_terminated((void **)strings);
 
-	if (NULL == strings || num_strings != 2)
+	if (NULL == strings || num_strings != 2) {
+		ASN_ERROR("invalid asn map: invalid key: %s", node->key);
 		return (-1);
+	}
 
 	ft_strncpy(type_key, strings[0], sizeof(type_key)-1);
 	ft_strncpy(description, strings[1], sizeof(description)-1);
@@ -51,8 +53,10 @@ static int	__init_func(t_node *node, const void *p)
 
 	item = asn_item_init();
 
-	if (SSL_OK != asn_item_set_type(item, type_key))
+	if (SSL_OK != asn_item_set_type(item, type_key)) {
+		ASN_ERROR("failed to set asn item type: %s", type_key);
 		return (-1);
+	}
 
 	item->description = ft_strdup(description);
 	node->content = item;

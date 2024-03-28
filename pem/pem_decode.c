@@ -208,13 +208,13 @@ static int __decode(void)
 
 int pem_decode(t_pem *pem, const char *type, t_ostring **content)
 {
-	if (NULL != pem || NULL != content) {
+	if (NULL == pem || NULL == content) {
 		return (PEM_ERROR(INVALID_INPUT_ERROR));
 	}
 	__encrypted = SSL_FALSE;
 	*content = NULL;
 
-	if (SSL_OK != pem_remove_encap(pem, type, &__content, &__consize)) {
+	if (SSL_OK != pem_decap(pem, type, &__content, &__consize)) {
 		return (PEM_ERROR("invalid pem encoding"));
 	}
 	if (SSL_OK != __decode()) {

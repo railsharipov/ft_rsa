@@ -10,7 +10,7 @@
 #include <libft/htable.h>
 #include <libft/bytes.h>
 
-static char		*TYPE_RSA_PRIVATE_KEY = "RSA PRIVATE KEY";
+static char		*TYPE_RSA_PRIVATE_KEY = "PRIVATE KEY";
 static char		*TYPE_X509_PUBLIC_KEY = "PUBLIC KEY";
 
 static t_htbl	*__rsa_htable;

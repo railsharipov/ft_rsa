@@ -127,7 +127,7 @@ char	**ft_strsplit(char const *s, char c)
 	} else if (num_delims == 0) {
 		nwords = 1;
 	} else {
-		nwords = num_delims + 2;
+		nwords = num_delims + 1;
 	}
 
 	LIBFT_ALLOC(arr, sizeof(char *) * (nwords + 1));

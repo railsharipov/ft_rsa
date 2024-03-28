@@ -2,7 +2,7 @@
 
 extern const uint64_t BNUM_PRIME_TAB[];
 
-int		bnum_prime_test(const t_num *num, int bits, int prob, int verbal)
+int		bnum_prime_test(const t_num *num, int bits, int prob, int verbous)
 {
 	t_num		rnd;
 	uint64_t	rem;
@@ -25,7 +25,7 @@ int		bnum_prime_test(const t_num *num, int bits, int prob, int verbal)
 		if (rem == 0)
 			return (BNUM_FALSE);
 	}
- 	if (verbal)
+ 	if (verbous)
 		ft_printf("%@.");
 
 	bnum_set_dig_u(&rnd, 2);
@@ -44,10 +44,10 @@ int		bnum_prime_test(const t_num *num, int bits, int prob, int verbal)
 			bnum_sub_u(&rnd, num, &rnd);
 		if (!bnum_miller_rabin(num, &rnd))
 			return (BNUM_FALSE);
-		else if (verbal)
+		else if (verbous)
 			ft_printf("%@+");
 	}
-	if (verbal)
+	if (verbous)
 		ft_printf("%@\n");
 
     return (BNUM_TRUE);

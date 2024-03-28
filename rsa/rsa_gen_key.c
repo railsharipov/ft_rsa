@@ -80,23 +80,22 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	pkey_tree = NULL;
 	res = SSL_OK;
 
-	if (NULL == asn_pkey)
+	if (NULL == asn_pkey) {
 		return (RSA_ERROR(INVALID_INPUT_ERROR));
-
-	if (modsize < 64)
+	}
+	if (modsize < 64) {
 		return (RSA_ERROR("invalid rsa key size"));
-
-	if (NULL == (pkey_tree = asn_tree(MAP_RSA_PRIVATE_KEY)))
-		res = SSL_FAIL;
-
-	else if (SSL_OK != rsa_key_items(pkey_tree, &__items))
-		res = SSL_FAIL;
-
-	else if (SSL_OK != rand_fseed(&seed, frand))
-		res = SSL_FAIL;
-
-	if (SSL_OK != res)
-	{
+	}
+	if (NULL == (pkey_tree = asn_tree(MAP_RSA_PRIVATE_KEY))) {
+		res = RSA_ERROR("failed to construct asn tree");
+	}
+	else if (SSL_OK != rsa_key_items(pkey_tree, &__items)) {
+		res = RSA_ERROR("failed to get asn key items");
+	}
+	else if (SSL_OK != rand_fseed(&seed, frand)) {
+		res = RSA_ERROR("failed to create random seed");
+	}
+	if (SSL_OK != res) {
 		SSL_FREE(pkey_tree);
 		return (RSA_ERROR("failed to generate rsa key"));
 	}

@@ -78,7 +78,7 @@ static int __run_task(void)
 		return (RSA_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != pem_encode(
-		(t_ostring *)__der_pkey, &__pem_pkey, "RSA PRIVATE KEY", SSL_FALSE))
+		(t_ostring *)__der_pkey, &__pem_pkey, "PRIVATE KEY", SSL_FALSE))
 			return (RSA_ERROR(UNSPECIFIED_ERROR));
 
 	if (SSL_OK != __write_output())
