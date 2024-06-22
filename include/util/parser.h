@@ -2,6 +2,7 @@
 # define PARSER_H
 
 # include <string.h>
+# include <ssl/ssl.h>
 
 # define RK_PRIME 101
 # define RK_ALPHA 256

@@ -3,6 +3,7 @@
 
 # include <stdint.h>
 # include <libft/string.h>
+# include <ssl/ssl.h>
 
 # define IO_BUFSIZE (256 * 1024)
 
