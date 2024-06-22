@@ -18,7 +18,7 @@
 # include <libft/htable.h>
 # include <libft/error.h>
 
-# define SSL_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "ssl error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define SSL_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_ERROR_LEVEL_ERROR, "ssl error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define SSL_FLAG(F,X)		((int)(((X)&(F))==(F)))
 # define NONE	0
@@ -65,7 +65,7 @@ typedef struct	s_task
 FUNC_ERR_LOGGER	ssl_error_get_logger(void);
 void			ssl_error_set_logger(FUNC_ERR_LOGGER f_logger);
 void			ssl_error_set_level(uint8_t level);
-int				ssl_error_log(const char *func_name, const char *file_name, int line_number, const char *fmt_prefix, const char *fmt, ...);
+int				ssl_error_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt_prefix, const char *fmt, ...);
 
 void			ssl_print_usage(void);
 char			*ssl_getpass(void);

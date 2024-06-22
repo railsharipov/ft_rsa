@@ -17,7 +17,7 @@
 #   define IO_BUFSIZE 256
 # endif
 
-# define IO_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "io error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define IO_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_ERROR_LEVEL_ERROR, "io error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_io
 {

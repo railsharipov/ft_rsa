@@ -23,22 +23,19 @@ typedef int	(*FUNC_ERR_LOGGER)(const char *mes);
 
 enum	e_error_level
 {
-	LIBFT_ERROR_LEVEL_INFO = 0,
+	LIBFT_ERROR_LEVEL_ERROR = 0,
+	LIBFT_ERROR_LEVEL_WARN,
+	LIBFT_ERROR_LEVEL_INFO,
 	LIBFT_ERROR_LEVEL_DEBUG,
+	LIBFT_ERROR_LEVEL_TRACE,
 	LIBFT_NUM_ERROR_LEVELS,
 };
 
-FUNC_ERR_LOGGER	ft_error_get_logger(void);
-void			ft_error_set_logger(FUNC_ERR_LOGGER f_logger);
-void			ft_error_set_level(uint8_t level);
+FUNC_ERR_LOGGER	ft_logger_get_logger(void);
+void			ft_logger_set_logger(FUNC_ERR_LOGGER f_logger);
+void			ft_logger_set_level(uint8_t level);
 
-int	ft_error_log(const char *func_name, const char *file_name, int line_number, const char *fmt, ...);
-int	ft_verror_log(const char *func_name, const char *file_name, int line_number, const char *fmt, va_list va_arg);
-
-int	ft_error_log_info(const char *fmt, ...);
-int	ft_verror_log_info(const char *fmt, va_list va_arg);
-
-int	ft_error_log_debug(const char *func_name, const char *file_name, int line_number, const char *fmt, ...);
-int	ft_verror_log_debug(const char *func_name, const char *file_name, int line_number, const char *fmt, va_list va_arg);
+int	ft_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, va_list va_arg);
 
 #endif

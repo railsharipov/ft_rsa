@@ -5,7 +5,7 @@
 #include <ssl/ssl.h>
 #include <libft/string.h>
 
-# define DER_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "der error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define DER_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_ERROR_LEVEL_ERROR, "der error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct		s_der
 {

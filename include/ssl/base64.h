@@ -9,7 +9,7 @@
 # define B64_C(X)	((((X)>>(6))&(0x3c))|(((X)>>(22))&(0x3)))
 # define B64_D(X)	(((X)>>(16))&(0x3f))
 
-# define BASE64_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "base64 error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define BASE64_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_ERROR_LEVEL_ERROR, "base64 error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_base64_flag
 {

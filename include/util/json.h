@@ -5,7 +5,7 @@
 # include <libft/std.h>
 # include <ssl/ssl.h>
 
-# define JSON_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, "json error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define JSON_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_ERROR_LEVEL_ERROR, "json error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum e_json_type{
     JSON_ARRAY,
