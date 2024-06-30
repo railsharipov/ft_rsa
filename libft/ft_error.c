@@ -18,10 +18,10 @@ void	ft_logger_set_logger(FUNC_ERR_LOGGER f_logger)
 
 void	ft_logger_set_level(uint8_t level)
 {
-	if (level < LIBFT_NUM_ERROR_LEVELS) {
+	if (level < LIBFT_NUM_LOG_LEVELS) {
 		__f_libft_error_level = level;
 	} else {
-		__f_libft_error_level = LIBFT_ERROR_LEVEL_INFO;
+		__f_libft_error_level = LIBFT_LOG_LEVEL_INFO;
 	}
 }
 
