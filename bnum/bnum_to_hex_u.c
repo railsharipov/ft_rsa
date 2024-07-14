@@ -8,39 +8,35 @@ static const char	A[] = "0123456789abcdef";
 char	*bnum_to_hex_u(const t_num *num)
 {
 	char		*hexrev, *hptr, *hex, *hexresult;
-	uint64_t	digit;
 	size_t		hexsize;
-	int			idx, idy, offset;
+	int			idx, offset;
+	t_num		copy;
 
-	if (NULL == num)
+	if (NULL == num) {
 		return (NULL);
-
+	}
+	if (BNUM_ZERO(num)) {
+		return (strdup("0"));
+	}
 	hexsize = NBITS_TO_NWORDS(num->len * BNUM_DIGIT_BIT, 4);
 	BNUM_ALLOC(hexrev, hexsize+1);
 
 	hptr = hexrev;
-	idx = 0;
 
-	while (idx < num->len)
-	{
-		digit = num->val[idx];
+	bnum_init(&copy);
+	bnum_copy(num, &copy);
 
-		idy = 0;
-		while (idy < BNUM_DIGIT_BIT)
-		{
-			*hptr++ = A[(digit >> idy) & 0xF];
-			idy += 4;
-		}
-		idx++;
+	while (!(BNUM_ZERO(&copy))) {
+		*hptr++ = A[copy.val[0] & 0xF];
+		bnum_rsh_bit_inpl(&copy, 4);
 	}
-
 	hexrev[hexsize] = 0;
 	hex = ft_strrev(hexrev);
 
 	offset = 0;
-	while (hex[offset] == '0' && offset < hexsize-1)
+	while (hex[offset] == '0' && offset < hexsize-1) {
 		offset++;
-
+	}
 	hexresult = ft_strdup(hex + offset);
 	BNUM_FREE(hexrev);
 	BNUM_FREE(hex);

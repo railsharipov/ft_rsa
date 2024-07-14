@@ -1,107 +1,172 @@
-#include <sys/ioctl.h>
 #include <util/bnum.h>
 #include <libft/string.h>
 #include <unistd.h>
 
-static void	___in_bar(char *s, unsigned char c)
+static const char A[] = "0123456789abcdef";
+
+char *__to_hex_string(const t_num *num)
 {
-	struct winsize	w;
-	int 			len;
+	char *hexrev, *hptr, *hex;
+	uint64_t digit;
+	size_t hexsize;
+	int idx, idy, offset;
 
-	len = ft_strlen(s);
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+	if (NULL == num) {
+		return (NULL);
+	}
+	if (BNUM_ZERO(num)) {
+		return (strdup("0"));
+	}
+	hexsize = NBITS_TO_NWORDS(num->len * BNUM_DIGIT_BIT, 4);
+	BNUM_ALLOC(hexrev, hexsize + 1);
+	hptr = hexrev;
 
-	ft_printf("\n\033[1m\033[37m");
+	idx = 0;
+	while (idx < num->len) {
+		digit = num->val[idx];
+		idy = 0;
+		while (idy < BNUM_DIGIT_BIT) {
+			*hptr++ = A[(digit >> idy) & 0xF];
+			idy += 4;
+		}
+		idx++;
+	}
+	while (hexsize > 0 && hexrev[hexsize - 1] == '0') {
+		hexsize--;
+	}
+	BNUM_ALLOC(hex, hexsize + 1);
 
-	for (int i = 0; i < 20; i++)
-		ft_printf("%c", c);
+	idx = 0;
+	while (hexsize > 0) {
+		hex[idx++] = hexrev[hexsize-- - 1];
+	}
+	BNUM_FREE(hexrev);
 
-	ft_printf(" %s ", s);
-
-	for (int i = len+22; i < w.ws_col; i++)
-		ft_printf("%c", c);
-	ft_printf("\033[0m\n");
+	return (hex);
 }
 
-static void	___out(const t_num *num)
-{
-	char		*buf;
-	ssize_t		bufsize;
-	const char	dstr[] = "0123456789abcdef";
-	t_num		copy;
-	char		*bptr;
-
-	if (BNUM_ZERO(num))
-		ft_printf("0");
-
-	bufsize = num->len * (BNUM_INT_BIT / 4);
-	BNUM_ALLOC(buf, bufsize + 1);
-	ft_bzero(buf, bufsize + 1);
-
-	bnum_init(&copy);
-	bptr = buf + bufsize - 1;
-	bnum_copy(num, &copy);
-
-	while (!(BNUM_ZERO(&copy)))
-	{
-		*--bptr = dstr[(*(copy.val) & 0xF)];
-		bnum_rsh_bit_inpl(&copy, 4);
+static int	__get_sign(const t_num *num) {
+	if (num->sign == BNUM_NEG) {
+		return ('-');
+	} else if (num->sign == BNUM_POS) {
+		return ('+');
+	} else {
+		return ('?');
 	}
-
-	if (num->sign == BNUM_NEG)
-		ft_printf("-");
-	else if ((BNUM_POS != num->sign) && (BNUM_POS != num->sign))
-		ft_printf("[ NO SIGN ] ");
-
-	ft_printf("%s\n", bptr);
-	bnum_clear(&copy);
-	BNUM_FREE(buf);
 }
 
 void	bnum_print(const char *prefix, const t_num *num)
 {
-	char	*s = NULL;
+	FUNC_ERR_LOGGER	logger;
+	char	*hex;
 	int		bits;
+	char	sign;
 
-	if (prefix)
-	{
-		bits = bnum_lmbit(num);
-		asprintf(&s, "%s [base=16] [len=%d] [bits=%d]",
-			prefix, num->len, bits);
-		___in_bar(s, '_');
-
-		free(s);
+	if (NULL == num || NULL == num->val || num->len == 0) {
+		BNUM_LOG("[none]");
+		return ;
 	}
-	___out(num);
+
+	hex = __to_hex_string(num);
+	sign = __get_sign(num);
+
+	if (prefix) {
+		bits = bnum_lmbit(num);
+		BNUM_LOG("%s: [len=%d, bits=%d, sign=(%c)] %s ", prefix, num->len, bits, sign, hex);
+	} else {
+		BNUM_LOG("[len=%d, bits=%d, sign=(%c)] %s", num->len, bits, sign, hex);
+	}
+
+	BNUM_FREE(hex);
 }
 
 void	bnum_print_raw(const t_num *num)
 {
-	if (num->sign == BNUM_NEG)
-		ft_printf("-");
-	else if ((BNUM_POS != num->sign) && (BNUM_POS != num->sign))
-		ft_printf("[ NO SIGN ]");
+	char	*str;
+	char 	sign;
+	ssize_t	wbytes;
+	ssize_t	tbytes;
+	size_t	slen;
 
-	for (int i = num->len-1; i >= 0; i--)
-		ft_printf("%llu ", num->val[i]);
-	ft_printf("\n");
+	if (NULL == num || NULL == num->val || num->len == 0) {
+		BNUM_LOG("[none]");
+		return ;
+	}
+
+	slen = num->len * (1 + BNUM_DIGIT_BIT);
+	BNUM_ALLOC(str, slen + 1);
+	sign = __get_sign(num);
+
+	tbytes = 0;
+	for (int i = num->len-1; i >= 0; i--) {
+		wbytes = snprintf(str + tbytes, slen - tbytes + 1, "%llu ", num->val[i]);
+		if (wbytes < 0) {
+			BNUM_ERROR("print error");
+			return ;
+		}
+		tbytes += wbytes;
+	}
+	str[tbytes] = 0;
+
+	BNUM_LOG("%c%s", sign, str);
+	BNUM_FREE(str);
 }
 
-void	bnum_print_bits(const t_num *num)
+void	bnum_print_bits(const char *prefix, const t_num *num)
 {
-	if (num->sign == BNUM_NEG)
-		ft_printf("-");
-	else if ((BNUM_POS != num->sign) && (BNUM_POS != num->sign))
-		ft_printf("[ NO SIGN ]");
+	char *str;
+	char sign;
+	size_t	size;
+	size_t 	bitcount;
+	ssize_t wbytes;
+	ssize_t tbytes;
 
-	for (int i = num->len-1; i >= 0; i--)
-	{
-		for (int j = BNUM_DIGIT_BIT-1; j >= 0; j--)
-		{
-			ft_printf("%llu", (num->val[i] >> j) & 0x1);
-			if (j % 5 == 0)
-				ft_printf(" ");
+	if (NULL == num || NULL == num->val || num->len == 0) {
+		BNUM_LOG("[none]");
+		return ;
+	}
+	size = 0;
+	sign = __get_sign(num);
+	size += 1; // sign
+	size += num->len * BNUM_DIGIT_BIT; // bit count
+	size += (num->len * BNUM_DIGIT_BIT) / 4; // spaces between every 4 bits
+	size += num->len - 1; // newlines between every word
+	size += 1; // null character
+	BNUM_ALLOC(str, size);
+
+	tbytes = 0;
+	for (int i = num->len-1; i >= 0; i--) {
+		for (int j = BNUM_DIGIT_BIT; j-- > 0;) {
+			wbytes = snprintf(str + tbytes, 2, "%u", (unsigned int)((num->val[i] >> j) & 0x1));
+			if (wbytes < 0) {
+				BNUM_ERROR("print error");
+				return ;
+			}
+			tbytes += wbytes;
+			if ((BNUM_DIGIT_BIT-j) % 4 == 0 && j != 0) {
+				wbytes = snprintf(str + tbytes, 2, " ");
+				if (wbytes < 0) {
+					BNUM_ERROR("print error");
+					return ;
+				}
+				tbytes += wbytes;
+			}
+		}
+		if (i != 0) {
+			wbytes = snprintf(str + tbytes, 2, "\n");
+			if (wbytes < 0) {
+				BNUM_ERROR("print error");
+				return ;
+			}
+			tbytes += wbytes;
 		}
 	}
-	ft_printf("\n");
+
+	bitcount = bnum_lmbit(num);
+	if (prefix) {
+		BNUM_LOG("%s: [len=%d, bits=%d, sign=(%c)]\n%s", prefix, num->len, bitcount, sign, str);
+	} else {
+		BNUM_LOG("[len=%d, bits=%d, sign=(%c)]\n%s", num->len, bitcount, sign, str);
+	}
+	BNUM_FREE(str);
 }

@@ -7,9 +7,12 @@ void	bnum_rsh_bit_inpl(t_num *num, int bits)
 	uint64_t	carry;
 	uint64_t	val;
 
-	if (bits <= 0)
+	if (bits <= 0) {
 		return ;
-
+	}
+	if (BNUM_ZERO(num)) {
+		return ;
+	}
 	shifts = bits / BNUM_DIGIT_BIT;
 
 	if (shifts >= num->len)

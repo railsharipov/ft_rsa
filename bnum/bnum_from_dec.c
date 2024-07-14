@@ -1,15 +1,16 @@
 #include <util/bnum.h>
 #include <libft/string.h>
 
-void	bnum_from_dec(t_num *num, const char *dec)
+t_num	*bnum_from_dec(const char *dec)
 {
-	char		*decptr;
-	size_t		decsize;
-	size_t		idx;
-	int			sign;
+	t_num	*num;
+	char	*decptr;
+	size_t	decsize;
+	size_t	idx;
+	int		sign;
 
-	if (NULL == dec || NULL == num) {
-		return ;
+	if (NULL == dec) {
+		return (NULL);
 	}
 	if (*dec == '-') {
 		sign = BNUM_NEG;
@@ -19,6 +20,8 @@ void	bnum_from_dec(t_num *num, const char *dec)
 	}
 
 	decsize = ft_strlen(dec);
+
+	num = bnum_create();
 	bnum_set_dig_u(num, 0u);
 
 	idx = 0;
@@ -27,6 +30,7 @@ void	bnum_from_dec(t_num *num, const char *dec)
 		bnum_add_dig(num, ((uint64_t)(dec[idx] - 48)) % 10u, num);
 		idx++;
 	}
-
 	num->sign = sign;
+
+	return (num);
 }

@@ -9,39 +9,47 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	asign = a->sign;
 	bsign = b->sign;
 
-	if (BNUM_ZERO(b))
-    {
+	if (BNUM_ZERO(b)) {
 		BNUM_ERROR("division by zero");
 		return ;
     };
 
 	if (bnum_cmp_u(a, b) < 0)
 	{
-		if (NULL != d)
+		if (NULL != d) {
 			bnum_copy(a, d);
-		if (NULL != c)
+		}
+		if (NULL != c) {
 			bnum_set_dig_u(c, 0);
+		}
 		return ;
 	}
 
-	bnum_init_multi(&t1, &t2, &x, &y, NULL);
+	bnum_init_multi(&x, &y, NULL);
+	bnum_init_with_size(&t1, 2);
+	bnum_init_with_size(&t2, 3);
 	bnum_init_with_size(&q, a->len);
 
 	bnum_abs(a, &x);
 	bnum_abs(b, &y);
 
-	shift = BNUM_DIGIT_BIT - bnum_lmbit(&y) % BNUM_DIGIT_BIT;
-	bnum_lsh_bit_inpl(&x, shift);
-	bnum_lsh_bit_inpl(&y, shift);
+	shift = bnum_lmbit(&y) % BNUM_DIGIT_BIT;
+	if (shift < BNUM_DIGIT_BIT-1) {
+		shift = BNUM_DIGIT_BIT-1 - shift;
+		bnum_lsh_bit_inpl(&x, shift);
+		bnum_lsh_bit_inpl(&y, shift);
+	} else {
+		shift = 0;
+	}
 
 	n = x.len-1;
 	t = y.len-1;
 
 	bnum_lsh_dig_inpl(&y, n-t);
-	while (bnum_cmp(&x, &y) >= 0)
-	{
+
+	while (bnum_cmp(&x, &y) >= 0) {
 		q.val[n-t] += 1u;
-		bnum_sub(&x, &y, &x);
+		bnum_sub_u(&x, &y, &x);
 	}
 
 	bnum_rsh_dig_inpl(&y, n-t);
@@ -86,8 +94,7 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		bnum_lsh_dig_inpl(&t1, i-t-1);
 		bnum_sub(&x, &t1, &x);
 
-		if (x.sign == BNUM_NEG)
-		{
+		if (x.sign == BNUM_NEG) {
 			bnum_copy(&y, &t1);
 			bnum_lsh_dig_inpl(&t1, i-t-1);
 			bnum_add(&x, &t1, &x);
@@ -97,7 +104,7 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 
 	if (c != NULL)
 	{
-		q.len = a->len+2;
+		q.len = a->len;
 		q.sign = asign * bsign;
 		bnum_skip_zeros(&q);
 		bnum_copy(&q, c);

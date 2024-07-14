@@ -4,10 +4,6 @@
 
 int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 {
-	if (BNUM_DIGIT_BIT * BNUM_MAX_DIG < CHAR_BIT * osize)
-	{
-		return (RSA_ERROR("invalid octet string size"));
-	}
 	bnum_from_bytes_u(num, (char *)octets, osize);
 
 	return (SSL_OK);
@@ -18,11 +14,14 @@ int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 	char	*nstr;
 	size_t	nsize;
 
-	if (nsize > CHAR_BIT * osize)
-		return (RSA_ERROR("invalid integer size"));
-
 	SSL_ALLOC(*octets, osize);
 	bnum_to_bytes_u(num, &nstr, &nsize);
+
+	if (nsize > CHAR_BIT * osize) {
+		SSL_FREE(nstr);
+		return (RSA_ERROR("invalid octet buffer size"));
+	}
+
 	ft_memcpy(*octets + osize-nsize, nstr, nsize);
 	SSL_FREE(nstr);
 

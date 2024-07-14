@@ -2,17 +2,13 @@
 
 void    bnum_set_dig_u(t_num *num, uint64_t digit)
 {
-	if (num->len < 2)
-	{
+	if (num->len < 2) {
 		bnum_increase_size(num, 2);
 	}
-	if (digit <= BNUM_MAX_VAL)
-	{
+	if (digit <= BNUM_MAX_VAL) {
 		num->val[0] = digit;
 		num->len = 1;
-	}
-	else
-	{
+	} else {
 		num->val[0] = digit & BNUM_MAX_VAL;
 		num->val[1] = digit >> BNUM_DIGIT_BIT;
 		num->len = 2;

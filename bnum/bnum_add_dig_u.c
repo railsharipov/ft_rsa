@@ -6,9 +6,9 @@ void	bnum_add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 
 	slen = a->len+1;
 
-	if (slen > res->size)
+	if (slen > res->size) {
 		bnum_increase_size(res, slen);
-
+	}
 	{
 		const uint64_t	*aptr;
 		uint64_t		*rptr;
@@ -25,8 +25,7 @@ void	bnum_add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 		}
 		*rptr = (uint64_t)carry;
 	}
-	for (i = slen; i < res->size; i++)
-	{
+	for (i = slen; i < res->size; i++) {
 		res->val[i] = 0;
 	}
 	res->len = slen;

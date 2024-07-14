@@ -36,7 +36,7 @@ void    bnum_set_rand(t_num *num, int bits)
 	for (i = 0; i < len; i++)
 		num->val[i] = num->val[i] & BNUM_MAX_VAL;
 
-	for (; i < BNUM_MAX_DIG; i++)
+	for (; i < num->size; i++)
 		num->val[i] = 0;
 
 	if ((min = bits % BNUM_DIGIT_BIT) != 0)

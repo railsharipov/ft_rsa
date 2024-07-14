@@ -44,7 +44,7 @@ void	bnum_gcd(const t_num *a, const t_num *b, t_num *res)
 	while (!BNUM_ZERO(&y))
 	{
 		if (bnum_cmp_u(&x, &y) > 0)
-			bnum_swap(&x, &y);
+			bnum_swap_values(&x, &y);
 
 		bnum_sub_u(&y, &x, &y);
 

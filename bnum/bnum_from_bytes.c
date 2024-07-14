@@ -9,9 +9,9 @@ void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 	size_t			nbits;
 	int				idx;
 
-	if (NULL == num || NULL == buf)
+	if (NULL == num || NULL == buf) {
 		return ;
-
+	}
 	bnum_set_dig_u(num, 0u);
 
 	if (bufsize == 0)
@@ -20,8 +20,9 @@ void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 	nbits = bufsize * CHAR_BIT;
 	ndigits = NBITS_TO_NWORDS(nbits, BNUM_DIGIT_BIT);
 
-	if (ndigits > num->size)
+	if (ndigits > num->size) {
 		bnum_increase_size(num, ndigits);
+	}
 
 	octets = (unsigned char *)buf;
 

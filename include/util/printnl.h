@@ -3,7 +3,7 @@
 
 # include <stdio.h>
 
-# define printf_dec_format(x)	_Generic((x), \
+# define print_format(x)	_Generic((x), \
 	char: "%c", \
 	const char: "%c", \
 	signed char: "%hhd", \
@@ -37,7 +37,6 @@
 	void *: "%p", \
 	const void *: "%p")
 
-# define print(x)		printf(printf_dec_format(x), x)
-# define printnl(x)		printf(printf_dec_format(x), x), printf("\n");
+# define print(x)		printf(print_format(x), x), printf("\n");
 
 #endif

@@ -6,9 +6,9 @@ void	bnum_montgomery_reduce(t_num *num, const t_num *mod, uint64_t rho)
 
 	digs = (mod->len * 2) + 1;
 
-	if ((digs < BNUM_MAX_WDIG)
-		&& (num->len <= BNUM_MAX_WDIG)
-		&& (mod->len < BNUM_MAX_DIG_COMBA))
+	if ((digs < BNUM_MAX_WDIG_COUNT)
+		&& (num->len <= BNUM_MAX_WDIG_COUNT)
+		&& (mod->len < BNUM_MAX_DIG_COUNT_COMBA))
 	{
 		bnum_montgomery_fast_reduce(num, mod, rho);
 		return ;

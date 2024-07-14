@@ -174,7 +174,7 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 	while (node != NULL)
 	{
 		item = node->content;
-		__add_node_to_htable(&new_htbl, item->key, item->content, item->f_del);
+		__add_node_to_htable(&new_htbl, item->key, item->content, item->f_del_content);
 		node = node->next;
 		idx++;
 	}
@@ -233,11 +233,11 @@ static t_node	*__create_htable_node(const char *key, void *content, uint32_t has
 
 static void 	__assign_content_to_node(t_node *node, void *content, FUNC_CONTENT_DEL f_del)
 {
-	if (node->f_del) {
-		node->f_del(node->content);
+	if (node->f_del_content) {
+		node->f_del_content(node->content);
 	}
 	node->content = content;
-	node->f_del = f_del;
+	node->f_del_content = f_del;
 }
 
 static t_node	*__get_list_from_htable(t_htbl *htbl, uint32_t hash)

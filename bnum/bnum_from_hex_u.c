@@ -12,24 +12,24 @@ static const int	A[128] = {
 	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
 };
 
-void	bnum_from_hex_u(t_num *num, const char *hex)
+t_num	*bnum_from_hex_u(const char *hex)
 {
+	t_num		*num;
 	size_t		hexsize;
 	int			nbits;
 	int			nwords;
 	uint64_t	bitblock;
 	int			idx;
 
-	if (NULL == hex || NULL == num)
-		return ;
+	if (NULL == hex)
+		return (NULL);
 
 	hexsize = ft_strlen(hex);
 	nbits = 4 * hexsize;
 	nwords = NBITS_TO_NWORDS(nbits, BNUM_DIGIT_BIT);
 
-	if (num->size < nwords) {
-		bnum_increase_size(num, nwords);
-	}
+	num = bnum_create();
+	bnum_init_with_size(num, nwords);
 	bnum_set_dig_u(num, 0u);
 
 	idx = 0;
@@ -43,4 +43,6 @@ void	bnum_from_hex_u(t_num *num, const char *hex)
 	num->len = nwords;
 	num->sign = BNUM_POS;
 	bnum_skip_zeros(num);
+
+	return (num);
 }

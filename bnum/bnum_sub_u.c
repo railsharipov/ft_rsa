@@ -2,10 +2,11 @@
 
 void	bnum_sub_u(const t_num *a, const t_num *b, t_num *res)
 {
-	int 	slen, i;
+	size_t 	i;
 
-	slen = BNUM_MAX(a->len, b->len);
-
+	if (res->size < a->len) {
+		bnum_increase_size(res, a->len);
+	}
 	{
 		const uint64_t	*aptr, *bptr;
 		uint64_t		borrow, *rptr;
@@ -15,17 +16,20 @@ void	bnum_sub_u(const t_num *a, const t_num *b, t_num *res)
 		rptr = res->val;
 
 		borrow = 0;
-		for (int i = 0; i < slen; i++)
+		for (i = 0; i < b->len; i++)
 		{
-			*rptr = (*aptr++ - *bptr++) - borrow;
-			borrow = *rptr >> (BNUM_INT_BIT-1u);
+			*rptr = ((BNUM_BASE + *aptr++) - *bptr++) - borrow;
+			borrow = (~(*rptr >> BNUM_DIGIT_BIT)) & 0x1;
+			*rptr++ &= BNUM_MAX_VAL;
+		}
+		for (; i < a->len; i++)
+		{
+			*rptr = (BNUM_BASE + *aptr++) - borrow;
+			borrow = (~(*rptr >> BNUM_DIGIT_BIT)) & 0x1;
 			*rptr++ &= BNUM_MAX_VAL;
 		}
 	}
 
-	for (i = slen; i < res->size; i++)
-		res->val[i] = 0;
-
-	res->len = slen;
+	res->len = a->len;
 	bnum_skip_zeros(res);
 }

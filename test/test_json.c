@@ -1,3 +1,4 @@
+#include <libft/list.h>
 #include <ssl/ssl.h>
 #include <test/test.h>
 #include <util/json.h>
@@ -7,6 +8,7 @@
 static int	__test_json_setup(void);
 static void	__test_json_cleanup(void);
 
+static int	__test_json_query(void);
 static int	__test_json_parse_simple_string(void);
 static int	__test_json_parse_simple_number(void);
 static int	__test_json_parse_simple_boolean(void);
@@ -37,6 +39,7 @@ int	test_json(void)
 	}
 	res = SSL_OK;
 
+	res |= __test_json_query();
 	res |= __test_json_parse_simple_string();
 	res |= __test_json_parse_simple_number();
 	res |= __test_json_parse_simple_boolean();
@@ -79,6 +82,46 @@ static void	__test_json_cleanup(void)
 	return ;
 }
 
+static int __test_json_query(void)
+{
+	t_node *json_lst;
+	t_node *json_node;
+	t_num *num;
+	int ret;
+	int pass;
+
+	pass = SSL_OK;
+	json_lst = NULL;
+
+	num = bnum_from_dec("0");
+
+	json_node = ft_node_new_with_f_del(NULL, num, sizeof(*num), json_get_f_del(JSON_NUMBER));
+	ft_lst_append(&json_lst, json_node);
+
+	json_node = ft_node_new_with_f_del(NULL, "\"apple\"", 5, json_get_f_del(JSON_CSTR));
+	ft_lst_append(&json_lst, json_node);
+
+	json_node = ft_node_new_with_f_del(NULL, "null", 4, json_get_f_del(JSON_NULL));
+	ft_lst_append(&json_lst, json_node);
+
+	json_node = ft_node_new_with_f_del(NULL, "true", 4, json_get_f_del(JSON_BOOLEAN));
+	ft_lst_append(&json_lst, json_node);
+
+	char *json_s = "[ 0, 'apple', null, true ]";
+	size_t json_slen;
+
+	// json_s = ft_ostr_to_cstr(&__complex_array_json, 0, __complex_array_json.size);
+	// json_slen = ft_strlen(json_s);
+
+	// assert(json_slen >= 2);
+	// assert(json_s[0] == '[');
+	// assert(json_s[json_slen - 1] == ']');
+
+	
+
+	return (TEST_PASS());
+}
+
 static int	__test_json_parse_simple_string(void)
 {
 	t_node	*node;
@@ -106,7 +149,7 @@ static int	__test_json_parse_simple_string(void)
 	pass |= TEST_ASSERT(node->size == ref_slen);
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(ft_strcmp(node->content, ref_s) == 0);
-	pass |= TEST_ASSERT(node->f_del != NULL);
+	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -135,15 +178,15 @@ static int	__test_json_parse_simple_number(void)
 	ret = json_parse(json_s, &node);
 	pass |= TEST_ASSERT(SSL_OK == ret);
 
-	ref_num = bnum_create();
-	bnum_from_dec(ref_num, json_s);
+	ref_num = bnum_from_dec(json_s);
 
 	pass |= TEST_ASSERT(node->type == JSON_NUMBER);
 	pass |= TEST_ASSERT(node->size == sizeof(t_num));
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(bnum_cmp((t_num *)node->content, ref_num) == 0);
-	pass |= TEST_ASSERT(node->f_del != NULL);
+	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
+	bnum_del(ref_num);
 	SSL_FREE(json_s);
 	json_del(node);
 
@@ -180,7 +223,7 @@ static int	__test_json_parse_simple_boolean(void)
 	pass |= TEST_ASSERT(node->size == sizeof(uint8_t));
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(*(uint8_t *)node->content == 0u);
-	pass |= TEST_ASSERT(node->f_del != NULL);
+	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -202,7 +245,7 @@ static int	__test_json_parse_simple_boolean(void)
 	pass |= TEST_ASSERT(node->size == sizeof(uint8_t));
 	pass |= TEST_ASSERT(node->content != NULL);
 	pass |= TEST_ASSERT(*(uint8_t *)node->content == 1u);
-	pass |= TEST_ASSERT(node->f_del != NULL);
+	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -236,7 +279,7 @@ static int	__test_json_parse_simple_null(void)
 	pass |= TEST_ASSERT(node->type == JSON_NULL);
 	pass |= TEST_ASSERT(node->size == 0);
 	pass |= TEST_ASSERT(node->content == NULL);
-	pass |= TEST_ASSERT(node->f_del != NULL);
+	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
 	SSL_FREE(json_s);
 	json_del(node);

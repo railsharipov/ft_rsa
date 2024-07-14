@@ -23,7 +23,7 @@ void	(ft_node_init)(t_node *node)
 void	ft_node_init_with_f_del(t_node *node, FUNC_CONTENT_DEL f_del)
 {
 	ft_bzero(node, sizeof(t_node));
-	node->f_del = f_del;
+	node->f_del_content = f_del;
 }
 
 t_node *(ft_node_create)(void)
@@ -40,7 +40,7 @@ t_node *ft_node_create_with_f_del(FUNC_CONTENT_DEL f_del)
 	t_node	*node;
 
 	LIBFT_ALLOC(node, sizeof(t_node));
-	node->f_del = f_del;
+	node->f_del_content = f_del;
 
 	return (node);
 }
@@ -80,8 +80,8 @@ t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, FUNC
 void	(ft_node_del)(t_node *node)
 {
 	if (NULL != node) {
-		if (NULL != node->f_del) {
-			node->f_del(node->content);
+		if (NULL != node->f_del_content) {
+			node->f_del_content(node->content);
 		}
 		LIBFT_FREE(node->key);
 		LIBFT_FREE(node);

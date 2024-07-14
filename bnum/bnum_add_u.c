@@ -2,11 +2,14 @@
 
 void	bnum_add_u(const t_num *a, const t_num *b, t_num *res)
 {
-	int 	slen, i;
+	size_t 	slen, i;
 
-	slen = BNUM_MAX(a->len, b->len)+1;
+	if (a->len < b->len) {
+		BNUM_SWAP_PTR(a, b);
+	}
+	slen = a->len + 1;
 
-	if (slen > res->len) {
+	if (res->size < slen) {
 		bnum_increase_size(res, slen);
 	}
 	{
@@ -17,19 +20,21 @@ void	bnum_add_u(const t_num *a, const t_num *b, t_num *res)
 		bptr = b->val;
 		rptr = res->val;
 		carry = 0;
-		for (i = 0; i < slen-1; i++)
+		for (i = 0; i < b->len; i++)
 		{
 			*rptr = *aptr++ + *bptr++ + carry;
+			carry = *rptr >> BNUM_DIGIT_BIT;
+			*rptr++ &= BNUM_MAX_VAL;
+		}
+		for (; i < a->len; i++)
+		{
+			*rptr = *aptr++ + carry;
 			carry = *rptr >> BNUM_DIGIT_BIT;
 			*rptr++ &= BNUM_MAX_VAL;
 		}
 		*rptr = carry;
 	}
 
-	for (i = slen; i < res->size; i++)
-	{
-		res->val[i] = 0;
-	}
 	res->len = slen;
 	bnum_skip_zeros(res);
 }

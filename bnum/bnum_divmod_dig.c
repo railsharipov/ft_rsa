@@ -7,18 +7,18 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	uint64_t	digit;
 	int			idx;
 
-	if (b == 0)
-    {
+	if (b == 0) {
 		BNUM_ERROR("division by zero");
 		return ;
     };
 
-	if (b == 1 || BNUM_ZERO(a))
-	{
-		if (NULL != c)
+	if (b == 1 || BNUM_ZERO(a)) {
+		if (NULL != c) {
 			bnum_copy(a, c);
-		if (NULL != d)
+		}
+		if (NULL != d) {
 			*d = 0;
+		}
 		return ;
 	}
 
@@ -50,10 +50,11 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 		bnum_divmod(a, &x, &q, &r);
 
-		if (r.len == 2)
+		if (r.len == 2) {
 			*d = (r.val[1] << BNUM_DIGIT_BIT) | (r.val[0] & BNUM_MAX_VAL);
-		else
+		} else {
 			*d = r.val[0] & BNUM_MAX_VAL;
+		}
 
 		bnum_copy(&q, c);
 		bnum_clear_multi(&x, &r, &q, NULL);
@@ -63,33 +64,28 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 	val = 0u;
 
-	for (idx = BNUM_MAX_DIG-1; idx > a->len-1; idx--)
-		q.val[idx] = 0;
-
-	for (; idx >= 0; idx--)
+	for (idx = a->len-1; idx >= 0; idx--)
 	{
 		val = (val << BNUM_DIGIT_BIT) | ((uint128_t)a->val[idx]);
 
-		if (val >= b)
-		{
+		if (val >= b) {
 			digit = val / (uint128_t)b;
 			val %= (uint128_t)b;
-		}
-		else
+		} else {
 			digit = 0u;
-
+		}
 		q.val[idx] = digit;
 	}
 
-	if (NULL != c)
-	{
+	if (NULL != c) {
 		q.len = a->len;
 		q.sign = a->sign;
 		bnum_skip_zeros(&q);
 		bnum_copy(&q, c);
 	}
-	if (NULL != d)
+	if (NULL != d) {
 		*d = val & BNUM_MAX_VAL;
+	}
 
 	bnum_clear(&q);
 }

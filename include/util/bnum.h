@@ -7,6 +7,7 @@
 # include <libft/std.h>
 # include <libft/alloc.h>
 # include <libft/error.h>
+# include <util/printnl.h>
 
 # define SSL_PRIME_TEST
 
@@ -23,8 +24,11 @@
 # define BNUM_BASE		((uint64_t)1 << (BNUM_DIGIT_BIT))
 # define BNUM_MAX_VAL	((BNUM_BASE) - 1)
 # define BNUM_MSB_VAL	((BNUM_BASE) >> 1)
-# define BNUM_MAX_DIG	(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT))
-# define BNUM_MAX_WDIG	(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT + 1))
+
+# define BNUM_MAX_DIG_COUNT  		((INT_MAX - 2) / BNUM_DIGIT_BIT)
+# define BNUM_MIN_DIG_COUNT  		((BNUM_INT_BIT + BNUM_DIGIT_BIT) - 1) / BNUM_DIGIT_BIT
+# define BNUM_MAX_WDIG_COUNT		(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT + 1))
+# define BNUM_MAX_DIG_COUNT_COMBA	(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT))
 
 # define BNUM_NEG		-1
 # define BNUM_POS		1
@@ -32,7 +36,6 @@
 # define BNUM_FALSE		0
 # define BNUM_KAR_THRES	80
 
-# define BNUM_MAX_DIG_COMBA		(1 << (BNUM_WORD_BIT - 2*BNUM_DIGIT_BIT))
 
 # define BNUM_MAX(A,B)	((A)>(B)?(A):(B))
 # define BNUM_MIN(A,B)	((A)<(B)?(A):(B))
@@ -42,7 +45,8 @@
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
 # define BNUM_SIGN(X)	(((X)->sign == BNUM_NEG)?(BNUM_NEG):(BNUM_POS))
 
-# define BNUM_ERROR(MES, ...) ft_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, MES __VA_OPT__(,) __VA_ARGS__)
+# define BNUM_ERROR(MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, MES __VA_OPT__(,) __VA_ARGS__)
+# define BNUM_LOG(MES, ...) 	ft_logger_log(NULL, NULL, 0, LIBFT_LOG_LEVEL_INFO, MES __VA_OPT__(, ) __VA_ARGS__)
 
 # define BNUM_ALLOC(PTR, SZ)		LIBFT_ALLOC(PTR, SZ)
 # define BNUM_REALLOC(PTR, SZ, NSZ)	LIBFT_REALLOC(PTR, SZ, NSZ)
@@ -58,6 +62,14 @@ typedef struct			s_num
 	int 			len;
 	int				sign;
 }					t_num;
+
+#define BNUM_SWAP_PTR(X, Y) \
+	do                      \
+	{                       \
+		const t_num *T = X; \
+		X = Y;              \
+		Y = T;              \
+	} while (0)
 
 void    bnum_abs(const t_num *, t_num *);
 void    bnum_add(const t_num *, const t_num *, t_num *);
@@ -79,8 +91,8 @@ void    bnum_divmod_dig(const t_num *, uint64_t, t_num *, uint64_t *);
 void    bnum_exp(const t_num *, uint64_t, t_num *);
 void    bnum_exp2(t_num *, int);
 void    bnum_from_bytes_u(t_num *, const char *, int);
-void    bnum_from_dec(t_num *num, const char *dec);
-void    bnum_from_hex_u(t_num *num, const char *hex);
+t_num   *bnum_from_dec(const char *dec);
+t_num   *bnum_from_hex_u(const char *hex);
 void    bnum_gcd(const t_num *, const t_num *, t_num *);
 void    bnum_increase_size(t_num *, size_t newsize);
 void    bnum_increm_u(t_num *);
@@ -107,7 +119,7 @@ void    bnum_mul_karatsuba(const t_num *, const t_num *, t_num *);
 void    bnum_powmod(const t_num *, const t_num *, const t_num *, t_num *);
 int     bnum_prime_test(const t_num *, int, int, int);
 void    bnum_print(const char *, const t_num *);
-void    bnum_print_bits(const t_num *);
+void 	bnum_print_bits(const char *, const t_num *);
 void    bnum_print_raw(const t_num *);
 void    bnum_bzero(t_num *);
 int     bnum_rmbit(const t_num *);
@@ -124,7 +136,7 @@ void    bnum_sub(const t_num *, const t_num *, t_num *);
 void    bnum_sub_dig(const t_num *, uint64_t, t_num *);
 void    bnum_sub_dig_u(const t_num *, uint64_t, t_num *);
 void    bnum_sub_u(const t_num *, const t_num *, t_num *);
-void    bnum_swap(t_num *, t_num *);
+void    bnum_swap_values(t_num *, t_num *);
 void    bnum_to_bytes_u(const t_num *, char **, size_t *);
 char 	*bnum_to_dec(const t_num *num);
 char 	*bnum_to_hex_u(const t_num *num);

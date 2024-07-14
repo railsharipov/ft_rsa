@@ -48,14 +48,6 @@ void    ft_free_all(void);
 
 # if defined (LIBFT_MEM_ALLOC)
 
-#  define MEM_ERROR() \
-	do \
-	{ \
-		ft_printf("%@critical memory error %d\n", global_libft_alloc_error); \
-		ft_printf("%@\t%s in %s:%d\n", __func__, __FILE__, __LINE__); \
-	} \
-	while (0)
-
 #  define LIBFT_FREE(PTR) \
 	do \
 	{ \
@@ -63,11 +55,10 @@ void    ft_free_all(void);
 		{ \
 			ft_free(#PTR, PTR); \
 			\
-			if (LIBFT_OK != global_libft_alloc_error) \
+			if (LIBFT_OK == global_libft_alloc_error) \
 			{ \
-				MEM_ERROR() \
+				PTR = NULL; \
 			} \
-			PTR = NULL; \
 		} \
 	} \
 	while (0)
@@ -78,7 +69,6 @@ void    ft_free_all(void);
 		PTR = ft_malloc(#PTR, SZ); \
 		if (LIBFT_OK != global_libft_alloc_error) \
 		{ \
-			MEM_ERROR() \
 			PTR = NULL; \
 		} \
 	} \
@@ -91,7 +81,6 @@ void    ft_free_all(void);
 		NEWPTR = ft_malloc(#PTR "_realloc_", NSZ); \
 		if (LIBFT_OK != global_libft_alloc_error) \
 		{ \
-			MEM_ERROR() \
 			NEWPTR = NULL; \
 		} \
 		if (NULL != PTR && NULL != NEWPTR) \
@@ -122,7 +111,6 @@ void    ft_free_all(void);
 		PTR = malloc(SZ); \
 		if (ENOMEM == errno) \
 		{ \
-			perror(TXT_RED("critical memory error")); \
 			PTR = NULL; \
 		} \
 		else \

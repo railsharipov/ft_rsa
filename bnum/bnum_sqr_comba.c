@@ -12,7 +12,7 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 	if (ndig > res->size)
 		bnum_increase_size(res, ndig);
 
-	BNUM_ALLOC(temp, sizeof(uint64_t) * BNUM_MAX_DIG);
+	BNUM_ALLOC(temp, sizeof(uint64_t) * ndig);
 
 	for (int idx = 0; idx < ndig; idx++)
 	{

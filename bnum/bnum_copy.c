@@ -1,18 +1,18 @@
 #include <util/bnum.h>
 
-void	bnum_copy(const t_num *a, t_num *res)
+void	bnum_copy(const t_num *src, t_num *dst)
 {
 	int i;
 
-	if (a->len > res->size)
-		bnum_increase_size(res, a->len);
-
-	for (i = 0; i < a->len; i++)
-		res->val[i] = a->val[i];
-
-	for (i = a->len; i < res->size; i++)
-		res->val[i] = 0;
-
-	res->len = a->len;
-	res->sign = a->sign;
+	if (src->len > dst->size) {
+		bnum_increase_size(dst, src->len);
+	}
+	for (i = 0; i < src->len; i++) {
+		dst->val[i] = src->val[i];
+	}
+	for (i = src->len; i < dst->size; i++) {
+		dst->val[i] = 0;
+	}
+	dst->len = src->len;
+	dst->sign = src->sign;
 }

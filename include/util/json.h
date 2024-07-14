@@ -7,7 +7,7 @@
 
 # define JSON_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "json error: ", MES __VA_OPT__(,) __VA_ARGS__)
 
-enum e_json_type{
+enum e_json_type {
     JSON_ARRAY,
     JSON_OBJECT,
     JSON_CSTR,
@@ -18,5 +18,7 @@ enum e_json_type{
 
 int     json_parse(const char *s, t_node **node);
 void	json_del(t_node *node);
+
+FUNC_CONTENT_DEL	json_get_f_del(enum e_json_type);
 
 #endif
