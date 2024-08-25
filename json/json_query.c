@@ -6,14 +6,27 @@
 #include <libft/string.h>
 #include <libft/list.h>
 
-ssize_t __get_node(t_node *node, const char *s, t_node **ret_node);
+enum e_select_type {
+	JSON_SELECT_KEY = 0,
+	JSON_SELECT_INDEX,
+	JSON_INVALID_SELECTOR
+};
+
+struct	s_selector {
+	enum e_select_type	type;
+	char				*key;
+};
+
+struct t_node *__get_selectors(t_node *node, const char *s);
 ssize_t __get_object_by_key(t_node *node, const char *s, t_node **ret_node);
 ssize_t __get_object_by_selector(t_node *node, const char *s, t_node **ret_node);
+ssize_t __get_string_key(const char *s, char **ret);
 
 t_node *json_query(t_node *json_node, const char *s)
 {
 	ssize_t	rbytes;
 	t_node	*ret_node;
+	t_node	*selectors;
 
 	ret_node = NULL;
 
@@ -21,44 +34,150 @@ t_node *json_query(t_node *json_node, const char *s)
 		return (NULL);
 	}
 
-	while (ft_iseolws(*s)) {
-		s++;
-	}
-
-	rbytes = __get_node(json_node, s, &ret_node);
+	selectors = __get_selectors(json_node, s);
 
 	return (ret_node);
 }
 
-ssize_t __get_node(t_node *node, const char *s, t_node **ret_node)
-{
-	t_node	*target_node;
-	ssize_t	rbytes;
+void	__f_del_selector(void *content) {
+	struct s_selector *selector;
 
-	rbytes = 0;
-	target_node = NULL;
+	selector = (struct s_selector *)content;
 
-	if (*s == '.') {
-		return(__get_node(target_node, s + 1, ret_node));
-	} else if (*s == '[') {
-		rbytes = __get_object_by_selector(node, s, &target_node);
-	} else {
-		rbytes = __get_object_by_key(node, s, &target_node);
+	if (NULL != selector) {
+		SSL_FREE(selector->key);
+		SSL_FREE(selector);
 	}
+}
+
+struct t_node *__get_selectors(t_node *node, const char *s)
+{
+	t_node	*selectors;
+	struct s_selector	*selector;
+	ssize_t	rbytes, tbytes;
+
+	tbytes = 0;
+	selectors = NULL;
+
+	while (s[tbytes] != 0) {
+		while (ft_iseolws(*s)) {
+			tbytes++;
+		}
+		SSL_ALLOC(selector, sizeof(struct s_selector));
+
+		rbytes = __get_selector(s + tbytes, selector);
+
+		ft_lst_append(&selectors, ft_node_new(NULL, selector, sizeof(struct s_selector)));
+
+		if (rbytes < 0) {
+			break ;
+		}
+		tbytes += rbytes;
+	}
+	if (rbytes < 0) {
+		ft_lst_del(selectors, __f_del_selector);
+		return (NULL);
+	}
+	return (selectors);
+}
+
+ssize_t __get_selector(const char *s, struct s_selector *selector) {
+	ssize_t	tbytes, rbytes;
+
+	selector->key = NULL;
+	selector->type = JSON_INVALID_SELECTOR;
+	tbytes = 0;
+
+	if (s[tbytes] == '.') {
+		selector->type = JSON_SELECT_KEY;
+		rbytes = __get_dot_key(s, &(selector->key));
+	} else if (s[tbytes] == '[') {
+		tbytes++;
+		if (s[tbytes] == '"') {
+			selector->type = JSON_SELECT_KEY;
+			rbytes = __get_string_key(s, &(selector->key));
+		} else {
+			selector->type = JSON_SELECT_INDEX;
+			rbytes = __get_index_key(s, &(selector->key));
+		}
+	} else {
+		JSON_ERROR("Invalid object selector");
+		return (-1);
+	}
+	if (rbytes < 0) {
+		return (-1);
+	}
+	tbytes += rbytes;
+	return (tbytes);
+}
+
+ssize_t __get_dot_key(const char *s, char **ret) {
+	ssize_t	tbytes, rbytes;
+
+	tbytes = 1; // skip dot
+	rbytes = __get_string_key(s + tbytes, &ret);
 
 	if (rbytes < 0) {
 		return (-1);
 	}
+	tbytes += rbytes;
 
-	while (ft_iseolws(s[rbytes])) {
-		rbytes++;
+	return (tbytes);
+}
+
+ssize_t __get_index_key(const char *s, char **ret) {
+	ssize_t	tbytes, begin, rbytes;
+	char	quote;
+
+	tbytes = 1; // skip square bracket
+	rbytes = __get_string_key(s + tbytes, &ret);
+
+	if (rbytes < 0) {
+		return (-1);
 	}
-	if (s[rbytes] == 0) {
-		*ret_node = target_node;
-		return (rbytes);
+	tbytes += rbytes;
+
+	if (s[tbytes] != ']') {
+		JSON_ERROR("Expected matching `]` for index key");
+		return (-1);
+	} else {
+		tbytes++;
 	}
 
-	return (__get_node(target_node, s + rbytes, ret_node));
+	return (tbytes);
+}
+
+ssize_t __get_string_key(const char *s, char **ret) {
+	char	*key;
+	ssize_t	idx;
+	ssize_t	begin;
+	char	quote;
+
+	*ret = NULL;
+	idx = 0;
+
+	if (s[idx] == '"') {
+		quote = s[idx++];
+	} else {
+		quote = 0;
+	}
+	begin = idx;
+
+	while(ft_isalnum(s[idx])) {
+		idx++;
+	}
+	key = ft_strsub(s, begin, idx);
+
+	if (quote) {
+		if (s[idx] == quote) {
+			idx++;
+		} else {
+			JSON_ERROR("Expected matching `%c` end of string for key: `%s`", quote, key);
+			return (-1);
+		}
+	}
+	*ret = key;
+	return (idx);
 }
 
 ssize_t __get_object_by_key(t_node *node, const char *s, t_node **ret_node)
