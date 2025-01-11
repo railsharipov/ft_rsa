@@ -16,10 +16,11 @@
 # include <string.h>
 # include <ssl/alloc.h>
 # include <libft/htable.h>
-# include <libft/error.h>
+# include <libft/logger.h>
 
-# define SSL_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "ssl error: ", MES __VA_OPT__(,) __VA_ARGS__)
-# define SSL_LOG(MES, ...) 		ft_logger_log(NULL, NULL, 0, LIBFT_LOG_LEVEL_INFO, MES __VA_OPT__(, ) __VA_ARGS__)
+# define SSL_ERROR(MES, ...)	ssl_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
+# define SSL_INFO(MES, ...) 	ssl_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_INFO, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
+# define SSL_DEBUG(MES, ...)	ssl_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_DEBUG, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define SSL_FLAG(F,X)		((int)(((X)&(F))==(F)))
 # define NONE	0
@@ -29,22 +30,16 @@
 # define UNEXPECTED_ERROR		"unexpected error"
 # define NOT_IMPLEMENTED_ERROR	"not implemented"
 
-	enum e_ssl_boolean {
-		SSL_FALSE = 0,
-		SSL_TRUE = 1,
-	};
+enum e_ssl_boolean {
+	SSL_FALSE 	= 0,
+	SSL_TRUE 	= 1,
+};
 
 enum	e_ssl_status
 {
-	SSL_FAIL	= -1,
 	SSL_OK		= 0,
 	SSL_ERR		= 1,
-};
-
-enum	e_ssl_error_level
-{
-	SSL_ERROR_LEVEL_INFO = LIBFT_LOG_LEVEL_INFO,
-	SSL_ERROR_LEVEL_DEBUG = LIBFT_LOG_LEVEL_DEBUG,
+	SSL_STATUS_COUNT
 };
 
 typedef int		(*FUNC_COM)(const char **, const char *);
@@ -62,10 +57,12 @@ typedef struct	s_task
 	uint32_t	val;
 }				t_task;
 
-FUNC_ERR_LOGGER	ssl_error_get_logger(void);
-void			ssl_error_set_logger(FUNC_ERR_LOGGER f_logger);
-void			ssl_error_set_level(uint8_t level);
-int				ssl_error_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt_prefix, const char *fmt, ...);
+FUNC_LOGGER	ssl_logger_get_logger(void);
+void			ssl_logger_set_logger(FUNC_LOGGER f_logger);
+void			ssl_logger_set_level(uint8_t level);
+void			ssl_logger_enable_ansi_color(void);
+void			ssl_logger_disable_ansi_color(void);
+int				ssl_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt_prefix, const char *fmt, ...);
 
 void			ssl_print_usage(void);
 char			*ssl_getpass(void);

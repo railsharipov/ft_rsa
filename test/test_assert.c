@@ -6,15 +6,17 @@ int	test_assert(int bool, const char *func, const char *file, int line)
 	if (bool)
 		return (SSL_OK);
 
-	if (NULL == func || NULL == file)
-		return (SSL_FAIL);
+	if (NULL == func || NULL == file) {
+		return (SSL_ERR);
+	}
 
 	ft_printf("%@%s, %s:%d: ", func, file, line);
 
-	if (errno)
+	if (errno) {
 		perror(NULL);
-	else
+	} else {
 		ft_printf("%@" TXT_RED("ASSERT FAIL\n"));
+	}
 
-	return (SSL_FAIL);
+	return (SSL_ERR);
 }

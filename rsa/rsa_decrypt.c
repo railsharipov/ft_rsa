@@ -98,19 +98,19 @@ static int	__decrypt(
 	res = SSL_OK;
 
 	if ((ciphsize > osize) || (ciphsize < 11))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != rsa_os2i(&ciph_rep, (unsigned char *)ciph, ciphsize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != __decrypt_prim(&ciph_rep, &mes_rep))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != rsa_i2os(&mes_rep, &octets, osize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != __eme_pkcs1_v1_5_split(&octets, &osize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	if (SSL_OK == res)
 	{

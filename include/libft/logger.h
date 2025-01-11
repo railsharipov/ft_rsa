@@ -19,11 +19,12 @@
 # include <libft/alloc.h>
 # include <libft/string.h>
 
-typedef int	(*FUNC_ERR_LOGGER)(const char *mes);
+typedef int	(*FUNC_LOGGER)(const char *mes);
 
-enum	e_error_level
+enum	e_logger_level
 {
-	LIBFT_LOG_LEVEL_ERROR = 0,
+	LIBFT_LOG_LEVEL_CRIT = 0,
+	LIBFT_LOG_LEVEL_ERROR,
 	LIBFT_LOG_LEVEL_WARN,
 	LIBFT_LOG_LEVEL_INFO,
 	LIBFT_LOG_LEVEL_DEBUG,
@@ -31,11 +32,13 @@ enum	e_error_level
 	LIBFT_NUM_LOG_LEVELS,
 };
 
-FUNC_ERR_LOGGER	ft_logger_get_logger(void);
-void			ft_logger_set_logger(FUNC_ERR_LOGGER f_logger);
+FUNC_LOGGER		ft_logger_get_logger(void);
+void			ft_logger_set_logger(FUNC_LOGGER f_logger);
 void			ft_logger_set_level(uint8_t level);
+void 			ft_logger_enable_ansi_color(void);
+void 			ft_logger_disable_ansi_color(void);
 
-int	ft_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+int ft_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, va_list va_arg);
 
 #endif

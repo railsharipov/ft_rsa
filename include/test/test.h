@@ -5,7 +5,7 @@
 # include <libft/string.h>
 # include <util/printnl.h>
 
-# define TEST_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "test error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define TEST_ERROR(MES, ...)	ssl_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "test: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define TEST_ENABLE_VERBOSE
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
@@ -23,7 +23,7 @@
 # endif
 
 # define TEST_PASS()		TEST_RESULT(SSL_OK, __func__, __FILE__)
-# define TEST_FAIL()		TEST_RESULT(SSL_FAIL, __func__, __FILE__)
+# define TEST_FAIL()		TEST_RESULT(SSL_ERR, __func__, __FILE__)
 
 typedef int	(*FUNC_TEST)(void);
 

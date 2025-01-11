@@ -27,10 +27,10 @@ static int	__check_privexp(void)
 	res = SSL_OK;
 
 	if (BNUM_EVEN(__items->privexp))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	if (bnum_lmbit(__items->privexp) <= bnum_lmbit(__items->modulus) / 2)
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	bnum_init_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
@@ -41,9 +41,9 @@ static int	__check_privexp(void)
 	bnum_divmod(&ed, &lcm, NULL, &edmod);
 
 	if (bnum_cmp(__items->privexp, &lcm) >= 0)
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	else if (!BNUM_ONE(&edmod))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	bnum_clear_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
@@ -69,17 +69,17 @@ static int	__check_crt_comps(void)
 	if ((bnum_cmp_dig(__items->exponent1, 1) <= 0)
 		|| (bnum_cmp(__items->exponent1, &p1) >= 0))
 	{
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	}
 	else if ((bnum_cmp_dig(__items->exponent2, 1) <= 0)
 		|| (bnum_cmp(__items->exponent2, &q1) >= 0))
 	{
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	}
 	else if ((bnum_cmp_dig(__items->coeff, 1) <= 0)
 		|| (bnum_cmp(__items->coeff, __items->prime1) >= 0))
 	{
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	}
 
 	bnum_mul(__items->exponent1, __items->pubexp, &mul);
@@ -87,7 +87,7 @@ static int	__check_crt_comps(void)
 
 	if (bnum_cmp_dig(&mod, 1))
 	{
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	}
 
 	bnum_mul(__items->exponent2, __items->pubexp, &mul);
@@ -95,7 +95,7 @@ static int	__check_crt_comps(void)
 
 	if (bnum_cmp_dig(&mod, 1))
 	{
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	}
 
 	bnum_mul(__items->coeff, __items->prime2, &mul);
@@ -103,7 +103,7 @@ static int	__check_crt_comps(void)
 
 	if (bnum_cmp_dig(&mod, 1))
 	{
-		res = SSL_FAIL;
+		res = SSL_ERR;
 	}
 
 	bnum_clear_multi(&p1, &q1, &mul, &mod, &res, NULL);
@@ -125,7 +125,7 @@ static int	__check_modulus(void)
 	bnum_mul(__items->prime1, __items->prime2, &tmod);
 
 	if (bnum_cmp(__items->modulus, &tmod))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	bnum_clear(&tmod);
 
@@ -145,13 +145,13 @@ static int	__check_prime(t_num *prime)
 	bnum_init_multi(&gcd, &p1, NULL);
 
 	if (!bnum_prime_test(prime, bnum_lmbit(prime), RM_TRIALS, SSL_FALSE))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	bnum_sub_dig(prime, 1, &p1);
 	bnum_gcd(&p1, __items->pubexp, &gcd);
 
 	if (bnum_cmp_dig(&gcd, 1))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	bnum_clear_multi(&gcd, &p1, NULL);
 

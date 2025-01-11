@@ -18,13 +18,13 @@ int base64_check(const char *b64enc, size_t size)
 	int ix;
 
 	if (NULL == b64enc)
-		return (SSL_FAIL);
+		return (SSL_ERR);
 
 	ix = 0;
 	while (ix < size)
 	{
 		if (UB64[b64enc[ix++]] == 0)
-			return (SSL_FAIL);
+			return (SSL_ERR);
 	}
 
 	return (SSL_OK);

@@ -7,7 +7,7 @@
 
 # define DES_MES_BLOCK_SIZE	8
 
-# define DES_ERROR(MES, ...)	ssl_error_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "des error: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define DES_ERROR(MES, ...)	ssl_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "des: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_des
 {

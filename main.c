@@ -72,8 +72,9 @@ int		main(int ac, const char **av)
 	FUNC_COM	func_comm;
 	char		*name_comm;
 
-	ssl_error_set_logger(__f_stderr_logger);
-	ssl_error_set_level(SSL_ERROR_LEVEL_DEBUG);
+	ssl_logger_set_logger(__f_stderr_logger);
+	ssl_logger_set_level(LIBFT_LOG_LEVEL_DEBUG);
+	ssl_logger_enable_ansi_color();
 
 	if (ac < 2) {
 		ssl_print_usage();

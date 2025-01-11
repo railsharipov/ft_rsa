@@ -92,22 +92,22 @@ static int  __encrypt(
 	res = SSL_OK;
 
 	if (messize > modsize-11)
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != __eme_pkcs1_v1_5_ps(&octets, &osize, modsize, messize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != __eme_pkcs1_v1_5_concat(&octets, &osize, mes, messize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != rsa_os2i(&mes_rep, octets, osize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != __encrypt_prim(&mes_rep, &ciph_rep))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	else if (SSL_OK != rsa_i2os(&ciph_rep, (unsigned char **)ciph, modsize))
-		res = SSL_FAIL;
+		res = SSL_ERR;
 
 	bnum_clear_multi(&mes_rep, &ciph_rep, NULL);
 	SSL_FREE(octets);

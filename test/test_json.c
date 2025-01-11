@@ -13,13 +13,14 @@ static int	__test_json_parse_simple_string(void);
 static int	__test_json_parse_simple_number(void);
 static int	__test_json_parse_simple_boolean(void);
 static int	__test_json_parse_simple_null(void);
-
+static int	__test_json_parse_complex_object_no_ws(void);
 static const char	*__simple_null_json_file_path = "test/testfiles/json/simple-null.json";
 static const char	*__simple_false_json_file_path = "test/testfiles/json/simple-false.json";
 static const char	*__simple_true_json_file_path = "test/testfiles/json/simple-true.json";
 static const char	*__simple_number_json_file_path = "test/testfiles/json/simple-number.json";
 static const char	*__simple_string_json_file_path = "test/testfiles/json/simple-string.json";
 static const char	*__complex_object_json_file_path = "test/testfiles/json/complex-object.json";
+static const char	*__complex_object_no_ws_json_file_path = "test/testfiles/json/complex-object-no-ws.json";
 static const char	*__complex_array_json_file_path = "test/testfiles/json/complex-array.json";
 
 static t_ostring	__simple_null_json;
@@ -29,6 +30,7 @@ static t_ostring	__simple_number_json;
 static t_ostring	__simple_string_json;
 static t_ostring	__complex_object_json;
 static t_ostring	__complex_array_json;
+static t_ostring	__complex_object_no_ws_json;
 
 int	test_json(void)
 {
@@ -44,6 +46,7 @@ int	test_json(void)
 	res |= __test_json_parse_simple_number();
 	res |= __test_json_parse_simple_boolean();
 	res |= __test_json_parse_simple_null();
+	res |= __test_json_parse_complex_object_no_ws();
 
 	__test_json_cleanup();
 
@@ -71,6 +74,9 @@ static int	__test_json_setup(void)
 		return (TEST_ERROR(UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__complex_array_json_file_path, &__complex_array_json)) {
+		return (TEST_ERROR(UNSPECIFIED_ERROR));
+	}
+	if (SSL_OK != test_get_file_content(__complex_object_no_ws_json_file_path, &__complex_object_no_ws_json)) {
 		return (TEST_ERROR(UNSPECIFIED_ERROR));
 	}
 
@@ -280,6 +286,32 @@ static int	__test_json_parse_simple_null(void)
 	pass |= TEST_ASSERT(node->size == 0);
 	pass |= TEST_ASSERT(node->content == NULL);
 	pass |= TEST_ASSERT(node->f_del_content != NULL);
+
+	SSL_FREE(json_s);
+	json_del(node);
+
+	if (SSL_OK == pass)
+		return (TEST_PASS());
+
+	return (TEST_FAIL());
+}
+
+static int	__test_json_parse_complex_object_no_ws(void)
+{
+	t_node	*node;
+	char	*json_s;
+	size_t	json_slen;
+	int		ret;
+	int		pass;
+
+	pass = SSL_OK;
+	node = NULL;
+
+	json_s = ft_ostr_to_cstr(&__complex_object_no_ws_json, 0, __complex_object_no_ws_json.size);
+	json_slen = ft_strlen(json_s);
+
+	ret = json_parse_new(json_s, &node);
+	pass |= TEST_ASSERT(SSL_OK == ret);
 
 	SSL_FREE(json_s);
 	json_del(node);

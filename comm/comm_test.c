@@ -24,7 +24,7 @@ int	comm_test(const char **opt, const char *name)
 		ret[idx] = f_test();
 
 		if (SSL_OK != ret[idx]) {
-			return (TEST_ERROR(UNSPECIFIED_ERROR));
+			return (TEST_ERROR("test failed"));
 		}
 		idx++;
 	}

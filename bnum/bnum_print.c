@@ -57,7 +57,7 @@ static int	__get_sign(const t_num *num) {
 
 void	bnum_print(const char *prefix, const t_num *num)
 {
-	FUNC_ERR_LOGGER	logger;
+	FUNC_LOGGER	logger;
 	char	*hex;
 	int		bits;
 	char	sign;
