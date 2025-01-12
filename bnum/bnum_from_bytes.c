@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 /* Convert bytes representing unsigned integer to bignum */
 

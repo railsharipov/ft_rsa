@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 void    bnum_set_dig_u(t_num *num, uint64_t digit)
 {

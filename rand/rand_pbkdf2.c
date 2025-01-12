@@ -10,10 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/des.h>
-#include <ssl/hash.h>
-#include <ssl/rand.h>
+#include <ssl.h>
+#include <des.h>
+#include <hash.h>
+#include <rand.h>
 #include <pwd.h>
 
 static char	__buf[160];
@@ -29,7 +29,7 @@ int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect)
 
 	if (NULL == salt)
 		return (RAND_ERROR(INVALID_INPUT_ERROR));
-	if (NULL == (pass = ssl_getpass()))
+	if (NULL == (pass = util_getpass()))
 		return (RAND_ERROR("expected password input"));
 
 	bufptr = __buf;

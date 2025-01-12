@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/hash.h>
+#include <ssl.h>
+#include <hash.h>
 #include <libft/bytes.h>
 
 static const int	END_BYTE = 1 << 7;

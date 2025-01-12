@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 int		bnum_miller_rabin(const t_num *num, const t_num *rnd)
 {

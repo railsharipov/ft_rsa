@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/pem.h>
-#include <util/parser.h>
+#include <ssl.h>
+#include <pem.h>
+#include <parser.h>
 
 static void	__concat(t_pem *pem, char *content, size_t consize)
 {

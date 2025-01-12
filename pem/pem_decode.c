@@ -1,9 +1,9 @@
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
-#include <ssl/base64.h>
-#include <ssl/pem.h>
-#include <ssl/des.h>
-#include <util/parser.h>
+#include <ssl.h>
+#include <rand.h>
+#include <base64.h>
+#include <pem.h>
+#include <des.h>
+#include <parser.h>
 #include <libft/2darray.h>
 #include <libft/bytes.h>
 

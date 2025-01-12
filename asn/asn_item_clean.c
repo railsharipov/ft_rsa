@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
+#include <ssl.h>
+#include <asn.h>
 
 void	asn_item_clean(t_iasn *item)
 {

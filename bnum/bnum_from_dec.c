@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 #include <libft/string.h>
 
 t_num	*bnum_from_dec(const char *dec)

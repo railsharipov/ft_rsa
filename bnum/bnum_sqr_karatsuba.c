@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 static void	__copy_digs(const t_num *a, t_num *res, int offset, int len);
 

@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <ssl/map.h>
+#include <ssl.h>
+#include <asn.h>
+#include <map.h>
 #include <libft/node.h>
 #include <libft/string.h>
 #include <libft/ntree.h>

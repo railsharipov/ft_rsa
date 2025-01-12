@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <ssl/der.h>
+#include <ssl.h>
+#include <asn.h>
+#include <der.h>
 
 /*
 /	Content shall be encoded as a bitstring, that is, first content

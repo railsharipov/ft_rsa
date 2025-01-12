@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/der.h>
-#include <ssl/asn.h>
+#include <ssl.h>
+#include <der.h>
+#include <asn.h>
 
 int	der_decode_bool(t_ostring *osbuf, uint8_t *enc, size_t size)
 {

@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <ssl/der.h>
+#include <ssl.h>
+#include <asn.h>
+#include <der.h>
 #include <libft/2darray.h>
 
 static int	__get_obj_id_string(char **, unsigned char *, size_t);

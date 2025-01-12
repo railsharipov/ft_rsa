@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <util/io.h>
-#include <test/test.h>
+#include <ssl.h>
+#include <io.h>
+#include <test.h>
 #include <unistd.h>
 #include <fcntl.h>
 

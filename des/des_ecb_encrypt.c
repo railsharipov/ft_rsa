@@ -10,10 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
-#include <ssl/base64.h>
-#include <ssl/des.h>
+#include <ssl.h>
+#include <rand.h>
+#include <base64.h>
+#include <des.h>
 #include <libft/bytes.h>
 
 static int		__is_salted;

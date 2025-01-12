@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 /* Convert bignum to bytes, sign is ignored */
 

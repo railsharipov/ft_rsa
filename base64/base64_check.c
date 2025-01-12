@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/base64.h>
+#include <ssl.h>
+#include <base64.h>
 
 static const char	UB64[128] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,

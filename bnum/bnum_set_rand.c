@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
 

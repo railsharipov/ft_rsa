@@ -1,6 +1,6 @@
 #include <libft/list.h>
-#include <util/json.h>
-#include <util/bnum.h>
+#include <json.h>
+#include <bnum.h>
 
 void __delete_array(void *content);
 void __delete_object(void *content);

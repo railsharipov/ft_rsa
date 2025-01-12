@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <test/test.h>
+#include <ssl.h>
+#include <test.h>
 
 #define ARR_SIZE(ARR)	sizeof(ARR) / sizeof(ARR[0])
 

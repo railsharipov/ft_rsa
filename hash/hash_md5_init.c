@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/hash.h>
+#include <ssl.h>
+#include <hash.h>
 
 static const t_md5_word	HASH_INIT_VECT[] = {
 	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476

@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/des.h>
+#include <ssl.h>
+#include <des.h>
 #include <libft/bytes.h>
 
 static const unsigned char	PKA[56] = {

@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <util/bnum.h>
+#include <ssl.h>
+#include <asn.h>
+#include <bnum.h>
 #include <libft/htable.h>
 
 static t_htbl	*__init_htable(void);

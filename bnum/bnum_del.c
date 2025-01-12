@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 void	bnum_del(t_num *num)
 {

@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/hash.h>
+#include <ssl.h>
+#include <hash.h>
 
 void	hash_sha224_update(t_hash *sha224, const char *buf, size_t bufsize)
 {

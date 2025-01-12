@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 int bnum_cmp(const t_num *a, const t_num *b)
 {

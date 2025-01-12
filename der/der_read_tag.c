@@ -1,7 +1,7 @@
-#include <ssl/ssl.h>
-#include <ssl/der.h>
-#include <ssl/asn.h>
-#include <util/io.h>
+#include <ssl.h>
+#include <der.h>
+#include <asn.h>
+#include <io.h>
 
 static int	__tag_is_complex(uint32_t);
 

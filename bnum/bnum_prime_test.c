@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 extern const uint64_t BNUM_PRIME_TAB[];
 

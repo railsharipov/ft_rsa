@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/der.h>
-#include <util/io.h>
+#include <ssl.h>
+#include <der.h>
+#include <io.h>
 
 static ssize_t	__read_octets_indef(t_iodes *in, t_iodes *out);
 

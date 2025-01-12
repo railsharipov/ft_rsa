@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <test/test.h>
+#include <ssl.h>
+#include <test.h>
 
 int	test_summary(int *result_arr, size_t arr_size, int verbose)
 {

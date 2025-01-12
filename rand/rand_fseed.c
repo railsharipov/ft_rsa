@@ -1,8 +1,8 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
-#include <util/io.h>
+#include <ssl.h>
+#include <rand.h>
+#include <io.h>
 #include <libft/2darray.h>
 
 int	rand_fseed(uint64_t *seed, const char *files)

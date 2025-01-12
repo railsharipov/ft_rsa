@@ -1,9 +1,9 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <ssl/der.h>
-#include <ssl/rand.h>
-#include <test/test.h>
-#include <util/io.h>
+#include <ssl.h>
+#include <asn.h>
+#include <der.h>
+#include <rand.h>
+#include <test.h>
+#include <io.h>
 
 static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);

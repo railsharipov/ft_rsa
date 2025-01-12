@@ -1,9 +1,9 @@
 #include <libft/list.h>
-#include <ssl/ssl.h>
-#include <test/test.h>
-#include <util/json.h>
-#include <util/io.h>
-#include <util/bnum.h>
+#include <ssl.h>
+#include <test.h>
+#include <json.h>
+#include <io.h>
+#include <bnum.h>
 
 static int	__test_json_setup(void);
 static void	__test_json_cleanup(void);

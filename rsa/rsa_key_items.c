@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <ssl/rsa.h>
+#include <ssl.h>
+#include <asn.h>
+#include <rsa.h>
 #include <libft/htable.h>
 
 static t_num	*__asn_int(t_htbl *htbl, const char *key);

@@ -1,7 +1,7 @@
-#include <ssl/ssl.h>
-#include <util/io.h>
-#include <ssl/asn.h>
-#include <ssl/der.h>
+#include <ssl.h>
+#include <io.h>
+#include <asn.h>
+#include <der.h>
 
 static int	__len_is_long(char);
 

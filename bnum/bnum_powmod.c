@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 #include <limits.h>
 
 void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)

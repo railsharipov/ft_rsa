@@ -1,8 +1,8 @@
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
-#include <util/bnum.h>
-#include <test/test.h>
-#include <util/printnl.h>
+#include <ssl.h>
+#include <rand.h>
+#include <bnum.h>
+#include <test.h>
+#include <printnl.h>
 #include <libft/bytes.h>
 
 static t_num	__zero_num;

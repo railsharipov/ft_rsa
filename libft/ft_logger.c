@@ -11,11 +11,13 @@
 #define FT_LOGGER_DEBUG_LOG_PREFIX	"[debug] "
 #define FT_LOGGER_TRACE_LOG_PREFIX	"[trace] "
 
+static int __va_log_new(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
+
 static FUNC_LOGGER	__f_logger;
 static uint8_t		__log_level;
 static uint8_t		__ansi_colored;
 
-FUNC_LOGGER	ft_logger_get_logger(void)
+FUNC_LOGGER ft_logger_get_logger(void)
 {
 	return (__f_logger);
 }
@@ -113,6 +115,86 @@ int	ft_logger_va_log(const char *func_name, const char *file_name, int line_numb
 	full_mes = ft_strjoin_multi(3, level_prefix, mes, debug_info);
 
 	ret = __f_logger(full_mes);
+
+	LIBFT_FREE(debug_info);
+	LIBFT_FREE(full_mes);
+	LIBFT_FREE(mes);
+
+	return (ret);
+}
+
+int	ft_logger_log_new(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, ...)
+{
+	va_list	va_arg;
+	int		ret;
+
+	if (NULL == logger || NULL == logger->f_logger || NULL == fmt) {
+		return (0);
+	}
+	if (level > logger->log_level) {
+		return (0);
+	}
+
+	va_start(va_arg, fmt);
+
+	ret = __va_log_new(func_name, file_name, line_number, logger, level, fmt, va_arg);
+
+	va_end(va_arg);
+
+	return (ret);
+}
+
+int	ft_logger_va_log_new(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg)
+{
+	if (NULL == logger || NULL == logger->f_logger || NULL == fmt) {
+		return (0);
+	}
+	if (level > logger->log_level) {
+		return (0);
+	}
+	return (__va_log_new(func_name, file_name, line_number, logger, level, fmt, va_arg));
+}
+
+static int	__va_log_new(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg)
+{
+	char	*full_mes;
+	char	*debug_info;
+	char	*level_prefix;
+	char	*mes;
+	int		ret;
+
+	debug_info = NULL;
+	mes = NULL;
+
+	if (level == LIBFT_LOG_LEVEL_CRIT) {
+		level_prefix = __ansi_colored ? TXT_MAGEN(FT_LOGGER_CRIT_LOG_PREFIX) : FT_LOGGER_CRIT_LOG_PREFIX;
+	} else if (level == LIBFT_LOG_LEVEL_ERROR) {
+		level_prefix = __ansi_colored ? TXT_B_RED(FT_LOGGER_ERROR_LOG_PREFIX) : FT_LOGGER_ERROR_LOG_PREFIX;
+	} else if (level == LIBFT_LOG_LEVEL_WARN) {
+		level_prefix = __ansi_colored ? TXT_YELL(FT_LOGGER_WARN_LOG_PREFIX) : FT_LOGGER_WARN_LOG_PREFIX;
+	} else if (level == LIBFT_LOG_LEVEL_DEBUG) {
+		level_prefix = __ansi_colored ? TXT_BLUE(FT_LOGGER_DEBUG_LOG_PREFIX) : FT_LOGGER_DEBUG_LOG_PREFIX;
+	} else if (level == LIBFT_LOG_LEVEL_TRACE) {
+		level_prefix = __ansi_colored ? TXT_CYAN(FT_LOGGER_TRACE_LOG_PREFIX) : FT_LOGGER_TRACE_LOG_PREFIX;
+	} else {
+		level_prefix = FT_LOGGER_INFO_LOG_PREFIX;
+	}
+
+	if (NULL == func_name && NULL == file_name) {
+		debug_info = ft_strdup("");
+	} else {
+		if (__ansi_colored) {
+			ft_sprintf(&debug_info, TXT_YELL(" (%s, %s:%d)"), func_name, file_name, line_number);
+		} else {
+			ft_sprintf(&debug_info, " (%s, %s:%d)", func_name, file_name, line_number);
+		}
+	}
+
+	ft_vsprintf(&mes, fmt, va_arg);
+
+	full_mes = ft_strjoin_multi(3, level_prefix, mes, debug_info);
+
+	ret = logger->f_logger(full_mes);
 
 	LIBFT_FREE(debug_info);
 	LIBFT_FREE(full_mes);

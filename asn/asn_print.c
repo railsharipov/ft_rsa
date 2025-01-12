@@ -1,7 +1,7 @@
 #include <unistd.h>
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <util/bnum.h>
+#include <ssl.h>
+#include <asn.h>
+#include <bnum.h>
 #include <libft/ntree.h>
 #include <libft/bytes.h>
 

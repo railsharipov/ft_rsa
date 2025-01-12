@@ -1,13 +1,13 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
-#include <ssl/base64.h>
-#include <ssl/der.h>
-#include <ssl/pem.h>
-#include <ssl/rsa.h>
-#include <ssl/rand.h>
-#include <ssl/map.h>
-#include <util/bnum.h>
-#include <util/parser.h>
+#include <ssl.h>
+#include <asn.h>
+#include <base64.h>
+#include <der.h>
+#include <pem.h>
+#include <rsa.h>
+#include <rand.h>
+#include <map.h>
+#include <bnum.h>
+#include <parser.h>
 #include <libft/node.h>
 
 static t_rsa	*__items;

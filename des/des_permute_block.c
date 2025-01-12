@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/des.h>
+#include <ssl.h>
+#include <des.h>
 
 static const unsigned char	PBA[48] = {
 	32,	1,	2,	3,	4,	5,	4,	5,	6,	7,	8,	9,	8,	9,	10,	11,

@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
-#include <ssl/ssl.h>
-#include <test/test.h>
+#include <ssl.h>
+#include <test.h>
 #include <libft/std.h>
 #include <libft/node.h>
 #include <libft/list.h>

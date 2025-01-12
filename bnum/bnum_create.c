@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 t_num	*bnum_create(void)
 {

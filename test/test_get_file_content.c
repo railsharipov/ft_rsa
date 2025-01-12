@@ -1,8 +1,8 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include <ssl/ssl.h>
-#include <test/test.h>
-#include <util/io.h>
+#include <ssl.h>
+#include <test.h>
+#include <io.h>
 
 int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 {

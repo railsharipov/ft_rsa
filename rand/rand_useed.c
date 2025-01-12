@@ -1,7 +1,7 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
+#include <ssl.h>
+#include <rand.h>
 
 int	rand_useed(uint64_t *seed, int nbytes)
 {

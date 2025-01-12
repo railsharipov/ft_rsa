@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <libft/string.h>
-#include <util/io.h>
+#include <io.h>
 
 static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {

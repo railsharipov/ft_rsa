@@ -1,9 +1,9 @@
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
-#include <ssl/pem.h>
-#include <ssl/base64.h>
-#include <ssl/des.h>
-#include <util/parser.h>
+#include <ssl.h>
+#include <rand.h>
+#include <pem.h>
+#include <base64.h>
+#include <des.h>
+#include <parser.h>
 #include <libft/bytes.h>
 
 static const char	*PEM_PROC = "Proc-Type: 4,ENCRYPTED\n";

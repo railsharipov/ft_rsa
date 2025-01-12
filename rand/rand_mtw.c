@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/rand.h>
+#include <ssl.h>
+#include <rand.h>
 
 static uint64_t	MT[MT_N];
 static int		MT_IDX = MT_N+1;

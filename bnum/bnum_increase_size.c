@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 void	bnum_increase_size(t_num *num, size_t newsize)
 {

@@ -1,6 +1,6 @@
-#include <ssl/ssl.h>
-#include <ssl/rsa.h>
-#include <util/bnum.h>
+#include <ssl.h>
+#include <rsa.h>
+#include <bnum.h>
 
 int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 {

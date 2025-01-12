@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/der.h>
+#include <ssl.h>
+#include <der.h>
 
 void  der_clean(t_der *der)
 {

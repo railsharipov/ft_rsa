@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl/ssl.h>
-#include <ssl/des.h>
+#include <ssl.h>
+#include <des.h>
 
 static const unsigned char	CHA[16] = {
 	1,  1,  2,  2,  2,  2,  2,  2,

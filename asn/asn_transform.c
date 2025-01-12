@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/asn.h>
+#include <ssl.h>
+#include <asn.h>
 #include <libft/ntree.h>
 #include <libft/list.h>
 #include <libft/string.h>

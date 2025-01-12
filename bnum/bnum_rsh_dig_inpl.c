@@ -1,4 +1,4 @@
-#include <util/bnum.h>
+#include <bnum.h>
 
 void	bnum_rsh_dig_inpl(t_num *num, int shifts)
 {

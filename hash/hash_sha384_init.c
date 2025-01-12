@@ -1,5 +1,5 @@
-#include <ssl/ssl.h>
-#include <ssl/hash.h>
+#include <ssl.h>
+#include <hash.h>
 
 static const t_sha384_word	HASH_INIT_VECT[] = {
 	0xcbbb9d5dc1059ed8, 0x629a292a367cd507,

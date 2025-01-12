@@ -1,7 +1,7 @@
-#include <ssl/ssl.h>
-#include <ssl/rsa.h>
-#include <ssl/asn.h>
-#include <util/bnum.h>
+#include <ssl.h>
+#include <rsa.h>
+#include <asn.h>
+#include <bnum.h>
 #include <libft/node.h>
 
 static t_rsa	*__items;
