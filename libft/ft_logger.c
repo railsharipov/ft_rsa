@@ -11,18 +11,18 @@
 #define FT_LOGGER_DEBUG_LOG_PREFIX	"[debug] "
 #define FT_LOGGER_TRACE_LOG_PREFIX	"[trace] "
 
-static FUNC_LOGGER	__f_libft_error_logger;
+static FUNC_LOGGER	__f_logger;
 static uint8_t		__log_level;
 static uint8_t		__ansi_colored;
 
 FUNC_LOGGER	ft_logger_get_logger(void)
 {
-	return (__f_libft_error_logger);
+	return (__f_logger);
 }
 
 void	ft_logger_set_logger(FUNC_LOGGER f_logger)
 {
-	__f_libft_error_logger = f_logger;
+	__f_logger = f_logger;
 }
 
 void	ft_logger_enable_ansi_color(void)
@@ -42,6 +42,11 @@ void	ft_logger_set_level(uint8_t level)
 	} else {
 		__log_level = LIBFT_LOG_LEVEL_INFO;
 	}
+}
+
+uint8_t	ft_logger_get_level(void)
+{
+	return (__log_level);
 }
 
 int	ft_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...)
@@ -69,7 +74,7 @@ int	ft_logger_va_log(const char *func_name, const char *file_name, int line_numb
 	debug_info = NULL;
 	mes = NULL;
 
-	if (NULL == __f_libft_error_logger) {
+	if (NULL == __f_logger) {
 		return (0);
 	}
 	if (NULL == fmt) {
@@ -107,7 +112,7 @@ int	ft_logger_va_log(const char *func_name, const char *file_name, int line_numb
 
 	full_mes = ft_strjoin_multi(3, level_prefix, mes, debug_info);
 
-	ret = __f_libft_error_logger(full_mes);
+	ret = __f_logger(full_mes);
 
 	LIBFT_FREE(debug_info);
 	LIBFT_FREE(full_mes);

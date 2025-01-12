@@ -35,6 +35,9 @@ int	ssl_logger_log(const char *func_name, const char *file_name, int line_number
 	char	*level_prefix;
 	int		ret;
 
+	if (level > ft_logger_get_level()) {
+		return (0);
+	}
 	va_start(va_arg, fmt);
 
 	if (NULL != fmt_prefix) {

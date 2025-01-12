@@ -35,6 +35,7 @@ enum	e_logger_level
 FUNC_LOGGER		ft_logger_get_logger(void);
 void			ft_logger_set_logger(FUNC_LOGGER f_logger);
 void			ft_logger_set_level(uint8_t level);
+uint8_t			ft_logger_get_level(void);
 void 			ft_logger_enable_ansi_color(void);
 void 			ft_logger_disable_ansi_color(void);
 
