@@ -11,10 +11,10 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 	char	buf[IO_BUFSIZE];
 
 	if (NULL == testfile_path || NULL == ostring)
-		return (TEST_ERROR(INVALID_INPUT_ERROR));
+		return (TEST_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	if ((fd = open(testfile_path, O_RDONLY)) < 0)
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	ostring->content = NULL;
 	ostring->size = 0;
@@ -27,7 +27,7 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 	}
 
 	if (nbytes < 0)
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }

@@ -19,7 +19,7 @@ int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 
 	if (nsize > CHAR_BIT * osize) {
 		SSL_FREE(nstr);
-		return (RSA_ERROR("invalid octet buffer size"));
+		return (RSA_LOG(ERROR, "invalid octet buffer size"));
 	}
 
 	ft_memcpy(*octets + osize-nsize, nstr, nsize);

@@ -36,7 +36,7 @@ static int		__err;
 int	der_decode(t_node **tree, t_iodes *iodes)
 {
 	if (NULL == tree || NULL == iodes)
-		return (DER_ERROR(INVALID_INPUT_ERROR));
+		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	__err = SSL_OK;
 	__init_func_htable();
@@ -83,7 +83,7 @@ static t_node	*__create_asn_tree(t_iodes *iodes)
 	return (node);
 
 error:
-	DER_ERROR("invalid der encoding");
+	DER_LOG(ERROR, "invalid der encoding");
 	return (NULL);
 }
 

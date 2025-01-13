@@ -14,17 +14,17 @@ int	der_decode_oid(t_ostring *osbuf, unsigned char *enc, size_t size)
 	int		ret;
 
 	if (NULL == osbuf || NULL == enc)
-		return (DER_ERROR(INVALID_INPUT_ERROR));
+		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	if (size == 0)
-		return (DER_ERROR("invalid der encoding"));
+		return (DER_LOG(ERROR, "invalid der encoding"));
 
 	if (SSL_OK != __get_obj_id_string(&obj_id, enc, size))
-		return (DER_ERROR("invalid asn object id"));
+		return (DER_LOG(ERROR, "invalid asn object id"));
 
 	if (NULL == (obj_name = asn_oid_tree_get_name(obj_id)))
 	{
-		ret = DER_ERROR("unknown asn object id");
+		ret = DER_LOG(ERROR, "unknown asn object id");
 	}
 	else
 	{
@@ -48,7 +48,7 @@ static int	__get_obj_id_string(
 	ft_bzero(sub_ids, sizeof(sub_ids));
 
 	if (SSL_OK != __get_sub_ids(sub_ids, &num_sub_ids, nec, size))
-		return (DER_ERROR("invalid der encoding"));
+		return (DER_LOG(ERROR, "invalid der encoding"));
 
 	__sub_ids_to_obj_id_string(obj_id, sub_ids, num_sub_ids);
 
@@ -72,7 +72,7 @@ static int	__get_sub_ids(
 		}
 
 		if ((*nec & 0x80) != 0)
-			return (DER_ERROR("invalid der encoding"));
+			return (DER_LOG(ERROR, "invalid der encoding"));
 
 		// get the last block
 		sub_ids[ix] <<= 7;
@@ -83,7 +83,7 @@ static int	__get_sub_ids(
 	}
 
 	if (ix < 2)
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	*num_sub_ids = ix;
 

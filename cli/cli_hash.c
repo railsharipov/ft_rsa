@@ -81,7 +81,7 @@ static int	__init_hash_func_by_name(const char *name)
 	}
 
 	if (ix >= size)
-		return (HASH_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 	return (SSL_OK);
 }
 
@@ -131,7 +131,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 	}
 
 	if (rbytes < 0)
-		return (HASH_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	if (SSL_FLAG(HASH_P, tflag))
 		write(1, buf, rbytes);
@@ -158,15 +158,15 @@ static int	__next_task(const char **opt)
 	if (NONE != task->tflag)
 	{
 		if (NULL == *opt)
-			return (HASH_ERROR("expected option flag"));
+			return (HASH_LOG(ERROR, "expected option flag"));
 
 		if (SSL_OK != io_init(&__in, task->oflag, *opt))
-			return (HASH_ERROR(UNSPECIFIED_ERROR));
+			return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 
 		__sarg = *opt;
 
 		if (SSL_OK != __run_task(task->tflag, __gflag))
-			return (HASH_ERROR(UNSPECIFIED_ERROR));
+			return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	io_close(&__in);
 
@@ -176,9 +176,9 @@ static int	__next_task(const char **opt)
 static int	__default_task(const char **opt)
 {
 	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
-		return (HASH_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 	if (SSL_OK != __run_task(NONE, HASH_Q))
-		return (HASH_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -190,13 +190,13 @@ int	cli_hash(const char **opt, const char *name_comm)
 	__algo = (char *)name_comm;
 
 	if (NULL == opt) {
-		return HASH_ERROR(INVALID_INPUT_ERROR);
+		return HASH_LOG(ERROR, INVALID_INPUT_ERROR);
 	}
 	if (SSL_OK != __init_hash_func_by_name(name_comm)) {
-		return (HASH_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (NULL == (hash_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		return (HASH_ERROR(UNSPECIFIED_ERROR));
+		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (NULL == *opt) {
 		ret = __default_task(opt);

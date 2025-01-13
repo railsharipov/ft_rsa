@@ -13,10 +13,10 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 	int		ret;
 
 	if (NULL == asn_key || NULL == rsa_key) {
-		return (RSA_ERROR(INVALID_INPUT_ERROR));
+		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	if (NULL == (asn_items = asn_tree_items(asn_key))) {
-		return (RSA_ERROR("failed to asn decode rsa key"));
+		return (RSA_LOG(ERROR, "failed to asn decode rsa key"));
 	}
 
 	if (!ft_strcmp(asn_key->key, "sequence:RSA_PRIVATE_KEY")) {
@@ -24,7 +24,7 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 	} else if (!ft_strcmp(asn_key->key, "sequence:PUBLIC_KEY")) {
 		ret = __public_key_items(asn_items, rsa_key);
 	} else {
-		ret = RSA_ERROR("invalid asn key: %s", asn_key->key);
+		ret = RSA_LOG(ERROR, "invalid asn key: %s", asn_key->key);
 	}
 	asn_tree_items_del(asn_items);
 
@@ -55,7 +55,7 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 		|| (NULL == key->coeff))
 	{
 		rsa_key_items_del(key);
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
 	key->keysize = bnum_lmbit(key->modulus);
@@ -102,7 +102,7 @@ static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	if ((NULL == key->modulus) || (NULL == key->pubexp))
 	{
 		SSL_FREE(key);
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	*rsa_key = key;
 

@@ -19,14 +19,14 @@ int	__passin(void)
 
 	if (inlen > __SSL_PASS_LEN)
 	{
-		ret = SSL_ERROR("invalid password size");
+		ret = SSL_LOG(ERROR, "invalid password size");
 	}
 	else
 	{
 		ft_memzcpy(__pass, input, sizeof(__pass), inlen);
 		input = getpass("confirm password:");
 		if (ft_strcmp(__pass, input))
-			ret = SSL_ERROR("passwords don't match");
+			ret = SSL_LOG(ERROR, "passwords don't match");
 	}
 	ft_bzero(input, _PASSWORD_LEN);
 
@@ -60,7 +60,7 @@ int		util_setpass(const char *passin)
 	}
 	if (passin_len > __SSL_PASS_LEN)
 	{
-		return (SSL_ERROR("invalid password size"));
+		return (SSL_LOG(ERROR, "invalid password size"));
 	}
 	ft_memcpy(__pass, passin, passin_len);
 

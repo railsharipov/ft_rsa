@@ -36,20 +36,20 @@ static int	__vectors(uint32_t vflag)
 		if (!SSL_FLAG(DES_S, vflag))
 		{
 			if (SSL_OK != rand_useed(&rand_seed, sizeof(uint64_t)))
-				return (DES_ERROR(UNSPECIFIED_ERROR));
+				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 			if (SSL_OK != rand_bytes(rand_seed, __salt, sizeof(__salt)))
-				return (DES_ERROR(UNSPECIFIED_ERROR));
+				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 			__is_salted = 1;
 		}
 		if (SSL_OK != rand_pbkdf2(
 			__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL):(__vect)))
 		{
-			return (DES_ERROR(UNSPECIFIED_ERROR));
+			return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 		}
 	}
 	else if (!SSL_FLAG(DES_V, vflag))
 	{
-		return (DES_ERROR(UNSPECIFIED_ERROR));
+		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
@@ -103,7 +103,7 @@ int	des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
 	{
-		return (DES_ERROR(INVALID_INPUT_ERROR));
+		return (DES_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	ciph->content = NULL;
 	__salt = des->salt;
@@ -112,7 +112,7 @@ int	des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph)
 
 	if (SSL_OK != __vectors(des->vflag))
 	{
-		return (DES_ERROR(UNSPECIFIED_ERROR));
+		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	des_permute_key(&__permut_key, __key);
 	des_encrypt_schedule(__ksched, &__permut_key);

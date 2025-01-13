@@ -23,17 +23,17 @@ int	rand_fseed(uint64_t *seed, const char *files)
 	while ((NULL != farr) && (NULL != farr[idx]))
 	{
 		if ((fd = open(farr[idx], O_RDONLY)) < 0)
-			return (RAND_ERROR(UNSPECIFIED_ERROR));
+			return (RAND_LOG(ERROR, UNSPECIFIED_ERROR));
 
 		if ((rbytes = read(fd, buf, IO_BUFSIZE)) < 0)
-			return (RAND_ERROR(UNSPECIFIED_ERROR));
+			return (RAND_LOG(ERROR, UNSPECIFIED_ERROR));
 
 		while (rbytes > 0)
 		{
 			*seed *= ft_hash((unsigned char *)buf, rbytes);
 
 			if ((rbytes = read(fd, buf, IO_BUFSIZE)) < 0)
-				return (RAND_ERROR(UNSPECIFIED_ERROR));
+				return (RAND_LOG(ERROR, UNSPECIFIED_ERROR));
 		}
 		close(fd);
 		idx++;

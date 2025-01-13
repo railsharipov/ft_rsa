@@ -4,7 +4,7 @@
 #include <ssl.h>
 #include <libft/string.h>
 
-# define PEM_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "pem: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define PEM_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "pem: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct	s_pem
 {

@@ -63,7 +63,7 @@ void	bnum_print(const char *prefix, const t_num *num)
 	char	sign;
 
 	if (NULL == num || NULL == num->val || num->len == 0) {
-		BNUM_LOG("[none]");
+		BNUM_LOG(INFO, "[none]");
 		return ;
 	}
 
@@ -72,9 +72,9 @@ void	bnum_print(const char *prefix, const t_num *num)
 
 	if (prefix) {
 		bits = bnum_lmbit(num);
-		BNUM_LOG("%s: [len=%d, bits=%d, sign=(%c)] %s ", prefix, num->len, bits, sign, hex);
+		BNUM_LOG(INFO, "%s: [len=%d, bits=%d, sign=(%c)] %s ", prefix, num->len, bits, sign, hex);
 	} else {
-		BNUM_LOG("[len=%d, bits=%d, sign=(%c)] %s", num->len, bits, sign, hex);
+		BNUM_LOG(INFO, "[len=%d, bits=%d, sign=(%c)] %s", num->len, bits, sign, hex);
 	}
 
 	BNUM_FREE(hex);
@@ -89,7 +89,7 @@ void	bnum_print_raw(const t_num *num)
 	size_t	slen;
 
 	if (NULL == num || NULL == num->val || num->len == 0) {
-		BNUM_LOG("[none]");
+		BNUM_LOG(INFO, "[none]");
 		return ;
 	}
 
@@ -101,14 +101,14 @@ void	bnum_print_raw(const t_num *num)
 	for (int i = num->len-1; i >= 0; i--) {
 		wbytes = snprintf(str + tbytes, slen - tbytes + 1, "%llu ", num->val[i]);
 		if (wbytes < 0) {
-			BNUM_ERROR("print error");
+			BNUM_LOG(ERROR, "print error");
 			return ;
 		}
 		tbytes += wbytes;
 	}
 	str[tbytes] = 0;
 
-	BNUM_LOG("%c%s", sign, str);
+	BNUM_LOG(INFO, "%c%s", sign, str);
 	BNUM_FREE(str);
 }
 
@@ -122,7 +122,7 @@ void	bnum_print_bits(const char *prefix, const t_num *num)
 	ssize_t tbytes;
 
 	if (NULL == num || NULL == num->val || num->len == 0) {
-		BNUM_LOG("[none]");
+		BNUM_LOG(INFO, "[none]");
 		return ;
 	}
 	size = 0;
@@ -139,14 +139,14 @@ void	bnum_print_bits(const char *prefix, const t_num *num)
 		for (int j = BNUM_DIGIT_BIT; j-- > 0;) {
 			wbytes = snprintf(str + tbytes, 2, "%u", (unsigned int)((num->val[i] >> j) & 0x1));
 			if (wbytes < 0) {
-				BNUM_ERROR("print error");
+				BNUM_LOG(ERROR, "print error");
 				return ;
 			}
 			tbytes += wbytes;
 			if ((BNUM_DIGIT_BIT-j) % 4 == 0 && j != 0) {
 				wbytes = snprintf(str + tbytes, 2, " ");
 				if (wbytes < 0) {
-					BNUM_ERROR("print error");
+					BNUM_LOG(ERROR, "print error");
 					return ;
 				}
 				tbytes += wbytes;
@@ -155,7 +155,7 @@ void	bnum_print_bits(const char *prefix, const t_num *num)
 		if (i != 0) {
 			wbytes = snprintf(str + tbytes, 2, "\n");
 			if (wbytes < 0) {
-				BNUM_ERROR("print error");
+				BNUM_LOG(ERROR, "print error");
 				return ;
 			}
 			tbytes += wbytes;
@@ -164,9 +164,9 @@ void	bnum_print_bits(const char *prefix, const t_num *num)
 
 	bitcount = bnum_lmbit(num);
 	if (prefix) {
-		BNUM_LOG("%s: [len=%d, bits=%d, sign=(%c)]\n%s", prefix, num->len, bitcount, sign, str);
+		BNUM_LOG(INFO, "%s: [len=%d, bits=%d, sign=(%c)]\n%s", prefix, num->len, bitcount, sign, str);
 	} else {
-		BNUM_LOG("[len=%d, bits=%d, sign=(%c)]\n%s", num->len, bitcount, sign, str);
+		BNUM_LOG(INFO, "[len=%d, bits=%d, sign=(%c)]\n%s", num->len, bitcount, sign, str);
 	}
 	BNUM_FREE(str);
 }

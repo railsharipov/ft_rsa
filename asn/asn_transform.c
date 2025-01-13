@@ -14,7 +14,7 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 	t_iasn	*dest_item;
 
 	if (NULL == src_tree || NULL == dest_tree) {
-		return (ASN_ERROR(INVALID_INPUT_ERROR));
+		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	src_iter = ft_ntree_iter(src_tree);
 	dest_items = ft_ntree_to_htable(dest_tree);
@@ -34,7 +34,7 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 				dest_item->tag = src_item->tag;
 				dest_item->tagnum = src_item->tagnum;
 			} else {
-				return (ASN_ERROR("invalid asn tree"));
+				return (ASN_LOG(ERROR, "invalid asn tree"));
 			}
 		}
 		src_iter = src_iter->next;

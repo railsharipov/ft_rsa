@@ -40,14 +40,14 @@ static int __decrypt(void)
 	ft_hex_to_bytes(vect, __vecthex, 16);
 
 	if (SSL_OK != rand_pbkdf2(key, vect, NULL))
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	des = des_init(key, NULL, vect);
 	cipher.content = __content;
 	cipher.size = __consize;
 
 	if (SSL_OK != des_cbc_decrypt(des, &cipher, &message))
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	SSL_FREE(__content);
 	__content = (char *)message.content;
@@ -65,7 +65,7 @@ static int __parse_proc(const char *proc)
 	proc_info = ft_strsplit(proc, ' ');
 
 	if (ft_2darray_len_null_terminated((void **)proc_info) < 2)
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	proc_type = ft_strsplit(proc_info[1], ',');
 
@@ -77,7 +77,7 @@ static int __parse_proc(const char *proc)
 	ft_2darray_del_null_terminated((void **)proc_info);
 
 	if (check != 0)
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -91,7 +91,7 @@ static int __parse_dek(const char *dek)
 	dek_info = ft_strsplit(dek, ' ');
 
 	if (ft_2darray_len_null_terminated((void **)dek_info) < 2)
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	dek_cipher = ft_strsplit(dek_info[1], ',');
 
@@ -105,7 +105,7 @@ static int __parse_dek(const char *dek)
 	ft_2darray_del_null_terminated((void **)dek_info);
 
 	if (check != 0)
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -118,7 +118,7 @@ static int	__check_crypt_header(const char *proc, const char *dek)
 	int	deklen;
 
 	if ((NULL == proc) || (NULL == dek))
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	procidx = parser_find(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
 	dekidx = parser_find(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
@@ -126,10 +126,10 @@ static int	__check_crypt_header(const char *proc, const char *dek)
 	deklen = ft_strlen(dek);
 
 	if (procidx > dekidx)
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	if (dekidx + deklen + 1 >= __consize) // include newline character
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -161,13 +161,13 @@ static int	__parse_crypt_header(void)
 	proc = parser_line(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
 
 	if (SSL_OK != __check_crypt_header(proc, dek))
-		ret = PEM_ERROR(UNSPECIFIED_ERROR);
+		ret = PEM_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_OK != __parse_proc(proc))
-		ret = PEM_ERROR(UNSPECIFIED_ERROR);
+		ret = PEM_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_OK != __parse_dek(dek))
-		ret = PEM_ERROR(UNSPECIFIED_ERROR);
+		ret = PEM_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	SSL_FREE(proc);
 	SSL_FREE(dek);
@@ -188,7 +188,7 @@ static int __decode(void)
 		__encrypted = SSL_TRUE;
 
 		if (SSL_OK != __parse_crypt_header())
-			return (PEM_ERROR(UNSPECIFIED_ERROR));
+			return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 
 		__remove_crypt_header();
 	}
@@ -196,7 +196,7 @@ static int __decode(void)
 	SSL_FREE(__content);
 
 	if (SSL_OK != base64_decode(b64enc, b64len, &__content, &__consize))
-		ret = PEM_ERROR(UNSPECIFIED_ERROR);
+		ret = PEM_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_TRUE == __encrypted)
 		ret = __decrypt();
@@ -209,16 +209,16 @@ static int __decode(void)
 int pem_decode(t_pem *pem, const char *type, t_ostring **content)
 {
 	if (NULL == pem || NULL == content) {
-		return (PEM_ERROR(INVALID_INPUT_ERROR));
+		return (PEM_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	__encrypted = SSL_FALSE;
 	*content = NULL;
 
 	if (SSL_OK != pem_decap(pem, type, &__content, &__consize)) {
-		return (PEM_ERROR("invalid pem encoding"));
+		return (PEM_LOG(ERROR, "invalid pem encoding"));
 	}
 	if (SSL_OK != __decode()) {
-		return (PEM_ERROR("invalid pem encoding"));
+		return (PEM_LOG(ERROR, "invalid pem encoding"));
 	}
 	SSL_ALLOC(*content, sizeof(t_ostring));
 

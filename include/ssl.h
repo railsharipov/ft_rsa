@@ -18,9 +18,7 @@
 # include <libft/htable.h>
 # include <libft/logger.h>
 
-# define SSL_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
-# define SSL_INFO(MES, ...) 	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_INFO, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
-# define SSL_DEBUG(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_DEBUG, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
+# define SSL_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define SSL_FLAG(F,X)		((int)(((X)&(F))==(F)))
 # define NONE	0

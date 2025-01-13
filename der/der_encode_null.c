@@ -4,7 +4,7 @@
 int der_encode_null(t_ostring *osbuf, void *content, size_t cont_nbits)
 {
 	if (NULL == osbuf)
-		return (DER_ERROR(INVALID_INPUT_ERROR));
+		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	(void)content;
 	(void)cont_nbits;

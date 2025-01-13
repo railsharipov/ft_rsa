@@ -9,7 +9,7 @@ void	bnum_montgomery_setup(const t_num *num, uint64_t *rho)
 
 	if (!(b & 1u))
     {
-		BNUM_ERROR("montogemy reduction requires odd modulo");
+		BNUM_LOG(ERROR, "montogemy reduction requires odd modulo");
 		return ;
     };
 

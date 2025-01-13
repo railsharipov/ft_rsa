@@ -5,7 +5,7 @@
 int  der_decode_null(t_ostring *osbuf, uint8_t *enc, size_t size)
 {
 	if (!(NULL == enc && size == 0))
-		return (DER_ERROR("invalid der encoding"));
+		return (DER_LOG(ERROR, "invalid der encoding"));
 
 	return (SSL_OK);
 }

@@ -101,7 +101,7 @@
 // 			rbytes = __get_index_key(s, &(selector->key));
 // 		}
 // 	} else {
-// 		JSON_ERROR("Invalid object selector");
+// 		JSON_LOG(ERROR, "Invalid object selector");
 // 		return (-1);
 // 	}
 // 	if (rbytes < 0) {
@@ -138,7 +138,7 @@
 // 	tbytes += rbytes;
 
 // 	if (s[tbytes] != ']') {
-// 		JSON_ERROR("Expected matching `]` for index key");
+// 		JSON_LOG(ERROR, "Expected matching `]` for index key");
 // 		return (-1);
 // 	} else {
 // 		tbytes++;
@@ -172,7 +172,7 @@
 // 		if (s[idx] == quote) {
 // 			idx++;
 // 		} else {
-// 			JSON_ERROR("Expected matching `%c` end of string for key: `%s`", quote, key);
+// 			JSON_LOG(ERROR, "Expected matching `%c` end of string for key: `%s`", quote, key);
 // 			return (-1);
 // 		}
 // 	}
@@ -194,7 +194,7 @@
 // 	idx = 0;
 
 // 	if (node->type != JSON_OBJECT) {
-// 		JSON_ERROR("Using key for non-object type");
+// 		JSON_LOG(ERROR, "Using key for non-object type");
 // 		return (-1);
 // 	}
 
@@ -215,7 +215,7 @@
 // 		if (s[idx] == quote) {
 // 			idx++;
 // 		} else {
-// 			JSON_ERROR("Expected matching `%c` end of string for key: `%s`", quote, key);
+// 			JSON_LOG(ERROR, "Expected matching `%c` end of string for key: `%s`", quote, key);
 // 			goto err;
 // 		}
 // 	}
@@ -224,7 +224,7 @@
 // 	target_node = (t_node *)ft_htbl_get(htbl, key);
 
 // 	if (NULL == target_node) {
-// 		JSON_ERROR("No such key in object: `%s`", key);
+// 		JSON_LOG(ERROR, "No such key in object: `%s`", key);
 // 		goto err;
 // 	}
 
@@ -252,7 +252,7 @@
 // 	idx = 0;
 
 // 	if (node->type != JSON_OBJECT) {
-// 		JSON_ERROR("Using key for non-object type");
+// 		JSON_LOG(ERROR, "Using key for non-object type");
 // 		return (-1);
 // 	}
 
@@ -282,14 +282,14 @@
 // 	}
 
 // 	if (s[idx] != ']'){
-// 		JSON_ERROR("Expected end of index selector for number: %s", num_str);
+// 		JSON_LOG(ERROR, "Expected end of index selector for number: %s", num_str);
 // 		goto err;
 // 	}
 
 // 	lst = (t_node *)node->content;
 
 // 	if (ft_lst_size(lst) <= target_arr_idx) {
-// 		JSON_ERROR("Array index is out of bounds: %d", target_arr_idx);
+// 		JSON_LOG(ERROR, "Array index is out of bounds: %d", target_arr_idx);
 // 		goto err;
 // 	}
 

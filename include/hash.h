@@ -12,7 +12,7 @@ typedef uint64_t	t_sha512_256_word;
 typedef uint64_t	t_sha384_word;
 typedef uint64_t	t_sha512_word;
 
-# define HASH_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "hash: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define HASH_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "hash: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MD5_BLOCK_SIZE			64
 # define MD5_HASH_LEN			4

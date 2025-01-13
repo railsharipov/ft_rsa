@@ -5,7 +5,7 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 	t_num	x, y, u, v, ta, tb, tc, td;
 
 	if (BNUM_NEG == b->sign || bnum_cmp_dig(b, 1) <= 0) {
-		BNUM_ERROR("No inverse modulo");
+		BNUM_LOG(ERROR, "No inverse modulo");
 		return ;
     };
 
@@ -15,7 +15,7 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 	bnum_copy(b, &y);
 
 	if (BNUM_EVEN(&x) && BNUM_EVEN(&y)) {
-		BNUM_ERROR("No inverse modulo");
+		BNUM_LOG(ERROR, "No inverse modulo");
 		return ;
     };
 
@@ -64,7 +64,7 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 	} while (!BNUM_ZERO(&u));
 
 	if (bnum_cmp_dig(&v, 1u) != 0) {
-		BNUM_ERROR("No inverse modulo");
+		BNUM_LOG(ERROR, "No inverse modulo");
 		return ;
     };
 

@@ -55,25 +55,25 @@ int json_parse(const char *s, t_node **node)
 	ssize_t	rbytes;
 
 	if (NULL == s || NULL == node) {
-        return JSON_ERROR(INVALID_INPUT_ERROR);
+        return JSON_LOG(ERROR, INVALID_INPUT_ERROR);
 	}
 
     *node = NULL;
 	__init_htable();
 
 	if (NULL == __htable) {
-		return JSON_ERROR("unspecified error");
+		return JSON_LOG(ERROR, "unspecified error");
 	}
 	json_node = ft_node_create();
 	rbytes = __parse(s, json_node);
 
 	if (rbytes < 0) {
 		json_del(json_node);
-		return JSON_ERROR("json parse failed");
+		return JSON_LOG(ERROR, "json parse failed");
 	}
 	if (!__is_ws_only(s + rbytes)) {
 		json_del(json_node);
-		return JSON_ERROR("unexpected characters at the end");
+		return JSON_LOG(ERROR, "unexpected characters at the end");
 	}
 	*node = json_node;
     ft_htbl_del(__htable);
@@ -128,7 +128,7 @@ ssize_t __parse(const char *s, t_node *node)
 	ctx = ft_htbl_get_rawkey(__htable, &open, sizeof(open));
 
 	if (NULL == ctx) {
-		JSON_ERROR("invalid format");
+		JSON_LOG(ERROR, "invalid format");
 		return (-1);
 	} else {
 		f_parse = ctx->f_parse;
@@ -145,7 +145,7 @@ ssize_t __parse(const char *s, t_node *node)
 	rbytes = f_parse(s + idx, node);
 
 	if (rbytes <= 0) {
-		JSON_ERROR("invalid format");
+		JSON_LOG(ERROR, "invalid format");
 		return (-1);
 	} else {
 		idx += rbytes;
@@ -156,7 +156,7 @@ ssize_t __parse(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] != close) {
-			JSON_ERROR("unexpected end of content");
+			JSON_LOG(ERROR, "unexpected end of content");
 			return (-1);
 		} else {
 			idx++;
@@ -177,7 +177,7 @@ ssize_t __parse_number(const char *s, t_node *node)
         idx++;
     }
 	if (!ft_isdigit(s[idx])) {
-		JSON_ERROR("invalid format");
+		JSON_LOG(ERROR, "invalid format");
 		return (-1);
 	}
     while (ft_isdigit(s[idx])) {
@@ -224,7 +224,7 @@ ssize_t __parse_null(const char *s, t_node *node)
 	if (!ft_strncmp(s, s_null, slen_null)) {
 		idx += slen_null;
 	} else {
-		JSON_ERROR("invalid format");
+		JSON_LOG(ERROR, "invalid format");
 		return (-1);
 	}
 	node->content = NULL;
@@ -255,7 +255,7 @@ ssize_t __parse_boolean(const char *s, t_node *node)
 		boolean = 1u;
 		idx += slen_true;
 	} else {
-		JSON_ERROR("invalid format");
+		JSON_LOG(ERROR, "invalid format");
 		return (-1);
 	}
 	node->content = ft_memdup(&boolean, sizeof(boolean));
@@ -283,13 +283,13 @@ ssize_t __parse_object(const char *s, t_node *node)
 		rbytes = __parse(s + idx, key_node);
 
 		if (rbytes < 0) {
-			JSON_ERROR("invalid format");
+			JSON_LOG(ERROR, "invalid format");
 			goto err;
 		}
 		idx += rbytes;
 
 		if (key_node->type != JSON_CSTR) {
-			JSON_ERROR("invalid format");
+			JSON_LOG(ERROR, "invalid format");
 			goto err;
 		}
 
@@ -297,7 +297,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 			idx++;
 		}
 		if (s[idx] != ':') {
-			JSON_ERROR("invalid format");
+			JSON_LOG(ERROR, "invalid format");
 			goto err;
 		} else {
 			idx++;
@@ -307,7 +307,7 @@ ssize_t __parse_object(const char *s, t_node *node)
 		rbytes = __parse(s + idx, content_node);
 
 		if (rbytes < 0) {
-			JSON_ERROR("invalid format");
+			JSON_LOG(ERROR, "invalid format");
 			goto err;
 		}
 		idx += rbytes;
@@ -359,7 +359,7 @@ ssize_t __parse_array(const char *s, t_node *node)
 		rbytes = __parse(s + idx, content_node);
 
 		if (rbytes < 0) {
-			JSON_ERROR("invalid format");
+			JSON_LOG(ERROR, "invalid format");
 			goto err;
 		}
 		idx += rbytes;

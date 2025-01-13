@@ -33,7 +33,7 @@ int	der_encode(t_node *tree, t_iodes *iodes)
 	int		ret;
 
 	if (NULL == tree || NULL == iodes)
-		return (ASN_ERROR(INVALID_INPUT_ERROR));
+		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	__init_func_htable();
 
@@ -42,7 +42,7 @@ int	der_encode(t_node *tree, t_iodes *iodes)
 	__del_func_htable();
 
 	if (SSL_OK != ret)
-		return (DER_ERROR("invalid asn tree"));
+		return (DER_LOG(ERROR, "invalid asn tree"));
 
 	return (SSL_OK);
 }
@@ -55,12 +55,12 @@ static int	__encode_recursive(t_node *node, t_iodes *iodes)
 	if (ft_node_is_parent(node))
 	{
 		if (SSL_OK != __encode_construct(node->content, iodes))
-			return (DER_ERROR(UNSPECIFIED_ERROR));
+			return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	else
 	{
 		if (SSL_OK != __encode_primitive(node->content, iodes))
-			return (DER_ERROR(UNSPECIFIED_ERROR));
+			return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
 	return (__encode_recursive(node->next, iodes));
@@ -73,12 +73,12 @@ static int	__encode_primitive(t_node *node, t_iodes *iodes)
 	item = node->content;
 
 	if (NULL == item)
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	item->tag |= ASN_ENCODE_PRIMITIVE;
 
 	if (SSL_OK != __encode_item(item, iodes))
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -93,7 +93,7 @@ static int	__encode_construct(t_node *node, t_iodes *iodes)
 	item = node->content;
 
 	if (NULL == item)
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	io_init(&temp_iodes, IO_WRITE|IO_OSBUF, &osbuf);
 
@@ -126,13 +126,13 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 	tagnum = item->tagnum;
 
 	if (NULL == (f_enc = ft_htbl_get_rawkey(__func_htable, &tagnum, sizeof(tagnum))))
-		return (DER_ERROR("invalid asn type tag"));
+		return (DER_LOG(ERROR, "invalid asn type tag"));
 
 	if (SSL_OK != der_write_tag(tag, tagnum, iodes))
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	if (SSL_OK != f_enc(&osbuf, item->content, item->size))
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	wbytes = der_write_octets(
 		ft_ostr_get_content(&osbuf), 
@@ -142,7 +142,7 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 	ft_ostr_clean(&osbuf);
 
 	if (wbytes < 0)
-		return (DER_ERROR(UNSPECIFIED_ERROR));
+		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }

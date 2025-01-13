@@ -7,7 +7,7 @@
 # define RK_PRIME 101
 # define RK_ALPHA 256
 
-# define PARSER_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "parser: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define PARSER_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "parser: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 int		parser_find(const char *, int, const char *, int);
 void	parser_del_blank(const char *, int, char **, int *);

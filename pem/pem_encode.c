@@ -34,13 +34,13 @@ static int	__des_crypt(t_ostring *content, t_ostring *cipher)
 	if ((SSL_OK != rand_useed((uint64_t *)__vect, 8))
 		|| (SSL_OK != rand_pbkdf2(key, __vect, NULL)))
 	{
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	des = des_init(key, NULL, __vect);
 
 	if (SSL_OK != des_cbc_encrypt(des, content, cipher))
 	{
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	ft_bzero(key, sizeof(key));
 
@@ -75,7 +75,7 @@ static int	__encode(t_ostring *content, char **pemenc, size_t *pemsize)
 	if (SSL_OK != base64_encode(
 		(char *)(content->content), content->size, pemenc, pemsize))
 	{
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	parser_insert_delim(pemenc, pemsize, '\n', 64);
 
@@ -91,7 +91,7 @@ static int	__crypt_encode(t_ostring *content, char **pemenc, size_t *pemsize)
 
 	if (SSL_OK != __des_crypt(content, &cipher))
 	{
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK == (ret = __encode(&cipher, pemenc, pemsize)))
 	{
@@ -114,16 +114,16 @@ int	pem_encode(
 	size_t		pemsize;
 
 	if (NULL == pem || NULL == content) {
-		return (PEM_ERROR(INVALID_INPUT_ERROR));
+		return (PEM_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	*pem = NULL;
 
 	if (encrypt) {
 		if (SSL_OK != __crypt_encode(content, &pemenc, &pemsize)) {
-			return (PEM_ERROR(UNSPECIFIED_ERROR));
+			return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 		}
 	} else if (SSL_OK != __encode(content, &pemenc, &pemsize)) {
-		return (PEM_ERROR(UNSPECIFIED_ERROR));
+		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	pem_encap(pem, type, pemenc, pemsize);
 	SSL_FREE(pemenc);

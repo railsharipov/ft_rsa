@@ -4,7 +4,7 @@ void	bnum_exp2(t_num *res, int n)
 {
 	if (n < 0)
     {
-		BNUM_ERROR("negative exponent is not supported");
+		BNUM_LOG(ERROR, "negative exponent is not supported");
 		return ;
     };
 

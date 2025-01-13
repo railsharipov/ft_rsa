@@ -32,17 +32,17 @@ static int	__remove_pad(unsigned char **mes, size_t *messize)
 	unsigned char	ix;
 
 	if (*messize == 0)
-		return (DES_ERROR(UNSPECIFIED_ERROR));
+		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	if ((padsize = (*mes)[*messize-1]) > 8)
-		return (DES_ERROR(UNSPECIFIED_ERROR));
+		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	ix = 0;
 	while (ix++ < padsize)
 	{
 		*messize -= 1;
 		if ((*mes)[*messize] != padsize)
-			return (DES_ERROR(UNSPECIFIED_ERROR));
+			return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
 	return (SSL_OK);
@@ -57,10 +57,10 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag)
 		if (!SSL_FLAG(DES_S, vflag))
 		{
 			if (ciphsize < 16)
-				return (DES_ERROR(UNSPECIFIED_ERROR));
+				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 
 			if (ft_strncmp((char *)ciph, "Salted__", 8))
-				return (DES_ERROR(UNSPECIFIED_ERROR));
+				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 
 			ft_memcpy(__salt, ciph + 8, 8);
 			__is_salted = 1;
@@ -68,11 +68,11 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag)
 		if (SSL_OK != rand_pbkdf2(
 			__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL):(__vect)))
 		{
-			return (DES_ERROR("key derivation error"));
+			return (DES_LOG(ERROR, "key derivation error"));
 		}
 	}
 	if (!SSL_FLAG(DES_V, vflag))
-		return (DES_ERROR(UNSPECIFIED_ERROR));
+		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -120,7 +120,7 @@ static int	__decrypt(
 	}
 
 	if (SSL_OK != __remove_pad(mes_ptr, messize))
-		return (DES_ERROR(UNSPECIFIED_ERROR));
+		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -128,7 +128,7 @@ static int	__decrypt(
 int	des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes))
-		return (DES_ERROR(INVALID_INPUT_ERROR));
+		return (DES_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	mes->content = NULL;
 	__salt = des->salt;
@@ -138,7 +138,7 @@ int	des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 	if (SSL_OK != __vectors(
 		(unsigned char *)(ciph->content), ciph->size, des->vflag))
 	{
-		return (DES_ERROR("invalid des encryption"));
+		return (DES_LOG(ERROR, "invalid des encryption"));
 	}
 
 	des_permute_key(&__permut_key, __key);

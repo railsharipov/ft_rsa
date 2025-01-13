@@ -36,7 +36,7 @@
 # define ASN_LEN_SHORT				0x0
 # define ASN_LEN_LONG				0x80
 
-# define ASN_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "asn: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define ASN_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "asn: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct	s_iasn
 {

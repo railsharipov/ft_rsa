@@ -22,7 +22,7 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 
 	if ((optr[ix++] != 0x00) || (optr[ix++] != 0x02))
 	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	check = 0;
 
@@ -36,7 +36,7 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 	}
 	if (check != 1)
 	{
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	messize = *osize - ix;
 
@@ -74,7 +74,7 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 static int	__decrypt_prim(t_num *ciph_rep, t_num *mes_rep)
 {
 	if (bnum_cmp_u(ciph_rep, __items->modulus) >= 0)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	bnum_m_powmod(ciph_rep, __items->privexp, __items->modulus, mes_rep);
 
@@ -122,7 +122,7 @@ static int	__decrypt(
 	SSL_FREE(octets);
 
 	if (SSL_OK != res)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -134,22 +134,22 @@ int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key)
 	if ((NULL == ciph) || (NULL == ciph->content)
 		|| (NULL == mes) || (NULL == asn_key))
 	{
-		return (RSA_ERROR(INVALID_INPUT_ERROR));
+		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	mes->content = NULL;
 
 	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
 	{
-		return (RSA_ERROR("invalid rsa key type"));
+		return (RSA_LOG(ERROR, "invalid rsa key type"));
 	}
 	if (SSL_OK != rsa_key_items(asn_key, &__items))
 	{
-		return (RSA_ERROR("invalid rsa key"));
+		return (RSA_LOG(ERROR, "invalid rsa key"));
 	}
 	if (SSL_OK != __decrypt(
 		ciph->content, ciph->size, &(mes->content), &(mes->size)))
 	{
-		return (RSA_ERROR("invalid rsa key"));
+		return (RSA_LOG(ERROR, "invalid rsa key"));
 	}
 	return (SSL_OK);
 }

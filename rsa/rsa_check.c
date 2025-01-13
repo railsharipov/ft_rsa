@@ -9,10 +9,10 @@ static t_rsa	*__items;
 static int	__check_pubexp(void)
 {
 	if (BNUM_EVEN(__items->pubexp))
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	if (bnum_lmbit(__items->pubexp) >= 256)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -48,7 +48,7 @@ static int	__check_privexp(void)
 	bnum_clear_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
 	if (SSL_OK != res)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -109,7 +109,7 @@ static int	__check_crt_comps(void)
 	bnum_clear_multi(&p1, &q1, &mul, &mod, &res, NULL);
 
 	if (SSL_OK != res)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -130,7 +130,7 @@ static int	__check_modulus(void)
 	bnum_clear(&tmod);
 
 	if (SSL_OK != res)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -156,7 +156,7 @@ static int	__check_prime(t_num *prime)
 	bnum_clear_multi(&gcd, &p1, NULL);
 
 	if (SSL_OK != res)
-		return (RSA_ERROR(UNSPECIFIED_ERROR));
+		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 
 	return (SSL_OK);
 }
@@ -168,13 +168,13 @@ int	rsa_check(t_node *asn_key)
 	ret = SSL_OK;
 
 	if (NULL == asn_key)
-		return (RSA_ERROR(INVALID_INPUT_ERROR));
+		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
-		return (RSA_ERROR("invalid rsa key type: %s", asn_key->key));
+		return (RSA_LOG(ERROR, "invalid rsa key type: %s", asn_key->key));
 
 	if (SSL_OK != rsa_key_items(asn_key, &__items))
-		return (RSA_ERROR("invalid rsa key"));
+		return (RSA_LOG(ERROR, "invalid rsa key"));
 
 	ret |= __check_pubexp();
 	ret |= __check_modulus();
@@ -184,7 +184,7 @@ int	rsa_check(t_node *asn_key)
 	ret |= __check_crt_comps();
 
 	if (SSL_OK != ret)
-		ret = RSA_ERROR("invalid rsa key");
+		ret = RSA_LOG(ERROR, "invalid rsa key");
 
 	SSL_FREE(__items);
 

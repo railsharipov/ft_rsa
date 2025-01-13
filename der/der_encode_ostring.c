@@ -4,7 +4,7 @@
 int der_encode_ostring(t_ostring *osbuf, void *content, size_t size)
 {
 	if (NULL == osbuf || NULL == content)
-		return (DER_ERROR(INVALID_INPUT_ERROR));
+		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
 
 	ft_ostr_append(osbuf, content, size);
 

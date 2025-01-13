@@ -5,7 +5,7 @@
 
 # define RAND_DEV	"/dev/random"
 
-# define RAND_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "rand: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define RAND_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "rand: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MT_A		0xB5026F5AA96619E9
 # define MT_F		0x5851F42D4C957F2D

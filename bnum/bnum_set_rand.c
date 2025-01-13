@@ -22,7 +22,7 @@ void    bnum_set_rand(t_num *num, int bits)
 
 	if (fd < 0)
     {
-		BNUM_ERROR(NULL);
+		BNUM_LOG(ERROR, NULL);
 		return ;
     };
 

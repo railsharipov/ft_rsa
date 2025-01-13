@@ -37,7 +37,7 @@ int	test_json(void)
 	int	res;
 
 	if (SSL_OK != __test_json_setup()) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	res = SSL_OK;
 
@@ -56,28 +56,28 @@ int	test_json(void)
 static int	__test_json_setup(void)
 {
 	if (SSL_OK != test_get_file_content(__simple_null_json_file_path, &__simple_null_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__simple_false_json_file_path, &__simple_false_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__simple_true_json_file_path, &__simple_true_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__simple_number_json_file_path, &__simple_number_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__simple_string_json_file_path, &__simple_string_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__complex_object_json_file_path, &__complex_object_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__complex_array_json_file_path, &__complex_array_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (SSL_OK != test_get_file_content(__complex_object_no_ws_json_file_path, &__complex_object_no_ws_json)) {
-		return (TEST_ERROR(UNSPECIFIED_ERROR));
+		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
 	return (SSL_OK);

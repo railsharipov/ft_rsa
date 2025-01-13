@@ -28,9 +28,9 @@ int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect)
 	char	*pass;
 
 	if (NULL == salt)
-		return (RAND_ERROR(INVALID_INPUT_ERROR));
+		return (RAND_LOG(ERROR, INVALID_INPUT_ERROR));
 	if (NULL == (pass = util_getpass()))
-		return (RAND_ERROR("expected password input"));
+		return (RAND_LOG(ERROR, "expected password input"));
 
 	bufptr = __buf;
 	ft_memcpy(bufptr, pass, ft_strlen(pass));

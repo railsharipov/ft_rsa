@@ -17,7 +17,7 @@
 #   define IO_BUFSIZE 256
 # endif
 
-# define IO_ERROR(MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_ERROR, "io: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define IO_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "io: ", MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_io
 {
