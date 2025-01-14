@@ -39,8 +39,10 @@ int	test_der(void)
 {
 	int	res;
 
-	if (SSL_OK != __test_der_setup())
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __test_der_setup()) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	res = SSL_OK;
 
@@ -77,13 +79,17 @@ static int	__test_der_setup(void)
 {
 	uint64_t	seed;
 
-	if (SSL_OK != rand_useed(&seed, sizeof(seed)))
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != rand_useed(&seed, sizeof(seed))) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	SSL_ALLOC(__content, __consize);
 
-	if (SSL_OK != rand_bytes(seed, __content, __consize))
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != rand_bytes(seed, __content, __consize)) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }

@@ -9,8 +9,9 @@ void	bnum_mul_karatsuba(const t_num *a, const t_num *b, t_num *res)
 
 	ndig = a->len + b->len;
 
-	if (ndig > res->size)
+	if (ndig > res->size) {
 		bnum_increase_size(res, ndig);
+	}
 
 	hlen = BNUM_MIN(a->len, b->len) >> 1;
 
@@ -48,8 +49,9 @@ static void	__copy_digs(const t_num *a, t_num *res, int offset, int len)
 {
 	int i;
 
-	if (len > res->size)
+	if (len > res->size) {
 		bnum_increase_size(res, offset + len);
+	}
 
 	for (i = 0; i < len; i++)
 		res->val[i] = a->val[i + offset];

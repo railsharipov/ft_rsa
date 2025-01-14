@@ -160,8 +160,9 @@ static int	__test_json_parse_simple_string(void)
 	SSL_FREE(json_s);
 	json_del(node);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -196,8 +197,9 @@ static int	__test_json_parse_simple_number(void)
 	SSL_FREE(json_s);
 	json_del(node);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -256,8 +258,9 @@ static int	__test_json_parse_simple_boolean(void)
 	SSL_FREE(json_s);
 	json_del(node);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -290,8 +293,9 @@ static int	__test_json_parse_simple_null(void)
 	SSL_FREE(json_s);
 	json_del(node);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -316,8 +320,9 @@ static int	__test_json_parse_complex_object_no_ws(void)
 	SSL_FREE(json_s);
 	json_del(node);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }

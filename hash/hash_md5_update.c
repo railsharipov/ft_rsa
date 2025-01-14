@@ -62,26 +62,22 @@ static void	__rotate_hash(void)
 	t_md5_word	t2;
 	t_md5_word	ix;
 
-	for (ix = 0; ix < 16; ix++)
-	{
+	for (ix = 0; ix < 16; ix++) {
 		t1 = F0(var[1], var[2], var[3]);
 		t2 = ix;
 		__rotate(&t1, &t2, &ix);
 	}
-	for (; ix < 32; ix++)
-	{
+	for (; ix < 32; ix++) {
 		t1 = G0(var[1], var[2], var[3]);
 		t2 = (5 * ix + 1) % 16;
 		__rotate(&t1, &t2, &ix);
 	}
-	for (; ix < 48; ix++)
-	{
+	for (; ix < 48; ix++) {
 		t1 = H0(var[1], var[2], var[3]);
 		t2 = (3 * ix + 5) % 16;
 		__rotate(&t1, &t2, &ix);
 	}
-	for (; ix < 64; ix++)
-	{
+	for (; ix < 64; ix++) {
 		t1 = I0(var[1], var[2], var[3]);
 		t2 = (7 * ix) % 16;
 		__rotate(&t1, &t2, &ix);
@@ -102,15 +98,15 @@ static void	__update_hash(void)
 
 void	hash_md5_update(t_hash *md5, const char *buf, size_t bufsize)
 {
-	if ((NULL == md5) || (NULL == buf))
+	if ((NULL == md5) || (NULL == buf)) {
 		return ;
+	}
 
 	var = md5->var;
 	hash = md5->hash;
 	*(uint64_t *)md5->msize += FLOOR(bufsize, MD5_BLOCK_SIZE);
 
-	while (bufsize >= MD5_BLOCK_SIZE)
-	{
+	while (bufsize >= MD5_BLOCK_SIZE) {
 		word = (t_md5_word *)(buf);
 		__rotate_hash();
 		__update_hash();

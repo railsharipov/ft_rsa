@@ -75,8 +75,10 @@ int test_libft(void)
 {
 	int	res = SSL_OK;
 
-	if (SSL_OK != __test_libft_setup())
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __test_libft_setup()) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	res |= __test_ft_strlen();
 	res |= __test_ft_strcmp();
@@ -163,8 +165,9 @@ static int	__test_ft_strlen(void)
 	pass |= TEST_ASSERT(ft_strlen("") == 0);
 	pass |= TEST_ASSERT(ft_strlen(NULL) == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -183,8 +186,9 @@ static int	__test_ft_strcmp(void)
 	pass |= TEST_ASSERT(ft_strcmp(ref_str, "elevators") < 0);
 	pass |= TEST_ASSERT(ft_strcmp("elevators", ref_str) > 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -208,8 +212,9 @@ static int	__test_ft_strncmp(void)
 	pass |= TEST_ASSERT(ft_strncmp(ref_str, "elevators", ref_size) == 0);
 	pass |= TEST_ASSERT(ft_strncmp("elevators", ref_str, ref_size) == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -245,8 +250,9 @@ static int	__test_ft_strcpy(void)
 
 	pass |= TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -289,8 +295,9 @@ static int	__test_ft_strncpy(void)
 
 	pass |= TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -326,8 +333,9 @@ static int	__test_ft_strcat(void)
 
 	pass |= TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -365,8 +373,9 @@ static int	__test_ft_strncat(void)
 
 	pass |= TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -389,8 +398,9 @@ static int __test_ft_strdup(void)
 	test_str = ft_strdup(NULL);
 	pass |= TEST_ASSERT(NULL == test_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -416,8 +426,9 @@ static int __test_ft_strsub(void)
 	test_str = ft_strsub(NULL, offset, len);
 	pass |= TEST_ASSERT(NULL == test_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -441,8 +452,9 @@ static int __test_ft_strchr(void)
 	pass |= TEST_ASSERT(res != NULL);
 	pass |= TEST_ASSERT(!strcmp(res, "e"));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -466,8 +478,9 @@ static int __test_ft_strrchr(void)
 	pass |= TEST_ASSERT(res != NULL);
 	pass |= TEST_ASSERT(!strcmp(res, "e"));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -508,8 +521,9 @@ static int __test_ft_strjoin(void)
 	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
 	free(test_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -532,8 +546,9 @@ static int __test_ft_strrev(void)
 	pass |= TEST_ASSERT(strlen(res) == 0);
 	free(res);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -559,8 +574,9 @@ static int __test_ft_strlow(void)
 	free(test_str);
 	free(ref_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -586,8 +602,9 @@ static int __test_ft_strup(void)
 	free(test_str);
 	free(ref_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -614,8 +631,9 @@ static int __test_ft_2darray_len(void)
 	res = ft_2darray_len_null_terminated(&null_ptr);
 	pass |= TEST_ASSERT(res == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -654,8 +672,9 @@ static int __test_ft_2darray_strjoin(void)
 	pass |= TEST_ASSERT(!strcmp(res, "apple"));
 	free(res);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -693,8 +712,9 @@ static int __test_ft_strsplit(void)
 
 	ft_2darray_del_null_terminated((void **)res);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -737,8 +757,9 @@ static int __test_ft_atoi(void)
 	res = ft_atoi("-123235");
 	pass |= TEST_ASSERT(res == -123235);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -758,8 +779,9 @@ static int __test_ft_memcmp(void)
 	pass |= TEST_ASSERT(ft_memcmp(ref_str, "elevators", ref_str_len) == 0);
 	pass |= TEST_ASSERT(ft_memcmp("elevators", ref_str, ref_str_len) == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -782,8 +804,9 @@ static int __test_ft_memcpy(void)
 	ft_memcpy(test_str, "", 0);
 	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, total_len));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -804,8 +827,9 @@ static int __test_ft_memdup(void)
 	test_str = ft_memdup(NULL, __slen1);
 	pass |= TEST_ASSERT(NULL == test_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -833,8 +857,9 @@ static int __test_ft_memmove(void)
 	ft_memmove(test_str + offset, test_str, 0);
 	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -869,8 +894,9 @@ static int __test_ft_memset(void)
 	ft_memset(test_str, 190, 0);
 	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -890,8 +916,9 @@ static int __test_ft_bzero(void)
 	ft_bzero(test_str, 0);
 	pass |= TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -915,8 +942,9 @@ static int __test_ft_memzcpy(void)
 	pass |= TEST_ASSERT(!memcmp(test_str, zero_str, len / 2));
 	pass |= TEST_ASSERT(!memcmp(test_str + len / 2, __s2 + len / 2, len - len / 2));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -968,8 +996,9 @@ static int __test_ft_itoa_base(void)
 	pass |= TEST_ASSERT(ref_num == INTMAX_MAX);
 	free(res);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -997,8 +1026,9 @@ static int __test_ft_itoa(void)
 	pass |= TEST_ASSERT(ref_num == INTMAX_MAX);
 	free(res);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1103,8 +1133,9 @@ static int __test_ft_printf(void)
 	free(test_str);
 	free(ref_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1123,8 +1154,9 @@ static int __test_ft_str_isalpha(void)
 	res = ft_str_isalpha("abASDcqwe");
 	pass |= TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1143,8 +1175,9 @@ static int __test_ft_str_isalnum(void)
 	res = ft_str_isalnum("abASDc#$%^qwe");
 	pass |= TEST_ASSERT(res == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1165,8 +1198,9 @@ static int __test_ft_str_isascii(void)
 	res = ft_str_isascii(test_str2);
 	pass |= TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1185,8 +1219,9 @@ static int __test_ft_str_isdigit(void)
 	res = ft_str_isdigit("0123456789");
 	pass |= TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1205,8 +1240,9 @@ static int __test_ft_str_ishex(void)
 	res = ft_str_ishex("0123456789ABCDEFabcdef");
 	pass |= TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1226,8 +1262,9 @@ static int __test_ft_str_isprint(void)
 	res = ft_str_isprint("0123456789ABCDEFabcdef");
 	pass |= TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1249,8 +1286,9 @@ static int __test_ft_bytes_to_hex(void)
 	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	free(test_str);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1265,8 +1303,9 @@ static int __test_ft_hex_to_bytes(void)
 	ft_hex_to_bytes(test_str, hex, strlen(hex));
 	pass |= TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1287,8 +1326,9 @@ static int __test_ft_uint_to_bytes(void)
 	ft_uint_to_bytes(buf, zero, sizeof(zero));
 	pass |= ft_strncmp(buf, ref_str, sizeof(buf));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1310,27 +1350,28 @@ static int __test_get_next_line(void)
 	pass |= TEST_ASSERT(fd >= 0);
 	pass |= TEST_ASSERT(ref_stream != NULL);
 
-	if (fd < 0 || ref_stream == NULL)
+	if (fd < 0 || ref_stream == NULL) {
 		return (TEST_FAIL());
+	}
 
-	while ((rbytes = get_next_line(fd, &line)) > 0)
-	{
+	while ((rbytes = get_next_line(fd, &line)) > 0) {
 		ref_rbytes = getline(&ref_line, &linecapp, ref_stream);
 
 		pass |= TEST_ASSERT(ref_rbytes > 0);
 		pass |= TEST_ASSERT(ref_rbytes == rbytes);
 
-		if (ref_line && line)
-		{
+		if (ref_line && line) {
 			pass |= TEST_ASSERT(strlen(ref_line) == strlen(line));
 			pass |= TEST_ASSERT(strcmp(ref_line, line) == 0);
 		}
 
-		if (NULL != ref_line)
+		if (NULL != ref_line) {
 			free(ref_line);
+		}
 
-		if (NULL != line)
+		if (NULL != line) {
 			free(line);
+		}
 
 		ref_line = NULL;
 		linecapp = 0;
@@ -1340,8 +1381,9 @@ static int __test_get_next_line(void)
 	close(fd);
 	fclose(ref_stream);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1367,8 +1409,9 @@ static int __test_ft_node(void)
 
 	ft_node_del(node, NULL);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1376,8 +1419,9 @@ static int __test_ft_node(void)
 // helper for __test_ft_list()
 static int __func_for_test_ft_list(t_node *node, void *farg)
 {
-	if (NULL == node)
+	if (NULL == node) {
 		return (SSL_OK);
+	}
 
 	node->content = NULL;
 	node->size = 0;
@@ -1407,8 +1451,9 @@ static int __test_ft_list(void)
 	// expect to have at least 6 words
 	pass |= TEST_ASSERT(nwords >= 6);
 
-	if (NULL == words || nwords == 0)
+	if (NULL == words || nwords == 0) {
 		return (TEST_PASS());
+	}
 
 	lst = NULL;
 
@@ -1417,8 +1462,7 @@ static int __test_ft_list(void)
 
 	// test list append
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		node_key = ft_itoa(idx);
 		node = ft_node_new(node_key, words[idx], strlen(words[idx]));
 		pass |= TEST_ASSERT(node != NULL);
@@ -1426,8 +1470,9 @@ static int __test_ft_list(void)
 		ft_lst_append(&lst, node);
 		pass |= TEST_ASSERT(lst != NULL);
 
-		if (node_key != NULL)
+		if (node_key != NULL) {
 			free(node_key);
+		}
 
 		idx++;
 	}
@@ -1439,16 +1484,16 @@ static int __test_ft_list(void)
 	// inspect list node content and order
 	idx = 0;
 	tmp_node = lst;
-	while (tmp_node != NULL)
-	{
+	while (tmp_node != NULL) {
 		node_key = ft_itoa(idx);
 
 		pass |= TEST_ASSERT(idx < nwords);
 		pass |= TEST_ASSERT(strcmp(tmp_node->key, node_key) == 0);
 		pass |= TEST_ASSERT(strcmp((char *)tmp_node->content, words[idx]) == 0);
 
-		if (node_key != NULL)
+		if (node_key != NULL) {
 			free(node_key);
+		}
 
 		tmp_node = tmp_node->next;
 		idx++;
@@ -1467,8 +1512,7 @@ static int __test_ft_list(void)
 
 	// get last node pointer
 	tmp_node = lst;
-	while (tmp_node != NULL)
-	{
+	while (tmp_node != NULL) {
 		node = tmp_node;
 		tmp_node = tmp_node->next;
 	}
@@ -1482,8 +1526,7 @@ static int __test_ft_list(void)
 
 	// test list prepend
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		node_key = ft_itoa(idx);
 		node = ft_node_new(node_key, words[idx], strlen(words[idx]));
 		pass |= TEST_ASSERT(node != NULL);
@@ -1495,8 +1538,9 @@ static int __test_ft_list(void)
 		pass |= TEST_ASSERT(strcmp(lst->key, node_key) == 0);
 		pass |= TEST_ASSERT(strcmp((char *)lst->content, words[idx]) == 0);
 
-		if (node_key != NULL)
+		if (node_key != NULL) {
 			free(node_key);
+		}
 
 		idx++;
 	}
@@ -1529,15 +1573,15 @@ static int __test_ft_list(void)
 
 	// test if nodes have changed
 	tmp_node = lst;
-	while (tmp_node != NULL)
-	{
+	while (tmp_node != NULL) {
 		pass |= TEST_ASSERT(tmp_node->content == NULL);
 		pass |= TEST_ASSERT(tmp_node->size == 0);
 		tmp_node = tmp_node->next;
 	}
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1558,8 +1602,9 @@ static int __test_ft_stack(void)
 	pass |= TEST_ASSERT(ft_stack_is_empty(stack));
 	pass |= TEST_ASSERT(ft_stack_size(stack) == 0);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
@@ -1567,8 +1612,7 @@ static int __test_ft_stack(void)
 	pass |= TEST_ASSERT(nwords > 6);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 		ft_stack_push(stack, key, words[idx], strlen(words[idx]));
 
@@ -1576,8 +1620,9 @@ static int __test_ft_stack(void)
 		pass |= TEST_ASSERT(node != NULL);
 		pass |= TEST_ASSERT(strcmp(node->content, words[idx]) == 0);
 
-		if (key != NULL)
+		if (key != NULL) {
 			free(key);
+		}
 
 		idx++;
 	}
@@ -1589,13 +1634,14 @@ static int __test_ft_stack(void)
 	pass |= TEST_ASSERT(!ft_stack_is_empty(stack));
 	pass |= TEST_ASSERT(strcmp(node->content, words[nwords-1]) == 0);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
-	while (!ft_stack_is_empty(stack))
-	{
-		if (--idx < 0)
+	while (!ft_stack_is_empty(stack)) {
+		if (--idx < 0) {
 			break ;
+		}
 
 		content = ft_stack_pop(stack);
 		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
@@ -1605,8 +1651,9 @@ static int __test_ft_stack(void)
 	pass |= TEST_ASSERT(ft_stack_size(stack) == 0);
 	ft_stack_del(stack, NULL);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1627,8 +1674,9 @@ static int __test_ft_queue(void)
 	pass |= TEST_ASSERT(ft_queue_is_empty(queue));
 	pass |= TEST_ASSERT(ft_queue_size(queue) == 0);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
@@ -1636,8 +1684,7 @@ static int __test_ft_queue(void)
 	pass |= TEST_ASSERT(nwords > 6);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 		ft_queue_enqueue(queue, key, words[idx], strlen(words[idx]));
 
@@ -1645,8 +1692,9 @@ static int __test_ft_queue(void)
 		pass |= TEST_ASSERT(node != NULL);
 		pass |= TEST_ASSERT(strcmp(node->content, words[idx]) == 0);
 
-		if (key != NULL)
+		if (key != NULL) {
 			free(key);
+		}
 
 		idx++;
 	}
@@ -1658,14 +1706,15 @@ static int __test_ft_queue(void)
 	pass |= TEST_ASSERT(!ft_queue_is_empty(queue));
 	pass |= TEST_ASSERT(strcmp(node->content, words[0]) == 0);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	idx = 0;
-	while (!ft_queue_is_empty(queue))
-	{
-		if (idx >= nwords)
+	while (!ft_queue_is_empty(queue)) {
+		if (idx >= nwords) {
 			break ;
+		}
 
 		content = ft_queue_dequeue(queue);
 		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
@@ -1677,13 +1726,13 @@ static int __test_ft_queue(void)
 	pass |= TEST_ASSERT(ft_queue_size(queue) == 0);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 		ft_queue_enqueue(queue, key, words[idx], strlen(words[idx]));
 
-		if (key != NULL)
+		if (key != NULL) {
 			free(key);
+		}
 
 		idx++;
 	}
@@ -1709,8 +1758,9 @@ static int __test_ft_queue(void)
 
 	ft_queue_del(queue, NULL);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1736,8 +1786,7 @@ static int __test_ft_htbl(void)
 	LIBFT_ALLOC(test_content, sizeof(char *) * (nwords + 1));
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		asprintf(test_content + idx, "%s-%d", words[idx], idx);
 		idx++;
 	}
@@ -1748,8 +1797,7 @@ static int __test_ft_htbl(void)
 	pass |= TEST_ASSERT(htbl->arr != NULL);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		ft_htbl_add(htbl, words[idx], words[idx]);
 		content = ft_htbl_get(htbl, words[idx]);
 		pass |= TEST_ASSERT(content != NULL);
@@ -1759,15 +1807,15 @@ static int __test_ft_htbl(void)
 	}
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		content = test_content[idx];
 		ft_htbl_assign(htbl, content, words[idx]);
 		content = ft_htbl_get(htbl, words[idx]);
 		pass |= TEST_ASSERT(content != NULL);
 
-		if (content)
+		if (content) {
 			pass |= TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
+		}
 
 		idx++;
 	}
@@ -1777,13 +1825,13 @@ static int __test_ft_htbl(void)
 	pass |= TEST_ASSERT(htbl->size == 2 * LIBFT_HT_SIZE);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		content = ft_htbl_get(htbl, words[idx]);
 		pass |= TEST_ASSERT(content != NULL);
 
-		if (content)
+		if (content) {
 			pass |= TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
+		}
 
 		idx++;
 	}
@@ -1801,34 +1849,38 @@ static int __test_ft_htbl(void)
 	pass |= TEST_ASSERT(node != NULL);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		pass |= TEST_ASSERT(node != NULL);
 
-		if (node == NULL)
+		if (node == NULL) {
 			break ;
+		}
 
 		item = node->content;
 		content = item->content;
 		content_parts = ft_strsplit(content, '-');
 
-		if (content_parts == NULL)
+		if (content_parts == NULL) {
 			break ;
+		}
 
 		nparts = ft_2darray_len_null_terminated((void **)content_parts);
 
-		if (nparts == 2)
+		if (nparts == 2) {
 			test_num = atoi(content_parts[1]);
+		}
 
 		ft_2darray_del_null_terminated((void **)content_parts);
 
-		if (nparts != 2 || test_num > nwords-1)
+		if (nparts != 2 || test_num > nwords-1) {
 			break ;
+		}
 
 		word_ht[test_num] += 1;
 
-		if (strcmp(content, test_content[test_num]) != 0)
+		if (strcmp(content, test_content[test_num]) != 0) {
 			break ;
+		}
 
 		node = node->next;
 		idx++;
@@ -1839,10 +1891,10 @@ static int __test_ft_htbl(void)
 	pass |= TEST_ASSERT(node == NULL);
 
 	idx = 0;
-	while (idx < nwords)
-	{
-		if (word_ht[idx] != 1)
+	while (idx < nwords) {
+		if (word_ht[idx] != 1) {
 			break ;
+		}
 
 		idx++;
 	}
@@ -1858,8 +1910,9 @@ static int __test_ft_htbl(void)
 	ft_2darray_del_null_terminated((void **)words);
 	ft_2darray_del_null_terminated((void **)test_content);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1884,8 +1937,7 @@ static int __test_ft_htbl_rawkey(void)
 	LIBFT_ALLOC(len_arr, sizeof(size_t *) * nwords);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		word = words[idx];
 		len = strlen(word);
 
@@ -1901,8 +1953,7 @@ static int __test_ft_htbl_rawkey(void)
 	pass |= TEST_ASSERT(htbl->arr != NULL);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		ft_htbl_add_rawkey(htbl, words[idx], words[idx], len_arr[idx]);
 		content = ft_htbl_get_rawkey(htbl, words[idx], len_arr[idx]);
 		pass |= TEST_ASSERT(content != NULL);
@@ -1914,14 +1965,14 @@ static int __test_ft_htbl_rawkey(void)
 	word = "test";
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		ft_htbl_assign_rawkey(htbl, word, words[idx], len_arr[idx]);
 		content = ft_htbl_get_rawkey(htbl, words[idx], len_arr[idx]);
 		pass |= TEST_ASSERT(content != NULL);
 
-		if (content)
+		if (content) {
 			pass |= TEST_ASSERT(memcmp(content, word, strlen(word)) == 0);
+		}
 
 		idx++;
 	}
@@ -1930,8 +1981,9 @@ static int __test_ft_htbl_rawkey(void)
 	ft_2darray_del_null_terminated((void **)words);
 	LIBFT_FREE(len_arr);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1961,8 +2013,7 @@ static int __test_ft_htbl_conversion(void)
 	queue = ft_queue_init();
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 
 		node = ft_node_new(key, words[idx], strlen(words[idx]));
@@ -1979,15 +2030,15 @@ static int __test_ft_htbl_conversion(void)
 	htbl = ft_lst_htable(lst);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 		word = ft_htbl_get(htbl, key);
 
 		pass |= TEST_ASSERT(word != NULL);
 
-		if (word)
+		if (word) {
 			pass |= TEST_ASSERT(strcmp(word, words[idx]) == 0);
+		}
 
 		LIBFT_FREE(key);
 		idx++;
@@ -1998,15 +2049,15 @@ static int __test_ft_htbl_conversion(void)
 	htbl = ft_queue_htable(queue);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 		word = ft_htbl_get(htbl, key);
 
 		pass |= TEST_ASSERT(word != NULL);
 
-		if (word)
+		if (word) {
 			pass |= TEST_ASSERT(strcmp(word, words[idx]) == 0);
+		}
 
 		LIBFT_FREE(key);
 		idx++;
@@ -2017,15 +2068,15 @@ static int __test_ft_htbl_conversion(void)
 	htbl = ft_stack_htable(stack);
 
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		key = ft_itoa(idx);
 		word = ft_htbl_get(htbl, key);
 
 		pass |= TEST_ASSERT(word != NULL);
 
-		if (word)
+		if (word) {
 			pass |= TEST_ASSERT(strcmp(word, words[idx]) == 0);
+		}
 
 		LIBFT_FREE(key);
 		idx++;
@@ -2039,8 +2090,9 @@ static int __test_ft_htbl_conversion(void)
 
 	ft_2darray_del_null_terminated((void **)words);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -2053,30 +2105,31 @@ static int __test_ft_ntree_dfs_depth_func(t_node *node, const void *farg)
 	int	nparts;
 	int	ret;
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (-1);
+	}
 
 	(void)farg;
 
-	if (NULL != node->key)
-	{
+	if (NULL != node->key) {
 		key_parts = ft_strsplit(node->key, ':');
 
-		if (NULL == key_parts)
+		if (NULL == key_parts) {
 			return (-1);
+		}
 
 		nparts = ft_2darray_len_null_terminated((void **)key_parts);
 
-		if (nparts == 2)
-		{
+		if (nparts == 2) {
 			expected_depth = atoi(key_parts[1]);
 			cur_depth = ft_ntree_dfs_cur_depth();
 		}
 
 		ft_2darray_del_null_terminated((void **)key_parts);
 
-		if (nparts != 2 || expected_depth != cur_depth)
+		if (nparts != 2 || expected_depth != cur_depth) {
 			return (-2);
+		}
 	}
 
 	return (0);
@@ -2087,18 +2140,20 @@ static int __test_ft_ntree_dfs_order_func(t_node *node, const void *farg)
 	char ***words;
 	int	ret;
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (-1);
+	}
 
 	words = (char ***)farg;
 
-	if (NULL != node->key)
-	{
-		if (**words == NULL)
+	if (NULL != node->key) {
+		if (**words == NULL) {
 			return (-1);
+		}
 
-		if (strcmp(**words, node->key) != 0)
+		if (strcmp(**words, node->key) != 0) {
 			return (-1);
+		}
 
 		*words = *words + 1;
 	}
@@ -2112,18 +2167,19 @@ static int __test_ft_ntree_helper_func(t_node *node, const void *farg)
 	void *content;
 	int	*counter_ptr;
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (-1);
+	}
 
-	if (NULL != node->key)
-	{
+	if (NULL != node->key) {
 		word_ht = (t_htbl *)farg;
 		content = ft_htbl_get(word_ht, node->key);
 
 		counter_ptr = (int *)content;
 
-		if (NULL == counter_ptr)
+		if (NULL == counter_ptr) {
 			return (-3);
+		}
 
 		*counter_ptr += 1;
 	}
@@ -2179,11 +2235,9 @@ static int __test_ft_ntree(void)
 
 	nwords = 0;
 	idx = 0;
-	while (words[idx] != NULL)
-	{
+	while (words[idx] != NULL) {
 		// if word contains '{' symbol, get part of the word before that sytmbol
-		if (ft_strchr(words[idx], '{'))
-		{
+		if (ft_strchr(words[idx], '{')) {
 			char **word_parts;
 
 			word_parts = ft_strsplit(words[idx], '{');
@@ -2220,8 +2274,7 @@ static int __test_ft_ntree(void)
 
 	// populate words htable with word counts initialized to zero
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		counter_arr[idx] = 0;
 		ft_htbl_add(word_ht, counter_arr + idx, words[idx]);
 		idx++;
@@ -2234,8 +2287,9 @@ static int __test_ft_ntree(void)
 	// check if all words are present in ntree exactly once
 	idx = 0;
 	while (idx < nwords)
-		if (counter_arr[idx++] != 1)
+		if (counter_arr[idx++] != 1) {
 			break;
+		}
 
 	pass |= TEST_ASSERT(idx == nwords);
 
@@ -2245,8 +2299,7 @@ static int __test_ft_ntree(void)
 
 	// populate words htable with word counts initialized to zero
 	idx = 0;
-	while (idx < nwords)
-	{
+	while (idx < nwords) {
 		counter_arr[idx] = 0;
 		ft_htbl_add(word_ht, counter_arr + idx, words[idx]);
 		idx++;
@@ -2259,8 +2312,9 @@ static int __test_ft_ntree(void)
 	// check if all words are present in ntree exactly once
 	idx = 0;
 	while (idx < nwords)
-		if (counter_arr[idx++] != 1)
+		if (counter_arr[idx++] != 1) {
 			break;
+		}
 
 	pass |= TEST_ASSERT(idx == nwords);
 
@@ -2300,17 +2354,16 @@ static int __test_ft_ntree(void)
 	// get counter pointer from word htable using node keys from iterator list
 	// increment counter to count number of times each word is seen in iterator list
 	node = iter;
-	while (node != NULL)
-	{
+	while (node != NULL) {
 		item = node->content;
 
-		if (item != NULL)
-		{
+		if (item != NULL) {
 			content = ft_htbl_get(word_ht, item->key);
 			counter = (int *)content;
 
-			if (counter != NULL)
+			if (counter != NULL) {
 				*counter = *counter + 1;
+			}
 		}
 
 		node = node->next;
@@ -2321,8 +2374,9 @@ static int __test_ft_ntree(void)
 	// check if all words are present in iterator list exactly once
 	idx = 0;
 	while (idx < nwords)
-		if (counter_arr[idx++] != 1)
+		if (counter_arr[idx++] != 1) {
 			break;
+		}
 
 	// size of ntree
 	size = ft_ntree_size(ntree);
@@ -2331,8 +2385,9 @@ static int __test_ft_ntree(void)
 
 	ft_2darray_del_null_terminated((void **)words);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }

@@ -14,8 +14,9 @@
 
 static int	__is_blank(char c)
 {
-	if ((c >= 9 && c <= 13) || c == 32)
+	if ((c >= 9 && c <= 13) || c == 32) {
 		return (1);
+	}
 	return (0);
 }
 
@@ -35,11 +36,11 @@ long long	ft_atoi(const char *str)
 
 	neg = (str[i] == '-') ? -1 : 1;
 
-	if (str[i] == '-' || str[i] == '+')
+	if (str[i] == '-' || str[i] == '+') {
 		i++;
+	}
 
-	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0)
-	{
+	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0) {
 		nb = nb * 10;
 		nb = nb + str[i++] - 48;
 	}

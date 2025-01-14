@@ -7,8 +7,7 @@ void	bnum_montgomery_setup(const t_num *num, uint64_t *rho)
 	/* fast inversion mod 2^k, see LibTomMath */
 	b = num->val[0];
 
-	if (!(b & 1u))
-    {
+	if (!(b & 1u)) {
 		BNUM_LOG(ERROR, "montogemy reduction requires odd modulo");
 		return ;
     };

@@ -10,15 +10,15 @@ static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 
 	osbuf = iodes->osbuf;
 
-	if (NULL == osbuf || NULL == osbuf->content)
+	if (NULL == osbuf || NULL == osbuf->content) {
 		return (-1);
+	}
 
 	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
 	delim = (uint32_t)iodes->delim;
 	rbytes = 0;
 
-	while ((rbytes < nbytes) && (iodes->seek < osbuf->size))
-	{
+	while ((rbytes < nbytes) && (iodes->seek < osbuf->size)) {
 		buf[rbytes] = osbuf->content[iodes->seek++];
 		rbytes += IS_NONZERO_INT32(*buf ^ delim);
 	}
@@ -33,8 +33,9 @@ static ssize_t __sread(t_iodes *iodes, char *buf, size_t nbytes)
 
 	osbuf = iodes->osbuf;
 
-	if (NULL == osbuf || NULL == osbuf->content)
+	if (NULL == osbuf || NULL == osbuf->content) {
 		return (-1);
+	}
 
 	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
 	rbytes = 0;
@@ -49,14 +50,17 @@ ssize_t	io_sread(t_iodes *iodes, char *buf, size_t nbytes)
 {
 	size_t	rbytes;
 
-	if (NULL == iodes || NULL == buf)
+	if (NULL == iodes || NULL == buf) {
 		return (-1);
+	}
 
-	if (nbytes == 0)
+	if (nbytes == 0) {
 		return (0);
+	}
 
-	if (iodes->delim)
+	if (iodes->delim) {
 		rbytes = __sread_delim(iodes, buf, nbytes);
+	}
 	else
 		rbytes = __sread(iodes, buf, nbytes);
 

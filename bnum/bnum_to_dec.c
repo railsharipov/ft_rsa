@@ -43,15 +43,13 @@ t_node	*__get_decimal_digit_list(const t_num *num) {
 	bnum_copy(num, &copy);
 	list = NULL;
 
-	while (!BNUM_ZERO(&copy))
-	{
+	while (!BNUM_ZERO(&copy)) {
 		BNUM_ALLOC(sym, sizeof(struct __s_digit_symbol));
 		bnum_divmod_dig(&copy, 10u, &copy, &dig);
 		sym->c = (char)(dig + 48u);
 		ft_lst_prepend(&list, ft_node_new(NULL, sym, 0));
 	}
-	if (sign == BNUM_NEG)
-	{
+	if (sign == BNUM_NEG) {
 		BNUM_ALLOC(sym, sizeof(struct __s_digit_symbol));
 		sym->c = '-';
 		ft_lst_prepend(&list, ft_node_new(NULL, sym, 0));

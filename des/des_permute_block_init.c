@@ -27,8 +27,7 @@ void	des_permute_block_init(uint64_t *block)
 
 	tn = 0;
 	ix = 0;
-	while (ix < 64)
-	{
+	while (ix < 64) {
 		tn <<= 1;
 		tn |= ((*block >> (64 - PMA[ 8*(ix/8)+(7-ix%8) ])) & 1);
 		ix++;

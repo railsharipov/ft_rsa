@@ -35,18 +35,14 @@ int util_logger_log(const char *func_name, const char *file_name, int line_numbe
     char *level_prefix;
     int ret;
 
-    if (level > ft_logger_get_level())
-    {
+    if (level > ft_logger_get_level()) {
         return (0);
     }
     va_start(va_arg, fmt);
 
-    if (NULL != fmt_prefix)
-    {
+    if (NULL != fmt_prefix) {
         prefixed_fmt = ft_strjoin(fmt_prefix, fmt);
-    }
-    else
-    {
+    } else {
         prefixed_fmt = ft_strdup(fmt);
     }
 

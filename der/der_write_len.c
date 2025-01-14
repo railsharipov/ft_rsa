@@ -12,11 +12,13 @@ ssize_t  der_write_len(size_t len, t_iodes *iodes)
 {
 	ssize_t	wbytes;
 
-	if (NULL == iodes)
+	if (NULL == iodes) {
 		return (-1);
+	}
 
-	if (__is_long_form(len))
+	if (__is_long_form(len)) {
 		wbytes = __write_long_form(len, iodes);
+	}
 	else
 		wbytes = __write_short_form(len, iodes);
 
@@ -50,8 +52,7 @@ static ssize_t	__write_long_form(size_t len, t_iodes *iodes)
 
 	len_nbits = CEIL(len_nbits, 8);
 
-	while (len_nbits > 0)
-	{
+	while (len_nbits > 0) {
 		len_buf[idx++] = len >> (len_nbits-8);
 		len_nbits -= 8;
 	}

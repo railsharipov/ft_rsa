@@ -20,14 +20,12 @@ void	bnum_add_u(const t_num *a, const t_num *b, t_num *res)
 		bptr = b->val;
 		rptr = res->val;
 		carry = 0;
-		for (i = 0; i < b->len; i++)
-		{
+		for (i = 0; i < b->len; i++) {
 			*rptr = *aptr++ + *bptr++ + carry;
 			carry = *rptr >> BNUM_DIGIT_BIT;
 			*rptr++ &= BNUM_MAX_VAL;
 		}
-		for (; i < a->len; i++)
-		{
+		for (; i < a->len; i++) {
 			*rptr = *aptr++ + carry;
 			carry = *rptr >> BNUM_DIGIT_BIT;
 			*rptr++ &= BNUM_MAX_VAL;

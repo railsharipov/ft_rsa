@@ -18,15 +18,16 @@ t_htbl  *cli_task_htable(const t_task *task, int size)
 	t_htbl  *htbl;
 	int		ix;
 
-	if (NULL == task)
+	if (NULL == task) {
 		return (NULL);
+	}
 
-	if (NULL == (htbl = ft_htbl_init(size)))
+	if (NULL == (htbl = ft_htbl_init(size))) {
 		return (NULL);
+	}
 
 	ix = 0;
-	while (ix++ < size)
-	{
+	while (ix++ < size) {
 		ft_htbl_add(htbl, (void *)task, task->key);
 		task++;
 	}
@@ -36,8 +37,9 @@ t_htbl  *cli_task_htable(const t_task *task, int size)
 
 void	cli_task_htable_del(const t_htbl *htbl)
 {
-	if (NULL == htbl)
+	if (NULL == htbl) {
 		return ;
+	}
 
 	ft_htbl_del((t_htbl *)htbl);
 }

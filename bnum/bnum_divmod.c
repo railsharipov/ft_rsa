@@ -14,8 +14,7 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		return ;
     };
 
-	if (bnum_cmp_u(a, b) < 0)
-	{
+	if (bnum_cmp_u(a, b) < 0) {
 		if (NULL != d) {
 			bnum_copy(a, d);
 		}
@@ -54,12 +53,13 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 
 	bnum_rsh_dig_inpl(&y, n-t);
 
-	for (i = n; i >= t+1; i--)
-	{
-		if (i > x.len)
+	for (i = n; i >= t+1; i--) {
+		if (i > x.len) {
 			continue ;
-		if (x.val[i] == y.val[t])
+		}
+		if (x.val[i] == y.val[t]) {
 			q.val[i-t-1] = BNUM_MAX_VAL;
+		}
 		else
 		{
 			uint128_t	val;
@@ -102,16 +102,14 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 		}
 	}
 
-	if (c != NULL)
-	{
+	if (c != NULL) {
 		q.len = a->len;
 		q.sign = asign * bsign;
 		bnum_skip_zeros(&q);
 		bnum_copy(&q, c);
 	}
 
-	if (d != NULL)
-	{
+	if (d != NULL) {
 		bnum_skip_zeros(&x);
 		x.sign = (BNUM_ZERO(&x)) ? (BNUM_POS):(asign);
 		bnum_rsh_bit_inpl(&x, shift);

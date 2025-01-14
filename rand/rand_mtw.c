@@ -10,14 +10,12 @@ static void __twist(void)
 	uint64_t	 			x;
 	int						ix;
 
-	for (ix = 0; ix < (MT_N-MT_M); ix++)
-	{
+	for (ix = 0; ix < (MT_N-MT_M); ix++) {
 		x = (MT[ix] & MT_HIMASK) | (MT[ix+1] & MT_LOMASK);
 		MT[ix] = MT[ix+MT_M] ^ ((x>>1)^xt[(x>>1)&1ULL]);
 	}
 
-	for (; ix < (MT_N-1); ix++)
-	{
+	for (; ix < (MT_N-1); ix++) {
 		x = (MT[ix] & MT_HIMASK) | (MT[ix+1] & MT_LOMASK);
 		MT[ix] = MT[ix+(MT_M-MT_N)] ^ ((x>>1)^xt[x&1ULL]);
 	}
@@ -43,10 +41,10 @@ uint64_t	rand_mtw_extract()
 {
 	uint64_t	y;
 
-	if (MT_IDX >= MT_N)
-	{
-		if (MT_IDX > MT_N)
+	if (MT_IDX >= MT_N) {
+		if (MT_IDX > MT_N) {
 			rand_mtw_init(5489ULL);
+		}
 
 		__twist();
 	}

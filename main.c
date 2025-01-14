@@ -49,10 +49,8 @@ static void	__get_command(
 	*name_comm = NULL;
 
 	ix = 0;
-	while (NULL != COMMAND[ix].name_comm)
-	{
-		if (!ft_strcmp(COMMAND[ix].name_comm, sarg))
-		{
+	while (NULL != COMMAND[ix].name_comm) {
+		if (!ft_strcmp(COMMAND[ix].name_comm, sarg)) {
 			*func_comm = COMMAND[ix].func_comm;
 			*name_comm = COMMAND[ix].name_comm;
 			break ;

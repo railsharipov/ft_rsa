@@ -9,13 +9,13 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 	carry = 0;
 	ndig = 2 * a->len;
 
-	if (ndig > res->size)
+	if (ndig > res->size) {
 		bnum_increase_size(res, ndig);
+	}
 
 	BNUM_ALLOC(temp, sizeof(uint64_t) * ndig);
 
-	for (int idx = 0; idx < ndig; idx++)
-	{
+	for (int idx = 0; idx < ndig; idx++) {
 		const uint64_t	*aptr, *bptr;
 		int				n, y, x;
 
@@ -32,8 +32,9 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 			val += (uint128_t) *aptr++ * *bptr--;
 
 		val = (val<<1) + carry;
-		if (!(idx & 0x1))
+		if (!(idx & 0x1)) {
 			val += (uint128_t) a->val[idx>>1] * a->val[idx>>1];
+		}
 
 		temp[idx] = val & BNUM_MAX_VAL;
 		carry = val >> BNUM_DIGIT_BIT;

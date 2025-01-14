@@ -8,11 +8,15 @@ static t_rsa	*__items;
 
 static int	__check_pubexp(void)
 {
-	if (BNUM_EVEN(__items->pubexp))
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (BNUM_EVEN(__items->pubexp)) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (bnum_lmbit(__items->pubexp) >= 256)
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (bnum_lmbit(__items->pubexp) >= 256) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -26,11 +30,13 @@ static int	__check_privexp(void)
 
 	res = SSL_OK;
 
-	if (BNUM_EVEN(__items->privexp))
+	if (BNUM_EVEN(__items->privexp)) {
 		res = SSL_ERR;
+	}
 
-	if (bnum_lmbit(__items->privexp) <= bnum_lmbit(__items->modulus) / 2)
+	if (bnum_lmbit(__items->privexp) <= bnum_lmbit(__items->modulus) / 2) {
 		res = SSL_ERR;
+	}
 
 	bnum_init_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
@@ -40,15 +46,18 @@ static int	__check_privexp(void)
 	bnum_mul(__items->pubexp, __items->privexp, &ed);
 	bnum_divmod(&ed, &lcm, NULL, &edmod);
 
-	if (bnum_cmp(__items->privexp, &lcm) >= 0)
+	if (bnum_cmp(__items->privexp, &lcm) >= 0) {
 		res = SSL_ERR;
+	}
 	else if (!BNUM_ONE(&edmod))
 		res = SSL_ERR;
 
 	bnum_clear_multi(&p1, &q1, &lcm, &ed, &edmod, NULL);
 
-	if (SSL_OK != res)
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != res) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -66,50 +75,41 @@ static int	__check_crt_comps(void)
 
 	res = SSL_OK;
 
-	if ((bnum_cmp_dig(__items->exponent1, 1) <= 0)
-		|| (bnum_cmp(__items->exponent1, &p1) >= 0))
-	{
+	if ((bnum_cmp_dig(__items->exponent1, 1) <= 0) || (bnum_cmp(__items->exponent1, &p1) >= 0)) {
 		res = SSL_ERR;
-	}
-	else if ((bnum_cmp_dig(__items->exponent2, 1) <= 0)
-		|| (bnum_cmp(__items->exponent2, &q1) >= 0))
-	{
+	} else if ((bnum_cmp_dig(__items->exponent2, 1) <= 0) || (bnum_cmp(__items->exponent2, &q1) >= 0)) {
 		res = SSL_ERR;
-	}
-	else if ((bnum_cmp_dig(__items->coeff, 1) <= 0)
-		|| (bnum_cmp(__items->coeff, __items->prime1) >= 0))
-	{
+	} else if ((bnum_cmp_dig(__items->coeff, 1) <= 0) || (bnum_cmp(__items->coeff, __items->prime1) >= 0)) {
 		res = SSL_ERR;
 	}
 
 	bnum_mul(__items->exponent1, __items->pubexp, &mul);
 	bnum_divmod(&mul, &p1, NULL, &mod);
 
-	if (bnum_cmp_dig(&mod, 1))
-	{
+	if (bnum_cmp_dig(&mod, 1)) {
 		res = SSL_ERR;
 	}
 
 	bnum_mul(__items->exponent2, __items->pubexp, &mul);
 	bnum_divmod(&mul, &q1, NULL, &mod);
 
-	if (bnum_cmp_dig(&mod, 1))
-	{
+	if (bnum_cmp_dig(&mod, 1)) {
 		res = SSL_ERR;
 	}
 
 	bnum_mul(__items->coeff, __items->prime2, &mul);
 	bnum_divmod(&mul, __items->prime1, NULL, &mod);
 
-	if (bnum_cmp_dig(&mod, 1))
-	{
+	if (bnum_cmp_dig(&mod, 1)) {
 		res = SSL_ERR;
 	}
 
 	bnum_clear_multi(&p1, &q1, &mul, &mod, &res, NULL);
 
-	if (SSL_OK != res)
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != res) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -124,13 +124,16 @@ static int	__check_modulus(void)
 	bnum_init(&tmod);
 	bnum_mul(__items->prime1, __items->prime2, &tmod);
 
-	if (bnum_cmp(__items->modulus, &tmod))
+	if (bnum_cmp(__items->modulus, &tmod)) {
 		res = SSL_ERR;
+	}
 
 	bnum_clear(&tmod);
 
-	if (SSL_OK != res)
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != res) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -144,19 +147,23 @@ static int	__check_prime(t_num *prime)
 
 	bnum_init_multi(&gcd, &p1, NULL);
 
-	if (!bnum_prime_test(prime, bnum_lmbit(prime), RM_TRIALS, SSL_FALSE))
+	if (!bnum_prime_test(prime, bnum_lmbit(prime), RM_TRIALS, SSL_FALSE)) {
 		res = SSL_ERR;
+	}
 
 	bnum_sub_dig(prime, 1, &p1);
 	bnum_gcd(&p1, __items->pubexp, &gcd);
 
-	if (bnum_cmp_dig(&gcd, 1))
+	if (bnum_cmp_dig(&gcd, 1)) {
 		res = SSL_ERR;
+	}
 
 	bnum_clear_multi(&gcd, &p1, NULL);
 
-	if (SSL_OK != res)
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != res) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -167,14 +174,20 @@ int	rsa_check(t_node *asn_key)
 
 	ret = SSL_OK;
 
-	if (NULL == asn_key)
-		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == asn_key) {
+		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY"))
-		return (RSA_LOG(ERROR, "invalid rsa key type: %s", asn_key->key));
+	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY")) {
+		RSA_LOG(ERROR, "invalid rsa key type: %s", asn_key->key);
+		return (SSL_ERR);
+	}
 
-	if (SSL_OK != rsa_key_items(asn_key, &__items))
-		return (RSA_LOG(ERROR, "invalid rsa key"));
+	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
+		RSA_LOG(ERROR, "invalid rsa key");
+		return (SSL_ERR);
+	}
 
 	ret |= __check_pubexp();
 	ret |= __check_modulus();
@@ -183,8 +196,9 @@ int	rsa_check(t_node *asn_key)
 	ret |= __check_privexp();
 	ret |= __check_crt_comps();
 
-	if (SSL_OK != ret)
+	if (SSL_OK != ret) {
 		ret = RSA_LOG(ERROR, "invalid rsa key");
+	}
 
 	SSL_FREE(__items);
 

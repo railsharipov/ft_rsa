@@ -19,8 +19,7 @@ void	ft_lst_append(t_node **lst, t_node *node)
 	if (NULL == lst || NULL == node) {
 		return ;
 	}
-	if (NULL == *lst)
-	{
+	if (NULL == *lst) {
 		*lst = node;
 		return ;
 	}
@@ -64,8 +63,7 @@ void	ft_lst_del_last(t_node **lst, FUNC_CONTENT_DEL f_del)
 	prev = NULL;
 	cur = *lst;
 
-	while (cur->next)
-	{
+	while (cur->next) {
 		prev = cur;
 		cur = cur->next;
 	}
@@ -88,8 +86,7 @@ void	ft_lst_del_one(t_node **lst, t_node *node, FUNC_CONTENT_DEL f_del)
 	prev = NULL;
 	cur = *lst;
 
-	while ((NULL != cur) && (node != cur))
-	{
+	while ((NULL != cur) && (node != cur)) {
 		prev = cur;
 		cur = cur->next;
 	}
@@ -109,8 +106,7 @@ size_t	ft_lst_size(t_node *lst)
 	size_t	size;
 
 	size = 0;
-	while (lst)
-	{
+	while (lst) {
 		size++;
 		lst = lst->next;
 	}
@@ -122,8 +118,7 @@ void	ft_lst_del(t_node *lst, FUNC_CONTENT_DEL f_del)
 {
 	t_node	*tmp;
 
-	while (lst)
-	{
+	while (lst) {
 		tmp = lst;
 		lst = lst->next;
 		ft_node_del(tmp, f_del);
@@ -135,8 +130,7 @@ int	ft_lst_map(t_node *lst, void *farg, int (*f)(t_node *, void *))
 	if (NULL == f) {
 		return (-1);
 	}
-	while (lst)
-	{
+	while (lst) {
 		if (f(lst, farg) < 0) {
 			return (-1);
 		}
@@ -154,8 +148,7 @@ t_htbl	*ft_lst_htable(t_node *lst)
 	}
 	htbl = ft_htbl_init(ft_lst_size(lst));
 
-	while (lst)
-	{
+	while (lst) {
 		ft_htbl_add(htbl, lst->content, lst->key);
 		lst = lst->next;
 	}

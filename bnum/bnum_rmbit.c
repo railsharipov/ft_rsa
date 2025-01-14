@@ -13,8 +13,9 @@ int	bnum_rmbit(const t_num *num)
 	for (setbit = 0; !((rmint >> setbit) & 0x1) && (setbit < BNUM_DIGIT_BIT);)
 		setbit++;
 
-	if (setbit == BNUM_DIGIT_BIT)
+	if (setbit == BNUM_DIGIT_BIT) {
 		return (0);
+	}
 
 	return (setbit+1 + BNUM_DIGIT_BIT * i);
 }

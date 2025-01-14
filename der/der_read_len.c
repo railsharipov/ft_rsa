@@ -12,24 +12,24 @@ ssize_t	der_read_len(size_t *len, uint8_t *form, t_iodes *iodes)
 	ssize_t		tsize;
 	size_t		lensize;
 
-	if (NULL == len || NULL == form || NULL == iodes)
+	if (NULL == len || NULL == form || NULL == iodes) {
 		return (-1);
+	}
 
 	*len = 0;
 
-	if ((tsize = der_read_octets(&octet, 1, iodes)) <= 0)
+	if ((tsize = der_read_octets(&octet, 1, iodes)) <= 0) {
 		return (-1);
+	}
 
-	if (__len_is_long(octet))
-	{
+	if (__len_is_long(octet)) {
 		*form = ASN_LEN_LONG;
 		lensize = octet & 0x7F;
 
-		while (lensize > 0)
-		{
-			if ((rsize = der_read_octets(&octet, 1, iodes)) <= 0)
+		while (lensize > 0) {
+			if ((rsize = der_read_octets(&octet, 1, iodes)) <= 0) {
 				break ;
-
+			}
 			*len <<= CHAR_BIT;
 			*len |= (size_t)octet;
 
@@ -37,11 +37,10 @@ ssize_t	der_read_len(size_t *len, uint8_t *form, t_iodes *iodes)
 			lensize--;
 		}
 
-		if (lensize > 0)
+		if (lensize > 0) {
 			return (-1);
-	}
-	else
-	{
+		}
+	} else {
 		*form = ASN_LEN_SHORT;
 		*len = (size_t)octet;
 	}

@@ -23,25 +23,23 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	}
 
 	/* if b is power of 2 */
-	if (b != 0u && (b & (b - 1u)) == 0u)
-	{
+	if (b != 0u && (b & (b - 1u)) == 0u) {
 		for (idx = 0; b != 0; idx++)
 			b >>= 1;
 
-		if (NULL != c)
-		{
+		if (NULL != c) {
 			bnum_copy(a, c);
 			bnum_rsh_bit_inpl(c, idx-1u);
 		}
-		if (NULL != d)
+		if (NULL != d) {
 			*d = a->val[0] & ((1ull << (idx-1u)) - 1u);
+		}
 		return ;
 	}
 
 	bnum_init_with_size(&q, a->len);
 
-	if (b > BNUM_MAX_VAL)
-	{
+	if (b > BNUM_MAX_VAL) {
 		t_num	x, r;
 
 		bnum_init(&x);
@@ -64,8 +62,7 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 
 	val = 0u;
 
-	for (idx = a->len-1; idx >= 0; idx--)
-	{
+	for (idx = a->len-1; idx >= 0; idx--) {
 		val = (val << BNUM_DIGIT_BIT) | ((uint128_t)a->val[idx]);
 
 		if (val >= b) {

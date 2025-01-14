@@ -53,8 +53,10 @@ int	test_bnum(void)
 {
 	int	res;
 
-	if (SSL_OK != __test_bnum_setup())
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __test_bnum_setup()) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	res = __test_bnum_to_hex_u();
 	res |= __test_bnum_from_hex_u();
@@ -145,8 +147,7 @@ static int	__test_bnum_to_hex_u(void)
 	ft_strncpy(ref_hex_ptr, digit_hex, digit_hexsize);
 	ref_hex_ptr += digit_hexsize;
 
-	while (idx >= 0)
-	{
+	while (idx >= 0) {
 		digit = test_num.val[idx--];
 		digit_hexsize = snprintf(digit_hex, sizeof(digit_hex), "%.15llx", digit);
 		ft_strncpy(ref_hex_ptr, digit_hex, digit_hexsize);
@@ -164,8 +165,9 @@ static int	__test_bnum_to_hex_u(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(zero_test_hex);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }
@@ -199,8 +201,9 @@ static int	__test_bnum_from_hex_u(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(zero_test_hex);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }
@@ -234,8 +237,9 @@ static int __test_bnum_to_dec(void)
 	SSL_FREE(test_dec_neg);
 	SSL_FREE(test_dec_zero);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }
@@ -280,8 +284,9 @@ static int __test_bnum_from_dec(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(test_hex_from_neg);
 
-	if (SSL_OK != pass)
+	if (SSL_OK != pass) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }
@@ -308,8 +313,9 @@ static int __test_bnum_abs(void)
 	bnum_clear(&test_num);
 	bnum_clear(&res_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -337,8 +343,9 @@ static int	__test_bnum_add_dig_u(void)
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -366,8 +373,9 @@ static int	__test_bnum_sub_dig_u(void)
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -403,8 +411,9 @@ static int	__test_bnum_add_dig(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(test_hex2);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -440,8 +449,9 @@ static int	__test_bnum_sub_dig(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(test_hex2);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -500,8 +510,9 @@ static int	__test_bnum_add(void)
 	bnum_del(n1);
 	bnum_del(n2);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -560,8 +571,9 @@ static int	__test_bnum_sub(void)
 	bnum_del(n1);
 	bnum_del(n2);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -586,8 +598,9 @@ static int	__test_bnum_increm_u(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -612,8 +625,9 @@ static int	__test_bnum_decrem_u(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -644,8 +658,9 @@ static int	__test_bnum_from_bytes_u(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(bin);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -671,8 +686,9 @@ static int	__test_bnum_to_bytes_u(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(bin);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -698,8 +714,9 @@ static int	__test_bnum_skip_zeros(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -723,8 +740,9 @@ static int	__test_bnum_lsh_dig_inpl(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -749,8 +767,9 @@ static int	__test_bnum_rsh_dig_inpl(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -775,8 +794,9 @@ static int	__test_bnum_lsh_bit_inpl(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -801,8 +821,9 @@ static int	__test_bnum_rsh_bit_inpl(void)
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -853,8 +874,9 @@ static int	__test_bnum_cmp_dig(void)
 	bnum_del(test_num2);
 	bnum_del(test_num3);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -883,8 +905,9 @@ static int	__test_bnum_cmp_u(void)
 	bnum_del(test_num);
 	bnum_del(test_num2);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -932,8 +955,9 @@ static int	__test_bnum_cmp(void)
 	bnum_del(test_num);
 	bnum_del(test_num2);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -956,8 +980,9 @@ static int	__test_bnum_copy(void)
 	bnum_del(num);
 	bnum_clear(&copy);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1013,8 +1038,9 @@ static int	__test_bnum_mul(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1067,8 +1093,9 @@ static int	__test_bnum_sqr(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1103,8 +1130,9 @@ static int	__test_bnum_div2_inpl(void)
 	pass |= TEST_ASSERT(bnum_cmp(num, &__zero_num) == 0);
 	bnum_del(num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1144,8 +1172,9 @@ static int	__test_bnum_divmod(void)
 	bnum_del(ref_rem_num);
 	bnum_clear_multi(&quot_num, &rem_num, NULL);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1182,8 +1211,9 @@ static int	__test_bnum_divmod_dig(void)
 	bnum_del(ref_quot_num);
 	bnum_clear(&quot_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1222,8 +1252,9 @@ static int	__test_bnum_exp(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1256,8 +1287,9 @@ static int	__test_bnum_exp2(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1293,8 +1325,9 @@ static int	__test_bnum_gcd(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1327,8 +1360,9 @@ static int	__test_bnum_invmod(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1361,8 +1395,9 @@ static int	__test_bnum_lcm(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1385,8 +1420,9 @@ static int	__test_bnum_lmbit(void)
 
 	bnum_del(num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1429,8 +1465,9 @@ static int	__test_bnum_powmod(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -1473,8 +1510,9 @@ static int	__test_bnum_m_powmod(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }

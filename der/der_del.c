@@ -3,8 +3,9 @@
 
 void  der_del(t_der *der)
 {
-	if (NULL == der)
+	if (NULL == der) {
 		return ;
+	}
 
 	SSL_FREE(der->content);
 	der->content = NULL;

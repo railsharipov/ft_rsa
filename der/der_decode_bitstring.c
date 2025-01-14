@@ -12,16 +12,22 @@ int  der_decode_bitstring(t_ostring *osbuf, uint8_t *enc, size_t size)
 {
 	uint8_t	num_unused_bits;
 
-	if (NULL == osbuf || NULL == enc)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == osbuf || NULL == enc) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (size < 1)
-		return (DER_LOG(ERROR, "invalid der encoding"));
+	if (size < 1) {
+		DER_LOG(ERROR, "invalid der encoding");
+		return (SSL_ERR);
+	}
 
 	num_unused_bits = enc[0];
 
-	if (num_unused_bits > 7u)
-		return (DER_LOG(ERROR, "invalid der encoding"));
+	if (num_unused_bits > 7u) {
+		DER_LOG(ERROR, "invalid der encoding");
+		return (SSL_ERR);
+	}
 
 	ft_ostr_append(osbuf, enc, size);
 

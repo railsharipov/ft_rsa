@@ -31,8 +31,7 @@ void	des_permute_key(uint64_t *permut_key, unsigned char *key)
 	t_pkey = 0;
 
 	ix = 0;
-	while (ix < 56)
-	{
+	while (ix < 56) {
 		t_pkey <<= 1;
 		t_pkey |= (t_key >> (64 - PKA[ix])) & 1;
 		ix++;

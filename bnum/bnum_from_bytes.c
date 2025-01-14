@@ -14,8 +14,9 @@ void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 	}
 	bnum_set_dig_u(num, 0u);
 
-	if (bufsize == 0)
+	if (bufsize == 0) {
 		return ;
+	}
 
 	nbits = bufsize * CHAR_BIT;
 	ndigits = NBITS_TO_NWORDS(nbits, BNUM_DIGIT_BIT);
@@ -27,8 +28,7 @@ void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 	octets = (unsigned char *)buf;
 
 	idx = 0;
-	while (idx < bufsize)
-	{
+	while (idx < bufsize) {
 		bnum_lsh_bit_inpl(num, 8);
 		*(num->val) |= octets[idx++];
 	}

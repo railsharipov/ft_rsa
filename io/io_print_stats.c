@@ -20,16 +20,17 @@ void 	io_print_stats(const t_iodes *iodes, const char *name)
 	if (NULL == iodes) {
 		return ;
 	}
-	for (ix = 0, mode_desc = NULL; ix < sizeof(F)/(sizeof(F[0])); ix++)
-	{
-		if (iodes->mode == F[ix].mode)
+	for (ix = 0, mode_desc = NULL; ix < sizeof(F)/(sizeof(F[0])); ix++) {
+		if (iodes->mode == F[ix].mode) {
 			mode_desc = F[ix].mode_desc;
+		}
 	}
 
 	ft_printf("---------------------------------------------\n");
 
-	if (name != NULL)
+	if (name != NULL) {
 		ft_printf("IO STATS (%s)\n", name);
+	}
 	else
 		ft_printf("IO STATS\n");
 
@@ -37,8 +38,9 @@ void 	io_print_stats(const t_iodes *iodes, const char *name)
 	ft_printf("stream fd = %d\n", iodes->fd);
 	ft_printf("stream seek = %d\n", iodes->seek);
 
-	if ('\n' == iodes->delim)
+	if ('\n' == iodes->delim) {
 		ft_printf("stream delim = newline\n");
+	}
 	else if (!ft_isprint(iodes->delim))
 		ft_printf("stream delim = white space (ascii=%d)\n", iodes->delim);
 	else

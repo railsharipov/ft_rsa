@@ -51,8 +51,9 @@ t_node	*(ft_node_new)(const char *key, void *content, size_t size)
 
 	node = ft_node_create();
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (NULL);
+	}
 
 	node->key = ft_strdup(key);
 	node->content = content;
@@ -67,8 +68,9 @@ t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, FUNC
 
 	node = ft_node_create_with_f_del(f_del);
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (NULL);
+	}
 
 	node->key = ft_strdup(key);
 	node->content = content;
@@ -101,8 +103,9 @@ void ft_node_del_with_f_del(t_node *node, FUNC_CONTENT_DEL f_del)
 
 int   ft_node_is_parent(t_node *node)
 {
-	if (NULL == node)
+	if (NULL == node) {
 		return (0);
+	}
 
 	return (NULL != node->nodes);
 }

@@ -49,30 +49,31 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 {
 	int	ret;
 
-	if (NULL == opt)
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (NULL == (__des_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0]))))
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (SSL_OK != io_init(&__out, IO_WRITE|IO_STDOUT))
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
+	if (NULL == opt) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (NULL == (__des_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN)) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (SSL_OK != io_init(&__out, IO_WRITE|IO_STDOUT)) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
 	__gflag = DES_E;
 
 	ret = __setup_task(opt);
 
-	if (SSL_OK == ret)
+	if (SSL_OK == ret) {
 		ret = __run_task();
-
+	}
 	io_close_multi(&__in, &__out, NULL);
 	cli_task_htable_del(__des_htable);
 
-	if (SSL_OK != ret)
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != ret) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
 	return (SSL_OK);
 }
 
@@ -82,22 +83,23 @@ static int	__setup_task(const char **opt)
 	t_task	*task;
 
 	// dynamically setup task
-	while (NULL != *opt)
-	{
-		if (NULL == (task = ft_htbl_get(__des_htable, *opt)))
-			return (DES_LOG(ERROR, INVALID_INPUT_ERROR));
-
+	while (NULL != *opt) {
+		if (NULL == (task = ft_htbl_get(__des_htable, *opt))) {
+			return (CLI_LOG(ERROR, INVALID_INPUT_ERROR));
+		}
 		__gflag |= task->gflag;
 
 		// if option flag is required
-		if (task->val)
-			if (NULL == * ++opt)
-				return (DES_LOG(ERROR, "expected option flag"));
-
-		if (NULL != (f_setup = task->ptr))
-			if (SSL_OK != f_setup(*opt, task))
-				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
+		if (task->val) {
+			if (NULL == * ++opt) {
+				return (CLI_LOG(ERROR, "expected option flag"));
+			}
+		}
+		if (NULL != (f_setup = task->ptr)) {
+			if (SSL_OK != f_setup(*opt, task)) {
+				return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+			}
+		}
 		opt++;
 	}
 
@@ -114,24 +116,19 @@ static int __run_task(void)
 	ret = SSL_OK;
 	__des = des_hexinit(__keyhex, __salthex, NULL);
 
-	if (SSL_OK != __get_input(&input.content, &input.size))
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (SSL_FLAG(DES_D, __gflag))
+	if (SSL_OK != __get_input(&input.content, &input.size)) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (SSL_FLAG(DES_D, __gflag)) {
 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
-	else
+	} else {
 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
-
-	if (NULL != __pass)
-		if (SSL_OK != util_setpass(__pass))
-			return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
+	}
 	ret = f_op(&input, &output);
 
-	if (SSL_OK == ret)
+	if (SSL_OK == ret) {
 		ret = __write_output((char *)output.content, output.size);
-
-	util_unsetpass();
+	}
 
 	SSL_FREE(input.content);
 	SSL_FREE(output.content);
@@ -160,26 +157,27 @@ static int	__get_input(char **input, size_t *insize)
 	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);
 }
 
 static int	__write_output(const char *output, size_t outsize)
 {
-	if (SSL_FLAG(DES_N, __gflag))
+	if (SSL_FLAG(DES_N, __gflag)) {
 		__dump_vectors();
-
-	if (SSL_FLAG(DES_A | DES_E, __gflag))
+	}
+	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
 		__out.delim = '\n';
-
-	if (io_write(&__out, output, outsize) < 0)
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (SSL_FLAG(DES_A | DES_E, __gflag))
-		if (io_write(&__out, "\n", 1) < 0)
-			return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
+	}
+	if (io_write(&__out, output, outsize) < 0) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
+		if (io_write(&__out, "\n", 1) < 0) {
+			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		}
+	}
 	return (SSL_OK);
 }
 
@@ -196,22 +194,23 @@ static int	__init_io(const char *opt, const t_task *task)
 	t_iodes	*iodes;
 
 	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
-
 	return (io_init(iodes, task->oflag, opt));
 }
 
 static int	__get_vector(const char *opt, const t_task *task)
 {
-	if (!ft_str_ishex(opt))
-		return (DES_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (!ft_str_ishex(opt)) {
+		CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (DES_K == task->tflag)
+	if (DES_K == task->tflag) {
 		__keyhex = (char *)opt;
-	else if (DES_S == task->tflag)
+	} else if (DES_S == task->tflag) {
 		__salthex = (char *)opt;
-	else
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
+	} else {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
 	return (SSL_OK);
 }
 
@@ -227,10 +226,11 @@ static int __set_op(const char *opt, const t_task *task)
 {
 	uint32_t	remove_flag;
 
-	if (DES_D == task->tflag)
+	if (DES_D == task->tflag) {
 		remove_flag = DES_E;
-	else
+	} else {
 		remove_flag = DES_D;
+	}
 
 	// encrypt and decrypt flags are mutually exclusive
 	__gflag &= ~remove_flag;
@@ -241,7 +241,7 @@ static int __set_op(const char *opt, const t_task *task)
 
 static int	__enc(t_ostring *mes, t_ostring *ciph)
 {
-	return (des_ecb_encrypt(__des, mes, ciph));
+	return (des_ecb_encrypt(__des, mes, ciph, __pass));
 }
 
 static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
@@ -251,12 +251,12 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 
 	ret = SSL_OK;
 
-	if (SSL_OK != des_ecb_encrypt(__des, mes, ciph))
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (SSL_OK != base64_encode(
-		(char *)(ciph->content), ciph->size, &b64.content, &b64.size))
-			ret = (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != des_ecb_encrypt(__des, mes, ciph, __pass)) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (SSL_OK != base64_encode((char *)(ciph->content), ciph->size, &b64.content, &b64.size)) {
+		ret = (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
 
 	SSL_FREE(ciph->content);
 	ciph->content = b64.content;
@@ -267,21 +267,19 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 
 static int	__dec(t_ostring *ciph, t_ostring *mes)
 {
-	return (des_ecb_decrypt(__des, ciph, mes));
+	return (des_ecb_decrypt(__des, ciph, mes, __pass));
 }
 
 static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 {
 	t_ostring	cipher;
 
-	if (SSL_OK != base64_decode(
-		(char *)(b64->content), b64->size, &cipher.content, &cipher.size))
-			return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
-
-	if (SSL_OK != des_ecb_decrypt(__des, &cipher, mes))
-	{
+	if (SSL_OK != base64_decode((char *)(b64->content), b64->size, &cipher.content, &cipher.size)) {
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+	}
+	if (SSL_OK != des_ecb_decrypt(__des, &cipher, mes, __pass)) {
 		SSL_FREE(cipher.content);
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	SSL_FREE(cipher.content);
 

@@ -3,8 +3,9 @@
 
 int	test_assert(int bool, const char *func, const char *file, int line)
 {
-	if (bool)
+	if (bool) {
 		return (SSL_OK);
+	}
 
 	if (NULL == func || NULL == file) {
 		return (SSL_ERR);

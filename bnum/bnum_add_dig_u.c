@@ -17,8 +17,7 @@ void	bnum_add_dig_u(const t_num *a, uint64_t digit, t_num *res)
 		aptr = a->val;
 		rptr = res->val;
 		carry = (uint128_t)digit;
-		for (i = 0; i < slen-1; i++)
-		{
+		for (i = 0; i < slen-1; i++) {
 			sum = ((uint128_t)*aptr++) + carry;
 			*rptr++ = (uint64_t)(sum & BNUM_MAX_VAL);
 			carry = sum >> BNUM_DIGIT_BIT;

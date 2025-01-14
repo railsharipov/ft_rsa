@@ -9,13 +9,13 @@ void	bnum_mul_comba(const t_num *a, const t_num *b, t_num *res)
 	val = 0;
 	ndig = a->len + b->len;
 
-	if (ndig > res->len)
+	if (ndig > res->len) {
 		bnum_increase_size(res, ndig);
+	}
 
 	BNUM_ALLOC(temp, sizeof(uint64_t) * ndig);
 
-	for (int idx = 0; idx < ndig; idx++)
-	{
+	for (int idx = 0; idx < ndig; idx++) {
 		const uint64_t	*aptr, *bptr;
 		int				n, y, x;
 

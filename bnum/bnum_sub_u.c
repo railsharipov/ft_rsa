@@ -16,14 +16,12 @@ void	bnum_sub_u(const t_num *a, const t_num *b, t_num *res)
 		rptr = res->val;
 
 		borrow = 0;
-		for (i = 0; i < b->len; i++)
-		{
+		for (i = 0; i < b->len; i++) {
 			*rptr = ((BNUM_BASE + *aptr++) - *bptr++) - borrow;
 			borrow = (~(*rptr >> BNUM_DIGIT_BIT)) & 0x1;
 			*rptr++ &= BNUM_MAX_VAL;
 		}
-		for (; i < a->len; i++)
-		{
+		for (; i < a->len; i++) {
 			*rptr = (BNUM_BASE + *aptr++) - borrow;
 			borrow = (~(*rptr >> BNUM_DIGIT_BIT)) & 0x1;
 			*rptr++ &= BNUM_MAX_VAL;

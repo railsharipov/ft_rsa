@@ -34,6 +34,7 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 {
 	t_rsa	*key;
+	int		ret;
 
 	SSL_ALLOC(key, sizeof(t_rsa));
 
@@ -48,18 +49,49 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	key->exponent2 = __asn_int(asn_items, "int:exponent2");
 	key->coeff = __asn_int(asn_items, "int:coefficient");
 
-	if ((NULL == key->version) || (NULL == key->modulus)
-		|| (NULL == key->pubexp) || (NULL == key->privexp)
-		|| (NULL == key->prime1) || (NULL == key->prime2)
-		|| (NULL == key->exponent1) || (NULL == key->exponent2)
-		|| (NULL == key->coeff))
-	{
+	if (NULL == key->version) {
+		RSA_LOG(ERROR, "invalid rsa key: version is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->modulus) {
+		RSA_LOG(ERROR, "invalid rsa key: modulus is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->pubexp) {
+		RSA_LOG(ERROR, "invalid rsa key: public exponent is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->privexp) {
+		RSA_LOG(ERROR, "invalid rsa key: private exponent is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->prime1) {
+		RSA_LOG(ERROR, "invalid rsa key: prime1 is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->prime2) {
+		RSA_LOG(ERROR, "invalid rsa key: prime2 is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->exponent1) {
+		RSA_LOG(ERROR, "invalid rsa key: exponent1 is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->exponent2) {
+		RSA_LOG(ERROR, "invalid rsa key: exponent2 is missing");
+		ret = SSL_ERR;
+	}
+	if (NULL == key->coeff) {
+		RSA_LOG(ERROR, "invalid rsa key: coefficient is missing");
+		ret = SSL_ERR;
+	}
+
+	if (SSL_OK != ret) {
 		rsa_key_items_del(key);
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+		return (ret);
 	}
 
 	key->keysize = bnum_lmbit(key->modulus);
-
 	*rsa_key = key;
 
 	return (SSL_OK);
@@ -99,8 +131,7 @@ static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	key->pubexp = __asn_int(asn_items, "int:publicExponent");
 	key->keysize = bnum_lmbit(key->modulus);
 
-	if ((NULL == key->modulus) || (NULL == key->pubexp))
-	{
+	if ((NULL == key->modulus) || (NULL == key->pubexp)) {
 		SSL_FREE(key);
 		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 	}

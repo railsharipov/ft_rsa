@@ -19,14 +19,15 @@ void	__tostr(char *str, intmax_t nb, intmax_t mult)
 
 	i = 0;
 
-	if (nb < 0)
+	if (nb < 0) {
 		str[i++] = '-';
+	}
 
-	if (nb < 0)
+	if (nb < 0) {
 		nb = -nb;
+	}
 
-	while (mult)
-	{
+	while (mult) {
 		str[i++] = nb / mult + 48;
 		nb = nb % mult;
 		mult = mult / 10;
@@ -46,8 +47,7 @@ char	*ft_itoa(intmax_t n)
 	len = (n < 0) ? 2 : 1;
 	nb = n;
 
-	while (n / 10)
-	{
+	while (n / 10) {
 		mult = mult * 10;
 		n = n / 10;
 		len++;

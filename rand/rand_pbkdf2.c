@@ -20,17 +20,18 @@ static char	__buf[160];
 
 /* Password based key derivation function - PBKDF2 */
 
-int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect)
+int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass)
 {
 	t_hash	*md5;
 	char	*bufptr;
 	int		bufsize;
-	char	*pass;
 
-	if (NULL == salt)
-		return (RAND_LOG(ERROR, INVALID_INPUT_ERROR));
-	if (NULL == (pass = util_getpass()))
-		return (RAND_LOG(ERROR, "expected password input"));
+	if (NULL == salt) {
+		return (RAND_LOG(ERROR, "salt is required"));
+	}
+	if (NULL == pass) {
+		return (RAND_LOG(ERROR, "password is required"));
+	}
 
 	bufptr = __buf;
 	ft_memcpy(bufptr, pass, ft_strlen(pass));
@@ -47,8 +48,9 @@ int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect)
 	ft_bzero(__buf, sizeof(__buf));
 	ft_memcpy(key, md5->hash, 8);
 
-	if (NULL != vect)
+	if (NULL != vect) {
 		ft_memcpy(vect, md5->hash + 8, 8);
+	}
 	ft_bzero(md5->hash, md5->size);
 
 	return (SSL_OK);

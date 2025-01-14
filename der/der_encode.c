@@ -32,8 +32,10 @@ int	der_encode(t_node *tree, t_iodes *iodes)
 {
 	int		ret;
 
-	if (NULL == tree || NULL == iodes)
-		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == tree || NULL == iodes) {
+		ASN_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
 	__init_func_htable();
 
@@ -41,26 +43,30 @@ int	der_encode(t_node *tree, t_iodes *iodes)
 
 	__del_func_htable();
 
-	if (SSL_OK != ret)
-		return (DER_LOG(ERROR, "invalid asn tree"));
+	if (SSL_OK != ret) {
+		DER_LOG(ERROR, "invalid asn tree");
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
 
 static int	__encode_recursive(t_node *node, t_iodes *iodes)
 {
-	if (NULL == node)
+	if (NULL == node) {
 		return (SSL_OK);
-
-	if (ft_node_is_parent(node))
-	{
-		if (SSL_OK != __encode_construct(node->content, iodes))
-			return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
-	else
-	{
-		if (SSL_OK != __encode_primitive(node->content, iodes))
-			return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+
+	if (ft_node_is_parent(node)) {
+		if (SSL_OK != __encode_construct(node->content, iodes)) {
+			DER_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
+		}
+	} else {
+		if (SSL_OK != __encode_primitive(node->content, iodes)) {
+			DER_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
+		}
 	}
 
 	return (__encode_recursive(node->next, iodes));
@@ -72,13 +78,17 @@ static int	__encode_primitive(t_node *node, t_iodes *iodes)
 
 	item = node->content;
 
-	if (NULL == item)
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (NULL == item) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	item->tag |= ASN_ENCODE_PRIMITIVE;
 
-	if (SSL_OK != __encode_item(item, iodes))
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __encode_item(item, iodes)) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -92,15 +102,16 @@ static int	__encode_construct(t_node *node, t_iodes *iodes)
 
 	item = node->content;
 
-	if (NULL == item)
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (NULL == item) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	io_init(&temp_iodes, IO_WRITE|IO_OSBUF, &osbuf);
 
 	ret = __encode_recursive(node->nodes, &temp_iodes);
 
-	if (SSL_OK == ret)
-	{
+	if (SSL_OK == ret) {
 		item->tag |= ASN_ENCODE_CONSTRUCT;
 		item->content = ft_ostr_get_content(&osbuf);
 		item->size = ft_ostr_get_size(&osbuf);
@@ -125,14 +136,20 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 	tag = item->tag;
 	tagnum = item->tagnum;
 
-	if (NULL == (f_enc = ft_htbl_get_rawkey(__func_htable, &tagnum, sizeof(tagnum))))
-		return (DER_LOG(ERROR, "invalid asn type tag"));
+	if (NULL == (f_enc = ft_htbl_get_rawkey(__func_htable, &tagnum, sizeof(tagnum)))) {
+		DER_LOG(ERROR, "invalid asn type tag");
+		return (SSL_ERR);
+	}
 
-	if (SSL_OK != der_write_tag(tag, tagnum, iodes))
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != der_write_tag(tag, tagnum, iodes)) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (SSL_OK != f_enc(&osbuf, item->content, item->size))
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != f_enc(&osbuf, item->content, item->size)) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	wbytes = der_write_octets(
 		ft_ostr_get_content(&osbuf), 
@@ -141,8 +158,10 @@ static int	__encode_item(t_iasn *item, t_iodes *iodes)
 
 	ft_ostr_clean(&osbuf);
 
-	if (wbytes < 0)
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (wbytes < 0) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }

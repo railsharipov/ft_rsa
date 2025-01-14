@@ -4,8 +4,7 @@ void	bnum_sub_dig_u(const t_num *a, uint64_t b, t_num *res)
 {
 	int i;
 
-	if (b > BNUM_MAX_VAL)
-	{
+	if (b > BNUM_MAX_VAL) {
 		t_num	tmp;
 
 		bnum_init_with_size(&tmp, 2);
@@ -31,8 +30,7 @@ void	bnum_sub_dig_u(const t_num *a, uint64_t b, t_num *res)
 		rptr = res->val;
 
 		borrow = b;
-		for (i = 0; i < a->len; i++)
-		{
+		for (i = 0; i < a->len; i++) {
 			*rptr = *aptr++ - borrow;
 			borrow = *rptr >> (BNUM_INT_BIT-1u);
 			*rptr++ &= BNUM_MAX_VAL;

@@ -43,8 +43,7 @@ static void	__update_sched(void)
 	int	i;
 
 	i = 0;
-	while (i < 16)
-	{
+	while (i < 16) {
 # if BYTE_ORDER == BIG_ENDIAN
 		sched[i] = word[i];
 # else
@@ -52,8 +51,7 @@ static void	__update_sched(void)
 # endif
 		i++;
 	}
-	while (i < 64)
-	{
+	while (i < 64) {
 		sched[i] = S1(sched[i-2]) + sched[i-7] + S0(sched[i-15]) + sched[i-16];
 		i++;
 	}
@@ -66,8 +64,7 @@ static void	__rotate_hash(void)
 	t_sha256_word	ix;
 
 	ix = 0;
-	while (ix < 64)
-	{
+	while (ix < 64) {
 		t1 = var[7] + E1(var[4]) + CH(var[4],var[5],var[6]) + K[ix] + sched[ix];
 		t2 = E0(var[0]) + MAJ(var[0],var[1],var[2]);
 		var[7] = var[6];
@@ -104,15 +101,15 @@ static void	__update_hash(void)
 
 void	hash_sha256_update(t_hash *sha256, const char *buf, size_t bufsize)
 {
-	if ((NULL == sha256) || (NULL == buf))
+	if ((NULL == sha256) || (NULL == buf)) {
 		return ;
+	}
 
 	var = sha256->var;
 	hash = sha256->hash;
 	*(uint64_t *)sha256->msize += FLOOR(bufsize, SHA256_BLOCK_SIZE);
 
-	while (bufsize >= SHA256_BLOCK_SIZE)
-	{
+	while (bufsize >= SHA256_BLOCK_SIZE) {
 		word = (t_sha256_word *)(buf);
 		__update_sched();
 		__rotate_hash();

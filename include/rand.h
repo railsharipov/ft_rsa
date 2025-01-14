@@ -31,6 +31,6 @@ int			rand_fseed(uint64_t *, const char *);
 int			rand_mgf(char *, int, char *, int);
 void  		rand_mtw_init(uint64_t);
 uint64_t	rand_mtw_extract(void);
-int			rand_pbkdf2(unsigned char *, unsigned char *, unsigned char *);
+int         rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass);
 
 #endif

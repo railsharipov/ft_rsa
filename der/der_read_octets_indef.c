@@ -10,16 +10,19 @@ ssize_t	der_read_octets_indef(char **content, size_t *size, t_iodes *iodes)
 	t_ostring	osbuf;
 	ssize_t		rbytes;
 
-	if (NULL == iodes || NULL == content || NULL == size)
+	if (NULL == iodes || NULL == content || NULL == size) {
 		return (-1);
+	}
 
-	if (SSL_OK != io_init(&temp_iodes, IO_WRITE|IO_OSBUF, &osbuf))
+	if (SSL_OK != io_init(&temp_iodes, IO_WRITE|IO_OSBUF, &osbuf)) {
 		return (-1);
+	}
 
 	rbytes = __read_octets_indef(iodes, &temp_iodes);
 
-	if (rbytes < 0)
+	if (rbytes < 0) {
 		ft_ostr_clean(&osbuf);
+	}
 
 	*content = ft_ostr_get_content(&osbuf);
 	*size = ft_ostr_get_size(&osbuf);
@@ -39,28 +42,30 @@ static ssize_t	__read_octets_indef(t_iodes *in, t_iodes *out)
 	read_null = SSL_FALSE;
 	tbytes = 0;
 
-	while (io_read(in, octets, 1) == 1)
-	{
+	while (io_read(in, octets, 1) == 1) {
 		rbytes = 1;
 
-		if (octets[0] == 0)
-		{
-			if (io_read(in, octets+1, 1) < 1)
+		if (octets[0] == 0) {
+			if (io_read(in, octets+1, 1) < 1) {
 				break ;
+			}
 
 			rbytes += 1;
 
-			if (octets[1] == 0)
+			if (octets[1] == 0) {
 				read_null = SSL_TRUE;
+			}
 		}
 
 		tbytes += rbytes;
 
-		if (read_null)
+		if (read_null) {
 			break ;
+		}
 
-		if (io_write(out, octets, rbytes) != rbytes)
+		if (io_write(out, octets, rbytes) != rbytes) {
 			break ;
+		}
 	}
 
 	return (read_null ? tbytes : -1);

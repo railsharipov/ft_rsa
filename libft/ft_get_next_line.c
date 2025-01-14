@@ -24,18 +24,17 @@ int	read_to_buf(char *buf, int fd, int size)
 	int		tbytes;
 
 	tbytes = 0;
-	while (tbytes < size)
-	{
+	while (tbytes < size) {
 		c = 0;
 
-		if (0 > (rbytes = read(fd, &c, 1)))
+		if (0 > (rbytes = read(fd, &c, 1))) {
 			return (-1);
+		}
 
 		*buf++ = c;
 		tbytes += rbytes;
 
-		if (rbytes == 0 || c == '\n')
-		{
+		if (rbytes == 0 || c == '\n') {
 			__line_complete = 1;
 			break;
 		}
@@ -54,24 +53,26 @@ int	get_next_line(int fd, char **line)
 
 	__line_complete = 0;
 
-	if ((NULL == line) || (fd < 0))
+	if ((NULL == line) || (fd < 0)) {
 		return (-1);
+	}
 
 	LIBFT_ALLOC(*line, 1);
 
 	tbytes = 0;
-	while ((rbytes = read_to_buf(buf, fd, LIBFT_BUFF)) > 0)
-	{
+	while ((rbytes = read_to_buf(buf, fd, LIBFT_BUFF)) > 0) {
 		LIBFT_REALLOC(*line, tbytes+1, tbytes+rbytes+1);
 		ft_strcat(*line, buf);
 		tbytes += rbytes;
 
-		if (__line_complete)
+		if (__line_complete) {
 			break ;
+		}
 	}
 
-	if (rbytes < 0)
+	if (rbytes < 0) {
 		return (-1);
+	}
 
 	return (tbytes);
 }

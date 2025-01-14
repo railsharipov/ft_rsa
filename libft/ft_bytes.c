@@ -46,8 +46,7 @@ void	ft_bytes_xor(void *res, void *bytes1, void *bytes2, size_t size)
 	b2ptr = (uint8_t *)bytes2;
 
 	i = 0;
-	while (i < size)
-	{
+	while (i < size) {
 		rptr[i] = b1ptr[i] ^ b2ptr[i];
 		i++;
 	}
@@ -64,8 +63,7 @@ uint64_t	ft_bytes_to_uint(void *bytes, size_t size)
 	ptr = (uint8_t *)bytes;
 
 	idx = 0;
-	while (idx < size)
-	{
+	while (idx < size) {
 		num <<= 8;
 		num |= (uint64_t)ptr[idx++];
 	}
@@ -86,8 +84,7 @@ void	ft_bytes_lshift(void *bytes, size_t size, int shift)
 	rem = 0;
 	idx = 0;
 
-	while (idx++ < size)
-	{
+	while (idx++ < size) {
 		tmp = *ptr;
 		*ptr = (*ptr << shift) | rem;
 		rem = tmp >> (CHAR_BIT-shift);
@@ -109,8 +106,7 @@ void	ft_bytes_rshift(void *bytes, size_t size, int shift)
 	rem = 0;
 	idx = 0;
 
-	while (idx < size)
-	{
+	while (idx < size) {
 		tmp = ptr[idx];
 		ptr[idx] = (ptr[idx] >> shift) | rem;
 		rem = tmp << (CHAR_BIT-shift);
@@ -125,37 +121,31 @@ void	ft_bytes_write_hex(int fd, void *ptr, size_t size)
 	int			ix;
 	int			iy;
 
-	if ((size <= 0) || (NULL == ptr) || (fd < 0))
+	if ((size <= 0) || (NULL == ptr) || (fd < 0)) {
 		return ;
+	}
 
 	octets = (unsigned char *)(ptr);
 	bytes = 0;
 
 	ix = 0;
-	while (ix < size)
-	{
+	while (ix < size) {
 		ft_fprintf(fd, "%.4x -", bytes);
 
 		iy = 0;
-		while ((iy < COL) && (ix < size))
-		{
+		while ((iy < COL) && (ix < size)) {
 			ft_fprintf(fd, " %.2x", octets[ix++]);
 			iy++;
 		}
 		ix -= iy;
-		while (iy++ <= COL)
-		{
+		while (iy++ <= COL) {
 			ft_fprintf(fd, "   ");
 		}
 		iy = 0;
-		while ((iy < COL) && (ix < size))
-		{
-			if (ft_isprint(octets[ix]))
-			{
+		while ((iy < COL) && (ix < size)) {
+			if (ft_isprint(octets[ix])) {
 				ft_fprintf(fd, "%c", octets[ix]);
-			}
-			else
-			{
+			} else {
 				ft_fprintf(fd, ".");
 			}
 			iy++;
@@ -171,21 +161,22 @@ void	ft_bytes_dump_hex(void *ptr, size_t size, int cols, int del)
 	unsigned char	*octets;
 	size_t		ix;
 
-	if (NULL != ptr)
-	{
+	if (NULL != ptr) {
 		octets = (unsigned char *)(ptr);
 
 		ix = 0;
-		while (ix < size)
-		{
-			if (del != 0)
+		while (ix < size) {
+			if (del != 0) {
 				ft_printf("%.2x%c", octets[ix++], del);
+			}
 			else
 				ft_printf("%.2x", octets[ix++]);
 
-			if (cols != 0)
-				if ((ix < size) && (ix % cols == 0))
+			if (cols != 0) {
+				if ((ix < size) && (ix % cols == 0)) {
 					ft_printf("\n");
+				}
+			}
 		}
 	}
 	ft_printf("\n");
@@ -197,24 +188,25 @@ void	ft_bytes_print_bits(void *ptr, size_t size)
 	size_t			j;
 
 	i = 0;
-	while (i < size)
-	{
+	while (i < size) {
 		j = 0;
-		while (j < 8)
-		{
-			if ((((unsigned char *)ptr)[i] << j) & (1 << 7))
+		while (j < 8) {
+			if ((((unsigned char *)ptr)[i] << j) & (1 << 7)) {
 				write(1, "1", 1);
+			}
 			else
 				write(1, "0", 1);
 			j++;
 		}
 		write(1, " ", 1);
-		if ((i + 1) % 8 == 0)
+		if ((i + 1) % 8 == 0) {
 			write(1, "\n", 1);
+		}
 		i++;
 	}
-	if (i % 8 != 0)
+	if (i % 8 != 0) {
 		write(1, "\n", 1);
+	}
 }
 
 void	ft_bytes_reverse_bits(void *ptr, size_t size)
@@ -226,14 +218,13 @@ void	ft_bytes_reverse_bits(void *ptr, size_t size)
 
 	p = ptr;
 	i = 0;
-	while (i < size)
-	{
+	while (i < size) {
 		num = 0;
 		j = 0;
-		while (j < 8)
-		{
-			if (p[i] & (1 << j))
+		while (j < 8) {
+			if (p[i] & (1 << j)) {
 				num |= (1 << (7 - j));
+			}
 			j++;
 		}
 		p[i] = num;
@@ -249,16 +240,16 @@ char	*ft_bytes_to_hex(const void *bin, size_t binsize)
 	size_t			hexsize;
 	size_t			ix;
 
-	if (NULL == bin || binsize == 0)
+	if (NULL == bin || binsize == 0) {
 		return (NULL);
+	}
 
 	hexsize = 2*binsize;
 	LIBFT_ALLOC(hex, hexsize+1);
 	hptr = hex;
 	bptr = (unsigned char *)bin;
 
-	for (ix = 0; ix < binsize; ix++)
-	{
+	for (ix = 0; ix < binsize; ix++) {
 		*hptr++ = A[bptr[ix]>>4];
 		*hptr++ = A[bptr[ix]&0xF];
 	}
@@ -282,8 +273,9 @@ void	ft_hex_to_bytes(void *bin, const char *hex, size_t hexsize)
 	size_t			bufsize;
 	ssize_t			ix;
 
-	if ((NULL == hex) || (NULL == bin))
+	if ((NULL == hex) || (NULL == bin)) {
 		return ;
+	}
 
 	bufsize = 2 * NBITS_TO_NBYTES(4 * hexsize);
 	LIBFT_ALLOC(buf, bufsize);
@@ -296,8 +288,7 @@ void	ft_hex_to_bytes(void *bin, const char *hex, size_t hexsize)
 
 	ptr = (unsigned char *)buf;
 
-	for (ix = 0; ix < bufsize/2; ix++)
-	{
+	for (ix = 0; ix < bufsize/2; ix++) {
 		((unsigned char *)bin)[ix] = *ptr++ << 4;
 		((unsigned char *)bin)[ix] |= *ptr++;
 	}

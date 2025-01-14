@@ -42,8 +42,7 @@ void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 
 		while (BNUM_EVEN(&v)) {
 			bnum_div2_inpl(&v);
-			if (BNUM_ODD(&tc) || BNUM_ODD(&td))
-			{
+			if (BNUM_ODD(&tc) || BNUM_ODD(&td)) {
 				bnum_add(&tc, &y, &tc);
 				bnum_sub(&td, &x, &td);
 			}

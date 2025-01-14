@@ -7,8 +7,9 @@ void	bnum_sqr_karatsuba(const t_num *a, t_num *res)
 	t_num	a0, a1, t1, t2, a0a0, a1a1;
 	int		hlen;
 
-	if (2 * a->len > res->size)
+	if (2 * a->len > res->size) {
 		bnum_increase_size(res, 2 * a->len);
+	}
 
 	hlen = a->len >> 1;
 
@@ -42,8 +43,9 @@ static void	__copy_digs(const t_num *a, t_num *res, int offset, int len)
 {
 	int i;
 
-	if (len > res->size)
+	if (len > res->size) {
 		bnum_increase_size(res, offset + len);
+	}
 
 	for (i = 0; i < len; i++)
 		res->val[i] = a->val[i + offset];

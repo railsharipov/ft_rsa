@@ -3,8 +3,7 @@
 
 void	pem_clear(t_pem *pem)
 {
-	if (NULL == pem)
-	{
+	if (NULL == pem) {
 		return ;
 	}
 	ft_bzero(pem->content, pem->size);

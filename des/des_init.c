@@ -26,18 +26,15 @@ t_des	*des_init(
 {
 	__init_bufs();
 
-	if (NULL != key)
-	{
+	if (NULL != key) {
 		ft_memcpy(__key, key, 8);
 		__des.vflag |= DES_K;
 	}
-	if (NULL != salt)
-	{
+	if (NULL != salt) {
 		ft_memcpy(__salt, salt, 8);
 		__des.vflag |= DES_S;
 	}
-	if (NULL != vect)
-	{
+	if (NULL != vect) {
 		ft_memcpy(__vect, vect, 8);
 		__des.vflag |= DES_V;
 	}
@@ -53,18 +50,15 @@ t_des	*des_hexinit(
 {
 	__init_bufs();
 
-	if (NULL != keyhex)
-	{
+	if (NULL != keyhex) {
 		ft_hex_to_bytes(__key, keyhex, MIN(16, ft_strlen(keyhex)));
 		__des.vflag |= DES_K;
 	}
-	if (NULL != salthex)
-	{
+	if (NULL != salthex) {
 		ft_hex_to_bytes(__salt, salthex, MIN(16, ft_strlen(salthex)));
 		__des.vflag |= DES_S;
 	}
-	if (NULL != vecthex)
-	{
+	if (NULL != vecthex) {
 		ft_hex_to_bytes(__vect, vecthex, MIN(16, ft_strlen(vecthex)));
 		__des.vflag |= DES_V;
 	}

@@ -4,6 +4,7 @@
         "common.h": "c",
         "alloc.h": "c",
         "complex": "c",
-        "error.h": "c"
+        "error.h": "c",
+        "rand.h": "c"
     }
 }

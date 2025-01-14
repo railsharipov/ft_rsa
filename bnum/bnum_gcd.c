@@ -5,25 +5,21 @@ void	bnum_gcd(const t_num *a, const t_num *b, t_num *res)
 	t_num	x, y;
 	int		k, xk, yk;
 
-	if ((a->sign == BNUM_NEG) || (b->sign == BNUM_NEG))
-    {
+	if ((a->sign == BNUM_NEG) || (b->sign == BNUM_NEG)) {
 		BNUM_LOG(ERROR, "negative number is not supported");
 		return ;
     };
 
-	if (BNUM_ZERO(a) || BNUM_ZERO(b))
-    {
+	if (BNUM_ZERO(a) || BNUM_ZERO(b)) {
 		BNUM_LOG(ERROR, "gcd is undefined for zero input");
 		return ;
     };
 
-	if (BNUM_ONE(a))
-	{
+	if (BNUM_ONE(a)) {
 		bnum_copy(a, res);
 		return ;
 	}
-	if (BNUM_ONE(b))
-	{
+	if (BNUM_ONE(b)) {
 		bnum_copy(b, res);
 		return ;
 	}
@@ -41,17 +37,18 @@ void	bnum_gcd(const t_num *a, const t_num *b, t_num *res)
 	bnum_rsh_bit_inpl(&x, xk);
 	bnum_rsh_bit_inpl(&y, yk);
 
-	while (!BNUM_ZERO(&y))
-	{
-		if (bnum_cmp_u(&x, &y) > 0)
+	while (!BNUM_ZERO(&y)) {
+		if (bnum_cmp_u(&x, &y) > 0) {
 			bnum_swap_values(&x, &y);
+		}
 
 		bnum_sub_u(&y, &x, &y);
 
 		yk = bnum_rmbit(&y) - 1;
 
-		if (yk > 0)
+		if (yk > 0) {
 			bnum_rsh_bit_inpl(&y, yk);
+		}
 	}
 
 	bnum_lsh_bit_inpl(&x, k);

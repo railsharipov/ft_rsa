@@ -3,12 +3,10 @@
 
 void  pem_del(t_pem *pem)
 {
-	if (NULL == pem)
-	{
+	if (NULL == pem) {
 		return ;
 	}
-	if (pem->content)
-	{
+	if (pem->content) {
 		ft_bzero(pem->content, pem->size);
 		SSL_FREE(pem->content);
 	}

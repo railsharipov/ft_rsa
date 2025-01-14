@@ -16,17 +16,23 @@ int	der_encode_oid(t_ostring *osbuf, void *content, size_t size)
 	char	*obj_octets;
 	size_t	obj_size;
 
-	if (NULL == osbuf || NULL == content)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == osbuf || NULL == content) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
 	ft_memcpy(obj_name, content, size);
 	obj_name[size] = 0;
 
-	if (NULL == (obj_id_string = asn_oid_tree_get_oid(obj_name)))
-		return (DER_LOG(ERROR, "invalid asn object id"));
+	if (NULL == (obj_id_string = asn_oid_tree_get_oid(obj_name))) {
+		DER_LOG(ERROR, "invalid asn object id");
+		return (SSL_ERR);
+	}
 
-	if (SSL_OK != __get_obj_id_octets(&obj_octets, &obj_size, obj_id_string))
-		return (DER_LOG(ERROR, "invalid asn object id"));
+	if (SSL_OK != __get_obj_id_octets(&obj_octets, &obj_size, obj_id_string)) {
+		DER_LOG(ERROR, "invalid asn object id");
+		return (SSL_ERR);
+	}
 
 	osbuf->content = ft_memdup(obj_octets, obj_size);
 	osbuf->size = obj_size;
@@ -46,8 +52,7 @@ static int	__get_obj_id_octets(
 	sub_id_strings = ft_strsplit(obj_id_string, '.');
 	num_sub_id_strings = ft_2darray_len_null_terminated((void **)sub_id_strings);
 
-	if (SSL_OK == (ret = __check_sub_ids(sub_id_strings, num_sub_id_strings)))
-	{
+	if (SSL_OK == (ret = __check_sub_ids(sub_id_strings, num_sub_id_strings))) {
 		__get_sub_ids(&sub_ids, &num_sub_ids, sub_id_strings, num_sub_id_strings);
 		__encode_sub_ids(obj_octets, obj_size, (uint32_t *)sub_ids, num_sub_ids);
 
@@ -61,15 +66,15 @@ static int	__get_obj_id_octets(
 
 static int	__check_sub_ids(char **sub_id_strings, int num_sub_id_strings)
 {
-	if (num_sub_id_strings < 2 || NULL == sub_id_strings)
-	{
+	if (num_sub_id_strings < 2 || NULL == sub_id_strings) {
 		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
-	while (num_sub_id_strings-- > 0)
-	{
-		if (!ft_str_isdigit(sub_id_strings[num_sub_id_strings]))
-			return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	while (num_sub_id_strings-- > 0) {
+		if (!ft_str_isdigit(sub_id_strings[num_sub_id_strings])) {
+			DER_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
+		}
 	}
 
 	return (SSL_OK);
@@ -90,8 +95,7 @@ static void	__get_sub_ids(
 	ids[0] = 40 * ft_atoi(sub_id_strings[0]) + ft_atoi(sub_id_strings[1]);
 
 	ix = 0;
-	while (NULL != sub_id_strings[ix+2])
-	{
+	while (NULL != sub_id_strings[ix+2]) {
 		ids[ix+1] = ft_atoi(sub_id_strings[ix+2]);
 		ix++;
 	}
@@ -118,8 +122,7 @@ static void	__encode_sub_ids(
 	id_octets_size = 0;
 	idx = 0;
 
-	while (num_sub_ids-- > 0)
-	{
+	while (num_sub_ids-- > 0) {
 		sub_id = *sub_ids++;
 		sub_id_enc_nbits = ft_uint_lmbit(sub_id, 8*sizeof(sub_id));
 		sub_id_enc_size = NBITS_TO_NWORDS(sub_id_enc_nbits, 7);
@@ -131,8 +134,7 @@ static void	__encode_sub_ids(
 		sub_id_enc[--idx] = 0x7F & sub_id;
 		sub_id >>= 7;
 
-		while (sub_id != 0)
-		{
+		while (sub_id != 0) {
 			sub_id_enc[--idx] = (0x7F & sub_id) | 0x80;
 			sub_id >>= 7;
 		}

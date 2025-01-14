@@ -8,8 +8,9 @@ void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 	int			wsize;
 	int			thres[8] = { 0, 0, 36, 140, 450, 1303, 3529, INT_MAX };
 
-	if (BNUM_ZERO(e))
+	if (BNUM_ZERO(e)) {
 		bnum_set_dig_u(res, 1);
+	}
 	else if (BNUM_ONE(e))
 		bnum_copy(b, res);
 	else
@@ -30,8 +31,7 @@ void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		bnum_set_dig_u(window, 1);
 		bnum_divmod(b, m, NULL, window + 1);
 
-		for (i = 2; i < (1 << wsize); i++)
-		{
+		for (i = 2; i < (1 << wsize); i++) {
 			bnum_mul(window + i-1, window + 1, window + i);
 			bnum_divmod(window + i, m, NULL, window + i);
 		}
@@ -42,14 +42,13 @@ void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		bitcnt = 0;
 		mode = 0;
 
-		while (BNUM_TRUE)
-		{
-			if (nbits <= 0)
-			{
+		while (BNUM_TRUE) {
+			if (nbits <= 0) {
 				ndigits--;
 
-				if (ndigits < 0)
+				if (ndigits < 0) {
 					break ;
+				}
 
 				digit = e->val[ndigits];
 				nbits = BNUM_DIGIT_BIT;
@@ -58,8 +57,7 @@ void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 			nbits--;
 			bit = (digit >> nbits) & 1ull;
 
-			if (mode == 0 && bit == 0)
-			{
+			if (mode == 0 && bit == 0) {
 				bnum_sqr(res, res);
 				bnum_divmod(res, m, NULL, res);
 				continue ;
@@ -69,10 +67,8 @@ void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 			bitbuf |= bit << (wsize - bitcnt);
 			mode = 1;
 
-			if (bitcnt == wsize)
-			{
-				for (i = 0; i < wsize; i++)
-				{
+			if (bitcnt == wsize) {
+				for (i = 0; i < wsize; i++) {
 					bnum_sqr(res, res);
 					bnum_divmod(res, m, NULL, res);
 				}
@@ -86,16 +82,13 @@ void	bnum_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 			}
 		}
 
-		if (mode == 1 && bitcnt > 0)
-		{
-			for (i = 0; i < bitcnt; i++)
-			{
+		if (mode == 1 && bitcnt > 0) {
+			for (i = 0; i < bitcnt; i++) {
 				bnum_sqr(res, res);
 				bnum_divmod(res, m, NULL, res);
 
 				bitbuf <<= 1;
-				if (bitbuf & (1 << wsize))
-				{
+				if (bitbuf & (1 << wsize)) {
 					bnum_mul(res, window + 1, res);
 					bnum_divmod(res, m, NULL, res);
 				}

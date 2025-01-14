@@ -23,11 +23,14 @@ Following octets:
 
 ssize_t	der_write_tag(uint8_t tag_flags, uint32_t tag_num, t_iodes *iodes)
 {
-	if (NULL == iodes || tag_num < 0)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == iodes || tag_num < 0) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (__tag_is_complex(tag_num))
+	if (__tag_is_complex(tag_num)) {
 		__write_complex_tag(tag_flags, tag_num, iodes);
+	}
 	else
 		__write_simple_tag(tag_flags, tag_num, iodes);
 
@@ -60,13 +63,11 @@ static ssize_t	__write_complex_tag(
 	// to the buffer backwards
 	idx = tag_buf_size - 1;
 
-	if (idx > 0)
-	{
+	if (idx > 0) {
 		tag_buf[idx--] = 0x7F & tag_num;
 		tag_num >>= 7;
 	}
-	while (idx > 0)
-	{
+	while (idx > 0) {
 		tag_buf[idx--] = (0x7F & tag_num) | 0x80;
 		tag_num >>= 7;
 	}

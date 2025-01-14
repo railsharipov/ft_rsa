@@ -15,8 +15,8 @@ typedef struct	s_pem
 t_pem	*pem_init();
 void	pem_del(t_pem *);
 void	pem_clear(t_pem *);
-int		pem_encode(t_ostring *, t_pem **, const char *type, t_bool encrypt);
-int		pem_decode(t_pem *, const char *type, t_ostring **);
+int		pem_encode(t_ostring *, t_pem **, const char *type, const char *pass);
+int		pem_decode(t_pem *, const char *type, t_ostring **, const char *pass);
 void	pem_encap(t_pem **, const char *type, char *, size_t);
 int		pem_decap(t_pem *pem, const char *type, char **con, size_t *);
 

@@ -42,25 +42,32 @@ int	cli_base64(const char **opt, const char *name_comm)
 {
 	int	ret;
 
-	if (NULL == opt)
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (NULL == opt) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (NULL == (__b64_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0]))))
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (NULL == (__b64_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	io_init(&__in, IO_READ|IO_STDIN);
 	io_init(&__out, IO_WRITE|IO_STDOUT);
 
 	__f_b64 = base64_encode;
 
-	if (SSL_OK == (ret = __get_task(opt)))
+	if (SSL_OK == (ret = __get_task(opt))) {
 		ret = __run_task();
+	}
 
 	io_close_multi(&__in, &__out, NULL);
 	cli_task_htable_del(__b64_htable);
 
-	if (SSL_OK != ret)
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != ret) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 	return (SSL_OK);
 }
 
@@ -70,21 +77,28 @@ static int	__get_task(const char **opt)
 	t_task	*task;
 
 	// dynamically setup task
-	while (NULL != *opt)
-	{
-		if (NULL == (task = ft_htbl_get(__b64_htable, *opt)))
-			return (B64_LOG(ERROR, INVALID_INPUT_ERROR));
+	while (NULL != *opt) {
+		if (NULL == (task = ft_htbl_get(__b64_htable, *opt))) {
+			CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+			return (SSL_ERR);
+		}
 
 		__gflag |= task->gflag;
 
 		// if option flag is required
-		if (task->val)
-			if (NULL == * ++opt)
-				return (B64_LOG(ERROR, "expected option flag"));
+		if (task->val) {
+			if (NULL == * ++opt) {
+		}
+				CLI_LOG(ERROR, "expected option flag");
+				return (SSL_ERR);
+			}
 
-		if (NULL != (f_setup = task->ptr))
-			if (SSL_OK != f_setup(*opt, task))
-				return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+		if (NULL != (f_setup = task->ptr)) {
+			if (SSL_OK != f_setup(*opt, task)) {
+		}
+				CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+				return (SSL_ERR);
+			}
 
 		opt++;
 	}
@@ -99,14 +113,20 @@ static int	__run_task(void)
 	size_t	insize;
 	size_t	outsize;
 
-	if (SSL_OK != __get_input(&input, &insize))
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __get_input(&input, &insize)) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (SSL_OK != __f_b64(input, insize, &output, &outsize))
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __f_b64(input, insize, &output, &outsize)) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (SSL_OK != __write_output(output, outsize))
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __write_output(output, outsize)) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -120,22 +140,19 @@ static int	__get_input(char **input, size_t *insize)
 	*input = NULL;
 	*insize = 0;
 
-	if (SSL_FLAG(B64_D, __gflag))
-	{
+	if (SSL_FLAG(B64_D, __gflag)) {
 		__in.delim = '\n';
 	}
-	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0)
-	{
+	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
 		SSL_REALLOC(*input, *insize, *insize + rbytes);
 		ft_memcpy(*input + *insize, buf, rbytes);
 		*insize += rbytes;
 	}
 
-	if (rbytes < 0)
-	{
+	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
 	return (SSL_OK);
@@ -143,15 +160,21 @@ static int	__get_input(char **input, size_t *insize)
 
 static int	__write_output(const char *enc, size_t encsize)
 {
-	if (base64_decode == __f_b64)
+	if (base64_decode == __f_b64) {
 		__out.delim = 0;
+	}
 
-	if (io_write(&__out, enc, encsize) < 0)
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (io_write(&__out, enc, encsize) < 0) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (base64_encode == __f_b64)
-		if (io_write(&__out, "\n", 1) < 0)
-			return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (base64_encode == __f_b64) {
+		if (io_write(&__out, "\n", 1) < 0) {
+	}
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
+		}
 
 	return (SSL_OK);
 }
@@ -160,16 +183,19 @@ static int	__set_op(const char *opt, const t_task *task)
 {
 	(void)opt;
 
-	if (SSL_FLAG(B64_D, task->tflag))
+	if (SSL_FLAG(B64_D, task->tflag)) {
 		__f_b64 = base64_decode;
+	}
 
 	return (SSL_OK);
 }
 
 static int	__lbrk_io(const char *opt, const t_task *task)
 {
-	if (!ft_str_isdigit(opt))
-		return (B64_LOG(ERROR, "invalid option flag"));
+	if (!ft_str_isdigit(opt)) {
+		CLI_LOG(ERROR, "invalid option flag");
+		return (SSL_ERR);
+	}
 
 	(void)task;
 	__out.lwidth = ft_atoi(opt);
@@ -185,8 +211,10 @@ static int	__init_io(const char *opt, const t_task *task)
 
 	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 
-	if (SSL_OK != io_init(iodes, task->oflag, opt))
-		return (B64_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != io_init(iodes, task->oflag, opt)) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }

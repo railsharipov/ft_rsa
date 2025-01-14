@@ -29,31 +29,35 @@ int	io_open(t_iodes *iodes, uint32_t flags, const char *filename)
 	char		*input;
 	int 		insize;
 
-	if (NULL == iodes)
+	if (NULL == iodes) {
 		return (-1);
+	}
 
 	ft_bzero(iodes, sizeof(t_iodes));
 
-	if (NULL == (param = __get_param(flags)))
+	if (NULL == (param = __get_param(flags))) {
 		return (-1);
+	}
 
 	iodes->fd = param->fd;
 
-	if (FLAG(IO_FILE, flags))
-	{
-		if (NULL == filename)
+	if (FLAG(IO_FILE, flags)) {
+		if (NULL == filename) {
 			return (-1);
+		}
 
-		if (FLAG(IO_READ, flags))
+		if (FLAG(IO_READ, flags)) {
 			iodes->fd = open(filename, O_RDONLY, 0644);
+		}
 		else if (FLAG(IO_WRITE, flags))
 			iodes->fd = open(filename, O_TRUNC|O_RDWR|O_CREAT, 0644);
 		else
 			return (-1);
 	}
 
-	if (iodes->fd < 0)
+	if (iodes->fd < 0) {
 		return (-1);
+	}
 
 	iodes->mode = IO_MODE_FILDES;
 
@@ -65,10 +69,10 @@ static t_io_param	*__get_param(uint32_t flags)
 	int	ix;
 
 	ix = 0;
-	while (ix < TSIZE)
-	{
-		if (T[ix].flag == flags)
+	while (ix < TSIZE) {
+		if (T[ix].flag == flags) {
 			return ((t_io_param *)T+ix);
+		}
 		ix++;
 	}
 

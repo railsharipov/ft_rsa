@@ -19,12 +19,12 @@ int	cli_test(const char **opt, const char *name)
 		f_test = TESTS[idx];
 
 		if (NULL == f_test) {
-			return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 		}
 		ret[idx] = f_test();
 
 		if (SSL_OK != ret[idx]) {
-			return (TEST_LOG(ERROR, "test failed"));
+			return (CLI_LOG(ERROR, "test failed"));
 		}
 		idx++;
 	}

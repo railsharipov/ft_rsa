@@ -18,8 +18,7 @@ t_node	*asn_tree(const char *map)
 
 	tree = ft_ntree_construct(map);
 
-	if (ft_ntree_bfs(NULL, tree, NULL, __init_func) < 0)
-	{
+	if (ft_ntree_bfs(NULL, tree, NULL, __init_func) < 0) {
 		ft_ntree_del(tree, __f_del_content);
 		return (NULL);
 	}
@@ -35,8 +34,9 @@ static int	__init_func(t_node *node, const void *p)
 	char	type_key[128] = {0};
 	char	description[256] = {0};
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (0);
+	}
 
 	strings = ft_strsplit(node->key, ':');
 	num_strings = ft_2darray_len_null_terminated((void **)strings);

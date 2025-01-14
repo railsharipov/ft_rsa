@@ -35,8 +35,10 @@ static int		__err;
 
 int	der_decode(t_node **tree, t_iodes *iodes)
 {
-	if (NULL == tree || NULL == iodes)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == tree || NULL == iodes) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
 	__err = SSL_OK;
 	__init_func_htable();
@@ -45,8 +47,9 @@ int	der_decode(t_node **tree, t_iodes *iodes)
 
 	__del_func_htable();
 
-	if (__err)
+	if (__err) {
 		asn_tree_del(*tree);
+	}
 
 	return (__err);
 }
@@ -60,24 +63,29 @@ static t_node	*__create_asn_tree(t_iodes *iodes)
 	ft_bzero(&item, sizeof(t_iasn));
 
 	// if no tag octets, then end of encoding
-	if ((rbytes = __read_tag(&item, iodes)) == 0)
+	if ((rbytes = __read_tag(&item, iodes)) == 0) {
 		return (NULL);
+	}
 
-	if (rbytes < 0)
+	if (rbytes < 0) {
 		goto error;
+	}
 
-	if (__read_content_octets(&item, iodes) < 0)
+	if (__read_content_octets(&item, iodes) < 0) {
 		goto error;
+	}
 
-	if (__is_construct(&item))
+	if (__is_construct(&item)) {
 		node = __create_construct_node(&item);
+	}
 	else
 		node = __create_primitive_node(&item);
 
 	asn_item_clean(&item);
 
-	if (NULL == node)
+	if (NULL == node) {
 		goto error;
+	}
 
 	node->next = __create_asn_tree(iodes);
 	return (node);
@@ -99,18 +107,21 @@ static ssize_t	__read_content_octets(t_iasn *item, t_iodes *iodes)
 	size_t	len;
 	uint8_t	lenform;
 
-	if ((rbytes = der_read_len(&len, &lenform, iodes)) <= 0)
+	if ((rbytes = der_read_len(&len, &lenform, iodes)) <= 0) {
 		return (-1);
+	}
 
 	tbytes += rbytes;
 
-	if (ASN_LEN_LONG == lenform && len == 0) // length is not known (indefinite form)
+	if (ASN_LEN_LONG == lenform && len == 0) {
 		rbytes = __read_octets_indef(item, iodes);
-	else
+	} else {
 		rbytes = __read_octets(item, len, iodes);
+	}
 
-	if (rbytes < 0)
+	if (rbytes < 0) {
 		return (-1);
+	}
 
 	tbytes += rbytes;
 
@@ -125,8 +136,9 @@ static ssize_t	__read_octets_indef(t_iasn *item, t_iodes *iodes)
 
 	rbytes = der_read_octets_indef(&content, &size, iodes);
 
-	if (rbytes < 0)
+	if (rbytes < 0) {
 		return (-1);
+	}
 
 	item->content = content;
 	item->size = size;
@@ -143,8 +155,7 @@ static ssize_t	__read_octets(t_iasn *item, size_t size, t_iodes *iodes)
 
 	rbytes = der_read_octets(content, size, iodes);
 
-	if (rbytes < 0)
-	{
+	if (rbytes < 0) {
 		SSL_FREE(content);
 		return (-1);
 	}
@@ -169,11 +180,13 @@ static t_node	*__create_construct_node(t_iasn *item)
 
 	ft_ostr_set_content(&osbuf, item->content, item->size);
 
-	if (SSL_OK != io_init(&temp_iodes, IO_READ|IO_OSBUF, &osbuf))
+	if (SSL_OK != io_init(&temp_iodes, IO_READ|IO_OSBUF, &osbuf)) {
 		return (NULL);
+	}
 
-	if (NULL == (child_nodes = __create_asn_tree(&temp_iodes)))
+	if (NULL == (child_nodes = __create_asn_tree(&temp_iodes))) {
 		return (NULL);
+	}
 
 	node = ft_node_create();
 	node->nodes = child_nodes;

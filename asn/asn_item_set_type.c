@@ -29,15 +29,12 @@ int	asn_item_set_type(t_iasn *item, char *type_key)
 
 	htable = __init_htable();
 
-	if (NULL != (type_ctx = ft_htbl_get(htable, type_key)))
-	{
+	if (NULL != (type_ctx = ft_htbl_get(htable, type_key))) {
 		item->tagnum = type_ctx->tagnum;
 		item->tag = ASN_TAGNUM_UNIVERSAL;
 
 		ret = SSL_OK;
-	}
-	else
-	{
+	} else {
 		ret = ASN_LOG(ERROR, INVALID_INPUT_ERROR);
 	}
 

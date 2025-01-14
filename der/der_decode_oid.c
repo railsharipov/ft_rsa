@@ -13,21 +13,24 @@ int	der_decode_oid(t_ostring *osbuf, unsigned char *enc, size_t size)
 	char	*obj_id;
 	int		ret;
 
-	if (NULL == osbuf || NULL == enc)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
-
-	if (size == 0)
-		return (DER_LOG(ERROR, "invalid der encoding"));
-
-	if (SSL_OK != __get_obj_id_string(&obj_id, enc, size))
-		return (DER_LOG(ERROR, "invalid asn object id"));
-
-	if (NULL == (obj_name = asn_oid_tree_get_name(obj_id)))
-	{
-		ret = DER_LOG(ERROR, "unknown asn object id");
+	if (NULL == osbuf || NULL == enc) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
-	else
-	{
+
+	if (size == 0) {
+		DER_LOG(ERROR, "invalid der encoding");
+		return (SSL_ERR);
+	}
+
+	if (SSL_OK != __get_obj_id_string(&obj_id, enc, size)) {
+		DER_LOG(ERROR, "invalid asn object id");
+		return (SSL_ERR);
+	}
+
+	if (NULL == (obj_name = asn_oid_tree_get_name(obj_id))) {
+		ret = DER_LOG(ERROR, "unknown asn object id");
+	} else {
 		osbuf->content = obj_name;
 		osbuf->size = ft_strlen(obj_name);
 
@@ -47,8 +50,10 @@ static int	__get_obj_id_string(
 
 	ft_bzero(sub_ids, sizeof(sub_ids));
 
-	if (SSL_OK != __get_sub_ids(sub_ids, &num_sub_ids, nec, size))
-		return (DER_LOG(ERROR, "invalid der encoding"));
+	if (SSL_OK != __get_sub_ids(sub_ids, &num_sub_ids, nec, size)) {
+		DER_LOG(ERROR, "invalid der encoding");
+		return (SSL_ERR);
+	}
 
 	__sub_ids_to_obj_id_string(obj_id, sub_ids, num_sub_ids);
 
@@ -61,18 +66,18 @@ static int	__get_sub_ids(
 	int	ix;
 
 	ix = 0;
-	while (size != 0)
-	{
+	while (size != 0) {
 		// get 7-bit blocks, except the last one
-		while (size != 0 && *nec & 0x80)
-		{
+		while (size != 0 && *nec & 0x80) {
 			sub_ids[ix] <<= 7;
 			sub_ids[ix] |= *nec++ & 0x7F;
 			size--;
 		}
 
-		if ((*nec & 0x80) != 0)
-			return (DER_LOG(ERROR, "invalid der encoding"));
+		if ((*nec & 0x80) != 0) {
+			DER_LOG(ERROR, "invalid der encoding");
+			return (SSL_ERR);
+		}
 
 		// get the last block
 		sub_ids[ix] <<= 7;
@@ -82,8 +87,10 @@ static int	__get_sub_ids(
 		ix++;
 	}
 
-	if (ix < 2)
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (ix < 2) {
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	*num_sub_ids = ix;
 
@@ -124,8 +131,7 @@ static void	__sub_ids_to_obj_id_string(
 	ix += 1;
 
 	// get the rest of ids, except the last one
-	while (ix < num_sub_ids-1)
-	{
+	while (ix < num_sub_ids-1) {
 	 	ft_sprintf(sub_id_sptr++, "%lu.", sub_ids[ix]);
 		ix++;
 	}

@@ -17,8 +17,10 @@ int	test_base64(void)
 {
 	int	res;
 
-	if (SSL_OK != __test_base64_setup())
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __test_base64_setup()) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	res = __test_base64_encode();
 	res |= __test_base64_decode();
@@ -29,12 +31,18 @@ int	test_base64(void)
 
 static int	__test_base64_setup(void)
 {
-	if (SSL_OK != test_get_file_content(__binary_file_path, &__binary))
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
-	if (SSL_OK != test_get_file_content(__base64_file_path, &__base64))
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
-	if (__binary.size == 0 || __base64.size == 0)
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != test_get_file_content(__binary_file_path, &__binary)) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != test_get_file_content(__base64_file_path, &__base64)) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
+	if (__binary.size == 0 || __base64.size == 0) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -53,8 +61,9 @@ static int	__test_base64_encode(void)
 	pass |= TEST_ASSERT(outsize == __base64.size);
 	pass |= TEST_ASSERT(!ft_memcmp(output, __base64.content, outsize));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -73,8 +82,9 @@ static int	__test_base64_decode(void)
 	pass |= TEST_ASSERT(outsize == __binary.size);
 	pass |= TEST_ASSERT(!ft_memcmp(output, __binary.content, outsize));
 
-	if (SSL_OK == pass)
+	if (SSL_OK == pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }
@@ -97,8 +107,9 @@ static int	__test_base64_check(void)
 
 	SSL_FREE(inval_b64.content);
 
-	if (SSL_TRUE != pass)
+	if (SSL_TRUE != pass) {
 		return (TEST_PASS());
+	}
 
 	return (TEST_FAIL());
 }

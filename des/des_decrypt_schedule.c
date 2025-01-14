@@ -40,16 +40,14 @@ void	des_decrypt_schedule(uint64_t *ksched, uint64_t *pkey)
 	rblock = *pkey & MASK28;
 
 	ix = 0;
-	while (ix < 16)
-	{
+	while (ix < 16) {
 		lblock = ((lblock << CHA[ix]) & MASK28) | (lblock >> (28 - CHA[ix]));
 		rblock = ((rblock << CHA[ix]) & MASK28) | (rblock >> (28 - CHA[ix]));
 
 		tn = ((lblock << 28) & MASK56) | rblock;
 
 		iy = 0;
-		while (iy < 48)
-		{
+		while (iy < 48) {
 			ksched[15-ix] <<= 1;
 			ksched[15-ix] |= (tn >> (56 - CSA[iy])) & 1;
 			iy++;

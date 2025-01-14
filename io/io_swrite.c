@@ -13,11 +13,13 @@ static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 
 	osbuf = iodes->osbuf;
 
-	if (NULL == osbuf)
+	if (NULL == osbuf) {
 		return (-1);
+	}
 
-	if (iodes->lwidth <= 0)
+	if (iodes->lwidth <= 0) {
 		iodes->lwidth = 64;
+	}
 
 	width = (size_t)iodes->lwidth;
 	offset = MIN(nbytes, (iodes->seek % width));
@@ -27,16 +29,15 @@ static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 	obufptr = osbuf->content + osbuf->size;
 
 	/* Finish last line if it's not [width] bytes long */
-	if (offset)
-	{
+	if (offset) {
 		for (; wbytes < (width - offset); nbytes--)
 			obufptr[wbytes++] = *buf++;
-		if (nbytes > 0)
+		if (nbytes > 0) {
 			obufptr[wbytes++] = iodes->delim;
+		}
 	}
 
-	while (nbytes/width > 0)
-	{
+	while (nbytes/width > 0) {
 		for (ix = 0; ix < width; ix++, nbytes--)
 			obufptr[wbytes++] = *buf++;
 		obufptr[wbytes++] = iodes->delim;
@@ -59,8 +60,9 @@ static ssize_t __swrite(t_iodes *iodes, const char *buf, size_t nbytes)
 
 	osbuf = iodes->osbuf;
 
-	if (NULL == osbuf)
+	if (NULL == osbuf) {
 		return (-1);
+	}
 
 	LIBFT_REALLOC(osbuf->content, nbytes, nbytes + osbuf->size);
 	obufptr = osbuf->content + osbuf->size;
@@ -79,14 +81,17 @@ ssize_t	io_swrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
 	ssize_t	wbytes;
 
-	if (NULL == buf || NULL == iodes)
+	if (NULL == buf || NULL == iodes) {
 		return (-1);
+	}
 
-	if (nbytes == 0)
+	if (nbytes == 0) {
 		return (0);
+	}
 
-	if (iodes->delim)
+	if (iodes->delim) {
 		wbytes = __swrite_delim(iodes, (char *)buf, nbytes);
+	}
 	else
 		wbytes = __swrite(iodes, (char *)buf, nbytes);
 

@@ -19,6 +19,7 @@
 # include <libft/logger.h>
 
 # define SSL_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "ssl ", MES __VA_OPT__(,) __VA_ARGS__)
+# define CLI_LOG(LEVEL, MES, ...)	cli_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define SSL_FLAG(F,X)		((int)(((X)&(F))==(F)))
 # define NONE	0
@@ -62,11 +63,9 @@ void			util_logger_enable_ansi_color(void);
 void			util_logger_disable_ansi_color(void);
 int				util_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt_prefix, const char *fmt, ...);
 
+int             cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 void			cli_print_usage(void);
-char			*util_getpass(void);
-int				util_setpass(const char *);
-void			util_unsetpass(void);
-
+int				cli_read_stdin_pass(char *buf, size_t bufsize);
 t_htbl  		*cli_task_htable(const t_task *, int);
 void			cli_task_htable_del(const t_htbl *);
 

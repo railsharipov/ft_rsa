@@ -68,10 +68,8 @@ static int	__init_hash_func_by_name(const char *name)
 	size = sizeof(FUNC)/sizeof(FUNC[0]);
 	ix = 0;
 
-	while (ix < size)
-	{
-		if (!ft_strcmp(FUNC[ix].name, name))
-		{
+	while (ix < size) {
+		if (!ft_strcmp(FUNC[ix].name, name)) {
 			func_hash_init = FUNC[ix].func_init;
 			func_hash_update = FUNC[ix].func_update;
 			func_hash_final = FUNC[ix].func_final;
@@ -80,8 +78,10 @@ static int	__init_hash_func_by_name(const char *name)
 		ix++;
 	}
 
-	if (ix >= size)
-		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (ix >= size) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 	return (SSL_OK);
 }
 
@@ -93,19 +93,18 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 	sformat = NULL;
 	hexhash = ft_bytes_to_hex(__hash->hash, __hash->size);
 
-	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag))
-	{
-		if (SSL_FLAG(HASH_S, tflag))
+	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag)) {
+		if (SSL_FLAG(HASH_S, tflag)) {
 			ft_sprintf(&sformat, "\"%s\"", sarg);
+		}
 		else if (SSL_FLAG(IO_FILE, tflag))
 			ft_sprintf(&sformat, "%s", sarg);
-		if (!SSL_FLAG(HASH_R, __gflag))
+		if (!SSL_FLAG(HASH_R, __gflag)) {
 			ft_printf("%q (%s) = %s\n", __algo, sformat, hexhash);
+		}
 		else
 			ft_printf("%s %s\n", hexhash, sformat);
-	}
-	else
-	{
+	} else {
 		ft_printf("%s\n", hexhash);
 	}
 	SSL_FREE(sformat);
@@ -123,18 +122,21 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 
 	__hash = func_hash_init();
 
-	while ((rbytes = io_read(&__in, buf, bufsize)) == bufsize)
-	{
-		if (SSL_FLAG(HASH_P, tflag))
+	while ((rbytes = io_read(&__in, buf, bufsize)) == bufsize) {
+		if (SSL_FLAG(HASH_P, tflag)) {
 			write(1, buf, bufsize);
+		}
 		func_hash_update(__hash, buf, bufsize);
 	}
 
-	if (rbytes < 0)
-		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (rbytes < 0) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
-	if (SSL_FLAG(HASH_P, tflag))
+	if (SSL_FLAG(HASH_P, tflag)) {
 		write(1, buf, rbytes);
+	}
 
 	func_hash_final(__hash, buf, rbytes);
 	__out_hash(__sarg, tflag, __gflag);
@@ -146,27 +148,34 @@ static int	__next_task(const char **opt)
 {
 	t_task		*task;
 
-	if (NULL == *opt)
+	if (NULL == *opt) {
 		return (SSL_OK);
+	}
 
-	if (NULL == (task = ft_htbl_get(hash_htable, *opt)))
+	if (NULL == (task = ft_htbl_get(hash_htable, *opt))) {
 		task = (t_task *)&FILE_TASK;
+	}
 
 	__gflag |= task->gflag;
 	opt += task->val;
 
-	if (NONE != task->tflag)
-	{
-		if (NULL == *opt)
-			return (HASH_LOG(ERROR, "expected option flag"));
+	if (NONE != task->tflag) {
+		if (NULL == *opt) {
+			CLI_LOG(ERROR, "expected option flag");
+			return (SSL_ERR);
+		}
 
-		if (SSL_OK != io_init(&__in, task->oflag, *opt))
-			return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+		if (SSL_OK != io_init(&__in, task->oflag, *opt)) {
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
+		}
 
 		__sarg = *opt;
 
-		if (SSL_OK != __run_task(task->tflag, __gflag))
-			return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+		if (SSL_OK != __run_task(task->tflag, __gflag)) {
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
+		}
 	}
 	io_close(&__in);
 
@@ -175,10 +184,14 @@ static int	__next_task(const char **opt)
 
 static int	__default_task(const char **opt)
 {
-	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN))
-		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
-	if (SSL_OK != __run_task(NONE, HASH_Q))
-		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN)) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != __run_task(NONE, HASH_Q)) {
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	return (SSL_OK);
 }
@@ -190,13 +203,13 @@ int	cli_hash(const char **opt, const char *name_comm)
 	__algo = (char *)name_comm;
 
 	if (NULL == opt) {
-		return HASH_LOG(ERROR, INVALID_INPUT_ERROR);
+		return CLI_LOG(ERROR, INVALID_INPUT_ERROR);
 	}
 	if (SSL_OK != __init_hash_func_by_name(name_comm)) {
-		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (NULL == (hash_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		return (HASH_LOG(ERROR, UNSPECIFIED_ERROR));
+		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	if (NULL == *opt) {
 		ret = __default_task(opt);

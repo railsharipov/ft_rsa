@@ -34,8 +34,7 @@ static void __swap_bytes_32(uint32_t *arr, size_t size)
 	int ix;
 
 	ix = 0;
-	while (ix < size)
-	{
+	while (ix < size) {
 		arr[ix] = ft_uint_bswap32(arr[ix]);
 		ix++;
 	}
@@ -48,8 +47,9 @@ void	hash_sha1_final(t_hash *sha1, const char *buf, size_t bufsize)
 	uint64_t	msize_nbits;
 	unsigned char		msize_octets[LEN_SIZE];
 
-	if ((NULL == sha1) || (NULL == buf))
+	if ((NULL == sha1) || (NULL == buf)) {
 		return ;
+	}
 
 	*(uint64_t *)(sha1->msize) += bufsize;
 	msize_nbits = *(uint64_t *)(sha1->msize) * CHAR_BIT;
@@ -57,8 +57,9 @@ void	hash_sha1_final(t_hash *sha1, const char *buf, size_t bufsize)
 
 	pbsize = CEIL(bufsize, SHA1_BLOCK_SIZE);
 
-	if (pbsize-bufsize <= LEN_SIZE)
+	if (pbsize-bufsize <= LEN_SIZE) {
 		pbsize += SHA1_BLOCK_SIZE;
+	}
 
 	SSL_ALLOC(pbuf, pbsize);
 	ft_memcpy(pbuf, buf, bufsize);

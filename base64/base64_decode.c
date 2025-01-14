@@ -33,15 +33,12 @@ int	base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize)
 	unsigned char	*omes;
 	unsigned char	*oenc;
 
-	if ((NULL == enc) || (NULL == mes) || (NULL == messize))
-	{
+	if ((NULL == enc) || (NULL == mes) || (NULL == messize)) {
 		return (B64_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	*mes = NULL;
 
-	if ((encsize % B64_BLOCK_SIZE != 0)
-		|| (SSL_OK != base64_check(enc, encsize)))
-	{
+	if ((encsize % B64_BLOCK_SIZE != 0) || (SSL_OK != base64_check(enc, encsize))) {
 		return (B64_LOG(ERROR, "invalid base64 encoding"));
 	}
 
@@ -50,8 +47,7 @@ int	base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize)
 	SSL_ALLOC(*mes, *messize);
 	omes = (unsigned char *)(*mes);
 
-	while (encsize >= B64_BLOCK_SIZE)
-	{
+	while (encsize >= B64_BLOCK_SIZE) {
 		*omes++ = ( UB64[oenc[0]]<<2 )|( UB64[oenc[1]]>>4 );
 		*omes++ = ( UB64[oenc[1]]<<4 )|( UB64[oenc[2]]>>2 );
 		*omes++ = ( UB64[oenc[2]]<<6 )|( UB64[oenc[3]] );
@@ -61,8 +57,9 @@ int	base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize)
 	}
 
 	while (*--oenc == '=')
-		if (*--omes == 0)
+		if (*--omes == 0) {
 			*messize -= 1;
+		}
 
 	return (SSL_OK);
 }

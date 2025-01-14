@@ -74,8 +74,7 @@ void	__permute(uint32_t *pblock, uint32_t rblock, uint64_t key)
 	*pblock = 0;
 	tn = 0;
 
-	for (ix = 0; ix < 48; ix++)
-	{
+	for (ix = 0; ix < 48; ix++) {
 		tn <<= 1;
 		tn |= ((uint64_t)rblock >> (32 - PBA[ix])) & 1;
 	}
@@ -83,14 +82,12 @@ void	__permute(uint32_t *pblock, uint32_t rblock, uint64_t key)
 	tn = tn ^ key;
 	rblock = 0;
 
-	for (ix = 0; ix < 8; ix++)
-	{
+	for (ix = 0; ix < 8; ix++) {
 		rblock = rblock << 4;
 		rblock |= SB[ 64*ix + ((tn >> (42-6*ix)) & 0x3F) ];
 	}
 
-	for (ix = 0; ix < 32; ix++)
-	{
+	for (ix = 0; ix < 32; ix++) {
 		*pblock <<= 1;
 		*pblock |= (rblock >> (32 - PBB[ix])) & 1;
 	}
@@ -107,8 +104,7 @@ void	des_permute_block(uint64_t *block, uint64_t *ksched)
 	lblock = *block >> 32;
 	rblock = *block & ((1UL<<32)-1);
 
-	for (ix = 0; ix < 16; ix++)
-	{
+	for (ix = 0; ix < 16; ix++) {
 		__permute(&pblock, rblock, ksched[ix]);
 
 		tblock = lblock;

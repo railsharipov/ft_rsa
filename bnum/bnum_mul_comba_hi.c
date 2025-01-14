@@ -9,15 +9,15 @@ void	bnum_mul_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 	val = 0;
 	ndig = a->len + b->len;
 
-	if (ndig > res->size)
+	if (ndig > res->size) {
 		bnum_increase_size(res, ndig);
+	}
 
 	BNUM_ALLOC(temp, sizeof(uint64_t) * ndig);
 
 	dig = BNUM_MAX(0, dig-2);
 
-	for (int idx = dig; idx < ndig; idx++)
-	{
+	for (int idx = dig; idx < ndig; idx++) {
 		const uint64_t	*aptr, *bptr;
 		int				n, y, x;
 

@@ -9,8 +9,9 @@ void	bnum_to_bytes_u(const t_num *num, char **bin, size_t *binsize)
 	t_num	copy;
 	size_t	idx;
 
-	if (NULL == num || NULL == bin || NULL == binsize)
+	if (NULL == num || NULL == bin || NULL == binsize) {
 		return ;
+	}
 
 	nbits = bnum_lmbit(num);
 	*binsize = NBITS_TO_NBYTES(nbits);
@@ -21,8 +22,7 @@ void	bnum_to_bytes_u(const t_num *num, char **bin, size_t *binsize)
 	bnum_copy(num, &copy);
 
 	idx = 0;
-	while (idx++ < *binsize)
-	{
+	while (idx++ < *binsize) {
 		*bptr-- = *(copy.val) & 0xFF;
 		bnum_rsh_bit_inpl(&copy, 8);
 	}

@@ -26,8 +26,10 @@ int	test_io(void)
 {
 	int	res;
 
-	if (SSL_OK != __test_io_setup())
-		return (TEST_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (SSL_OK != __test_io_setup()) {
+		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	res = __test_io_init();
 	res |= __test_io_read();
@@ -77,8 +79,9 @@ static int	__test_io_init(void)
 	res |= TEST_ASSERT(iodes.osbuf == &osbuf);
 	res |= TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
 
-	if (SSL_OK != res)
+	if (SSL_OK != res) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }
@@ -114,8 +117,9 @@ static int	__test_io_read(void)
 	res |= TEST_ASSERT(rbytes == test_rbytes);
 	res |= TEST_ASSERT(ft_strncmp(test_buf, buf, sizeof(buf)) == 0);
 
-	if (SSL_OK != res)
+	if (SSL_OK != res) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }
@@ -152,21 +156,22 @@ static int	__test_io_write(void)
 	res |= TEST_ASSERT(osbuf.size == 2*__lorem_size);
 	res |= TEST_ASSERT(osbuf.content != NULL);
 
-	if (SSL_OK == res)
-	{
+	if (SSL_OK == res) {
 		int check;
 		int ix;
 
 		check = 1;
 		for (ix = 0; ix < wbytes; ix++)
-			if (2*ix < osbuf.size && __lorem[ix] != osbuf.content[2*ix])
+			if (2*ix < osbuf.size && __lorem[ix] != osbuf.content[2*ix]) {
 				check = 0;
+			}
 
 		res |= TEST_ASSERT(check);
 	}
 
-	if (SSL_OK != res)
+	if (SSL_OK != res) {
 		return (TEST_FAIL());
+	}
 
 	return (TEST_PASS());
 }

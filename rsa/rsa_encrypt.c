@@ -16,8 +16,7 @@ static int	__eme_pkcs1_v1_5_ps(
 	uint64_t	prand;
 	size_t		ix;
 
-	if (SSL_OK != rand_useed(&seed, 8))
-	{
+	if (SSL_OK != rand_useed(&seed, 8)) {
 		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	rand_mtw_init(seed);
@@ -26,11 +25,9 @@ static int	__eme_pkcs1_v1_5_ps(
 	SSL_ALLOC(*ps, *psize);
 
 	ix = 0;
-	while (ix < *psize)
-	{
+	while (ix < *psize) {
 		prand = rand_mtw_extract();
-		while ((ix < *psize) && ((prand & 0xFF) != 0))
-		{
+		while ((ix < *psize) && ((prand & 0xFF) != 0)) {
 			(*ps)[ix++] = prand & 0xFF;
 			prand >>= 8;
 		}
@@ -66,8 +63,10 @@ static int	__eme_pkcs1_v1_5_concat(
 // RSA encryption primitive
 static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 {
-	if (bnum_cmp_u(mes_rep, __items->modulus) >= 0)
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+	if (bnum_cmp_u(mes_rep, __items->modulus) >= 0) {
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
+	}
 
 	bnum_m_powmod(mes_rep, __items->pubexp, __items->modulus, ciph_rep);
 
@@ -91,8 +90,9 @@ static int  __encrypt(
 	octets = NULL;
 	res = SSL_OK;
 
-	if (messize > modsize-11)
+	if (messize > modsize-11) {
 		res = SSL_ERR;
+	}
 
 	else if (SSL_OK != __eme_pkcs1_v1_5_ps(&octets, &osize, modsize, messize))
 		res = SSL_ERR;
@@ -112,8 +112,9 @@ static int  __encrypt(
 	bnum_clear_multi(&mes_rep, &ciph_rep, NULL);
 	SSL_FREE(octets);
 
-	if (SSL_OK != res)
+	if (SSL_OK != res) {
 		return RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+	}
 
 	*ciphsize = modsize;
 
@@ -124,20 +125,15 @@ int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key)
 {
 	int	keysize;
 
-	if ((NULL == mes) || (NULL == mes->content)
-		|| (NULL == ciph) || (NULL == asn_key))
-	{
+	if ((NULL == mes) || (NULL == mes->content) || (NULL == ciph) || (NULL == asn_key)) {
 		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	ciph->content = NULL;
 
-	if (SSL_OK != rsa_key_items(asn_key, &__items))
-	{
+	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
 		return (RSA_LOG(ERROR, "invalid rsa key"));
 	}
-	if (SSL_OK != __encrypt(
-		mes->content, mes->size, &(ciph->content), &(ciph->size)))
-	{
+	if (SSL_OK != __encrypt(mes->content, mes->size, &(ciph->content), &(ciph->size))) {
 		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	return (SSL_OK);

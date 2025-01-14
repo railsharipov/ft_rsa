@@ -162,8 +162,9 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 	new_htbl.size = MAX(LIBFT_HT_SIZE, size);
 	new_htbl.size = CEIL(new_htbl.size, LIBFT_HT_SIZE);
 
-	if (new_htbl.size <= htbl->size)
+	if (new_htbl.size <= htbl->size) {
 		return;
+	}
 
 	LIBFT_ALLOC(new_htbl.arr, new_htbl.size * sizeof(void *));
 
@@ -171,8 +172,7 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 	node = iter;
 
 	idx = 0;
-	while (node != NULL)
-	{
+	while (node != NULL) {
 		item = node->content;
 		__add_node_to_htable(&new_htbl, item->key, item->content, item->f_del_content);
 		node = node->next;
@@ -327,19 +327,19 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 	t_node	*item;
 	int		idx;
 
-	if ((NULL == htbl) || (NULL == htbl->arr))
+	if ((NULL == htbl) || (NULL == htbl->arr)) {
 		return (NULL);
+	}
 
-	if (NULL == (queue = ft_queue_init()))
+	if (NULL == (queue = ft_queue_init())) {
 		return (NULL);
+	}
 
 	idx = 0;
-	while (idx < htbl->size)
-	{
+	while (idx < htbl->size) {
 		item = htbl->arr[idx++];
 
-		while (NULL != item)
-		{
+		while (NULL != item) {
 			ft_queue_enqueue(queue, NULL, item, 0);
 			item = item->next;
 		}

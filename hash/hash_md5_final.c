@@ -23,8 +23,9 @@ void	hash_md5_final(t_hash *md5, const char *buf, size_t bufsize)
 	uint64_t	msize_nbits;
 	unsigned char		msize_octets[8];
 
-	if ((NULL == md5) || (NULL == buf))
+	if ((NULL == md5) || (NULL == buf)) {
 		return ;
+	}
 
 	*(uint64_t *)(md5->msize) += bufsize;
 	msize_nbits = *(uint64_t *)(md5->msize) * CHAR_BIT;
@@ -32,8 +33,9 @@ void	hash_md5_final(t_hash *md5, const char *buf, size_t bufsize)
 
 	pbsize = CEIL(bufsize, MD5_BLOCK_SIZE);
 
-	if (pbsize-bufsize <= LEN_SIZE)
+	if (pbsize-bufsize <= LEN_SIZE) {
 		pbsize += MD5_BLOCK_SIZE;
+	}
 
 	SSL_ALLOC(pbuf, pbsize);
 	ft_memcpy(pbuf, buf, bufsize);

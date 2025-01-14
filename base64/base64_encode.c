@@ -32,8 +32,9 @@ static void	__last_block(unsigned char *omes, size_t messize, unsigned char *oen
 	unsigned char	olast[B64_BLOCK_SIZE];
 	int		ix;
 
-	if (messize == 0)
+	if (messize == 0) {
 		return ;
+	}
 
 	ft_memzcpy(olast, omes, MES_BLOCK_SIZE, messize);
 
@@ -53,8 +54,7 @@ int	base64_encode(const char *mes, size_t messize, char **enc, size_t *encsize)
 	unsigned char	*omes;
 	unsigned char	*oenc;
 
-	if ((NULL == mes) || (NULL == enc) || (NULL == encsize))
-	{
+	if ((NULL == mes) || (NULL == enc) || (NULL == encsize)) {
 		return (B64_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 	omes = (unsigned char *)(mes);
@@ -62,8 +62,7 @@ int	base64_encode(const char *mes, size_t messize, char **enc, size_t *encsize)
 	SSL_ALLOC(*enc, *encsize);
 	oenc = (unsigned char *)(*enc);
 
-	while (messize >= MES_BLOCK_SIZE)
-	{
+	while (messize >= MES_BLOCK_SIZE) {
 		*oenc++ = B64[( ( omes[0]>>2 )&0x3F )];
 		*oenc++ = B64[( ( omes[0]<<4 )&0x30 )|( ( omes[1]>>4 )&0xF )];
 		*oenc++ = B64[( ( omes[1]<<2 )&0x3C )|( ( omes[2]>>6 )&0x3 )];

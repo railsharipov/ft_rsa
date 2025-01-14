@@ -58,8 +58,9 @@ t_htbl	*ft_ntree_to_htable(t_node *node)
 {
 	t_htbl	*htbl;
 
-	if (NULL == node)
+	if (NULL == node) {
 		return (NULL);
+	}
 
 	htbl = ft_htbl_init(ft_ntree_size(node));
 	ft_ntree_bfs(NULL, node, htbl, __htable_func);
@@ -73,8 +74,9 @@ void	ft_ntree_print(t_node *ntree, void (*f_print)(t_node *, int))
 
 	space = 0;
 
-	if (NULL == f_print)
+	if (NULL == f_print) {
 		f_print = __f_default;
+	}
 
 	__print_recur(ntree, &space, f_print);
 }
@@ -130,14 +132,16 @@ t_node *ft_ntree_construct(const char *map)
 	char **keys;
 	int idx;
 
-	if (NULL == map)
+	if (NULL == map) {
 		return (NULL);
+	}
 
 	idx = 0;
 	keys = ft_strsplit(map, ' ');
 
-	if (NULL == keys)
+	if (NULL == keys) {
 		return (NULL);
+	}
 
 	ntree = __create_recur(keys, &idx);
 	ft_2darray_del_null_terminated((void **)keys);
@@ -158,21 +162,17 @@ int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, int (*f)(t_node *
 	queue = ft_queue_init();
 	result_node = NULL;
 
-	while (node)
-	{
+	while (node) {
 		ft_queue_enqueue(queue, NULL, node, 0);
 		node = node->next;
 	}
-	while (!ft_queue_is_empty(queue))
-	{
+	while (!ft_queue_is_empty(queue)) {
 		node = ft_queue_dequeue(queue);
 
-		if (ft_node_is_parent(node))
-		{
+		if (ft_node_is_parent(node)) {
 			child_node = node->nodes;
 
-			while (NULL != child_node)
-			{
+			while (NULL != child_node) {
 				ft_queue_enqueue(queue, NULL, child_node, 0);
 				child_node = child_node->next;
 			}
@@ -201,13 +201,15 @@ int	ft_ntree_dfs(t_node **res, t_node *ntree, const void *farg, int (*f)(t_node 
 
 	__depth = 0;
 
-	if ((NULL == ntree) || (NULL == f))
+	if ((NULL == ntree) || (NULL == f)) {
 		return (-1);
+	}
 
 	ret = __dfs_recur(ntree, farg, f, &node);
 
-	if (res != NULL)
+	if (res != NULL) {
 		*res = node;
+	}
 
 	return (ret);
 }
@@ -221,14 +223,12 @@ static int __dfs_recur(t_node *node, const void *farg, int (*f)(t_node *, const 
 {
 	int ret;
 
-	if (NULL == node)
-	{
+	if (NULL == node) {
 		*res = NULL;
 		return (0);
 	}
 
-	if ((ret = f(node, farg)) != 0)
-	{
+	if ((ret = f(node, farg)) != 0) {
 		*res = (ret == 1) ? node : NULL;
 		return (ret);
 	}
@@ -239,8 +239,9 @@ static int __dfs_recur(t_node *node, const void *farg, int (*f)(t_node *, const 
 
 	__depth--;
 
-	if (ret == 0)
+	if (ret == 0) {
 		ret = __dfs_recur(node->next, farg, f, res);
+	}
 
 	return (ret);
 }
@@ -287,10 +288,10 @@ static void	__f_default(t_node *node, int space)
 {
 	(void)space;
 
-	if (NULL != node)
-	{
-		if (ft_node_is_parent(node))
+	if (NULL != node) {
+		if (ft_node_is_parent(node)) {
 			ft_printf("%s\n", node->key, node->content);
+		}
 		else
 			ft_printf("%-25.25s %p\n", node->key, node->content);
 	}
@@ -298,8 +299,9 @@ static void	__f_default(t_node *node, int space)
 
 static void	__print_recur(t_node *node, int *space, void (*f_print)(t_node *, int))
 {
-	if (NULL == node)
+	if (NULL == node) {
 		return ;
+	}
 
 	f_print(node, *space);
 
@@ -317,24 +319,24 @@ static t_node *__create_recur(char **key, int *idx)
 	t_node	*node;
 	char	**childkey;
 
-	if (NULL == key[*idx])
+	if (NULL == key[*idx]) {
 		return (NULL);
+	}
 
-	if (!ft_strcmp(key[*idx], "}"))
-	{
+	if (!ft_strcmp(key[*idx], "}")) {
 		(*idx)++;
 		return (NULL);
 	}
 
 	node = ft_node_new(key[(*idx)++], NULL, 0);
 
-	if (ft_strchr(node->key, '{'))
-	{
+	if (ft_strchr(node->key, '{')) {
 		childkey = ft_strsplit(node->key, '{');
 		LIBFT_FREE(node->key);
 
-		if (NULL != childkey)
+		if (NULL != childkey) {
 			node->key = ft_strdup(childkey[0]);
+		}
 		else
 			node->key = NULL;
 

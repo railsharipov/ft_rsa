@@ -5,21 +5,21 @@ int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)
 {
 	uint64_t	tmp;
 
-	if (nbytes <= 0)
-		return (RAND_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (nbytes <= 0) {
+		RAND_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
 	rand_mtw_init(seed);
 
-	while (nbytes > 8)
-	{
+	while (nbytes > 8) {
 		*(uint64_t *)(buf) = rand_mtw_extract();
 		buf += 8;
 		nbytes -= 8;
 	}
 	tmp = rand_mtw_extract();
 
-	while (nbytes-- > 0)
-	{
+	while (nbytes-- > 0) {
 		*(unsigned char *)(buf) = tmp & 0xFF;
 		buf++;
 		tmp >>= 8;

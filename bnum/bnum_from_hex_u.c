@@ -21,8 +21,9 @@ t_num	*bnum_from_hex_u(const char *hex)
 	uint64_t	bitblock;
 	int			idx;
 
-	if (NULL == hex)
+	if (NULL == hex) {
 		return (NULL);
+	}
 
 	hexsize = ft_strlen(hex);
 	nbits = 4 * hexsize;
@@ -33,8 +34,7 @@ t_num	*bnum_from_hex_u(const char *hex)
 	bnum_set_dig_u(num, 0u);
 
 	idx = 0;
-	while (idx < hexsize)
-	{
+	while (idx < hexsize) {
 		bnum_lsh_bit_inpl(num, 4);
 		bitblock = (uint64_t)(hex[idx] - A[hex[idx] & 0x7F]);
 		num->val[0] |= bitblock;

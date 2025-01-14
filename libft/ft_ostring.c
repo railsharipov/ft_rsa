@@ -30,8 +30,9 @@ t_ostring	*ft_ostr_dup(t_ostring *src)
 {
 	t_ostring	*dup;
 
-	if (NULL == src)
+	if (NULL == src) {
 		return (NULL);
+	}
 
 	LIBFT_ALLOC(dup, sizeof(t_ostring));
 	dup->content = ft_memdup(src->content, src->size);
@@ -42,8 +43,9 @@ t_ostring	*ft_ostr_dup(t_ostring *src)
 
 void	ft_ostr_del(t_ostring *ostring)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return ;
+	}
 
 	LIBFT_FREE(ostring->content);
 	LIBFT_FREE(ostring);
@@ -51,8 +53,9 @@ void	ft_ostr_del(t_ostring *ostring)
 
 void	ft_ostr_clean(t_ostring *ostring)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return ;
+	}
 
 	LIBFT_FREE(ostring->content);
 	ostring->content = NULL;
@@ -61,8 +64,9 @@ void	ft_ostr_clean(t_ostring *ostring)
 
 void	ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return ;
+	}
 
 	LIBFT_REALLOC(ostring->content, ostring->size, ostring->size + size);
 	ft_memcpy(ostring->content + ostring->size, content, size);
@@ -71,8 +75,9 @@ void	ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 
 void	ft_ostr_prepend(t_ostring *ostring, void *content, size_t size)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return ;
+	}
 
 	LIBFT_REALLOC(ostring->content, ostring->size, ostring->size + size);
 	ft_memcpy(ostring->content + size, ostring->content, ostring->size);
@@ -84,11 +89,13 @@ char 	*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len)
 {
 	char	*str;
 
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return NULL;
+	}
 
-	if (idx >= ostring->size)
+	if (idx >= ostring->size) {
 		return NULL;
+	}
 
 	len = MIN(len, ostring->size - idx);
 
@@ -101,8 +108,9 @@ char 	*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len)
 
 void	ft_ostr_set_content(t_ostring *ostring, void *content, size_t size)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return ;
+	}
 
 	ostring->content = content;
 	ostring->size = size;
@@ -110,16 +118,18 @@ void	ft_ostr_set_content(t_ostring *ostring, void *content, size_t size)
 
 void	*ft_ostr_get_content(t_ostring *ostring)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return NULL;
+	}
 
 	return ostring->content;
 }
 
 size_t	ft_ostr_get_size(t_ostring *ostring)
 {
-	if (NULL == ostring)
+	if (NULL == ostring) {
 		return 0;
+	}
 
 	return ostring->size;
 }

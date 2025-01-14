@@ -9,25 +9,25 @@ void    bnum_set_rand(t_num *num, int bits)
 
 	len = (bits-1) / BNUM_DIGIT_BIT + 1;
 
-	if (len < 0)
+	if (len < 0) {
 		len = 0;
+	}
 
-	if (len == 0)
-	{
+	if (len == 0) {
 		bnum_set_dig_u(num, 0);
 		return ;
 	}
 
 	fd = open("/dev/random", O_RDONLY);
 
-	if (fd < 0)
-    {
+	if (fd < 0) {
 		BNUM_LOG(ERROR, NULL);
 		return ;
     };
 
-	if (len > num->size)
+	if (len > num->size) {
 		bnum_increase_size(num, len);
+	}
 
 	do {
 		read(fd, num->val, len * sizeof(uint64_t));
@@ -39,8 +39,7 @@ void    bnum_set_rand(t_num *num, int bits)
 	for (; i < num->size; i++)
 		num->val[i] = 0;
 
-	if ((min = bits % BNUM_DIGIT_BIT) != 0)
-	{
+	if ((min = bits % BNUM_DIGIT_BIT) != 0) {
 		min = (1ull << (min-1));
 		while (!(num->val[len-1] & min))
 			read(fd, num->val+len-1, sizeof(uint64_t));

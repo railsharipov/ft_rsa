@@ -8,8 +8,9 @@
 
 void exit_with_error(char *str)
 {
-	if (errno)
+	if (errno) {
 		perror(NULL);
+	}
 	else if (str)
 		printf("%s\n", str);
 
@@ -23,26 +24,32 @@ int	main(int ac, char **av)
 	int		bufsize = 0;
 	char	*buf = NULL;
 
-	if (ac != 3)
+	if (ac != 3) {
 		exit_with_error("usage: genrb <filename> <filesize>");
+	}
 
 	bufsize = strtol(av[2], NULL, 10);
 	buf = malloc(bufsize);
 
-	if (NULL == buf)
+	if (NULL == buf) {
 		exit_with_error(NULL);
+	}
 
-	if ((file_fd = open(av[1], O_RDWR | O_CREAT, 0644)) < 0)
+	if ((file_fd = open(av[1], O_RDWR | O_CREAT, 0644)) < 0) {
 		exit_with_error(NULL);
+	}
 
-	if ((rand_fd = open("/dev/random", O_RDONLY)) < 0)
+	if ((rand_fd = open("/dev/random", O_RDONLY)) < 0) {
 		exit_with_error(NULL);
+	}
 
-	if (read(rand_fd, buf, bufsize) != bufsize)
+	if (read(rand_fd, buf, bufsize) != bufsize) {
 		exit_with_error(NULL);
+	}
 
-	if (write(file_fd, buf, bufsize) != bufsize)
+	if (write(file_fd, buf, bufsize) != bufsize) {
 		exit_with_error(NULL);
+	}
 
 	return (0);
 }

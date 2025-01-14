@@ -17,13 +17,17 @@ int der_encode_bitstring(t_ostring *osbuf, void *content, size_t size)
 	// the number of unused trailing bits, thus size is
 	// expected to be at least 1 byte
 
-	if (NULL == osbuf || NULL == content || size < 1)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (NULL == osbuf || NULL == content || size < 1) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
 	num_unused_bits = ((uint8_t *)content)[0];
 
-	if (num_unused_bits > 7u)
-		return (DER_LOG(ERROR, INVALID_INPUT_ERROR));
+	if (num_unused_bits > 7u) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
 	SSL_ALLOC(osbuf->content, size);
 

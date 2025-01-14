@@ -1,5 +1,8 @@
+#include <unistd.h>
+#include <sys/fcntl.h>
 #include <libft/logger.h>
 #include <alloc.h>
+#include <ssl.h>
 
 #define COMMAND_LOG_PREFIX  "command: "
 
@@ -13,7 +16,7 @@ static t_logger __logger = {
 
 static int  __f_logger(const char *mes) {
     ft_printf("%@%s\n", mes);
-    return (LIBFT_OK);
+    return (SSL_OK);
 }
 
 int cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
@@ -29,10 +32,28 @@ int cli_logger_log(const char *func_name, const char *file_name, int line_number
 
     prefixed_fmt = ft_strjoin(COMMAND_LOG_PREFIX, fmt);
 
-	ret = ft_logger_va_log(func_name, file_name, line_number, level, prefixed_fmt, va_arg);
+	ret = ft_logger_va_log_new(func_name, file_name, line_number, &__logger, level, prefixed_fmt, va_arg);
 
 	SSL_FREE(prefixed_fmt);
 	va_end(va_arg);
 
 	return (ret);
+}
+
+int cli_logger_print_file(const char *file_name) {
+	char	buf[256];
+	char	*message;
+	ssize_t	rbytes;
+	int		fd;
+
+	if ((fd = open("./docs/usage.txt", O_RDONLY)) > 0) {
+		while ((rbytes = read(fd, buf, sizeof(buf))) > 0) {
+			write(STDOUT_FILENO, buf, rbytes);
+		}
+		close(fd);
+	}
+	if (fd < 0) {
+		return (SSL_LOG(ERROR, "failed to open file"));
+	}
+	return (SSL_OK);
 }

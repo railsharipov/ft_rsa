@@ -16,25 +16,19 @@ int		bnum_miller_rabin(const t_num *num, const t_num *rnd)
 
 	res = BNUM_TRUE;
 
-	if (BNUM_ONE(&np) || bnum_cmp_u(&np, &n1) == 0)
-	{
+	if (BNUM_ONE(&np) || bnum_cmp_u(&np, &n1) == 0) {
 		res = BNUM_TRUE;
-	}
-	else
-	{
-		for (idx = 1; (idx < x) && (bnum_cmp_u(&np, &n1) != 0); idx++)
-		{
+	} else {
+		for (idx = 1; (idx < x) && (bnum_cmp_u(&np, &n1) != 0); idx++) {
 			bnum_sqr(&np, &np);
 			bnum_divmod(&np, num, NULL, &np);
 
-			if (BNUM_ONE(&np))
-			{
+			if (BNUM_ONE(&np)) {
 				res = BNUM_FALSE;
 				break ;
 			}
 		}
-		if ((BNUM_TRUE == res) && (bnum_cmp_u(&np, &n1) != 0))
-		{
+		if ((BNUM_TRUE == res) && (bnum_cmp_u(&np, &n1) != 0)) {
 			res = BNUM_FALSE;
 		}
 	}

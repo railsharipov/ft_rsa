@@ -189,8 +189,7 @@ int ft_vsprintf(char **buf, const char *format, va_list arg)
 
 static void	__l_arg_zero(t_pf *l)
 {
-	if (l)
-	{
+	if (l) {
 		l->flag = 0;
 		l->len = 0;
 		l->fwid = 0;
@@ -278,15 +277,15 @@ static void	__parse(t_pf *data, const char *s, va_list *arg)
 	start = 0;
 
 	i = 0;
-	while (s[i])
-	{
+	while (s[i]) {
 		start = i;
 
 		while (s[i] && s[i] != '%')
 			i++;
 
-		if (i > start)
+		if (i > start) {
 			__out(data, s + start, i - start);
+		}
 
 		if (s[i] == '%' && s[++i]) {
 			if (s[i] == '%' || s[i] == '@') {
@@ -420,11 +419,13 @@ static void	__format_di(t_pf *data, char len, va_list *arg)
 	val = 0;
 	type = data->type;
 
-	if (!(data->flag & PF_PREC))
+	if (!(data->flag & PF_PREC)) {
 		data->prec = 1;
+	}
 
-	if (!len)
+	if (!len) {
 		val = (int)va_arg(*arg, int);
+	}
 	else if (len & PF_HH)
 		val = (signed char)va_arg(*arg, int);
 	else if (len & PF_H)
@@ -449,8 +450,9 @@ static void	__format_oux(t_pf *data, char len, va_list *arg)
 	val = 0;
 	type = data->type;
 
-	if (!len)
+	if (!len) {
 		val = (unsigned int)va_arg(*arg, unsigned int);
+	}
 	else if (len & PF_HH)
 		val = (unsigned char)va_arg(*arg, unsigned int);
 	else if (len & PF_H)
@@ -475,13 +477,10 @@ static void	__format_c(t_pf *data, char len, va_list *arg)
 	wc = 0;
 	c = 0;
 
-	if (len & PF_L)
-	{
+	if (len & PF_L) {
 		wc = va_arg(*arg, unsigned int);
 		__print_wc(data, wc);
-	}
-	else
-	{
+	} else {
 		c = (char)va_arg(*arg, int);
 		__print_c(data, &c, 1);
 	}
@@ -495,19 +494,21 @@ static void	__format_s(t_pf *data, char len, va_list *arg)
 	s = NULL;
 	ws = NULL;
 
-	if (len & PF_L)
+	if (len & PF_L) {
 		ws = va_arg(*arg, unsigned int *);
+	}
 	else
 		s = va_arg(*arg, char *);
 
-	if (!s && !ws && !(data->flag & PF_PREC))
-	{
-		if (!(data->flag & PF_PREC))
+	if (!s && !ws && !(data->flag & PF_PREC)) {
+		if (!(data->flag & PF_PREC)) {
 			__out(data, "(null)", 6);
+		}
 		return ;
 	}
-	if (len & PF_L)
+	if (len & PF_L) {
 		__print_ws(data, ws);
+	}
 	else
 		__print_s(data, s, 0);
 }
@@ -654,8 +655,7 @@ static void	__oux_to_s(t_pf *data, char *s, uintmax_t n, size_t *i)
 	val = 0;
 	j = data->size;
 
-	while (--j >= 0)
-	{
+	while (--j >= 0) {
 		val = n % (uintmax_t)(data->base);
 
 		if (val <= 9) {
@@ -805,14 +805,16 @@ static void	__print_ws(t_pf *data, unsigned int *src)
 
 	data->size = __ws_len(src);
 
-	if (data->prec < (int)data->size && data->flag & PF_PREC)
+	if (data->prec < (int)data->size && data->flag & PF_PREC) {
 		data->size = data->prec;
+	}
 
 	s = __convert_to_utf_8(src, data->size, data->prec);
 	__print_s(data, s, 0);
 
-	if (s)
+	if (s) {
 		free(s);
+	}
 }
 
 static void	__utf_8_size(unsigned int *ws, int size, int *chars)
@@ -820,8 +822,7 @@ static void	__utf_8_size(unsigned int *ws, int size, int *chars)
 	int	i;
 
 	i = 0;
-	while (ws && i < size)
-	{
+	while (ws && i < size) {
 		if (ws[i] < 0x80) {
 			*chars += 1;
 		} else if (ws[i] < 0x800) {
@@ -840,8 +841,7 @@ static void	__encode_utf_8(unsigned int *ws, char *s, int chars, int j)
 	int	tmp;
 
 	tmp = 0;
-	while (j < chars)
-	{
+	while (j < chars) {
 		tmp = j;
 
 		if (*ws < 0x80) {

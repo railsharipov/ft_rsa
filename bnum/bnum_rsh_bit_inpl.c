@@ -15,8 +15,7 @@ void	bnum_rsh_bit_inpl(t_num *num, int bits)
 	}
 	shifts = bits / BNUM_DIGIT_BIT;
 
-	if (shifts >= num->len)
-	{
+	if (shifts >= num->len) {
 		bnum_set_dig_u(num, 0);
 		return ;
 	}
@@ -24,11 +23,9 @@ void	bnum_rsh_bit_inpl(t_num *num, int bits)
 	bnum_rsh_dig_inpl(num, shifts);
 	bit_shifts = bits % BNUM_DIGIT_BIT;
 
-	if (bit_shifts)
-	{
+	if (bit_shifts) {
 		carry = 0;
-		for (int i = num->len-1; i >= 0; i--)
-		{
+		for (int i = num->len-1; i >= 0; i--) {
 			val = (num->val[i] >> bit_shifts) | carry;
 			carry = (num->val[i] << (BNUM_DIGIT_BIT - bit_shifts)) & BNUM_MAX_VAL;
 			num->val[i] = val & BNUM_MAX_VAL;

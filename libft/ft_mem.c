@@ -6,8 +6,9 @@ void	*ft_memdup(void *src, size_t srcsize)
 {
 	void	*dst;
 
-	if (NULL == src)
+	if (NULL == src) {
 		return (NULL);
+	}
 
 	LIBFT_ALLOC(dst, srcsize);
 	ft_memcpy(dst, src, srcsize);
@@ -25,10 +26,10 @@ int	ft_memcmp(const void *p1, const void *p2, size_t n)
 	octets_2 = (unsigned char *)p2;
 
 	i = 0;
-	while (i < n)
-	{
-		if (octets_1[i] != octets_2[i])
+	while (i < n) {
+		if (octets_1[i] != octets_2[i]) {
 			return (octets_1[i] - octets_2[i]);
+		}
 		i++;
 	}
 
@@ -45,8 +46,7 @@ void	*ft_memcpy(void *dst, const void *src, size_t srcsize)
 	p1 = (unsigned char *)dst;
 	p2 = (unsigned char *)src;
 
-	while (ix < srcsize)
-	{
+	while (ix < srcsize) {
 		p1[ix] = p2[ix];
 		ix++;
 	}
@@ -58,13 +58,10 @@ void	*ft_memcpy(void *dst, const void *src, size_t srcsize)
 // If destsize is bigger than srcsize set extra bytes (destsize - srcsize) to zero
 void	*ft_memzcpy(void *dst, const void *src, size_t dstsize, size_t srcsize)
 {
-	if (dstsize > srcsize)
-	{
+	if (dstsize > srcsize) {
 		ft_memcpy(dst, src, srcsize);
 		ft_memset(dst + srcsize, 0, dstsize - srcsize);
-	}
-	else
-	{
+	} else {
 		ft_memcpy(dst, src, dstsize);
 	}
 	return (dst);
@@ -94,15 +91,11 @@ void	*ft_memmove(void *dst, const void *src, size_t size)
 	// Check if destination address is "after" source address.
 	// If so, copy in reverse order to avoid destructive copy
 	// for overlapping strings
-	if (dst >= src)
-	{
+	if (dst >= src) {
 		while (size--)
 			p1[size] = p2[size];
-	}
-	else
-	{
-		while (ix < size)
-		{
+	} else {
+		while (ix < size) {
 			p1[ix] = p2[ix];
 			ix++;
 		}

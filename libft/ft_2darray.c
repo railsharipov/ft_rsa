@@ -16,8 +16,9 @@
 
 void	ft_2darray_del(void **arr, int arr_len)
 {
-	if (NULL == arr)
+	if (NULL == arr) {
 		return ;
+	}
 
 	while (arr_len > 0)
 		LIBFT_FREE(arr[arr_len--]);
@@ -29,12 +30,12 @@ void 	ft_2darray_del_null_terminated(void **arr)
 {
 	size_t	idx;
 
-	if (NULL == arr)
+	if (NULL == arr) {
 		return ;
+	}
 
 	idx = 0;
-	while (NULL != arr[idx])
-	{
+	while (NULL != arr[idx]) {
 		LIBFT_FREE(arr[idx]);
 		idx++;
 	}
@@ -46,8 +47,9 @@ int 	ft_2darray_len_null_terminated(void **arr)
 {
 	int	len;
 
-	if (NULL == arr)
+	if (NULL == arr) {
 		return (0);
+	}
 
 	len = 0;
 	while (NULL != *arr++)
@@ -65,8 +67,9 @@ char	*ft_2darray_strjoin(char **str_arr, size_t str_arr_len, const char *delim)
 	size_t	slen;
 	char	*p;
 
-	if (NULL == str_arr || str_arr_len == 0)
+	if (NULL == str_arr || str_arr_len == 0) {
 		return (NULL);
+	}
 
 	joined_size = 0;
 	delim_size = ft_strlen(delim);
@@ -81,8 +84,7 @@ char	*ft_2darray_strjoin(char **str_arr, size_t str_arr_len, const char *delim)
 	p = joined_str;
 
 	ix = 0;
-	while (ix < str_arr_len-1)
-	{
+	while (ix < str_arr_len-1) {
 		slen = ft_strlen(str_arr[ix]);
 		ft_memcpy(p, str_arr[ix], slen);
 		ft_memcpy(p + slen, delim, delim_size);
