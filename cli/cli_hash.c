@@ -203,7 +203,8 @@ int	cli_hash(const char **opt, const char *name_comm)
 	__algo = (char *)name_comm;
 
 	if (NULL == opt) {
-		return CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+		CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != __init_hash_func_by_name(name_comm)) {
 		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));

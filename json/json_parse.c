@@ -55,25 +55,29 @@ int json_parse(const char *s, t_node **node)
 	ssize_t	rbytes;
 
 	if (NULL == s || NULL == node) {
-        return JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+        JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+        return (SSL_ERR);
 	}
 
     *node = NULL;
 	__init_htable();
 
 	if (NULL == __htable) {
-		return JSON_LOG(ERROR, "unspecified error");
+		JSON_LOG(ERROR, "unspecified error");
+		return (SSL_ERR);
 	}
 	json_node = ft_node_create();
 	rbytes = __parse(s, json_node);
 
 	if (rbytes < 0) {
 		json_del(json_node);
-		return JSON_LOG(ERROR, "json parse failed");
+		JSON_LOG(ERROR, "json parse failed");
+		return (SSL_ERR);
 	}
 	if (!__is_ws_only(s + rbytes)) {
 		json_del(json_node);
-		return JSON_LOG(ERROR, "unexpected characters at the end");
+		JSON_LOG(ERROR, "unexpected characters at the end");
+		return (SSL_ERR);
 	}
 	*node = json_node;
     ft_htbl_del(__htable);

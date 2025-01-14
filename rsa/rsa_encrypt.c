@@ -113,7 +113,8 @@ static int  __encrypt(
 	SSL_FREE(octets);
 
 	if (SSL_OK != res) {
-		return RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	*ciphsize = modsize;
