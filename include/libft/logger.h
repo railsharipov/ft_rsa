@@ -39,16 +39,7 @@ typedef struct	s_logger
 	uint8_t 	ansi_colored;
 } 				t_logger;
 
-FUNC_LOGGER		ft_logger_get_logger(void);
-void			ft_logger_set_logger(FUNC_LOGGER f_logger);
-void			ft_logger_set_level(uint8_t level);
-uint8_t			ft_logger_get_level(void);
-void 			ft_logger_enable_ansi_color(void);
-void 			ft_logger_disable_ansi_color(void);
-
-int ft_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
-int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, va_list va_arg);
-int	ft_logger_log_new(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, ...);
-int	ft_logger_va_log_new(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
+int	ft_logger_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, ...);
+int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
 
 #endif

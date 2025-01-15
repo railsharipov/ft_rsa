@@ -31,11 +31,11 @@ static const struct {
 	{	"sha512/224",	cli_hash		},
 	{	"sha512/256",	cli_hash		},
 	{	"base64", 		cli_base64		},
-	{	"des-ecb", 		cli_des_ecb	},
-	{	"des-cbc",		cli_des_cbc	},
-	{	"genrsa",		cli_rsa_gen	},
-	{	"rsa",			cli_rsa		},
-	{	"rsautl",		cli_rsa_utl	},
+	{	"des-ecb", 		cli_des_ecb		},
+	{	"des-cbc",		cli_des_cbc		},
+	{	"genrsa",		cli_rsa_gen		},
+	{	"rsa",			cli_rsa			},
+	{	"rsautl",		cli_rsa_utl		},
 	{	"test",			cli_test		},
 	{	NULL,			NULL			}
 };
