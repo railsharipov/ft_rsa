@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <io.h>
 #include <asn.h>
 #include <der.h>
@@ -168,7 +168,7 @@ static ssize_t	__read_octets(t_iasn *item, size_t size, t_iodes *iodes)
 
 static int	__is_construct(t_iasn *item)
 {
-	return (SSL_FLAG(ASN_ENCODE_CONSTRUCT, item->tag));
+	return (CLI_FLAG(ASN_ENCODE_CONSTRUCT, item->tag));
 }
 
 static t_node	*__create_construct_node(t_iasn *item)

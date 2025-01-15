@@ -1,11 +1,13 @@
+
 #ifndef SSL_RAND_H
 # define SSL_RAND_H
 
-#include <ssl.h>
+# include <common.h>
+# include <libft/logger.h>
 
 # define RAND_DEV	"/dev/random"
 
-# define RAND_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "rand: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define RAND_LOG(LEVEL, MES, ...)	rand_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MT_A		0xB5026F5AA96619E9
 # define MT_F		0x5851F42D4C957F2D
@@ -23,6 +25,8 @@
 # define MT_MASK	(((1ULL<<(MT_W-1))-1)|(1ULL<<(MT_W-1)))
 # define MT_LOMASK	((1ULL<<MT_R)-1)
 # define MT_HIMASK	((~MT_LOMASK)&MT_MASK)
+
+int			rand_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int			rand_bytes(uint64_t, void *, size_t);
 int			rand_useed(uint64_t *, int);

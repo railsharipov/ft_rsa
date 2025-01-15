@@ -10,12 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <base64.h>
 #include <des.h>
 #include <hash.h>
 #include <rsa.h>
-#include <comm.h>
+#include <cli.h>
 #include <libft/string.h>
 
 static const struct {
@@ -40,8 +40,30 @@ static const struct {
 	{	NULL,			NULL			}
 };
 
-static void	__get_command(
-	FUNC_COM *func_comm, char **name_comm, const char *sarg)
+static void __get_command(FUNC_COM *func_comm, char **name_comm, const char *sarg);
+static void __print_usage(void);
+
+int	main(int ac, const char **av)
+{
+	FUNC_COM	func_comm;
+	char		*name_comm;
+
+	if (ac < 2) {
+		__print_usage();
+		exit(1);
+	}
+	__get_command(&func_comm, &name_comm, av[1]);
+
+	if (NULL == name_comm) {
+		__print_usage();
+		exit(1);
+	}
+	func_comm(av+2, name_comm);
+
+	return (0);
+}
+
+static void	__get_command(FUNC_COM *func_comm, char **name_comm, const char *sarg)
 {
 	int	ix;
 
@@ -59,32 +81,6 @@ static void	__get_command(
 	}
 }
 
-static int __f_stderr_logger(const char *mes)
-{
-	ft_printf("%@%s\n", mes);
-	return (SSL_ERR);
-}
-
-int		main(int ac, const char **av)
-{
-	FUNC_COM	func_comm;
-	char		*name_comm;
-
-	util_logger_set_logger(__f_stderr_logger);
-	util_logger_set_level(LIBFT_LOG_LEVEL_DEBUG);
-	util_logger_enable_ansi_color();
-
-	if (ac < 2) {
-		cli_print_usage();
-		exit(1);
-	}
-	__get_command(&func_comm, &name_comm, av[1]);
-
-	if (NULL == name_comm) {
-		cli_print_usage();
-		exit(1);
-	}
-	func_comm(av+2, name_comm);
-
-	return (0);
+static void __print_usage(void) {
+	cli_logger_print_file("./docs/usage.txt");
 }

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <hash.h>
 
 static const int	END_BYTE = 1 << 7;

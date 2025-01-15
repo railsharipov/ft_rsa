@@ -1,11 +1,12 @@
 #ifndef SSL_DER_H
 # define SSL_DER_H
 
-#include <stdint.h>
-#include <ssl.h>
-#include <libft/string.h>
+# include <stdint.h>
+# include <common.h>
+# include <libft/string.h>
+# include <libft/logger.h>
 
-# define DER_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "der: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define DER_LOG(LEVEL, MES, ...)	der_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct		s_der
 {
@@ -18,6 +19,8 @@ struct s_iodes;
 t_der	*der_init(void);
 void	der_del(t_der *);
 void	der_clean(t_der *);
+
+int		der_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 ssize_t	der_read_octets(char *content, size_t size, struct s_iodes *);
 ssize_t	der_read_octets_indef(char **content, size_t *size, struct s_iodes *);

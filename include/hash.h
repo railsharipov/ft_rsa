@@ -1,7 +1,9 @@
 #ifndef SSL_HASH_H
 # define SSL_HASH_H
 
+# include <common.h>
 # include <io.h>
+# include <libft/logger.h>
 
 typedef uint32_t	t_md5_word;
 typedef uint32_t	t_sha1_word;
@@ -12,7 +14,7 @@ typedef uint64_t	t_sha512_256_word;
 typedef uint64_t	t_sha384_word;
 typedef uint64_t	t_sha512_word;
 
-# define HASH_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "hash: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define HASH_LOG(LEVEL, MES, ...)	hash_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MD5_BLOCK_SIZE			64
 # define MD5_HASH_LEN			4
@@ -69,6 +71,8 @@ typedef struct	s_hash
 	void		*hash;
 	int			size;
 }				t_hash;
+
+int		hash_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 t_hash	*hash_md5_init(void);
 void	hash_md5_update(t_hash *, const char *, size_t);

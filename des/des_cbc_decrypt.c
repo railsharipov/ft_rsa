@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <rand.h>
 #include <base64.h>
 #include <des.h>
@@ -78,8 +78,8 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 {
 	__is_salted = 0;
 
-	if (!SSL_FLAG(DES_K, vflag)) {
-		if (!SSL_FLAG(DES_S, vflag)) {
+	if (!CLI_FLAG(DES_K, vflag)) {
+		if (!CLI_FLAG(DES_S, vflag)) {
 			if (ciphsize < 16) {
 				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 			}
@@ -89,11 +89,11 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 			ft_memcpy(__salt, ciph + 8, 8);
 			__is_salted = 1;
 		}
-		if (SSL_OK != rand_pbkdf2(__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL) : (__vect), pass)) {
+		if (SSL_OK != rand_pbkdf2(__key, __salt, (CLI_FLAG(DES_V, vflag)) ? (NULL) : (__vect), pass)) {
 			return (DES_LOG(ERROR, "key derivation error"));
 		}
 	}
-	if (!SSL_FLAG(DES_V, vflag)) {
+	if (!CLI_FLAG(DES_V, vflag)) {
 		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 	return (SSL_OK);

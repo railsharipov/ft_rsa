@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <asn.h>
 #include <der.h>
 #include <rand.h>
@@ -240,10 +240,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_OCTET_STRING, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_OCTET_STRING, tag));
 // 	pass |= TEST_ASSERT(der->size == __consize + 2);
 //
 // 	if (der->size >= __consize + 2)
@@ -270,10 +270,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_BIT_STRING, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_BIT_STRING, tag));
 // 	pass |= TEST_ASSERT(der->size == __consize + 3);
 //
 // 	if (der->size >= __consize + 3)
@@ -307,10 +307,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_BOOLEAN, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_BOOLEAN, tag));
 // 	pass |= TEST_ASSERT(der->size == 3);
 //
 // 	if (der->size >= 3)
@@ -337,10 +337,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_INT, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_INT, tag));
 // 	pass |= TEST_ASSERT(der->size == __consize + 2);
 //
 // 	if (der->size >= __consize + 2)
@@ -367,10 +367,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_BOOLEAN, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_BOOLEAN, tag));
 // 	pass |= TEST_ASSERT(der->size == 2);
 //
 // 	der_del(der);
@@ -397,10 +397,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_OBJECT_ID, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_OBJECT_ID, tag));
 // 	pass |= TEST_ASSERT(der->size == sizeof(ref_content) + 2);
 //
 // 	if (der->size >= sizeof(ref_content) + 2)
@@ -428,10 +428,10 @@ static void	__test_der_cleanup(void)
 //
 // 	tag = (uint8_t)der->content[0];
 //
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SEQUENCE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_CONSTRUCT, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SEQUENCE, tag));
 // 	pass |= TEST_ASSERT(der->size == __consize + 2);
 //
 // 	if (der->size >= __consize + 2)
@@ -476,10 +476,10 @@ static void	__test_der_cleanup(void)
 // 	der_append_ostring(der, __content, __consize * CHAR_BIT);
 // 	der_read_tag(&tag, der->content, der->size);
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_OCTET_STRING, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_ENCODE_PRIMITIVE, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_OCTET_STRING, tag));
 //
 // 	der_del(der);
 //
@@ -506,8 +506,8 @@ static void	__test_der_cleanup(void)
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_tagnum_octets(&tag_num, &tag_num_size, der->content, der->size);
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_SIMPLE, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_SIMPLE, tag));
 // 	pass |= TEST_ASSERT(tag_num_size == 1);
 // 	pass |= TEST_ASSERT(tag_num == tag_num_ref);
 //
@@ -521,8 +521,8 @@ static void	__test_der_cleanup(void)
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_tagnum_octets(&tag_num, &tag_num_size, der->content, der->size);
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
-// 	pass |= TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_COMPLEX, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_UNIVERSAL, tag));
+// 	pass |= TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_COMPLEX, tag));
 // 	pass |= TEST_ASSERT(tag_num_size == 2);
 // 	pass |= TEST_ASSERT(ft_memcmp(der->content+1, &tag_num_encoded_ref, 2));
 //
@@ -600,7 +600,7 @@ static void	__test_der_cleanup(void)
 // 	der_read_ostring_octets(item, der->content+read_size+1, der->size-read_size-1);
 //
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_OCTET_STRING, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_OCTET_STRING, tag));
 // 	pass |= TEST_ASSERT(item->content != NULL);
 //
 // 	if (NULL != item->content)
@@ -635,7 +635,7 @@ static void	__test_der_cleanup(void)
 // 	der_read_bitstring_octets(item, der->content+read_size+1, der->size-read_size-1);
 //
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_BIT_STRING, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_BIT_STRING, tag));
 // 	pass |= TEST_ASSERT(item->content != NULL);
 //
 // 	if (NULL != item->content)
@@ -673,7 +673,7 @@ static void	__test_der_cleanup(void)
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
 // 	der_read_bool_octets(item, der->content+read_size+1, der->size-read_size-1);
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_BOOLEAN, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_BOOLEAN, tag));
 // 	pass |= TEST_ASSERT(item->content != NULL);
 //
 // 	if (NULL != item->content)
@@ -722,7 +722,7 @@ static void	__test_der_cleanup(void)
 // 	der_read_int_octets(item, der->content+read_size+1, der->size-read_size-1);
 //
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_INT, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_INT, tag));
 // 	pass |= TEST_ASSERT(item->content != NULL);
 //
 // 	if (item->content != NULL)
@@ -758,7 +758,7 @@ static void	__test_der_cleanup(void)
 // 	der_read_null_octets(item, der->content+read_size+1, der->size-read_size-1);
 //
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_NULL, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_NULL, tag));
 // 	pass |= TEST_ASSERT(item->content == NULL);
 // 	pass |= TEST_ASSERT(item->bitsize == 0);
 //
@@ -790,7 +790,7 @@ static void	__test_der_cleanup(void)
 // 	der_read_oid_octets(item, der->content+read_size+1, der->size-read_size-1);
 //
 //
-// 	pass = TEST_ASSERT(SSL_FLAG(ASN_TAGNUM_OBJECT_ID, tag));
+// 	pass = TEST_ASSERT(CLI_FLAG(ASN_TAGNUM_OBJECT_ID, tag));
 // 	pass |= TEST_ASSERT(item->content != NULL);
 //
 // 	if (NULL != item->content)

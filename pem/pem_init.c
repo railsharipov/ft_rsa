@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <pem.h>
 
 t_pem	*pem_init(void)

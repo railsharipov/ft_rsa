@@ -1,7 +1,8 @@
-#include <ssl.h>
+#include <common.h>
 #include <io.h>
 #include <des.h>
 #include <base64.h>
+#include <cli.h>
 #include <libft/htable.h>
 #include <libft/bytes.h>
 
@@ -119,10 +120,10 @@ static int __run_task(void)
 	if (SSL_OK != __get_input(&input.content, &input.size)) {
 		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
-	if (SSL_FLAG(DES_D, __gflag)) {
-		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
+	if (CLI_FLAG(DES_D, __gflag)) {
+		f_op = (CLI_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
 	} else {
-		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
+		f_op = (CLI_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
 	}
 	ret = f_op(&input, &output);
 
@@ -146,7 +147,7 @@ static int	__get_input(char **input, size_t *insize)
 	*insize = 0;
 
 	// if input is in base64 format set input stream delimeter to '\n'
-	if (SSL_FLAG(DES_A | DES_D, __gflag)) {
+	if (CLI_FLAG(DES_A | DES_D, __gflag)) {
 		__in.delim = '\n';
 	}
 	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
@@ -164,16 +165,16 @@ static int	__get_input(char **input, size_t *insize)
 
 static int	__write_output(const char *output, size_t outsize)
 {
-	if (SSL_FLAG(DES_N, __gflag)) {
+	if (CLI_FLAG(DES_N, __gflag)) {
 		__dump_vectors();
 	}
-	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
+	if (CLI_FLAG(DES_A | DES_E, __gflag)) {
 		__out.delim = '\n';
 	}
 	if (io_write(&__out, output, outsize) < 0) {
 		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
-	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
+	if (CLI_FLAG(DES_A | DES_E, __gflag)) {
 		if (io_write(&__out, "\n", 1) < 0) {
 			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 		}
@@ -193,7 +194,7 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+	iodes = (CLI_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 	return (io_init(iodes, task->oflag, opt));
 }
 

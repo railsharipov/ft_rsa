@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <der.h>
 
 t_der *der_init(void)

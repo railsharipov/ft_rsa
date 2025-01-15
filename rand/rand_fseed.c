@@ -1,9 +1,10 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include <ssl.h>
+#include <common.h>
 #include <rand.h>
 #include <io.h>
 #include <libft/2darray.h>
+#include <libft/htable.h>
 
 int	rand_fseed(uint64_t *seed, const char *files)
 {

@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <des.h>
 
 static const unsigned char	PCA[64] = {

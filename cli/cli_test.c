@@ -1,4 +1,5 @@
-#include <ssl.h>
+#include <common.h>
+#include <cli.h>
 #include <test.h>
 
 int	cli_test(const char **opt, const char *name)

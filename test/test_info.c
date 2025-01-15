@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <test.h>
 
 int	test_info(int module_id, int verbose)

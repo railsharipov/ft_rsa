@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <rand.h>
 
 static uint64_t	MT[MT_N];

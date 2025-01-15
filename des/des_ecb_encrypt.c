@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <rand.h>
 #include <base64.h>
 #include <des.h>
@@ -53,8 +53,8 @@ static int	__vectors(uint32_t vflag, const char *pass)
 
 	__is_salted = 0;
 
-	if (!SSL_FLAG(DES_K, vflag)) {
-		if (!SSL_FLAG(DES_S, vflag)) {
+	if (!CLI_FLAG(DES_K, vflag)) {
+		if (!CLI_FLAG(DES_S, vflag)) {
 			if (SSL_OK != rand_useed(&rand_seed, sizeof(uint64_t))) {
 				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
 			}

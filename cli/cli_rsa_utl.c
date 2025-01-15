@@ -1,4 +1,5 @@
-#include <ssl.h>
+#include <common.h>
+#include <cli.h>
 #include <io.h>
 #include <rand.h>
 #include <rsa.h>
@@ -190,7 +191,7 @@ static int	__get_input(t_iodes *iodes, char **input, size_t *insize)
 
 static int	__write_output(char *output, size_t outsize)
 {
-	if (SSL_FLAG(RSA_HEXDUMP, __gflag)) {
+	if (CLI_FLAG(RSA_HEXDUMP, __gflag)) {
 		ft_bytes_write_hex(__out.fd, output, outsize);
 	}
 	else if (io_write(&__out, output, outsize) < 0)
@@ -223,10 +224,10 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	if (SSL_FLAG(IO_INPUT, task->tflag)) {
+	if (CLI_FLAG(IO_INPUT, task->tflag)) {
 		iodes = &__in;
 	}
-	else if (SSL_FLAG(IO_OUTPUT, task->tflag))
+	else if (CLI_FLAG(IO_OUTPUT, task->tflag))
 		iodes = &__out;
 	else
 		iodes = &__inkey;
@@ -238,7 +239,7 @@ static int	__set_op(const char *opt, const t_task *task)
 {
 	(void)opt;
 
-	if (SSL_FLAG(RSA_ENCRYPT, task->tflag)) {
+	if (CLI_FLAG(RSA_ENCRYPT, task->tflag)) {
 		__f_op = rsa_encrypt;
 	}
 	else
@@ -249,7 +250,7 @@ static int	__set_op(const char *opt, const t_task *task)
 
 static int	__set_type(const char *opt, const t_task *task)
 {
-	if (SSL_FLAG(RSA_PUBIN, task->tflag)) {
+	if (CLI_FLAG(RSA_PUBIN, task->tflag)) {
 		__in_type = TYPE_X509_PUBLIC_KEY;
 		__in_map = MAP_X509_PUBLIC_KEY;
 	}

@@ -1,4 +1,5 @@
-#include <ssl.h>
+#include <common.h>
+#include <libft/htable.h>
 
 int	rand_mseed(uint64_t *seed, int n)
 {

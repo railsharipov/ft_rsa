@@ -10,8 +10,36 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SSL_COMM_H
-# define SSL_COMM_H
+#ifndef FT_CLI_H
+# define FT_CLI_H
+
+# include <common.h>
+# include <alloc.h>
+# include <libft/htable.h>
+# include <libft/logger.h>
+
+# define CLI_LOG(LEVEL, MES, ...)	cli_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+
+# define CLI_FLAG(F,X)		((int)(((X)&(F))==(F)))
+# define NONE	0
+
+typedef int		(*FUNC_COM)(const char **, const char *);
+
+typedef struct	s_task
+{
+	char		*key;
+	void		*ptr;
+	uint32_t	tflag;
+	uint32_t	gflag;
+	uint32_t	oflag;
+	uint32_t	val;
+}				t_task;
+
+int     cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+int		cli_logger_print_file(const char *file_name);
+int		cli_read_stdin_pass(char *buf, size_t bufsize);
+t_htbl  *cli_task_htable(const t_task *, int);
+void	cli_task_htable_del(const t_htbl *);
 
 int     cli_base64(const char **, const char *);
 int     cli_hash(const char **, const char *);

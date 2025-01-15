@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
+#include <cli.h>
 #include <base64.h>
 #include <libft/htable.h>
 
@@ -140,7 +141,7 @@ static int	__get_input(char **input, size_t *insize)
 	*input = NULL;
 	*insize = 0;
 
-	if (SSL_FLAG(B64_D, __gflag)) {
+	if (CLI_FLAG(B64_D, __gflag)) {
 		__in.delim = '\n';
 	}
 	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
@@ -183,7 +184,7 @@ static int	__set_op(const char *opt, const t_task *task)
 {
 	(void)opt;
 
-	if (SSL_FLAG(B64_D, task->tflag)) {
+	if (CLI_FLAG(B64_D, task->tflag)) {
 		__f_b64 = base64_decode;
 	}
 
@@ -209,7 +210,7 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+	iodes = (CLI_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 
 	if (SSL_OK != io_init(iodes, task->oflag, opt)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);

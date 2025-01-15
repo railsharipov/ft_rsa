@@ -10,7 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
+#include <cli.h>
 #include <libft/htable.h>
 
 t_htbl  *cli_task_htable(const t_task *task, int size)

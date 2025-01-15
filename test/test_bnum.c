@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <rand.h>
 #include <bnum.h>
 #include <test.h>

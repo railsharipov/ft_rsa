@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <rand.h>
 
 int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)

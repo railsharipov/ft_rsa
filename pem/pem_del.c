@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <pem.h>
 
 void  pem_del(t_pem *pem)

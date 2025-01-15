@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <hash.h>
 
 void	hash_sha384_final(t_hash *sha384, const char *buf, size_t bufsize)

@@ -1,6 +1,6 @@
 #include <sys/fcntl.h>
 #include <unistd.h>
-#include <ssl.h>
+#include <common.h>
 #include <test.h>
 #include <io.h>
 

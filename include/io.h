@@ -2,8 +2,9 @@
 # define SSL_IO_H
 
 # include <stdint.h>
+# include <common.h>
 # include <libft/string.h>
-# include <ssl.h>
+# include <libft/logger.h>
 
 # define IO_BUFSIZE (256 * 1024)
 
@@ -17,7 +18,7 @@
 #   define IO_BUFSIZE 256
 # endif
 
-# define IO_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "io: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define IO_LOG(LEVEL, MES, ...)	io_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_io
 {
@@ -73,6 +74,8 @@ typedef struct  s_io
 # define _IOINIT2(iodes, flags)		io_open(iodes, flags, NULL)
 
 # define io_init(...)	SEL23(__VA_ARGS__,_IOINIT3,_IOINIT2)(__VA_ARGS__)
+
+int				io_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int				io_set_osbuf(t_iodes *, uint32_t flags, t_ostring *osbuf);
 int				io_open(t_iodes *, uint32_t flags, const char *);

@@ -1,7 +1,8 @@
 #include <pwd.h>
 #include <unistd.h>
-#include <ssl.h>
+#include <common.h>
 #include <libft/string.h>
+#include <cli.h>
 
 int	cli_read_stdin_pass(char *buf, size_t bufsize)
 {

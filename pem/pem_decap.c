@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <pem.h>
 #include <parser.h>
 #include <unistd.h>

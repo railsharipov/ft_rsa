@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <test.h>
 
 int	test_assert(int bool, const char *func, const char *file, int line)

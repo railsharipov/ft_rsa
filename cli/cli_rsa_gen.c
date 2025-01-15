@@ -1,4 +1,5 @@
-#include <ssl.h>
+#include <common.h>
+#include <cli.h>
 #include <rsa.h>
 #include <asn.h>
 #include <der.h>

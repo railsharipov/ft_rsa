@@ -11,8 +11,9 @@
 /* ************************************************************************** */
 
 #include <unistd.h>
-#include <ssl.h>
+#include <common.h>
 #include <hash.h>
+#include <cli.h>
 #include <libft/htable.h>
 #include <libft/bytes.h>
 
@@ -93,13 +94,13 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 	sformat = NULL;
 	hexhash = ft_bytes_to_hex(__hash->hash, __hash->size);
 
-	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag)) {
-		if (SSL_FLAG(HASH_S, tflag)) {
+	if (!CLI_FLAG(HASH_Q, __gflag) && !CLI_FLAG(HASH_P, tflag)) {
+		if (CLI_FLAG(HASH_S, tflag)) {
 			ft_sprintf(&sformat, "\"%s\"", sarg);
 		}
-		else if (SSL_FLAG(IO_FILE, tflag))
+		else if (CLI_FLAG(IO_FILE, tflag))
 			ft_sprintf(&sformat, "%s", sarg);
-		if (!SSL_FLAG(HASH_R, __gflag)) {
+		if (!CLI_FLAG(HASH_R, __gflag)) {
 			ft_printf("%q (%s) = %s\n", __algo, sformat, hexhash);
 		}
 		else
@@ -123,7 +124,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 	__hash = func_hash_init();
 
 	while ((rbytes = io_read(&__in, buf, bufsize)) == bufsize) {
-		if (SSL_FLAG(HASH_P, tflag)) {
+		if (CLI_FLAG(HASH_P, tflag)) {
 			write(1, buf, bufsize);
 		}
 		func_hash_update(__hash, buf, bufsize);
@@ -134,7 +135,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 		return (SSL_ERR);
 	}
 
-	if (SSL_FLAG(HASH_P, tflag)) {
+	if (CLI_FLAG(HASH_P, tflag)) {
 		write(1, buf, rbytes);
 	}
 

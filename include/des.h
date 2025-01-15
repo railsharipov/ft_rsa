@@ -1,13 +1,14 @@
 #ifndef SSL_DES_H
 # define SSL_DES_H
 
-# include <ssl.h>
-# include <libft/string.h>
+# include <common.h>
 # include <io.h>
+# include <libft/string.h>
+# include <libft/logger.h>
 
 # define DES_MES_BLOCK_SIZE	8
 
-# define DES_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "des: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define DES_LOG(LEVEL, MES, ...)	des_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_des
 {
@@ -30,6 +31,8 @@ typedef struct  s_des
 }               t_des;
 
 typedef void    (*FUNC_DES)(t_des *const, char *const, ssize_t);
+
+int		des_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 t_des	*des_init(const unsigned char *key, const unsigned char *salt, const unsigned char *vect);
 t_des	*des_hexinit(const char *key, const char *salt, const char *vect);

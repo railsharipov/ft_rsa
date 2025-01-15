@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <ssl.h>
+#include <common.h>
 #include <base64.h>
 
 static const unsigned char	MES_BLOCK_SIZE = 3;

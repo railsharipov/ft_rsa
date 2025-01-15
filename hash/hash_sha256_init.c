@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <hash.h>
 
 static const t_sha256_word	HASH_INIT_VECT[] = {

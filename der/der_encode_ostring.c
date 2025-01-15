@@ -1,4 +1,4 @@
-#include <ssl.h>
+#include <common.h>
 #include <der.h>
 
 int der_encode_ostring(t_ostring *osbuf, void *content, size_t size)

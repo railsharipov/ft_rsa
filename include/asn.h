@@ -1,7 +1,10 @@
 #ifndef ASN_SPECIFIC_H
 # define ASN_SPECIFIC_H
 
-# include <ssl.h>
+# include <common.h>
+# include <libft/node.h>
+# include <libft/htable.h>
+# include <libft/logger.h>
 
 // ASN.1 - Abstract Syntax Notation One
 // Refer to X.208, X.209, X.608
@@ -36,7 +39,7 @@
 # define ASN_LEN_SHORT				0x0
 # define ASN_LEN_LONG				0x80
 
-# define ASN_LOG(LEVEL, MES, ...)	util_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "asn: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define ASN_LOG(LEVEL, MES, ...)	asn_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct	s_iasn
 {
@@ -49,6 +52,8 @@ typedef struct	s_iasn
 
 struct s_der;
 struct s_node;
+
+int				asn_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 struct s_node	*asn_tree(const char *);
 void			asn_tree_del(struct s_node *);
