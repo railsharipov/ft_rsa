@@ -40,7 +40,8 @@ static int __decrypt(const char *pass)
 	ft_hex_to_bytes(vect, __vecthex, 16);
 
 	if (SSL_OK != rand_pbkdf2(key, vect, NULL, pass)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	des = des_init(key, NULL, vect);
@@ -48,7 +49,8 @@ static int __decrypt(const char *pass)
 	cipher.size = __consize;
 
 	if (SSL_OK != des_cbc_decrypt(des, &cipher, &message, pass)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	SSL_FREE(__content);
 
@@ -67,7 +69,8 @@ static int __parse_proc(const char *proc)
 	proc_info = ft_strsplit(proc, ' ');
 
 	if (ft_2darray_len_null_terminated((void **)proc_info) < 2) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	proc_type = ft_strsplit(proc_info[1], ',');
@@ -80,7 +83,8 @@ static int __parse_proc(const char *proc)
 	ft_2darray_del_null_terminated((void **)proc_info);
 
 	if (check != 0) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	return (SSL_OK);
@@ -95,7 +99,8 @@ static int __parse_dek(const char *dek)
 	dek_info = ft_strsplit(dek, ' ');
 
 	if (ft_2darray_len_null_terminated((void **)dek_info) < 2) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	dek_cipher = ft_strsplit(dek_info[1], ',');
@@ -110,7 +115,8 @@ static int __parse_dek(const char *dek)
 	ft_2darray_del_null_terminated((void **)dek_info);
 
 	if (check != 0) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	return (SSL_OK);
@@ -139,7 +145,8 @@ static int	__check_crypt_header(const char *proc, const char *dek)
 	}
 
 	if (dekidx + deklen + 1 >= __consize) // include newline character
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 
 	return (SSL_OK);
 }
@@ -198,7 +205,8 @@ static int __decode(const char *pass)
 		__encrypted = SSL_TRUE;
 
 		if (SSL_OK != __parse_crypt_header()) {
-			return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+			PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 		__remove_crypt_header();
 	}
@@ -220,16 +228,19 @@ static int __decode(const char *pass)
 int pem_decode(t_pem *pem, const char *type, t_ostring **content, const char *pass)
 {
 	if (NULL == pem || NULL == content) {
-		return (PEM_LOG(ERROR, INVALID_INPUT_ERROR));
+		PEM_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	__encrypted = SSL_FALSE;
 	*content = NULL;
 
 	if (SSL_OK != pem_decap(pem, type, &__content, &__consize)) {
-		return (PEM_LOG(ERROR, "invalid pem encoding"));
+		PEM_LOG(ERROR, "invalid pem encoding");
+		return (SSL_ERR);
 	}
 	if (SSL_OK != __decode(pass)) {
-		return (PEM_LOG(ERROR, "invalid pem encoding"));
+		PEM_LOG(ERROR, "invalid pem encoding");
+		return (SSL_ERR);
 	}
 	SSL_ALLOC(*content, sizeof(t_ostring));
 

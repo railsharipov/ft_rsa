@@ -77,16 +77,20 @@ static int __run_task(void)
 	CLI_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
 
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != asn_tree_der_encode(__asn_pkey, &__der_pkey))	{
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != pem_encode((t_ostring *)__der_pkey, &__pem_pkey, "PRIVATE KEY", NULL)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != __write_output()) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	return (SSL_OK);
@@ -100,18 +104,21 @@ static int	__get_task(const char **opt)
 	while (NULL != *opt) {
 		if (NULL == (task = ft_htbl_get(__rsa_htable, *opt))) {
 			if (SSL_OK != __set_modsize(*opt)) {
-				return (CLI_LOG(ERROR, "invalid option flag"));
+				CLI_LOG(ERROR, "invalid option flag");
+				return (SSL_ERR);
 			}
 		} else {
 			__gflag |= task->gflag;
 			opt += task->val;
 
 			if (NULL == *opt) {
-				return (CLI_LOG(ERROR, "expected option flag"));
+				CLI_LOG(ERROR, "expected option flag");
+				return (SSL_ERR);
 			}
 			else if (NULL != (f_task = task->ptr)) {
 				if (SSL_OK != f_task(*opt, task)) {
-					return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+					CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+					return (SSL_ERR);
 				}
 			}
 		}
@@ -125,13 +132,16 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 	int	ret;
 
 	if (NULL == opt) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (NULL == (__rsa_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	__frand = NULL;
 	__modsize = 512;
@@ -143,7 +153,8 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 	__clean();
 
 	if (SSL_OK != ret) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }

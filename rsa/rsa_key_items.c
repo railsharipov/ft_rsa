@@ -13,10 +13,12 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 	int		ret;
 
 	if (NULL == asn_key || NULL == rsa_key) {
-		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
+		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	if (NULL == (asn_items = asn_tree_items(asn_key))) {
-		return (RSA_LOG(ERROR, "failed to asn decode rsa key"));
+		RSA_LOG(ERROR, "failed to asn decode rsa key");
+		return (SSL_ERR);
 	}
 
 	if (!ft_strcmp(asn_key->key, "sequence:RSA_PRIVATE_KEY")) {
@@ -133,7 +135,8 @@ static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 
 	if ((NULL == key->modulus) || (NULL == key->pubexp)) {
 		SSL_FREE(key);
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	*rsa_key = key;
 

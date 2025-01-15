@@ -51,16 +51,20 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 	int	ret;
 
 	if (NULL == opt) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (NULL == (__des_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != io_init(&__out, IO_WRITE|IO_STDOUT)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	__gflag = DES_E;
 
@@ -73,7 +77,8 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 	cli_task_htable_del(__des_htable);
 
 	if (SSL_OK != ret) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -86,19 +91,22 @@ static int	__setup_task(const char **opt)
 	// dynamically setup task
 	while (NULL != *opt) {
 		if (NULL == (task = ft_htbl_get(__des_htable, *opt))) {
-			return (CLI_LOG(ERROR, INVALID_INPUT_ERROR));
+			CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+			return (SSL_ERR);
 		}
 		__gflag |= task->gflag;
 
 		// if option flag is required
 		if (task->val) {
 			if (NULL == * ++opt) {
-				return (CLI_LOG(ERROR, "expected option flag"));
+				CLI_LOG(ERROR, "expected option flag");
+				return (SSL_ERR);
 			}
 		}
 		if (NULL != (f_setup = task->ptr)) {
 			if (SSL_OK != f_setup(*opt, task)) {
-				return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+				CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+				return (SSL_ERR);
 			}
 		}
 		opt++;
@@ -118,7 +126,8 @@ static int __run_task(void)
 	__des = des_hexinit(__keyhex, __salthex, NULL);
 
 	if (SSL_OK != __get_input(&input.content, &input.size)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (CLI_FLAG(DES_D, __gflag)) {
 		f_op = (CLI_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
@@ -158,7 +167,8 @@ static int	__get_input(char **input, size_t *insize)
 	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -172,11 +182,13 @@ static int	__write_output(const char *output, size_t outsize)
 		__out.delim = '\n';
 	}
 	if (io_write(&__out, output, outsize) < 0) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (CLI_FLAG(DES_A | DES_E, __gflag)) {
 		if (io_write(&__out, "\n", 1) < 0) {
-			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 	}
 	return (SSL_OK);
@@ -210,7 +222,8 @@ static int	__get_vector(const char *opt, const t_task *task)
 	} else if (DES_S == task->tflag) {
 		__salthex = (char *)opt;
 	} else {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -253,7 +266,8 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 	ret = SSL_OK;
 
 	if (SSL_OK != des_ecb_encrypt(__des, mes, ciph, __pass)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != base64_encode((char *)(ciph->content), ciph->size, &b64.content, &b64.size)) {
 		ret = (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
@@ -276,11 +290,13 @@ static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 	t_ostring	cipher;
 
 	if (SSL_OK != base64_decode((char *)(b64->content), b64->size, &cipher.content, &cipher.size)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != des_ecb_decrypt(__des, &cipher, mes, __pass)) {
 		SSL_FREE(cipher.content);
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	SSL_FREE(cipher.content);
 

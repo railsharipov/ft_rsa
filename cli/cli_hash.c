@@ -208,10 +208,12 @@ int	cli_hash(const char **opt, const char *name_comm)
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __init_hash_func_by_name(name_comm)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (NULL == (hash_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (NULL == *opt) {
 		ret = __default_task(opt);

@@ -17,7 +17,8 @@ static int	__eme_pkcs1_v1_5_ps(
 	size_t		ix;
 
 	if (SSL_OK != rand_useed(&seed, 8)) {
-		return (RSA_LOG(ERROR, UNSPECIFIED_ERROR));
+		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	rand_mtw_init(seed);
 
@@ -127,15 +128,18 @@ int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key)
 	int	keysize;
 
 	if ((NULL == mes) || (NULL == mes->content) || (NULL == ciph) || (NULL == asn_key)) {
-		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
+		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	ciph->content = NULL;
 
 	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
-		return (RSA_LOG(ERROR, "invalid rsa key"));
+		RSA_LOG(ERROR, "invalid rsa key");
+		return (SSL_ERR);
 	}
 	if (SSL_OK != __encrypt(mes->content, mes->size, &(ciph->content), &(ciph->size))) {
-		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
+		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }

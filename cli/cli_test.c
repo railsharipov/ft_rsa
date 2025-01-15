@@ -20,12 +20,14 @@ int	cli_test(const char **opt, const char *name)
 		f_test = TESTS[idx];
 
 		if (NULL == f_test) {
-			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 		ret[idx] = f_test();
 
 		if (SSL_OK != ret[idx]) {
-			return (CLI_LOG(ERROR, "test failed"));
+			CLI_LOG(ERROR, "test failed");
+			return (SSL_ERR);
 		}
 		idx++;
 	}

@@ -27,10 +27,12 @@ int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect, co
 	int		bufsize;
 
 	if (NULL == salt) {
-		return (RAND_LOG(ERROR, "salt is required"));
+		RAND_LOG(ERROR, "salt is required");
+		return (SSL_ERR);
 	}
 	if (NULL == pass) {
-		return (RAND_LOG(ERROR, "password is required"));
+		RAND_LOG(ERROR, "password is required");
+		return (SSL_ERR);
 	}
 
 	bufptr = __buf;

@@ -81,10 +81,12 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	res = SSL_OK;
 
 	if (NULL == asn_pkey) {
-		return (RSA_LOG(ERROR, INVALID_INPUT_ERROR));
+		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	if (modsize < 64) {
-		return (RSA_LOG(ERROR, "invalid rsa key size"));
+		RSA_LOG(ERROR, "invalid rsa key size");
+		return (SSL_ERR);
 	}
 	if (NULL == (pkey_tree = asn_tree(MAP_RSA_PRIVATE_KEY))) {
 		res = RSA_LOG(ERROR, "failed to construct asn tree");
@@ -97,7 +99,8 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	}
 	if (SSL_OK != res) {
 		SSL_FREE(pkey_tree);
-		return (RSA_LOG(ERROR, "failed to generate rsa key"));
+		RSA_LOG(ERROR, "failed to generate rsa key");
+		return (SSL_ERR);
 	}
 
 	__get_primes(modsize, seed);

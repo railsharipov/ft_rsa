@@ -184,7 +184,8 @@ static int	__get_input(t_iodes *iodes, char **input, size_t *insize)
 	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -196,7 +197,8 @@ static int	__write_output(char *output, size_t outsize)
 	}
 	else if (io_write(&__out, output, outsize) < 0)
 	{
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }

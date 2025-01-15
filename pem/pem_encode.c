@@ -32,15 +32,18 @@ static int	__des_crypt(t_ostring *content, t_ostring *cipher, const char *pass)
 	unsigned char	key[8];
 
 	if ((SSL_OK != rand_useed((uint64_t *)__vect, 8))) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != rand_pbkdf2(key, __vect, NULL, pass)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	des = des_init(key, NULL, __vect);
 
 	if (SSL_OK != des_cbc_encrypt(des, content, cipher, pass)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	ft_bzero(key, sizeof(key));
 
@@ -72,7 +75,8 @@ static void	__crypt_header(char **chead, size_t *chsize)
 static int	__encode(t_ostring *content, char **pemenc, size_t *pemsize)
 {
 	if (SSL_OK != base64_encode((char *)(content->content), content->size, pemenc, pemsize)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	parser_insert_delim(pemenc, pemsize, '\n', 64);
 
@@ -87,7 +91,8 @@ static int	__crypt_encode(t_ostring *content, char **pemenc, size_t *pemsize, co
 	int			ret;
 
 	if (SSL_OK != __des_crypt(content, &cipher, pass)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK == (ret = __encode(&cipher, pemenc, pemsize))) {
 		__crypt_header(&crypt_pemenc, &crypt_pemsize);
@@ -108,16 +113,19 @@ int	pem_encode(t_ostring *content, t_pem **pem, const char *type, const char *pa
 	size_t		pemsize;
 
 	if (NULL == pem || NULL == content) {
-		return (PEM_LOG(ERROR, INVALID_INPUT_ERROR));
+		PEM_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 	*pem = NULL;
 
 	if (NULL != pass) {
 		if (SSL_OK != __crypt_encode(content, &pemenc, &pemsize, pass)) {
-			return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+			PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 	} else if (SSL_OK != __encode(content, &pemenc, &pemsize)) {
-		return (PEM_LOG(ERROR, UNSPECIFIED_ERROR));
+		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	pem_encap(pem, type, pemenc, pemsize);
 	SSL_FREE(pemenc);

@@ -153,7 +153,8 @@ static int	__get_input(char **input, size_t *insize)
 	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	return (SSL_OK);

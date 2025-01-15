@@ -43,33 +43,40 @@ typedef struct			s_json_value
 
 static size_t	__pos;
 
-static int	__parse_value(const char *s, t_node **node);
-static int	__parse_null(const char *s, t_node **node);
-static int	__parse_boolean(const char *s, t_node **node);
-static int	__parse_number(const char *s, t_node **node);
-static int	__parse_string(const char *s, t_node **node);
-static int	__parse_kv(const char *s, t_node **node);
-static int	__parse_object(const char *s, t_node **node);
-static int	__parse_array(const char *s, t_node **node);
+static int	__parse_value(const char *s, t_node *node);
+static int	__parse_null(const char *s, t_node *node);
+static int	__parse_boolean(const char *s, t_node *node);
+static int	__parse_number(const char *s, t_node *node);
+static int	__parse_string(const char *s, t_node *node);
+static int	__parse_kv(const char *s, t_node *node);
+static int	__parse_object(const char *s, t_node *node);
+static int	__parse_array(const char *s, t_node *node);
 static void	__skip_ws(const char *s);
 
 int json_parse_new(const char *s, t_node **node)
 {
-	int status;
+	t_node	*json_node;
+	int 	status;
 
 	if (s == NULL) {
-		return (JSON_LOG(ERROR, INVALID_INPUT_ERROR));
+		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
+	*node = NULL;
 	__pos = 0;
-	status = __parse_value(s, node);
+
+	json_node = ft_node_create();
+	status = __parse_value(s, json_node);
 
 	if (status != JSON_MATCH) {
-		return (JSON_LOG(ERROR, "bad format"));
+		JSON_LOG(ERROR, "bad format");
+		return (SSL_ERR);
 	}
 	__skip_ws(s);
 
 	if (s[__pos] != '\0') {
-		return (JSON_LOG(ERROR, "bad format"));
+		JSON_LOG(ERROR, "bad format");
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -81,7 +88,7 @@ static void	__skip_ws(const char *s)
 	}
 }
 
-static int	__parse_value(const char *s, t_node **node)
+static int	__parse_value(const char *s, t_node *node)
 {
 	int     status;
 
@@ -126,7 +133,7 @@ static int	__parse_value(const char *s, t_node **node)
 	return (JSON_NO_MATCH);
 }
 
-static int	__parse_null(const char *s, t_node **node)
+static int	__parse_null(const char *s, t_node *node)
 {
 	size_t	old_pos;
 	int 	status;
@@ -146,7 +153,7 @@ static int	__parse_null(const char *s, t_node **node)
 	}
 }
 
-static int	__parse_boolean(const char *s, t_node **node)
+static int	__parse_boolean(const char *s, t_node *node)
 {
 	size_t	old_pos;
 	int		status;
@@ -169,7 +176,7 @@ static int	__parse_boolean(const char *s, t_node **node)
 	}
 }
 
-static int	__parse_number(const char *s, t_node **node)
+static int	__parse_number(const char *s, t_node *node)
 {
 	size_t old_pos;
 	int status;
@@ -225,7 +232,7 @@ static int	__parse_number(const char *s, t_node **node)
 	return (JSON_MATCH);
 }
 
-static int	__parse_string(const char *s, t_node **node)
+static int	__parse_string(const char *s, t_node *node)
 {
 	size_t old_pos;
 	int status;
@@ -252,7 +259,7 @@ static int	__parse_string(const char *s, t_node **node)
 	return (JSON_MATCH);
 }
 
-static int	__parse_kv(const char *s, t_node **node)
+static int	__parse_kv(const char *s, t_node *node)
 {
 	size_t old_pos;
 	int status;
@@ -282,7 +289,7 @@ static int	__parse_kv(const char *s, t_node **node)
 	return (JSON_MATCH);
 }
 
-static int	__parse_object(const char *s, t_node **node)
+static int	__parse_object(const char *s, t_node *node)
 {
 	size_t old_pos;
 	int status;
@@ -324,7 +331,7 @@ static int	__parse_object(const char *s, t_node **node)
 	return (JSON_MATCH);
 }
 
-static int	__parse_array(const char *s, t_node **node)
+static int	__parse_array(const char *s, t_node *node)
 {
 	size_t old_pos;
 	int status;

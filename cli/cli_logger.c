@@ -54,7 +54,8 @@ int cli_logger_print_file(const char *file_name) {
 		close(fd);
 	}
 	if (fd < 0) {
-		return (CLI_LOG(ERROR, "failed to open file"));
+		CLI_LOG(ERROR, "failed to open file");
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }

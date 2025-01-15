@@ -67,7 +67,8 @@ static int	__get_obj_id_octets(
 static int	__check_sub_ids(char **sub_id_strings, int num_sub_id_strings)
 {
 	if (num_sub_id_strings < 2 || NULL == sub_id_strings) {
-		return (DER_LOG(ERROR, UNSPECIFIED_ERROR));
+		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	while (num_sub_id_strings-- > 0) {

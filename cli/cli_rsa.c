@@ -148,15 +148,18 @@ static int	__run_task(void)
 	outkey = NULL;
 
 	if (SSL_OK != __get_input(&(__inkey.content), &(__inkey.size))) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (SSL_OK != __decode_key(&asn_key)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (CLI_FLAG(RSA_CHECK, __gflag)) {
 		if (SSL_OK != rsa_check(asn_key)) {
 			asn_tree_del(asn_key);
-			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 		ft_putstr("RSA key ok\n");
 	}
@@ -196,7 +199,8 @@ static int	__get_input(char **input, size_t *insize)
 	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -247,7 +251,8 @@ static int	__set_form(const char *opt, const t_task *task)
 	else if (!ft_strcmp(opt, "DER"))
 		*form = RSA_DER;
 	else
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 
 	return (SSL_OK);
 }
@@ -294,7 +299,8 @@ static int	__key_type(t_node **asn_key)
 		asn_pubkey = asn_tree(MAP_X509_PUBLIC_KEY);
 
 		if (SSL_OK != asn_transform(*asn_key, asn_pubkey)) {
-			return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 		asn_tree_del(*asn_key);
 		*asn_key = asn_pubkey;
@@ -333,7 +339,8 @@ static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 	ret = SSL_OK;
 
 	if (SSL_OK != asn_tree_der_encode(asn_key, &der_key)) {
-		return (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if (RSA_PEM == __outform) {
 		if (CLI_FLAG(RSA_ENCRYPT, __gflag)) {

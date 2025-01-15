@@ -33,7 +33,8 @@ static int	__remove_pad(unsigned char **mes, size_t *messize);
 int des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes)) {
-		return (DES_LOG(ERROR, INVALID_INPUT_ERROR));
+		DES_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 
 	mes->content = NULL;
@@ -42,7 +43,8 @@ int des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pas
 	__vect = des->vect;
 
 	if (SSL_OK != __vectors((unsigned char *)(ciph->content), ciph->size, des->vflag, pass)) {
-		return (DES_LOG(ERROR, "invalid des encryption"));
+		DES_LOG(ERROR, "invalid des encryption");
+		return (SSL_ERR);
 	}
 
 	des_permute_key(&__permut_key, __key);
@@ -57,17 +59,20 @@ static int	__remove_pad(unsigned char **mes, size_t *messize)
 	unsigned char	ix;
 
 	if (*messize == 0) {
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	if ((padsize = (*mes)[*messize-1]) > 8) {
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 
 	ix = 0;
 	while (ix++ < padsize) {
 		*messize -= 1;
 		if ((*mes)[*messize] != padsize) {
-			return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+			DES_LOG(ERROR, UNSPECIFIED_ERROR);
+			return (SSL_ERR);
 		}
 	}
 
@@ -81,20 +86,24 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 	if (!CLI_FLAG(DES_K, vflag)) {
 		if (!CLI_FLAG(DES_S, vflag)) {
 			if (ciphsize < 16) {
-				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+				DES_LOG(ERROR, UNSPECIFIED_ERROR);
+				return (SSL_ERR);
 			}
 			if (ft_strncmp((char *)ciph, "Salted__", 8)) {
-				return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+				DES_LOG(ERROR, UNSPECIFIED_ERROR);
+				return (SSL_ERR);
 			}
 			ft_memcpy(__salt, ciph + 8, 8);
 			__is_salted = 1;
 		}
 		if (SSL_OK != rand_pbkdf2(__key, __salt, (CLI_FLAG(DES_V, vflag)) ? (NULL) : (__vect), pass)) {
-			return (DES_LOG(ERROR, "key derivation error"));
+			DES_LOG(ERROR, "key derivation error");
+			return (SSL_ERR);
 		}
 	}
 	if (!CLI_FLAG(DES_V, vflag)) {
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
@@ -137,7 +146,8 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, char **mes, siz
 		ix += 8;
 	}
 	if (SSL_OK != __remove_pad(mes_ptr, messize)) {
-		return (DES_LOG(ERROR, UNSPECIFIED_ERROR));
+		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		return (SSL_ERR);
 	}
 	return (SSL_OK);
 }
