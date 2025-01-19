@@ -192,6 +192,9 @@
 // 	target_node = NULL;
 // 	key = NULL;
 // 	idx = 0;
+// 	target_node = NULL;
+// 	key = NULL;
+// 	idx = 0;
 
 // 	if (node->type != JSON_OBJECT) {
 // 		JSON_LOG(ERROR, "Using key for non-object type");
@@ -205,7 +208,18 @@
 // 		quote = 0;
 // 	}
 // 	begin = idx;
+// 	if (s[idx] == '"') {
+// 		idx++;
+// 		quote = s[idx];
+// 	} else {
+// 		quote = 0;
+// 	}
+// 	begin = idx;
 
+// 	while(ft_isalnum(s[idx])) {
+// 		idx++;
+// 	}
+// 	key = ft_strsub(s, begin, idx);
 // 	while(ft_isalnum(s[idx])) {
 // 		idx++;
 // 	}
@@ -222,6 +236,8 @@
 
 // 	htbl = (t_htbl *)node->content;
 // 	target_node = (t_node *)ft_htbl_get(htbl, key);
+// 	htbl = (t_htbl *)node->content;
+// 	target_node = (t_node *)ft_htbl_get(htbl, key);
 
 // 	if (NULL == target_node) {
 // 		JSON_LOG(ERROR, "No such key in object: `%s`", key);
@@ -231,7 +247,15 @@
 // 	SSL_FREE(key);
 // 	*ret_node = target_node;
 // 	return (idx);
+// 	SSL_FREE(key);
+// 	*ret_node = target_node;
+// 	return (idx);
 
+// err:
+// 	SSL_FREE(key);
+// 	*ret_node = NULL;
+// 	return (-1);
+// }
 // err:
 // 	SSL_FREE(key);
 // 	*ret_node = NULL;
@@ -250,6 +274,9 @@
 // 	target_node = NULL;
 // 	num_str = NULL;
 // 	idx = 0;
+// 	target_node = NULL;
+// 	num_str = NULL;
+// 	idx = 0;
 
 // 	if (node->type != JSON_OBJECT) {
 // 		JSON_LOG(ERROR, "Using key for non-object type");
@@ -261,11 +288,23 @@
 // 	} else {
 // 		return (-1);
 // 	}
+// 	if (s[idx] == '[') {
+// 		idx++;
+// 	} else {
+// 		return (-1);
+// 	}
 
 // 	while (ft_iseolws(s[idx])) {
 // 		idx++;
 // 	}
+// 	while (ft_iseolws(s[idx])) {
+// 		idx++;
+// 	}
 
+// 	if (s[idx] == '"') {
+// 		return (__get_object_by_key(node, s + idx, &target_node));
+// 	}
+// 	begin = idx;
 // 	if (s[idx] == '"') {
 // 		return (__get_object_by_key(node, s + idx, &target_node));
 // 	}
@@ -276,7 +315,15 @@
 // 	}
 // 	num_str = ft_strsub(s, begin, idx);
 // 	target_arr_idx = ft_atoi(num_str);
+// 	while (ft_isdigit(s[idx])) {
+// 		idx++;
+// 	}
+// 	num_str = ft_strsub(s, begin, idx);
+// 	target_arr_idx = ft_atoi(num_str);
 
+// 	while (ft_iseolws(s[idx])) {
+// 		idx++;
+// 	}
 // 	while (ft_iseolws(s[idx])) {
 // 		idx++;
 // 	}
@@ -286,6 +333,7 @@
 // 		goto err;
 // 	}
 
+// 	lst = (t_node *)node->content;
 // 	lst = (t_node *)node->content;
 
 // 	if (ft_lst_size(lst) <= target_arr_idx) {
@@ -297,11 +345,23 @@
 // 		target_arr_idx--;
 // 		lst = lst->next;
 // 	}
+// 	while (target_arr_idx > 0) {
+// 		target_arr_idx--;
+// 		lst = lst->next;
+// 	}
 
 // 	SSL_FREE(num_str);
 // 	*ret_node = lst;
 // 	return (idx);
+// 	SSL_FREE(num_str);
+// 	*ret_node = lst;
+// 	return (idx);
 
+// err:
+// 	SSL_FREE(num_str);
+// 	*ret_node = NULL;
+// 	return (-1);
+// }
 // err:
 // 	SSL_FREE(num_str);
 // 	*ret_node = NULL;
