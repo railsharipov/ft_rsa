@@ -15,6 +15,7 @@ enum e_json_type {
     JSON_NUMBER,
     JSON_BOOLEAN,
     JSON_NULL,
+    JSON_NONE,
 };
 
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);

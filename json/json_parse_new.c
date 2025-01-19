@@ -19,27 +19,19 @@
 
 enum	e_json_status
 {
-	JSON_MATCH = SSL_OK,
-	JSON_NO_MATCH = SSL_STATUS_COUNT,
-	JSON_BAD_FORMAT = SSL_STATUS_COUNT + 1,
+	JSON_MATCH 		= SSL_STATUS_COUNT,
+	JSON_NO_MATCH	= SSL_STATUS_COUNT + 1,
+	JSON_BAD_FORMAT = SSL_STATUS_COUNT + 2,
 };
-
-typedef enum	e_json_value_type
-{
-	TYPE_OBJ,
-	TYPE_ARR,
-	TYPE_STR,
-	TYPE_NUM,
-	TYPE_BOOL,
-	TYPE_NULL,
-}				t_json_value_type;
 
 typedef struct			s_json_value
 {
 	char				*content;
 	size_t				size;
-	t_json_value_type	type;
+	enum e_json_type	type;
 }						t_json_value;
+
+typedef int (*FUNC_JSON_PARSE)(const char *, t_node *);
 
 static size_t	__pos;
 
@@ -52,6 +44,7 @@ static int	__parse_kv(const char *s, t_node *node);
 static int	__parse_object(const char *s, t_node *node);
 static int	__parse_array(const char *s, t_node *node);
 static void	__skip_ws(const char *s);
+static void __init_node(t_node *node);
 
 int json_parse_new(const char *s, t_node **node)
 {
@@ -66,18 +59,17 @@ int json_parse_new(const char *s, t_node **node)
 	__pos = 0;
 
 	json_node = ft_node_create();
+	__init_node(json_node);
 	status = __parse_value(s, json_node);
-
-	if (status != JSON_MATCH) {
-		JSON_LOG(ERROR, "bad format");
-		return (SSL_ERR);
-	}
 	__skip_ws(s);
 
-	if (s[__pos] != '\0') {
+	if (status != JSON_MATCH || s[__pos] != '\0') {
+		ft_node_del(json_node);
 		JSON_LOG(ERROR, "bad format");
 		return (SSL_ERR);
 	}
+	*node = json_node;
+	
 	return (SSL_OK);
 }
 
@@ -88,48 +80,39 @@ static void	__skip_ws(const char *s)
 	}
 }
 
+static void	__init_node(t_node *node)
+{
+	node->type = JSON_NONE;
+	node->content = NULL;
+	node->size = 0;
+	node->f_del_content = NULL;
+}
+
 static int	__parse_value(const char *s, t_node *node)
 {
-	int     status;
+	FUNC_JSON_PARSE f_arr[] = {
+		__parse_null,
+		__parse_boolean,
+		__parse_number,
+		__parse_string,
+		__parse_object,
+		__parse_array,
+	};
+	const int	arr_size = sizeof(f_arr) / sizeof(f_arr[0]);
+	int     	status;
 
 	__skip_ws(s);
 
-	if (JSON_MATCH == (status = __parse_null(s, node))) {
-		return (JSON_MATCH);
-	} else if (JSON_BAD_FORMAT == status) {
-		return (JSON_BAD_FORMAT);
-	}
+	for (int i = 0; i < arr_size; i++) {
+		status = f_arr[i](s, node);
 
-	if (JSON_MATCH == (status = __parse_boolean(s, node))) {
-		return (JSON_MATCH);
-	} else if (JSON_BAD_FORMAT == status) {
-		return (JSON_BAD_FORMAT);
+		if (JSON_MATCH == status) {
+			return (JSON_MATCH);
+		}
+		if (JSON_BAD_FORMAT == status) {
+			return (JSON_BAD_FORMAT);
+		}
 	}
-
-	if (JSON_MATCH == (status = __parse_number(s, node))) {
-		return (JSON_MATCH);
-	} else if (JSON_BAD_FORMAT == status) {
-		return (JSON_BAD_FORMAT);
-	}
-
-	if (JSON_MATCH == (status = __parse_string(s, node))) {
-		return (JSON_MATCH);
-	} else if (JSON_BAD_FORMAT == status) {
-		return (JSON_BAD_FORMAT);
-	}
-
-	if (JSON_MATCH == (status = __parse_object(s, node))) {
-		return (JSON_MATCH);
-	} else if (JSON_BAD_FORMAT == status) {
-		return (JSON_BAD_FORMAT);
-	}
-
-	if (JSON_MATCH == (status = __parse_array(s, node))) {
-		return (JSON_MATCH);
-	} else if (JSON_BAD_FORMAT == status) {
-		return (JSON_BAD_FORMAT);
-	}
-
 	return (JSON_NO_MATCH);
 }
 
@@ -145,6 +128,8 @@ static int	__parse_null(const char *s, t_node *node)
 
 	if (ft_strncmp(s + __pos, "null", 4) == 0) {
 		__pos += 4;
+		node->type = JSON_NULL;
+		node->f_del_content = json_get_f_del(JSON_NULL);
 		return (JSON_MATCH);
 	} else {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -165,9 +150,17 @@ static int	__parse_boolean(const char *s, t_node *node)
 
 	if (ft_strncmp(s + __pos, "true", 4) == 0) {
 		__pos += 4;
+		node->type = JSON_BOOLEAN;
+		node->content = ft_strdup("true");
+		node->size = 4;
+		node->f_del_content = json_get_f_del(JSON_BOOLEAN);
 		return (JSON_MATCH);
 	} else if (ft_strncmp(s + __pos, "false", 5) == 0) {
 		__pos += 5;
+		node->type = JSON_BOOLEAN;
+		node->content = ft_strdup("false");
+		node->size = 5;
+		node->f_del_content = json_get_f_del(JSON_BOOLEAN);
 		return (JSON_MATCH);
 	} else {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -178,9 +171,16 @@ static int	__parse_boolean(const char *s, t_node *node)
 
 static int	__parse_number(const char *s, t_node *node)
 {
-	size_t old_pos;
-	int status;
-	int is_negative;
+	size_t 		old_pos;
+	size_t		mantissa_start, mantissa_end;
+	size_t  	fraction_start, fraction_end;
+	size_t		exponent_start, exponent_end;
+	int 		negative_mantissa, negative_exponent;
+	int 		is_float, is_exponent;
+	int 		status;
+	char		*mantissa_str, *exponent_str;
+	t_num		*mantissa, *number;
+	uint64_t	exponent;
 
 	old_pos = __pos;
 	__skip_ws(s);
@@ -193,7 +193,7 @@ static int	__parse_number(const char *s, t_node *node)
 	}
 
 	if (s[__pos] == '-') {
-		is_negative = 1;
+		negative_mantissa = 1;
 		__pos++;
 		if (!ft_isdigit(s[__pos])) {
 			JSON_LOG(ERROR, "bad negative number format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
@@ -201,12 +201,19 @@ static int	__parse_number(const char *s, t_node *node)
 			return (JSON_BAD_FORMAT);
 		}
 	}
+
+	mantissa_start = __pos;
+
 	while (ft_isdigit(s[__pos])) {
 		__pos++;
 	}
+	mantissa_end = __pos;
 
 	if (s[__pos] == '.') {
+		is_float = 1;
 		__pos++;
+		fraction_start = __pos;
+
 		if (!ft_isdigit(s[__pos])) {
 			JSON_LOG(ERROR, "bad float format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
 			__pos = old_pos;
@@ -215,26 +222,67 @@ static int	__parse_number(const char *s, t_node *node)
 		while (ft_isdigit(s[__pos])) {
 			__pos++;
 		}
-	} else if (s[__pos] == 'e' || s[__pos] == 'E') {
-		__pos++;
-		if (s[__pos] == '-') {
-			__pos++;
-		}
-		if (!ft_isdigit(s[__pos])) {
-			JSON_LOG(ERROR, "bad float format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
-			__pos = old_pos;
-			return (JSON_BAD_FORMAT);
-		}
-		while (ft_isdigit(s[__pos])) {
-			__pos++;
-		}
+		fraction_end = __pos;
 	}
+
+	if (s[__pos] == 'e' || s[__pos] == 'E') {
+		is_exponent = 1;
+		__pos++;
+		exponent_start = __pos;
+
+		if (s[__pos] == '-') {
+			negative_exponent = 1;
+			__pos++;
+		}
+		if (!ft_isdigit(s[__pos])) {
+			JSON_LOG(ERROR, "bad float format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
+			__pos = old_pos;
+			return (JSON_BAD_FORMAT);
+		}
+		while (ft_isdigit(s[__pos])) {
+			__pos++;
+		}
+		exponent_end = __pos;
+	}
+
+	if (is_float || negative_exponent) {
+		JSON_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+		return (JSON_BAD_FORMAT);
+	}
+	if (is_exponent) {
+		exponent_str = ft_strsub(s, exponent_start, exponent_end - exponent_start);
+		exponent = (uint64_t)ft_atoi(exponent_str);
+		LIBFT_FREE(exponent_str);
+	}
+
+	mantissa_str = ft_strsub(s, mantissa_start, mantissa_end - mantissa_start);
+	mantissa = bnum_new_from_str(mantissa_str);
+	LIBFT_FREE(mantissa_str);
+
+	number = bnum_create();
+
+	if (is_exponent) {
+		bnum_exp(mantissa, exponent, number);
+	} else {
+		bnum_copy(mantissa, number);
+	}
+	if (negative_mantissa) {
+		number->sign = BNUM_NEG;
+	}
+	bnum_del(mantissa);
+
+	node->type = JSON_NUMBER;
+	node->content = number;
+	node->size = sizeof(t_num);
+	node->f_del_content = json_get_f_del(JSON_NUMBER);
+
 	return (JSON_MATCH);
 }
 
 static int	__parse_string(const char *s, t_node *node)
 {
 	size_t old_pos;
+	size_t str_start, str_end;
 	int status;
 
 	old_pos = __pos;
@@ -247,17 +295,32 @@ static int	__parse_string(const char *s, t_node *node)
 		return (JSON_NO_MATCH);
 	}
 	__pos++;
+	str_start = __pos;
+
 	while (s[__pos] != '"' && s[__pos] != '\0') {
 		__pos++;
 	}
+	str_end = __pos;
+
 	if (s[__pos] == '\0') {
 		JSON_LOG(ERROR, "bad string format at index %d, %.20s...: expected '\"', got '%c'", __pos, s + __pos, s[__pos]);
 		__pos = old_pos;
 		return (JSON_BAD_FORMAT);
 	}
 	__pos++;
+
+	node->type = JSON_CSTR;
+	node->content = ft_strsub(s, str_start, str_end - str_start);
+	node->size = str_end - str_start;
+	node->f_del_content = json_get_f_del(JSON_CSTR);
+
 	return (JSON_MATCH);
 }
+
+/*
+**	NOTE:
+**		use node->key for storing key
+*/
 
 static int	__parse_kv(const char *s, t_node *node)
 {
