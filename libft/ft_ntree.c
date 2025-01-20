@@ -43,12 +43,12 @@ t_node	*ft_ntree_iter(t_node *ntree)
 	t_queue	*queue;
 	t_node	*iter;
 
-	if (NULL == ntree || NULL == (queue = ft_queue_init())) {
+	if (NULL == ntree || NULL == (queue = ft_queue_create())) {
 		return (NULL);
 	}
 	ft_ntree_bfs(NULL, ntree, queue, __iter_func);
 
-	iter = ft_queue_peek(queue);
+	iter = ft_queue_first(queue);
 	LIBFT_FREE(queue);
 
 	return (iter);
@@ -159,7 +159,7 @@ int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, int (*f)(t_node *
 	if (NULL == node || NULL == f) {
 		return (-1);
 	}
-	queue = ft_queue_init();
+	queue = ft_queue_create();
 	result_node = NULL;
 
 	while (node) {
@@ -189,7 +189,7 @@ int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, int (*f)(t_node *
 	if (res != NULL) {
 		*res = result_node;
 	}
-	ft_queue_del(queue, NULL);
+	ft_queue_del(queue);
 
 	return (ret);
 }

@@ -41,7 +41,7 @@ int	asn_transform(t_node *src_tree, t_node *dest_tree)
 		}
 		src_iter = src_iter->next;
 	}
-	ft_lst_del(src_ref, NULL);
+	ft_lst_del(src_ref);
 
 	return (SSL_OK);
 }

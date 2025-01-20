@@ -1503,13 +1503,13 @@ static int __test_ft_list(void)
 	}
 
 	// check list delete first node
-	ft_lst_del_first(&lst, NULL);
+	ft_lst_del_first(&lst);
 	lst_size = ft_lst_size(lst);
 	pass |= TEST_ASSERT(lst_size == nwords-1);
 	pass |= TEST_ASSERT(strcmp((char *)lst->content, words[1]) == 0);
 
 	// check list delete last node
-	ft_lst_del_last(&lst, NULL);
+	ft_lst_del_last(&lst);
 	lst_size = ft_lst_size(lst);
 	pass |= TEST_ASSERT(lst_size == nwords - 2);
 
@@ -1524,7 +1524,7 @@ static int __test_ft_list(void)
 	pass |= TEST_ASSERT(strcmp((char *)node->content, words[nwords - 2]) == 0);
 
 	// delete all list nodes
-	ft_lst_del(lst, NULL);
+	ft_lst_del(lst);
 	lst = NULL;
 
 	// test list prepend
@@ -1561,7 +1561,7 @@ static int __test_ft_list(void)
 	pass |= TEST_ASSERT(tmp_node != NULL);
 
 	// test list delete node
-	ft_lst_del_one(&lst, tmp_node, NULL);
+	ft_lst_del_one(&lst, tmp_node);
 
 	// search for deleted node
 	tmp_node = lst;
@@ -1600,7 +1600,7 @@ static int __test_ft_stack(void)
 	int idx;
 	int pass = SSL_OK;
 
-	stack = ft_stack_init();
+	stack = ft_stack_create();
 	pass |= TEST_ASSERT(stack != NULL);
 	pass |= TEST_ASSERT(ft_stack_is_empty(stack));
 	pass |= TEST_ASSERT(ft_stack_size(stack) == 0);
@@ -1652,7 +1652,7 @@ static int __test_ft_stack(void)
 
 	pass |= TEST_ASSERT(ft_stack_is_empty(stack));
 	pass |= TEST_ASSERT(ft_stack_size(stack) == 0);
-	ft_stack_del(stack, NULL);
+	ft_stack_del(stack);
 
 	if (SSL_OK == pass) {
 		return (TEST_PASS());
@@ -1672,7 +1672,7 @@ static int __test_ft_queue(void)
 	int idx;
 	int pass = SSL_OK;
 
-	queue = ft_queue_init();
+	queue = ft_queue_create();
 	pass |= TEST_ASSERT(queue != NULL);
 	pass |= TEST_ASSERT(ft_queue_is_empty(queue));
 	pass |= TEST_ASSERT(ft_queue_size(queue) == 0);
@@ -1704,7 +1704,7 @@ static int __test_ft_queue(void)
 
 	pass |= TEST_ASSERT(ft_queue_size(queue) == nwords);
 
-	node = ft_queue_peek(queue);
+	node = ft_queue_first(queue);
 	pass |= TEST_ASSERT(node != NULL);
 	pass |= TEST_ASSERT(!ft_queue_is_empty(queue));
 	pass |= TEST_ASSERT(strcmp(node->content, words[0]) == 0);
@@ -1741,7 +1741,7 @@ static int __test_ft_queue(void)
 	}
 
 	// select some node
-	node = ft_queue_peek(queue);
+	node = ft_queue_first(queue);
 	while (node != NULL && strcmp(node->content, words[3]))
 		node = node->next;
 
@@ -1749,17 +1749,17 @@ static int __test_ft_queue(void)
 	pass |= TEST_ASSERT(node != NULL);
 
 	// test queue delete node
-	ft_queue_del_node(queue, node, NULL);
+	ft_queue_del_node(queue, node);
 
 	// search for deleted node
-	node = ft_queue_peek(queue);
+	node = ft_queue_first(queue);
 	while (node != NULL && strcmp(node->content, words[3]))
 		node = node->next;
 
 	// do not expect to find node
 	pass |= TEST_ASSERT(node == NULL);
 
-	ft_queue_del(queue, NULL);
+	ft_queue_del(queue);
 
 	if (SSL_OK == pass) {
 		return (TEST_PASS());
@@ -1944,7 +1944,7 @@ static int __test_ft_htbl(void)
 		idx++;
 	}
 
-	ft_lst_del(iter, NULL);
+	ft_lst_del(iter);
 	pass |= TEST_ASSERT(idx == nwords);
 	pass |= TEST_ASSERT(node == NULL);
 
@@ -2067,8 +2067,8 @@ static int __test_ft_htbl_conversion(void)
 	pass |= TEST_ASSERT(nwords > 6);
 
 	lst = NULL;
-	stack = ft_stack_init();
-	queue = ft_queue_init();
+	stack = ft_stack_create();
+	queue = ft_queue_create();
 
 	idx = 0;
 	while (idx < nwords) {
@@ -2085,7 +2085,7 @@ static int __test_ft_htbl_conversion(void)
 		idx++;
 	}
 
-	htbl = ft_lst_htable(lst);
+	htbl = ft_lst_to_htable(lst);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -2104,7 +2104,7 @@ static int __test_ft_htbl_conversion(void)
 
 	ft_htbl_del(htbl);
 
-	htbl = ft_queue_htable(queue);
+	htbl = ft_queue_to_htable(queue);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -2123,7 +2123,7 @@ static int __test_ft_htbl_conversion(void)
 
 	ft_htbl_del(htbl);
 
-	htbl = ft_stack_htable(stack);
+	htbl = ft_stack_to_htable(stack);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -2142,9 +2142,9 @@ static int __test_ft_htbl_conversion(void)
 
 	ft_htbl_del(htbl);
 
-	ft_lst_del(lst, NULL);
-	ft_queue_del(queue, NULL);
-	ft_stack_del(stack, NULL);
+	ft_lst_del(lst);
+	ft_queue_del(queue);
+	ft_stack_del(stack);
 
 	ft_2darray_del_null_terminated((void **)words);
 
@@ -2427,7 +2427,7 @@ static int __test_ft_ntree(void)
 		node = node->next;
 	}
 
-	ft_lst_del(iter, NULL);
+	ft_lst_del(iter);
 
 	// check if all words are present in iterator list exactly once
 	idx = 0;

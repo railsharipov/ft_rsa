@@ -75,7 +75,7 @@
 // 		tbytes += rbytes;
 // 	}
 // 	if (rbytes < 0) {
-// 		ft_lst_del(selectors, __f_del_selector);
+// 		ft_lst_del_with_f_del(selectors, __f_del_selector);
 // 		return (NULL);
 // 	}
 // 	return (selectors);

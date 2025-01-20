@@ -1,13 +1,15 @@
 #include <libft/list.h>
+#include <libft/tuple.h>
 #include <json.h>
 #include <bnum.h>
 
-void __delete_array(void *content);
-void __delete_object(void *content);
-void __delete_string(void *content);
-void __delete_number(void *content);
-void __delete_boolean(void *content);
-void __delete_null(void *content);
+static void __delete_array(void *content);
+static void __delete_object(void *content);
+static void __delete_key_value(void *content);
+static void __delete_string(void *content);
+static void __delete_number(void *content);
+static void __delete_boolean(void *content);
+static void __delete_null(void *content);
 
 void json_del(t_node *node)
 {
@@ -21,7 +23,10 @@ FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
 
 	} else if (type == JSON_OBJECT) {
 		return (__delete_object);
-		
+
+	} else if (type == JSON_KV) {
+		return (__delete_key_value);
+
 	} else if (type == JSON_CSTR) {
 		return (__delete_string);
 
@@ -37,32 +42,51 @@ FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
 	return (NULL);
 }
 
-void __delete_array(void *content)
+static void __delete_array(void *content)
 {
-	ft_lst_del((t_node *)(content), NULL);
+	JSON_LOG(TRACE, "deleting array");
+	ft_lst_del((t_node *)(content));
 }
 
-void __delete_object(void *content)
+static void __delete_object(void *content)
 {
+	JSON_LOG(TRACE, "deleting object");
 	ft_htbl_del((t_htbl *)(content));
 }
 
-void __delete_string(void *content)
+void json_delete_object(void *content)
 {
+	JSON_LOG(TRACE, "deleting object");
+	ft_lst_del((t_node *)(content));
+}
+
+static void __delete_key_value(void *content)
+{
+	JSON_LOG(TRACE, "deleting key value");
+	ft_tuple_del((t_tuple *)(content));
+}
+
+static void __delete_string(void *content)
+{
+	JSON_LOG(TRACE, "deleting string");
 	LIBFT_FREE(content);
 }
 
-void __delete_null(void *content)
+static void __delete_null(void *content)
 {
-	return;
+	JSON_LOG(TRACE, "deleting null");
+	return ;
 }
 
-void __delete_boolean(void *content)
+static void __delete_boolean(void *content)
 {
+	JSON_LOG(TRACE, "deleting boolean");
 	LIBFT_FREE(content);
 }
 
-void __delete_number(void *content)
+static void __delete_number(void *content)
 {
+	JSON_LOG(TRACE, "deleting number");
 	bnum_del((t_num *)(content));
 }
+

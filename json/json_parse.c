@@ -389,6 +389,6 @@ ssize_t __parse_array(const char *s, t_node *node)
 	return (idx);
 err:
 	ft_node_del(content_node);
-	ft_lst_del(list, NULL);
+	ft_lst_del(list);
 	return (-1);
 }

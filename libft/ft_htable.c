@@ -124,7 +124,7 @@ void	(ft_htbl_del_key)(t_htbl *htbl, const char *key)
 	node = __get_node_from_list(list, key);
 
 	if (node != NULL) {
-		ft_lst_del_one(&list, node, NULL);
+		ft_lst_del_one(&list, node);
 	}
 	htbl->arr[idx] = list;
 }
@@ -146,7 +146,7 @@ void	ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, FUNC_CONTENT_DEL 
 	node = __get_node_from_list(list, key);
 
 	if (node != NULL) {
-		ft_lst_del_one(&list, node, f_del);
+		ft_lst_del_one_with_f_del(&list, node, f_del);
 	}
 	htbl->arr[idx] = list;
 }
@@ -179,7 +179,7 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 		idx++;
 	}
 
-	ft_lst_del(iter, NULL);
+	ft_lst_del(iter);
 	__del_htable_array(htbl, NULL);
 
 	htbl->arr = new_htbl.arr;
@@ -331,7 +331,7 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 		return (NULL);
 	}
 
-	if (NULL == (queue = ft_queue_init())) {
+	if (NULL == (queue = ft_queue_create())) {
 		return (NULL);
 	}
 
@@ -345,7 +345,7 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 		}
 	}
 
-	iter = ft_queue_peek(queue);
+	iter = ft_queue_first(queue);
 	LIBFT_FREE(queue);
 
 	return (iter);

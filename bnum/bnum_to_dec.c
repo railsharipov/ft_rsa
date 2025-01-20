@@ -26,7 +26,7 @@ char	*bnum_to_dec(const t_num *num)
 	list = __get_decimal_digit_list(num);
 	s = __get_decimal_num_string(list);
 
-	ft_lst_del(list, __f_del_content);
+	ft_lst_del_with_f_del(list, __f_del_content);
 
 	return (s);
 }

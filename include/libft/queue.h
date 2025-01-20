@@ -23,14 +23,20 @@ typedef struct		s_queue
 	t_node			*last;
 }					t_queue;
 
-t_queue		*ft_queue_init(void);
+t_queue		*ft_queue_create(void);
 void		ft_queue_enqueue(t_queue *, const char *, void *, size_t);
+void		ft_queue_enqueue_node(t_queue *, t_node *);
 void		*ft_queue_dequeue(t_queue *);
-t_node		*ft_queue_peek(t_queue *);
+t_node		*ft_queue_dequeue_node(t_queue *);
+t_node		*ft_queue_first(t_queue *);
+t_node		*ft_queue_last(t_queue *);
 int			ft_queue_is_empty(t_queue *);
 int			ft_queue_size(t_queue *);
-void		ft_queue_del(t_queue *, FUNC_CONTENT_DEL);
-void		ft_queue_del_node(t_queue *, t_node *, FUNC_CONTENT_DEL);
-t_htbl		*ft_queue_htable(t_queue *);
+void		ft_queue_del(t_queue *);
+void		ft_queue_del_with_f_del(t_queue *, FUNC_CONTENT_DEL);
+void		ft_queue_del_node(t_queue *, t_node *);
+void		ft_queue_del_node_with_f_del(t_queue *, t_node *, FUNC_CONTENT_DEL);
+t_htbl		*ft_queue_to_htable(t_queue *);
+t_node		*ft_queue_pop_list(t_queue *);
 
 #endif

@@ -5,7 +5,8 @@
 #include <libft/logger.h>
 #include <libft/string.h>
 #include <libft/list.h>
-
+#include <libft/tuple.h>
+#include <libft/queue.h>
 /*
 **	VALUE	=	OBJ | ARR | STR | NUM | BOOL | NULL
 **	NULL	=	null
@@ -281,9 +282,9 @@ static int	__parse_number(const char *s, t_node *node)
 
 static int	__parse_string(const char *s, t_node *node)
 {
-	size_t old_pos;
-	size_t str_start, str_end;
-	int status;
+	size_t 	old_pos;
+	size_t 	str_start, str_end;
+	int 	status;
 
 	old_pos = __pos;
 	__skip_ws(s);
@@ -324,114 +325,173 @@ static int	__parse_string(const char *s, t_node *node)
 
 static int	__parse_kv(const char *s, t_node *node)
 {
-	size_t old_pos;
-	int status;
+	t_node	*key_node, *value_node;
+	size_t 	old_pos;
+	int 	status;
 
+	status = JSON_NO_MATCH;
 	old_pos = __pos;
 
 	JSON_LOG(TRACE, "parsing key-value at index %zu: %.20s...", __pos, s + __pos);
 
-	if (JSON_MATCH != (status = __parse_string(s, node))) {
+	key_node = ft_node_create();
+	value_node = ft_node_create();
+
+	if (JSON_MATCH != (status = __parse_string(s, key_node))) {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		return (status);
+		goto label_exit;
 	}
 	__skip_ws(s);
 
 	if (s[__pos] != ':') {
 		JSON_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected ':', got '%c'", __pos, s + __pos, s[__pos]);
-		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		status = JSON_BAD_FORMAT;
+		goto label_exit;
 	}
 	__pos++;
 
-	if (JSON_MATCH != (status = __parse_value(s, node))) {
+	if (JSON_MATCH != (status = __parse_value(s, value_node))) {
 		JSON_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected value", __pos, s + __pos);
-		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		goto label_exit;
 	}
-	return (JSON_MATCH);
+
+	node->type = JSON_KV;
+	node->content = ft_tuple_new(key_node, sizeof(t_node), value_node, sizeof(t_node));
+	node->size = sizeof(t_tuple);
+	node->f_del_content = json_get_f_del(JSON_KV);
+
+	status = JSON_MATCH;
+
+label_exit:
+	if (status != JSON_MATCH) {
+		__pos = old_pos;
+	}
+	ft_node_del(key_node);
+	ft_node_del(value_node);
+
+	return (status);
 }
 
 static int	__parse_object(const char *s, t_node *node)
 {
-	size_t old_pos;
-	int status;
+	t_queue	*kv_node_queue;
+	size_t  old_pos;
+	int     status;
 
 	old_pos = __pos;
 	__skip_ws(s);
 
 	JSON_LOG(TRACE, "parsing object at index %zu: %.20s...", __pos, s + __pos);
 
+	kv_node_queue = ft_queue_create();
+
 	if (s[__pos] != '{') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		return (JSON_NO_MATCH);
+		status = JSON_NO_MATCH;
+		goto label_exit;
 	}
 	__pos++;
 
-	if (JSON_MATCH != (status = __parse_kv(s, node))) {
+	ft_queue_enqueue_node(kv_node_queue, ft_node_create());
+
+	if (JSON_MATCH != (status = __parse_kv(s, ft_queue_first(kv_node_queue)))) {
 		JSON_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
-		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		goto label_exit;
 	}
 	__skip_ws(s);
 
 	while (s[__pos] == ',') {
 		__pos++;
 
-		if (JSON_MATCH != (status = __parse_kv(s, node))) {
+		ft_queue_enqueue_node(kv_node_queue, ft_node_create());
+
+		if (JSON_MATCH != (status = __parse_kv(s, ft_queue_first(kv_node_queue)))) {
 			JSON_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
-			__pos = old_pos;
-			return (JSON_BAD_FORMAT);
+			goto label_exit;
 		}
 		__skip_ws(s);
 	}
 	if (s[__pos] != '}') {
 		JSON_LOG(ERROR, "bad object format at index %d, %.20s...: expected '}', got '%c'", __pos, s + __pos, s[__pos]);
-		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		status = JSON_BAD_FORMAT;
+		goto label_exit;
 	}
 	__pos++;
-	return (JSON_MATCH);
+
+	node->type = JSON_OBJECT;
+	node->content = ft_queue_pop_list(kv_node_queue);
+	node->size = sizeof(t_node);
+	node->f_del_content = json_delete_object;
+
+	status = JSON_MATCH;
+
+label_exit:
+	if (status != JSON_MATCH) {
+		__pos = old_pos;
+	}
+	ft_queue_del(kv_node_queue);
+
+	return (status);
 }
 
 static int	__parse_array(const char *s, t_node *node)
 {
-	size_t old_pos;
-	int status;
+	t_queue	*value_node_queue;
+	size_t	old_pos;
+	int 	status;
 
 	old_pos = __pos;
 	__skip_ws(s);
 
 	JSON_LOG(TRACE, "parsing array at index %zu: %.20s...", __pos, s + __pos);
 
+	value_node_queue = ft_queue_create();
+
 	if (s[__pos] != '[') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		return (JSON_NO_MATCH);
+		status = JSON_NO_MATCH;
+		goto label_exit;
 	}
 	__pos++;
 
-	if (JSON_MATCH != (status = __parse_value(s, node))) {
+	ft_queue_enqueue_node(value_node_queue, ft_node_create());
+
+	if (JSON_MATCH != (status = __parse_value(s, ft_queue_first(value_node_queue)))) {
 		JSON_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", __pos, s + __pos);
-		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		goto label_exit;
 	}
 	__skip_ws(s);
 
 	while (s[__pos] == ',') {
 		__pos++;
 
-		if (JSON_MATCH != (status = __parse_value(s, node))) {
+		ft_queue_enqueue_node(value_node_queue, ft_node_create());
+
+		if (JSON_MATCH != (status = __parse_value(s, ft_queue_first(value_node_queue)))) {
 			JSON_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", __pos, s + __pos);
-			__pos = old_pos;
-			return (JSON_BAD_FORMAT);
+			goto label_exit;
 		}
 		__skip_ws(s);
 	}
 	if (s[__pos] != ']') {
 		JSON_LOG(ERROR, "bad array format at index %d, %.20s...: expected ']', got '%c'", __pos, s + __pos, s[__pos]);
-		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		status = JSON_BAD_FORMAT;
+		goto label_exit;
 	}
 	__pos++;
-	return (JSON_MATCH);
+
+	node->type = JSON_ARRAY;
+	node->content = ft_queue_pop_list(value_node_queue);
+	node->size = sizeof(t_node);
+	node->f_del_content = json_get_f_del(JSON_ARRAY);
+
+	status = JSON_MATCH;
+
+label_exit:
+	if (status != JSON_MATCH) {
+		__pos = old_pos;
+	}
+	ft_queue_del(value_node_queue);
+
+	return (status);
 }

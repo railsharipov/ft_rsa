@@ -22,13 +22,17 @@ typedef struct	s_stack
 	t_node		*top;
 }				t_stack;
 
-t_stack		*ft_stack_init(void);
+t_stack		*ft_stack_create(void);
 void		*ft_stack_pop(t_stack *);
+t_node		*ft_stack_pop_node(t_stack *);
 void		ft_stack_push(t_stack *, const char *, void *, size_t);
+void		ft_stack_push_node(t_stack *, t_node *);
 t_node		*ft_stack_peek(t_stack *);
 int 		ft_stack_is_empty(t_stack *);
 int 		ft_stack_size(t_stack *);
-void		ft_stack_del(t_stack *, FUNC_CONTENT_DEL);
-t_htbl		*ft_stack_htable(t_stack *);
+void		ft_stack_del(t_stack *);
+void		ft_stack_del_with_f_del(t_stack *, FUNC_CONTENT_DEL);
+t_htbl		*ft_stack_to_htable(t_stack *);
+t_node		*ft_stack_pop_list(t_stack *);
 
 #endif

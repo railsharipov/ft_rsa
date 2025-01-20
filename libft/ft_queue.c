@@ -15,7 +15,7 @@
 #include <libft/list.h>
 #include <libft/alloc.h>
 
-t_queue	*ft_queue_init(void)
+t_queue	*ft_queue_create(void)
 {
 	t_queue	*new;
 
@@ -27,7 +27,6 @@ t_queue	*ft_queue_init(void)
 void	ft_queue_enqueue(t_queue *queue, const char *key, void *content, size_t size)
 {
 	t_node	*node;
-	t_node	*tmp;
 
 	if (NULL == queue) {
 		return ;
@@ -38,9 +37,22 @@ void	ft_queue_enqueue(t_queue *queue, const char *key, void *content, size_t siz
 		queue->last = node;
 		queue->first = node;
 	} else {
-		tmp = queue->last;
+		queue->last->next = node;
 		queue->last = node;
-		tmp->next = node;
+	}
+}
+
+void	ft_queue_enqueue_node(t_queue *queue, t_node *node)
+{
+	if (NULL == queue) {
+		return ;
+	}
+	if (NULL == queue->last) {
+		queue->last = node;
+		queue->first = node;
+	} else {
+		queue->last->next = node;
+		queue->last = node;
 	}
 }
 
@@ -67,12 +79,39 @@ void	*ft_queue_dequeue(t_queue *queue)
 	return (content);
 }
 
-t_node	*ft_queue_peek(t_queue *queue)
+t_node	*ft_queue_dequeue_node(t_queue *queue)
+{
+	t_node	*node;
+
+	if ((NULL == queue) || (NULL == queue->first)) {
+		return (NULL);
+	}
+	node = queue->first;
+
+	if (queue->first == queue->last) {
+		queue->first = NULL;
+		queue->last = NULL;
+	} else {
+		queue->first = queue->first->next;
+	}
+
+	return (node);
+}
+
+t_node	*ft_queue_first(t_queue *queue)
 {
 	if (NULL == queue) {
 		return (NULL);
 	}
 	return (queue->first);
+}
+
+t_node	*ft_queue_last(t_queue *queue)
+{
+	if (NULL == queue) {
+		return (NULL);
+	}
+	return (queue->last);
 }
 
 int		ft_queue_is_empty(t_queue *queue)
@@ -91,16 +130,25 @@ int		ft_queue_size(t_queue *queue)
 	return (ft_lst_size(queue->first));
 }
 
-void	ft_queue_del(t_queue *queue, FUNC_CONTENT_DEL f_del)
+void	ft_queue_del(t_queue *queue)
 {
 	if (NULL == queue) {
 		return ;
 	}
-	ft_lst_del(ft_queue_peek(queue), f_del);
+	ft_lst_del(ft_queue_first(queue));
 	LIBFT_FREE(queue);
 }
 
-void	ft_queue_del_node(t_queue *queue, t_node *node, FUNC_CONTENT_DEL f_del)
+void	ft_queue_del_with_f_del(t_queue *queue, FUNC_CONTENT_DEL f_del)
+{
+	if (NULL == queue) {
+		return ;
+	}
+	ft_lst_del_with_f_del(ft_queue_first(queue), f_del);
+	LIBFT_FREE(queue);
+}
+
+void	ft_queue_del_node(t_queue *queue, t_node *node)
 {
 	t_node *cur;
 	t_node *prev;
@@ -126,13 +174,53 @@ void	ft_queue_del_node(t_queue *queue, t_node *node, FUNC_CONTENT_DEL f_del)
 	if (cur == queue->last) {
 		queue->last = prev;
 	}
-	ft_node_del(cur, f_del);
+	ft_node_del(cur);
 }
 
-t_htbl	*ft_queue_htable(t_queue *queue)
+void	ft_queue_del_node_with_f_del(t_queue *queue, t_node *node, FUNC_CONTENT_DEL f_del)
+{
+	t_node *cur;
+	t_node *prev;
+
+	if (NULL == queue || NULL == queue->first || NULL == node) {
+		return ;
+	}
+	prev = NULL;
+	cur = queue->first;
+
+	while ((NULL != cur) && (node != cur)) {
+		prev = cur;
+		cur = cur->next;
+	}
+	if (NULL == cur) {
+		return ;
+	}
+	if (NULL == prev) {
+		queue->first = cur->next;
+	} else {
+		prev->next = cur->next;
+	}
+	if (cur == queue->last) {
+		queue->last = prev;
+	}
+	ft_node_del_with_f_del(cur, f_del);
+}
+
+t_htbl	*ft_queue_to_htable(t_queue *queue)
 {
 	if (NULL == queue) {
 		return (NULL);
 	}
-	return (ft_lst_htable(ft_queue_peek(queue)));
+	return (ft_lst_to_htable(ft_queue_first(queue)));
+}
+
+t_node	*ft_queue_pop_list(t_queue *queue)
+{
+	t_node	*node;
+
+	node = ft_queue_first(queue);
+	queue->first = NULL;
+	queue->last = NULL;
+
+	return (node);
 }
