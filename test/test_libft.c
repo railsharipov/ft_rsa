@@ -11,6 +11,7 @@
 #include <libft/list.h>
 #include <libft/stack.h>
 #include <libft/queue.h>
+#include <libft/tuple.h>
 #include <libft/ntree.h>
 #include <libft/2darray.h>
 #include <libft/bytes.h>
@@ -66,6 +67,7 @@ static int __test_ft_node(void);
 static int __test_ft_list(void);
 static int __test_ft_stack(void);
 static int __test_ft_queue(void);
+static int __test_ft_tuple(void);
 static int __test_ft_htbl(void);
 static int __test_ft_htbl_rawkey(void);
 static int __test_ft_htbl_conversion(void);
@@ -123,6 +125,7 @@ int test_libft(void)
 	res |= __test_ft_list();
 	res |= __test_ft_stack();
 	res |= __test_ft_queue();
+	res |= __test_ft_tuple();
 	res |= __test_ft_htbl();
 	res |= __test_ft_htbl_rawkey();
 	res |= __test_ft_htbl_conversion();
@@ -1757,6 +1760,61 @@ static int __test_ft_queue(void)
 	pass |= TEST_ASSERT(node == NULL);
 
 	ft_queue_del(queue, NULL);
+
+	if (SSL_OK == pass) {
+		return (TEST_PASS());
+	}
+
+	return (TEST_FAIL());
+}
+
+static int __test_ft_tuple(void)
+{
+	t_tuple *tuple;
+	const char *head_content = "head";
+	const char *tail_content = "tail";
+	size_t head_size = ft_strlen(head_content);
+	size_t tail_size = ft_strlen(tail_content);
+
+	int pass = SSL_OK;
+
+	tuple = ft_tuple_new((void *)head_content, head_size, (void *)tail_content, tail_size);
+	pass |= TEST_ASSERT(tuple != NULL);
+	pass |= TEST_ASSERT(tuple->head != NULL);
+	pass |= TEST_ASSERT(tuple->tail != NULL);
+	pass |= TEST_ASSERT(tuple->head->content != NULL);
+	pass |= TEST_ASSERT(tuple->tail->content != NULL);
+	pass |= TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
+	pass |= TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
+	pass |= TEST_ASSERT(tuple->head->size == head_size);
+	pass |= TEST_ASSERT(tuple->tail->size == tail_size);
+	ft_tuple_del(tuple);
+
+	tuple = ft_tuple_new_with_f_del((void *)ft_strdup(head_content), head_size, (void *)ft_strdup(tail_content), tail_size, free);
+	pass |= TEST_ASSERT(tuple != NULL);
+	pass |= TEST_ASSERT(tuple->head != NULL);
+	pass |= TEST_ASSERT(tuple->tail != NULL);
+	pass |= TEST_ASSERT(tuple->head->content != NULL);
+	pass |= TEST_ASSERT(tuple->tail->content != NULL);
+	pass |= TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
+	pass |= TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
+	pass |= TEST_ASSERT(tuple->head->size == head_size);
+	pass |= TEST_ASSERT(tuple->tail->size == tail_size);
+	pass |= TEST_ASSERT(tuple->head->f_del_content == free);
+	pass |= TEST_ASSERT(tuple->tail->f_del_content == free);
+	ft_tuple_del(tuple);
+
+	tuple = ft_tuple_new_with_f_del((void *)ft_strdup(head_content), head_size, (void *)ft_strdup(tail_content), tail_size, NULL);
+	pass |= TEST_ASSERT(tuple->head->f_del_content == NULL);
+	pass |= TEST_ASSERT(tuple->tail->f_del_content == NULL);
+	ft_tuple_del_with_f_del(tuple, free);
+
+	tuple = ft_tuple_new((void *)head_content, head_size, (void *)tail_content, tail_size);
+	pass |= TEST_ASSERT(ft_tuple_get(tuple, 0) != NULL);
+	pass |= TEST_ASSERT(ft_tuple_get(tuple, 1) != NULL);
+	pass |= TEST_ASSERT(ft_strcmp(ft_tuple_get(tuple, 0), head_content) == 0);
+	pass |= TEST_ASSERT(ft_strcmp(ft_tuple_get(tuple, 1), tail_content) == 0);
+	ft_tuple_del(tuple);
 
 	if (SSL_OK == pass) {
 		return (TEST_PASS());

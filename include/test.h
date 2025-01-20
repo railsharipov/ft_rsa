@@ -9,20 +9,13 @@
 
 # define TEST_LOG(LEVEL, MES, ...)	test_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-# define TEST_ENABLE_VERBOSE
+// # define TEST_ENABLE_ASSERT_PASS_LOG
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 
-# ifdef TEST_ENABLE_VERBOSE
-#  define TEST_INFO(MODULE_ID)				test_info(MODULE_ID, SSL_TRUE);
-#  define TEST_SUMMARY(RES_ARR, ARR_SIZE)	test_summary(RES_ARR, ARR_SIZE, SSL_TRUE);
-#  define TEST_RESULT(RES, __FUN, __FIL)	test_result(RES, SSL_TRUE, __FUN, __FIL)
-#  define TEST_ASSERT(EXPR)					test_assert((EXPR), __func__, __FILE__, __LINE__)
-# else
-#  define TEST_LOG(INFO, MODULE_ID)				test_info(MODULE_ID, SSL_FALSE);
-#  define TEST_SUMMARY(RES_ARR, ARR_SIZE)	test_summary(RES_ARR, ARR_SIZE, SSL_FALSE);
-#  define TEST_RESULT(RES, __FUN, __FIL)	test_result(RES, SSL_FALSE, __FUN, __FIL)
-#  define TEST_ASSERT(EXPR)					test_assert((EXPR), __func__, NULL, NULL)
-# endif
+# define TEST_INFO(MODULE_ID)				test_info(MODULE_ID, SSL_TRUE);
+# define TEST_SUMMARY(RES_ARR, ARR_SIZE)	test_summary(RES_ARR, ARR_SIZE, SSL_TRUE);
+# define TEST_RESULT(RES, __FUN, __FIL)	test_result(RES, SSL_TRUE, __FUN, __FIL)
+# define TEST_ASSERT(EXPR)					test_assert((EXPR), __func__, __FILE__, __LINE__)
 
 # define TEST_PASS()		TEST_RESULT(SSL_OK, __func__, __FILE__)
 # define TEST_FAIL()		TEST_RESULT(SSL_ERR, __func__, __FILE__)

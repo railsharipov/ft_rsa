@@ -3,21 +3,22 @@
 
 int	test_assert(int bool, const char *func, const char *file, int line)
 {
-	if (bool) {
-		return (SSL_OK);
-	}
-
-	if (NULL == func || NULL == file) {
+	if (NULL == func) {
 		return (SSL_ERR);
 	}
-
-	ft_printf("%@%s, %s:%d: ", func, file, line);
-
-	if (errno) {
-		perror(NULL);
+	if (bool) {
+#ifdef TEST_ENABLE_ASSERT_PASS_LOG
+		ft_printf("%@%s, %s:%d: " TXT_GREEN("ASSERT PASS\n"), func, file, line);
+#endif
+		return (SSL_OK);
 	} else {
-		ft_printf("%@" TXT_RED("ASSERT FAIL\n"));
-	}
+		ft_printf("%@%s, %s:%d: ", func, file, line);
 
-	return (SSL_ERR);
+		if (errno) {
+			perror(NULL);
+		} else {
+			ft_printf("%@" TXT_RED("ASSERT FAIL\n"));
+		}
+		return (SSL_ERR);
+	}
 }

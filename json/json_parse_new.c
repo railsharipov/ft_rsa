@@ -69,7 +69,7 @@ int json_parse_new(const char *s, t_node **node)
 		return (SSL_ERR);
 	}
 	*node = json_node;
-	
+
 	return (SSL_OK);
 }
 
@@ -256,7 +256,7 @@ static int	__parse_number(const char *s, t_node *node)
 	}
 
 	mantissa_str = ft_strsub(s, mantissa_start, mantissa_end - mantissa_start);
-	mantissa = bnum_new_from_str(mantissa_str);
+	mantissa = bnum_from_dec(mantissa_str);
 	LIBFT_FREE(mantissa_str);
 
 	number = bnum_create();
