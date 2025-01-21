@@ -22,9 +22,8 @@ enum e_json_type {
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int     json_parse(const char *s, t_node **node);
-int     json_parse_new(const char *s, t_node **node);
+int     json_parse(const char *s, t_node **node);
 void	json_del(t_node *node);
-void	json_delete_object(void *content);
 
 FUNC_CONTENT_DEL	json_get_f_del(enum e_json_type);
 

@@ -14,8 +14,8 @@
 
 # define TEST_INFO(MODULE_ID)				test_info(MODULE_ID, SSL_TRUE);
 # define TEST_SUMMARY(RES_ARR, ARR_SIZE)	test_summary(RES_ARR, ARR_SIZE, SSL_TRUE);
-# define TEST_RESULT(RES, __FUN, __FIL)	test_result(RES, SSL_TRUE, __FUN, __FIL)
-# define TEST_ASSERT(EXPR)					test_assert((EXPR), __func__, __FILE__, __LINE__)
+# define TEST_RESULT(RES, __FUN, __FIL)		test_result(RES, SSL_TRUE, __FUN, __FIL)
+# define TEST_ASSERT(EXPR)					test_assert((EXPR), #EXPR, __func__, __FILE__, __LINE__)
 
 # define TEST_PASS()		TEST_RESULT(SSL_OK, __func__, __FILE__)
 # define TEST_FAIL()		TEST_RESULT(SSL_ERR, __func__, __FILE__)
@@ -41,7 +41,7 @@ extern const size_t		TEST_DESC_ARR_SIZE;
 int		test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int		test_info(int module_id, int verbose);
-int		test_assert(int boolean, const char *func, const char *file, int line);
+int		test_assert(int boolean, const char *expr, const char *func, const char *file, int line);
 int		test_get_file_content(const char *testfile_path, t_ostring *ostring);
 int		test_result(int res, int verbose, const char *func_name, const char *file_name);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);

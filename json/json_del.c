@@ -51,12 +51,6 @@ static void __delete_array(void *content)
 static void __delete_object(void *content)
 {
 	JSON_LOG(TRACE, "deleting object");
-	ft_htbl_del((t_htbl *)(content));
-}
-
-void json_delete_object(void *content)
-{
-	JSON_LOG(TRACE, "deleting object");
 	ft_lst_del((t_node *)(content));
 }
 

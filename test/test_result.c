@@ -6,10 +6,10 @@ int	test_result(
 {
 	if (verbose) {
 		if (SSL_OK == res) {
-			ft_printf("%@%s: " TXT_GREEN("TEST OK\n"), func_name);
+			ft_printf("%@%s: " TXT_B_GREEN("TEST OK\n"), func_name);
+		} else {
+			ft_printf("%@%s: " TXT_B_RED("TEST FAIL\n"), func_name);
 		}
-		else
-			ft_printf("%@%s: " TXT_RED("TEST FAIL\n"), func_name);
 	}
 	(void)file_name;
 

@@ -132,8 +132,6 @@ static int __test_json_query(void)
 	// assert(json_s[0] == '[');
 	// assert(json_s[json_slen - 1] == ']');
 
-	
-
 	return (TEST_PASS());
 }
 
@@ -194,6 +192,9 @@ static int	__test_json_parse_simple_number(void)
 	ret = json_parse(json_s, &node);
 	pass |= TEST_ASSERT(SSL_OK == ret);
 
+	if (node == NULL) {
+		return (TEST_FAIL());
+	}
 	ref_num = bnum_from_dec(json_s);
 
 	pass |= TEST_ASSERT(node->type == JSON_NUMBER);
@@ -237,9 +238,9 @@ static int	__test_json_parse_simple_boolean(void)
 	}
 
 	pass |= TEST_ASSERT(node->type == JSON_BOOLEAN);
-	pass |= TEST_ASSERT(node->size == sizeof(uint8_t));
+	pass |= TEST_ASSERT(node->size == 5);
 	pass |= TEST_ASSERT(node->content != NULL);
-	pass |= TEST_ASSERT(*(uint8_t *)node->content == 0u);
+	pass |= TEST_ASSERT(ft_strcmp(node->content, "false") == 0);
 	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
 	SSL_FREE(json_s);
@@ -259,9 +260,9 @@ static int	__test_json_parse_simple_boolean(void)
 	}
 
 	pass |= TEST_ASSERT(node->type == JSON_BOOLEAN);
-	pass |= TEST_ASSERT(node->size == sizeof(uint8_t));
+	pass |= TEST_ASSERT(node->size == 4);
 	pass |= TEST_ASSERT(node->content != NULL);
-	pass |= TEST_ASSERT(*(uint8_t *)node->content == 1u);
+	pass |= TEST_ASSERT(ft_strcmp(node->content, "true") == 0);
 	pass |= TEST_ASSERT(node->f_del_content != NULL);
 
 	SSL_FREE(json_s);
@@ -323,7 +324,7 @@ static int	__test_json_parse_complex_object_no_ws(void)
 	json_s = ft_ostr_to_cstr(&__complex_object_no_ws_json, 0, __complex_object_no_ws_json.size);
 	json_slen = ft_strlen(json_s);
 
-	ret = json_parse_new(json_s, &node);
+	ret = json_parse(json_s, &node);
 	pass |= TEST_ASSERT(SSL_OK == ret);
 
 	SSL_FREE(json_s);
