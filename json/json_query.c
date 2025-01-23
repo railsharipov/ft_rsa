@@ -1,26 +1,46 @@
-// #include <json.h>
-// #include <bnum.h>
-// #include <libft/htable.h>
-// #include <libft/alloc.h>
-// #include <libft/logger.h>
-// #include <libft/string.h>
-// #include <libft/list.h>
+#include <json.h>
+#include <bnum.h>
+#include <libft/htable.h>
+#include <libft/alloc.h>
+#include <libft/logger.h>
+#include <libft/string.h>
+#include <libft/list.h>
 
-// enum e_select_type {
-// 	JSON_SELECT_KEY = 0,
-// 	JSON_SELECT_INDEX,
-// 	JSON_INVALID_SELECTOR
-// };
+/*
+**	QUERY ::= SEQUENCE {
+**		selectors SEQUENCE OF SELECTOR
+**	}
+**
+**	SELECTOR ::= CHOICE {
+**		key KEY,
+**		keyWithIndex SEQUENCE {
+**			key KEY,
+**			index INDEX
+**		}
+**	}
+**
+**	KEY ::= "." UTF8String (SIZE(1..MAX))
+**
+**	INDEX ::= "[" INTEGER (0..MAX) "]"
+*/
 
-// struct	s_selector {
-// 	enum e_select_type	type;
-// 	char				*key;
-// };
+enum e_json_q_type {
+	JSON_Q_OBJECT = 0,
+	JSON_Q_ARRAY,
+	JSON_Q_ANY,
+	JSON_Q_INVALID
+};
 
-// struct t_node *__get_selectors(t_node *node, const char *s);
-// ssize_t __get_object_by_key(t_node *node, const char *s, t_node **ret_node);
-// ssize_t __get_object_by_selector(t_node *node, const char *s, t_node **ret_node);
-// ssize_t __get_string_key(const char *s, char **ret);
+struct	s_json_query {
+	enum e_json_q_type	type;
+	char				*key;
+	int					index;
+};
+
+struct t_node *__get_selectors(t_node *node, const char *s);
+ssize_t __get_object_by_key(t_node *node, const char *s, t_node **ret_node);
+ssize_t __get_object_by_selector(t_node *node, const char *s, t_node **ret_node);
+ssize_t __get_string_key(const char *s, char **ret);
 
 // t_node *json_query(t_node *json_node, const char *s)
 // {
@@ -357,11 +377,6 @@
 // 	*ret_node = lst;
 // 	return (idx);
 
-// err:
-// 	SSL_FREE(num_str);
-// 	*ret_node = NULL;
-// 	return (-1);
-// }
 // err:
 // 	SSL_FREE(num_str);
 // 	*ret_node = NULL;

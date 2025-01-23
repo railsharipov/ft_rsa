@@ -1,23 +1,18 @@
 #include <common.h>
 #include <test.h>
 
-int	test_assert(int bool, const char *expr, const char *func, const char *file, int line)
+int	test_assert(int bool, const char *expr)
 {
-	if (NULL == func) {
-		return (SSL_ERR);
-	}
 	if (bool) {
 #ifdef TEST_ENABLE_ASSERT_PASS_LOG
-		ft_printf("%@%s, %s:%d: " TXT_GREEN("ASSERT PASS") " (%s)\n", func, file, line, expr);
+		TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", expr);
 #endif
 		return (SSL_OK);
 	} else {
-		ft_printf("%@%s, %s:%d: ", func, file, line);
+		TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", expr);
 
 		if (errno) {
-			perror(NULL);
-		} else {
-			ft_printf("%@" TXT_RED("ASSERT FAIL") " (%s)\n", expr);
+			TEST_LOG(ERROR, "%s", strerror(errno));
 		}
 		return (SSL_ERR);
 	}

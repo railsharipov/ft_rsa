@@ -75,63 +75,63 @@ static int __test_ft_ntree(void);
 
 int test_libft(void)
 {
-	int	res = SSL_OK;
+	int		ret;
 
 	if (SSL_OK != __test_libft_setup()) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
-		return (SSL_ERR);
+		TEST_FAIL();
 	}
 
-	res |= __test_ft_strlen();
-	res |= __test_ft_strcmp();
-	res |= __test_ft_strncmp();
-	res |= __test_ft_strcpy();
-	res |= __test_ft_strncpy();
-	res |= __test_ft_strcat();
-	res |= __test_ft_strncat();
-	res |= __test_ft_strdup();
-	res |= __test_ft_strsub();
-	res |= __test_ft_strchr();
-	res |= __test_ft_strrchr();
-	res |= __test_ft_strjoin();
-	res |= __test_ft_strrev();
-	res |= __test_ft_strlow();
-	res |= __test_ft_strup();
-	res |= __test_ft_2darray_len();
-	res |= __test_ft_2darray_strjoin();
-	res |= __test_ft_strsplit();
-	res |= __test_ft_atoi();
-	res |= __test_ft_memcmp();
-	res |= __test_ft_memcpy();
-	res |= __test_ft_memdup();
-	res |= __test_ft_memmove();
-	res |= __test_ft_memset();
-	res |= __test_ft_bzero();
-	res |= __test_ft_memzcpy();
-	res |= __test_ft_itoa_base();
-	res |= __test_ft_itoa();
-	res |= __test_ft_printf();
-	res |= __test_ft_str_isalnum();
-	res |= __test_ft_str_isalpha();
-	res |= __test_ft_str_isascii();
-	res |= __test_ft_str_isdigit();
-	res |= __test_ft_str_ishex();
-	res |= __test_ft_str_isprint();
-	res |= __test_ft_bytes_to_hex();
-	res |= __test_ft_hex_to_bytes();
-	res |= __test_ft_uint_to_bytes();
-	res |= __test_get_next_line();
-	res |= __test_ft_node();
-	res |= __test_ft_list();
-	res |= __test_ft_stack();
-	res |= __test_ft_queue();
-	res |= __test_ft_tuple();
-	res |= __test_ft_htbl();
-	res |= __test_ft_htbl_rawkey();
-	res |= __test_ft_htbl_conversion();
-	res |= __test_ft_ntree();
+	ret = __test_ft_strlen()
+		| __test_ft_strcmp()
+		| __test_ft_strncmp()
+		| __test_ft_strcpy()
+		| __test_ft_strncpy()
+		| __test_ft_strcat()
+		| __test_ft_strncat()
+		| __test_ft_strdup()
+		| __test_ft_strsub()
+		| __test_ft_strchr()
+		| __test_ft_strrchr()
+		| __test_ft_strjoin()
+		| __test_ft_strrev()
+		| __test_ft_strlow()
+		| __test_ft_strup()
+		| __test_ft_2darray_len()
+		| __test_ft_2darray_strjoin()
+		| __test_ft_strsplit()
+		| __test_ft_atoi()
+		| __test_ft_memcmp()
+		| __test_ft_memcpy()
+		| __test_ft_memdup()
+		| __test_ft_memmove()
+		| __test_ft_memset()
+		| __test_ft_bzero()
+		| __test_ft_memzcpy()
+		| __test_ft_itoa_base()
+		| __test_ft_itoa()
+		| __test_ft_printf()
+		| __test_ft_str_isalnum()
+		| __test_ft_str_isalpha()
+		| __test_ft_str_isascii()
+		| __test_ft_str_isdigit()
+		| __test_ft_str_ishex()
+		| __test_ft_str_isprint()
+		| __test_ft_bytes_to_hex()
+		| __test_ft_hex_to_bytes()
+		| __test_ft_uint_to_bytes()
+		| __test_get_next_line()
+		| __test_ft_node()
+		| __test_ft_list()
+		| __test_ft_stack()
+		| __test_ft_queue()
+		| __test_ft_tuple()
+		| __test_ft_htbl()
+		| __test_ft_htbl_rawkey()
+		| __test_ft_htbl_conversion()
+		| __test_ft_ntree();
 
-	return (res);
+	return (ret);
 }
 
 static int	__test_libft_setup(void)
@@ -159,41 +159,31 @@ static int	__test_ft_strlen(void)
 {
 	size_t	test_value;
 	size_t	ref_value;
-	int		pass = SSL_OK;
 
 	ref_value = strlen(__s1);
 	test_value = ft_strlen(__s1);
 
-	pass |= TEST_ASSERT(test_value == ref_value);
-	pass |= TEST_ASSERT(ft_strlen("") == 0);
-	pass |= TEST_ASSERT(ft_strlen(NULL) == 0);
+	TEST_ASSERT(test_value == ref_value);
+	TEST_ASSERT(ft_strlen("") == 0);
+	TEST_ASSERT(ft_strlen(NULL) == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_ft_strcmp(void)
 {
 	char	*ref_str = "elevator";
-	int		pass = SSL_OK;
 
-	pass |= TEST_ASSERT(ft_strcmp(ref_str, ref_str) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(ref_str, "") > 0);
-	pass |= TEST_ASSERT(ft_strcmp("", ref_str) < 0);
-	pass |= TEST_ASSERT(ft_strcmp("", "") == 0);
-	pass |= TEST_ASSERT(ft_strcmp(ref_str, "not elevator") < 0);
-	pass |= TEST_ASSERT(ft_strcmp("not elevator", ref_str) > 0);
-	pass |= TEST_ASSERT(ft_strcmp(ref_str, "elevators") < 0);
-	pass |= TEST_ASSERT(ft_strcmp("elevators", ref_str) > 0);
+	TEST_ASSERT(ft_strcmp(ref_str, ref_str) == 0);
+	TEST_ASSERT(ft_strcmp(ref_str, "") > 0);
+	TEST_ASSERT(ft_strcmp("", ref_str) < 0);
+	TEST_ASSERT(ft_strcmp("", "") == 0);
+	TEST_ASSERT(ft_strcmp(ref_str, "not elevator") < 0);
+	TEST_ASSERT(ft_strcmp("not elevator", ref_str) > 0);
+	TEST_ASSERT(ft_strcmp(ref_str, "elevators") < 0);
+	TEST_ASSERT(ft_strcmp("elevators", ref_str) > 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_ft_strncmp(void)
@@ -201,25 +191,20 @@ static int	__test_ft_strncmp(void)
 	char	*ref_str = "elevator";
 	size_t	ref_size = strlen(ref_str);
 	size_t	test_size = ref_size / 2;
-	int		pass = SSL_OK;
 
-	pass |= TEST_ASSERT(ft_strncmp(ref_str, ref_str, ref_size) == 0);
-	pass |= TEST_ASSERT(ft_strncmp(ref_str, ref_str, test_size) == 0);
-	pass |= TEST_ASSERT(ft_strncmp(ref_str, ref_str, 2 * ref_size) == 0);
-	pass |= TEST_ASSERT(ft_strncmp(ref_str, "", test_size) > 0);
-	pass |= TEST_ASSERT(ft_strncmp("", ref_str, test_size) < 0);
-	pass |= TEST_ASSERT(ft_strncmp("", "", test_size) == 0);
-	pass |= TEST_ASSERT(ft_strncmp("", "", 0) == 0);
-	pass |= TEST_ASSERT(ft_strncmp(ref_str, "not elevator", test_size) < 0);
-	pass |= TEST_ASSERT(ft_strncmp("not elevator", ref_str, test_size) > 0);
-	pass |= TEST_ASSERT(ft_strncmp(ref_str, "elevators", ref_size) == 0);
-	pass |= TEST_ASSERT(ft_strncmp("elevators", ref_str, ref_size) == 0);
+	TEST_ASSERT(ft_strncmp(ref_str, ref_str, ref_size) == 0);
+	TEST_ASSERT(ft_strncmp(ref_str, ref_str, test_size) == 0);
+	TEST_ASSERT(ft_strncmp(ref_str, ref_str, 2 * ref_size) == 0);
+	TEST_ASSERT(ft_strncmp(ref_str, "", test_size) > 0);
+	TEST_ASSERT(ft_strncmp("", ref_str, test_size) < 0);
+	TEST_ASSERT(ft_strncmp("", "", test_size) == 0);
+	TEST_ASSERT(ft_strncmp("", "", 0) == 0);
+	TEST_ASSERT(ft_strncmp(ref_str, "not elevator", test_size) < 0);
+	TEST_ASSERT(ft_strncmp("not elevator", ref_str, test_size) > 0);
+	TEST_ASSERT(ft_strncmp(ref_str, "elevators", ref_size) == 0);
+	TEST_ASSERT(ft_strncmp("elevators", ref_str, ref_size) == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_ft_strcpy(void)
@@ -228,7 +213,6 @@ static int	__test_ft_strcpy(void)
 	char	test_str[total_len+1];
 	char	ref_str[total_len+1];
 	char	*temp_str;
-	int		pass = SSL_OK;
 
 	strcpy(ref_str, __s1);
 	strcpy(ref_str + __slen1, __s2);
@@ -236,28 +220,24 @@ static int	__test_ft_strcpy(void)
 	ft_strcpy(test_str, __s1);
 	ft_strcpy(test_str + __slen1, __s2);
 
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 
 	ft_strcpy(test_str, "");
 
-	pass |= TEST_ASSERT(strlen(test_str) == 0);
+	TEST_ASSERT(strlen(test_str) == 0);
 
 	bzero(test_str, total_len+1);
 	ft_strcpy(test_str, __s1);
 	ft_strcpy(test_str + __slen1, NULL);
 
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 
 	temp_str = NULL;
 	temp_str = ft_strcpy(temp_str, __s1);
 
-	pass |= TEST_ASSERT(NULL == temp_str);
+	TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_ft_strncpy(void)
@@ -267,7 +247,6 @@ static int	__test_ft_strncpy(void)
 	char	test_str[total_len+1];
 	char	ref_str[total_len+1];
 	char	*temp_str;
-	int		pass = SSL_OK;
 
 	bzero(ref_str, total_len+1);
 
@@ -277,32 +256,28 @@ static int	__test_ft_strncpy(void)
 	strcpy(test_str, __s1);
 	ft_strncpy(test_str + __slen1, __s2, len);
 
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 
 	ft_strncpy(test_str, __s2, 0);
 
-	pass |= TEST_ASSERT(strlen(test_str) == 0);
+	TEST_ASSERT(strlen(test_str) == 0);
 
 	strcpy(test_str, __s1);
 	ft_strncpy(test_str + __slen1, __s2, 2 * __slen2);
 
-	pass |= TEST_ASSERT(strlen(test_str) == total_len);
+	TEST_ASSERT(strlen(test_str) == total_len);
 
 	strcpy(test_str, __s1);
 	ft_strncpy(test_str + __slen1, NULL, len);
 
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 
 	temp_str = NULL;
 	temp_str = ft_strncpy(temp_str, __s1, len);
 
-	pass |= TEST_ASSERT(NULL == temp_str);
+	TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_ft_strcat(void)
@@ -311,8 +286,6 @@ static int	__test_ft_strcat(void)
 	char	test_str[total_len+1];
 	char	ref_str[total_len+1];
 	char	*temp_str;
-	int		pass = SSL_OK;
-
 
 	strcpy(ref_str, __s1);
 	strcat(ref_str, __s2);
@@ -320,27 +293,23 @@ static int	__test_ft_strcat(void)
 	strcpy(test_str, __s1);
 	ft_strcat(test_str, __s2);
 
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 
 	ft_strcat(test_str, "");
 
-	pass |= TEST_ASSERT(strlen(test_str) == total_len);
+	TEST_ASSERT(strlen(test_str) == total_len);
 
 	strcpy(test_str, __s1);
 	ft_strcat(test_str, NULL);
 
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 
 	temp_str = NULL;
 	temp_str = ft_strcat(temp_str, __s1);
 
-	pass |= TEST_ASSERT(NULL == temp_str);
+	TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_ft_strncat(void)
@@ -350,8 +319,6 @@ static int	__test_ft_strncat(void)
 	char 	test_str[total_len + 1];
 	char	ref_str[total_len+1];
 	char	*temp_str;
-	int		pass = SSL_OK;
-
 
 	strcpy(ref_str, __s1);
 	strncpy(ref_str + __slen1, __s2, len);
@@ -360,52 +327,43 @@ static int	__test_ft_strncat(void)
 	strcpy(test_str, __s1);
 	ft_strncat(test_str, __s2, len);
 
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 
 	ft_strncat(test_str, "", len);
 
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1 + len);
+	TEST_ASSERT(strlen(test_str) == __slen1 + len);
 
 	strcpy(test_str, __s1);
 	ft_strncat(test_str, NULL, len);
 
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 
 	temp_str = NULL;
 	temp_str = ft_strncat(temp_str, __s2, len);
 
-	pass |= TEST_ASSERT(NULL == temp_str);
+	TEST_ASSERT(NULL == temp_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strdup(void)
 {
 	char *test_str;
 	char *ref_str;
-	int pass = SSL_OK;
 
 	ref_str = strdup(__s1);
 	test_str = ft_strdup(__s1);
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 	free(test_str);
 
 	test_str = ft_strdup("");
-	pass |= TEST_ASSERT(strlen(test_str) == 0);
+	TEST_ASSERT(strlen(test_str) == 0);
 	free(test_str);
 
 	test_str = ft_strdup(NULL);
-	pass |= TEST_ASSERT(NULL == test_str);
+	TEST_ASSERT(NULL == test_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strsub(void)
@@ -414,78 +372,63 @@ static int __test_ft_strsub(void)
 	size_t offset = __slen2 / 5;
 	size_t len = MIN(10, __slen2 - offset);
 	char ref_str[len + 1];
-	int pass = SSL_OK;
 
 	bzero(ref_str, sizeof(ref_str));
 	strncpy(ref_str, __s2 + offset, len);
 	test_str = ft_strsub(__s2, offset, len);
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 	free(test_str);
 
 	test_str = ft_strsub(__s2, offset, 0);
-	pass |= TEST_ASSERT(strlen(test_str) == 0);
+	TEST_ASSERT(strlen(test_str) == 0);
 	free(test_str);
 
 	test_str = ft_strsub(NULL, offset, len);
-	pass |= TEST_ASSERT(NULL == test_str);
+	TEST_ASSERT(NULL == test_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strchr(void)
 {
 	char *test_str = "apple";
 	char *res = NULL;
-	int pass = SSL_OK;
 
 	res = ft_strchr(NULL, 'e');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strchr(test_str, 'z');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strchr("", 'e');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strchr(test_str, 'e');
-	pass |= TEST_ASSERT(res != NULL);
-	pass |= TEST_ASSERT(!strcmp(res, "e"));
+	TEST_ASSERT(res != NULL);
+	TEST_ASSERT(!strcmp(res, "e"));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strrchr(void)
 {
 	char *test_str = "apple";
 	char *res = NULL;
-	int pass = SSL_OK;
 
 	res = ft_strrchr(NULL, 'e');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strrchr(test_str, 'z');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strrchr("", 'e');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strrchr(test_str, 'e');
-	pass |= TEST_ASSERT(res != NULL);
-	pass |= TEST_ASSERT(!strcmp(res, "e"));
+	TEST_ASSERT(res != NULL);
+	TEST_ASSERT(!strcmp(res, "e"));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strjoin(void)
@@ -494,41 +437,36 @@ static int __test_ft_strjoin(void)
 	char *test_str = NULL;
 	char ref_str[total_len + 1];
 	char *temp_str;
-	int pass = SSL_OK;
 
 	strcpy(ref_str, __s1);
 	strcat(ref_str, __s2);
 
 	test_str = ft_strjoin(__s1, __s2);
 
-	pass |= TEST_ASSERT(test_str != NULL);
-	pass |= TEST_ASSERT(!strcmp(test_str, ref_str));
+	TEST_ASSERT(test_str != NULL);
+	TEST_ASSERT(!strcmp(test_str, ref_str));
 	free(test_str);
 
 	test_str = ft_strjoin(NULL, NULL);
-	pass |= TEST_ASSERT(test_str == NULL);
+	TEST_ASSERT(test_str == NULL);
 
 	test_str = ft_strjoin(__s1, "");
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 	free(test_str);
 
 	test_str = ft_strjoin("", __s1);
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 	free(test_str);
 
 	test_str = ft_strjoin(__s1, NULL);
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 	free(test_str);
 
 	test_str = ft_strjoin(NULL, __s1);
-	pass |= TEST_ASSERT(strlen(test_str) == __slen1);
+	TEST_ASSERT(strlen(test_str) == __slen1);
 	free(test_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strrev(void)
@@ -536,24 +474,19 @@ static int __test_ft_strrev(void)
 	char *test_str = "apple";
 	char *ref_str = "elppa";
 	char *res = NULL;
-	int pass = SSL_OK;
 
 	res = ft_strrev(NULL);
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strrev(test_str);
-	pass |= TEST_ASSERT(!strcmp(res, ref_str));
+	TEST_ASSERT(!strcmp(res, ref_str));
 	free(res);
 
 	res = ft_strrev("");
-	pass |= TEST_ASSERT(strlen(res) == 0);
+	TEST_ASSERT(strlen(res) == 0);
 	free(res);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strlow(void)
@@ -561,7 +494,6 @@ static int __test_ft_strlow(void)
 	char *str = "ApPl!e# !@#$@FSDdf234523#$%^$%&\n";
 	char *test_str;
 	char *ref_str;
-	int pass = SSL_OK;
 
 	ref_str = strdup(str);
 
@@ -569,19 +501,15 @@ static int __test_ft_strlow(void)
 		ref_str[i] = tolower(ref_str[i]);
 
 	test_str = ft_strlow(NULL);
-	pass |= TEST_ASSERT(test_str == NULL);
+	TEST_ASSERT(test_str == NULL);
 
 	test_str = ft_strlow(str);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 
 	free(test_str);
 	free(ref_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strup(void)
@@ -589,7 +517,6 @@ static int __test_ft_strup(void)
 	char *str = "ApPl!e# !@#$@FsDdf234523#$%^$%&\n";
 	char *test_str;
 	char *ref_str;
-	int pass = SSL_OK;
 
 	ref_str = strdup(str);
 
@@ -597,19 +524,15 @@ static int __test_ft_strup(void)
 		ref_str[i] = toupper(ref_str[i]);
 
 	test_str = ft_strup(NULL);
-	pass |= TEST_ASSERT(test_str == NULL);
+	TEST_ASSERT(test_str == NULL);
 
 	test_str = ft_strup(str);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 
 	free(test_str);
 	free(ref_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_2darray_len(void)
@@ -623,22 +546,17 @@ static int __test_ft_2darray_len(void)
 	size_t test_str_arr_len = sizeof(test_str_arr) / sizeof(char *) - 1;
 	void *null_ptr = NULL;
 	int res = 0;
-	int pass = SSL_OK;
 
 	res = ft_2darray_len_null_terminated(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_2darray_len_null_terminated((void **)test_str_arr);
-	pass |= TEST_ASSERT(res == test_str_arr_len);
+	TEST_ASSERT(res == test_str_arr_len);
 
 	res = ft_2darray_len_null_terminated(&null_ptr);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_2darray_strjoin(void)
@@ -653,33 +571,28 @@ static int __test_ft_2darray_strjoin(void)
 	char *ref_str = "apple banana orange vodka";
 	char *ref_str2 = "applebananaorangevodka";
 	char *res = NULL;
-	int pass = SSL_OK;
 
 	res = ft_2darray_strjoin(NULL, test_str_arr_len, " ");
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_2darray_strjoin(test_str_arr, 0, " ");
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_2darray_strjoin(test_str_arr, test_str_arr_len, " ");
-	pass |= TEST_ASSERT(res != NULL);
-	pass |= TEST_ASSERT(!strcmp(res, ref_str));
+	TEST_ASSERT(res != NULL);
+	TEST_ASSERT(!strcmp(res, ref_str));
 	free(res);
 
 	res = ft_2darray_strjoin(test_str_arr, test_str_arr_len, "");
-	pass |= TEST_ASSERT(res != NULL);
-	pass |= TEST_ASSERT(!strcmp(res, ref_str2));
+	TEST_ASSERT(res != NULL);
+	TEST_ASSERT(!strcmp(res, ref_str2));
 	free(res);
 
 	res = ft_2darray_strjoin(test_str_arr, 1, " ");
-	pass |= TEST_ASSERT(!strcmp(res, "apple"));
+	TEST_ASSERT(!strcmp(res, "apple"));
 	free(res);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_strsplit(void)
@@ -693,100 +606,85 @@ static int __test_ft_strsplit(void)
 	};
 	size_t ref_str_len = sizeof(ref_str_arr) / sizeof(char *);
 	char **res = NULL;
-	int pass = SSL_OK;
 
 	res = ft_strsplit(NULL, ' ');
-	pass |= TEST_ASSERT(res == NULL);
+	TEST_ASSERT(res == NULL);
 
 	res = ft_strsplit(test_str, ' ');
-	pass |= TEST_ASSERT(res != NULL);
-	pass |= TEST_ASSERT(ref_str_len == ft_2darray_len_null_terminated((void **)res));
+	TEST_ASSERT(res != NULL);
+	TEST_ASSERT(ref_str_len == ft_2darray_len_null_terminated((void **)res));
 
 	for (int i = 0; i < ref_str_len; i++)
-		pass |= TEST_ASSERT(!strcmp(res[i], ref_str_arr[i]));
+		TEST_ASSERT(!strcmp(res[i], ref_str_arr[i]));
 
 	ft_2darray_del_null_terminated((void **)res);
 
 	res = ft_strsplit("apple", ' ');
-	pass |= TEST_ASSERT(res != NULL);
-	pass |= TEST_ASSERT(ft_2darray_len_null_terminated((void **)res) == 1);
+	TEST_ASSERT(res != NULL);
+	TEST_ASSERT(ft_2darray_len_null_terminated((void **)res) == 1);
 
-	pass |= TEST_ASSERT(!strcmp(res[0], "apple"));
+	TEST_ASSERT(!strcmp(res[0], "apple"));
 
 	ft_2darray_del_null_terminated((void **)res);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_atoi(void)
 {
 	long long res = 0;
-	int pass = SSL_OK;
 
 	res = ft_atoi("0");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_atoi("+0");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_atoi("-0");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_atoi("");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_atoi("12316235");
-	pass |= TEST_ASSERT(res == 12316235);
+	TEST_ASSERT(res == 12316235);
 
 	res = ft_atoi("12316aa235");
-	pass |= TEST_ASSERT(res == 12316);
+	TEST_ASSERT(res == 12316);
 
 	res = ft_atoi("aa235");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_atoi("123-235");
-	pass |= TEST_ASSERT(res == 123);
+	TEST_ASSERT(res == 123);
 
 	res = ft_atoi("123+235");
-	pass |= TEST_ASSERT(res == 123);
+	TEST_ASSERT(res == 123);
 
 	res = ft_atoi("+123235");
-	pass |= TEST_ASSERT(res == 123235);
+	TEST_ASSERT(res == 123235);
 
 	res = ft_atoi("-123235");
-	pass |= TEST_ASSERT(res == -123235);
+	TEST_ASSERT(res == -123235);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_memcmp(void)
 {
 	char *ref_str = "elevator";
 	size_t ref_str_len = strlen(ref_str);
-	int pass = SSL_OK;
 
-	pass |= TEST_ASSERT(ft_memcmp(ref_str, ref_str, ref_str_len) == 0);
-	pass |= TEST_ASSERT(ft_memcmp(ref_str, "", 1) > 0);
-	pass |= TEST_ASSERT(ft_memcmp("", ref_str, 1) < 0);
-	pass |= TEST_ASSERT(ft_memcmp("", "", 1) == 0);
-	pass |= TEST_ASSERT(ft_memcmp(ref_str, "not elevator", ref_str_len) < 0);
-	pass |= TEST_ASSERT(ft_memcmp("not elevator", ref_str, ref_str_len) > 0);
-	pass |= TEST_ASSERT(ft_memcmp(ref_str, "elevators", ref_str_len) == 0);
-	pass |= TEST_ASSERT(ft_memcmp("elevators", ref_str, ref_str_len) == 0);
+	TEST_ASSERT(ft_memcmp(ref_str, ref_str, ref_str_len) == 0);
+	TEST_ASSERT(ft_memcmp(ref_str, "", 1) > 0);
+	TEST_ASSERT(ft_memcmp("", ref_str, 1) < 0);
+	TEST_ASSERT(ft_memcmp("", "", 1) == 0);
+	TEST_ASSERT(ft_memcmp(ref_str, "not elevator", ref_str_len) < 0);
+	TEST_ASSERT(ft_memcmp("not elevator", ref_str, ref_str_len) > 0);
+	TEST_ASSERT(ft_memcmp(ref_str, "elevators", ref_str_len) == 0);
+	TEST_ASSERT(ft_memcmp("elevators", ref_str, ref_str_len) == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_memcpy(void)
@@ -795,46 +693,36 @@ static int __test_ft_memcpy(void)
 	char test_str[total_len];
 	char ref_str[total_len];
 	char *temp_str;
-	int pass = SSL_OK;
 
 	memcpy(ref_str, __s1, __slen1);
 	memcpy(ref_str + __slen1, __s2, __slen2);
 
 	ft_memcpy(test_str, __s1, __slen1);
 	ft_memcpy(test_str + __slen1, __s2, __slen2);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, total_len));
+	TEST_ASSERT(!memcmp(test_str, ref_str, total_len));
 
 	ft_memcpy(test_str, "", 0);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, total_len));
+	TEST_ASSERT(!memcmp(test_str, ref_str, total_len));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_memdup(void)
 {
 	char *test_str;
-	int pass = SSL_OK;
 
 	test_str = ft_memdup(__s1, __slen1);
-	pass |= TEST_ASSERT(!memcmp(test_str, __s1, __slen1));
+	TEST_ASSERT(!memcmp(test_str, __s1, __slen1));
 	free(test_str);
 
 	test_str = ft_memdup(__s1, 0);
-	pass |= TEST_ASSERT(NULL != test_str);
+	TEST_ASSERT(NULL != test_str);
 	free(test_str);
 
 	test_str = ft_memdup(NULL, __slen1);
-	pass |= TEST_ASSERT(NULL == test_str);
+	TEST_ASSERT(NULL == test_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_memmove(void)
@@ -843,28 +731,23 @@ static int __test_ft_memmove(void)
 	char ref_str[__slen2];
 	size_t offset = __slen2 / 4;
 	size_t len = __slen2 / 2;
-	int pass = SSL_OK;
 
 	memcpy(ref_str, __s2, __slen2);
 	memcpy(test_str, __s2, __slen2);
 
 	memmove(ref_str, ref_str + offset, len);
 	ft_memmove(test_str, test_str + offset, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
 	memmove(ref_str + offset, ref_str, len);
 	ft_memmove(test_str + offset, test_str, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
 	memmove(ref_str + offset, ref_str, 0);
 	ft_memmove(test_str + offset, test_str, 0);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_memset(void)
@@ -872,58 +755,48 @@ static int __test_ft_memset(void)
 	char test_str[__slen2];
 	char ref_str[__slen2];
 	size_t len = __slen2 / 2;
-	int pass = SSL_OK;
 
 	memcpy(ref_str, __s2, __slen2);
 	memcpy(test_str, __s2, __slen2);
 
 	memset(ref_str, 190, len);
 	ft_memset(test_str, 190, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
 	memset(ref_str, -94, len);
 	ft_memset(test_str, -94, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
 	memset(ref_str, 123456, len);
 	ft_memset(test_str, 123456, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
 	memset(ref_str, -123456, len);
 	ft_memset(test_str, -123456, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
 	memset(ref_str, 190, (0));
 	ft_memset(test_str, 190, 0);
-	pass |= TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
+	TEST_ASSERT(!memcmp(test_str, ref_str, __slen2));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_bzero(void)
 {
 	char test_str[32];
 	char ref_str[32] = {0};
-	int pass = SSL_OK;
 
 	memset(test_str, 127, sizeof(test_str));
 	ft_bzero(test_str, sizeof(test_str));
-	pass |= TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
+	TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
 	memset(test_str, 127, sizeof(test_str));
 	memset(ref_str, 127, sizeof(ref_str));
 	ft_bzero(test_str, 0);
-	pass |= TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
+	TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_memzcpy(void)
@@ -931,109 +804,94 @@ static int __test_ft_memzcpy(void)
 	char test_str[__slen2];
 	char zero_str[__slen2];
 	size_t len = __slen2 / 2;
-	int pass = SSL_OK;
 
 	memset(zero_str, 0, sizeof(zero_str));
 
 	memcpy(test_str, __s2, __slen2);
 	ft_memzcpy(test_str, __s2, len, len / 2);
-	pass |= TEST_ASSERT(!memcmp(test_str, __s2, len / 2));
-	pass |= TEST_ASSERT(!memcmp(test_str + len / 2, zero_str, len - len / 2));
+	TEST_ASSERT(!memcmp(test_str, __s2, len / 2));
+	TEST_ASSERT(!memcmp(test_str + len / 2, zero_str, len - len / 2));
 
 	memcpy(test_str, __s2, __slen2);
 	ft_memzcpy(test_str, zero_str, len / 2, len);
-	pass |= TEST_ASSERT(!memcmp(test_str, zero_str, len / 2));
-	pass |= TEST_ASSERT(!memcmp(test_str + len / 2, __s2 + len / 2, len - len / 2));
+	TEST_ASSERT(!memcmp(test_str, zero_str, len / 2));
+	TEST_ASSERT(!memcmp(test_str + len / 2, __s2 + len / 2, len - len / 2));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_itoa_base(void)
 {
 	char *res = NULL;
 	intmax_t	ref_num;
-	int pass = SSL_OK;
 
 	res = ft_itoa_base(0, 10);
-	pass |= TEST_ASSERT(strcmp(res, "0") == 0);
+	TEST_ASSERT(strcmp(res, "0") == 0);
 	free(res);
 
 	res = ft_itoa_base(0, 16);
-	pass |= TEST_ASSERT(strcmp(res, "0") == 0);
+	TEST_ASSERT(strcmp(res, "0") == 0);
 	free(res);
 
 	res = ft_itoa_base(1234, 10);
-	pass |= TEST_ASSERT(strcmp(res, "1234") == 0);
+	TEST_ASSERT(strcmp(res, "1234") == 0);
 	free(res);
 
 	res = ft_itoa_base(-1234, 10);
-	pass |= TEST_ASSERT(strcmp(res, "-1234") == 0);
+	TEST_ASSERT(strcmp(res, "-1234") == 0);
 	free(res);
 
 	res = ft_itoa_base(-255, 16);
-	pass |= TEST_ASSERT(strcmp(res, "ff") == 0);
+	TEST_ASSERT(strcmp(res, "ff") == 0);
 	free(res);
 
 	res = ft_itoa_base(255, 16);
-	pass |= TEST_ASSERT(strcmp(res, "ff") == 0);
+	TEST_ASSERT(strcmp(res, "ff") == 0);
 	free(res);
 
 	res = ft_itoa_base(255, 2);
-	pass |= TEST_ASSERT(strcmp(res, "11111111") == 0);
+	TEST_ASSERT(strcmp(res, "11111111") == 0);
 	free(res);
 
 	res = ft_itoa_base(255, 8);
-	pass |= TEST_ASSERT(strcmp(res, "377") == 0);
+	TEST_ASSERT(strcmp(res, "377") == 0);
 	free(res);
 
 	res = ft_itoa_base(255, 12);
-	pass |= TEST_ASSERT(strcmp(res, "193") == 0);
+	TEST_ASSERT(strcmp(res, "193") == 0);
 	free(res);
 
 	res = ft_itoa_base(INTMAX_MAX, 10);
 	ref_num = strtoimax(res, NULL, 10);
-	pass |= TEST_ASSERT(ref_num == INTMAX_MAX);
+	TEST_ASSERT(ref_num == INTMAX_MAX);
 	free(res);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_itoa(void)
 {
 	char *res = NULL;
 	intmax_t	ref_num;
-	int pass = SSL_OK;
 
 	res = ft_itoa(0);
-	pass |= TEST_ASSERT(strcmp(res, "0") == 0);
+	TEST_ASSERT(strcmp(res, "0") == 0);
 	free(res);
 
 	res = ft_itoa(1234);
-	pass |= TEST_ASSERT(strcmp(res, "1234") == 0);
+	TEST_ASSERT(strcmp(res, "1234") == 0);
 	free(res);
 
 	res = ft_itoa(-1234);
-	pass |= TEST_ASSERT(strcmp(res, "-1234") == 0);
+	TEST_ASSERT(strcmp(res, "-1234") == 0);
 	free(res);
 
 	res = ft_itoa(INTMAX_MAX);
 	ref_num = strtoimax(res, NULL, 10);
-	pass |= TEST_ASSERT(ref_num == INTMAX_MAX);
+	TEST_ASSERT(ref_num == INTMAX_MAX);
 	free(res);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_printf(void)
@@ -1043,297 +901,248 @@ static int __test_ft_printf(void)
 	void *ptr;
 	int	test_num;
 	int	ref_num;
-	int pass = SSL_OK;
 
 	test_num = ft_sprintf(&test_str, "%s", "apple\n");
 	ref_num = asprintf(&ref_str, "%s", "apple\n");
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%.2s", "apple\n");
 	ref_num = asprintf(&ref_str, "%.2s", "apple\n");
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%9s", "apple\n");
 	ref_num = asprintf(&ref_str, "%9s", "apple\n");
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%d", 1244);
 	ref_num = asprintf(&ref_str, "%d", 1244);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%ld", LONG_MAX);
 	ref_num = asprintf(&ref_str, "%ld", LONG_MAX);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%lld", LLONG_MAX);
 	ref_num = asprintf(&ref_str, "%lld", LLONG_MAX);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%u", 1244u);
 	ref_num = asprintf(&ref_str, "%u", 1244u);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%lu", ULONG_MAX);
 	ref_num = asprintf(&ref_str, "%lu", ULONG_MAX);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%llu", ULLONG_MAX);
 	ref_num = asprintf(&ref_str, "%llu", ULLONG_MAX);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%zu", SIZE_T_MAX);
 	ref_num = asprintf(&ref_str, "%zu", SIZE_T_MAX);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%x", 0x1244);
 	ref_num = asprintf(&ref_str, "%x", 0x1244);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%p", ptr);
 	ref_num = asprintf(&ref_str, "%p", ptr);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
 	test_num = ft_sprintf(&test_str, "%o", 01244);
 	ref_num = asprintf(&ref_str, "%o", 01244);
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
-	pass |= TEST_ASSERT(test_num == ref_num);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_str_isalpha(void)
 {
 	int res;
-	int pass = SSL_OK;
 
 	res = ft_str_isalpha(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isalpha("abcASDFacwqer31");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isalpha("abASDcqwe");
-	pass |= TEST_ASSERT(res == 1);
+	TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_str_isalnum(void)
 {
 	int res;
-	int pass = SSL_OK;
 
 	res = ft_str_isalnum(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isalnum("abcAS2345123DFacwqer31");
-	pass |= TEST_ASSERT(res == 1);
+	TEST_ASSERT(res == 1);
 
 	res = ft_str_isalnum("abASDc#$%^qwe");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_str_isascii(void)
 {
 	int res;
-	int pass = SSL_OK;
 	char test_str[] = {255, 127, 44, 45, 0};
 	char test_str2[] = {2, 22, 55, 127, 44, 45, 0};
 
 	res = ft_str_isascii(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isascii(test_str);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isascii(test_str2);
-	pass |= TEST_ASSERT(res == 1);
+	TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_str_isdigit(void)
 {
 	int res;
-	int pass = SSL_OK;
 
 	res = ft_str_isdigit(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isdigit("abcAS2345123DFacwqer31");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isdigit("0123456789");
-	pass |= TEST_ASSERT(res == 1);
+	TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_str_ishex(void)
 {
 	int res;
-	int pass = SSL_OK;
 
 	res = ft_str_ishex(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_ishex("1234123sczxvz");
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_ishex("0123456789ABCDEFabcdef");
-	pass |= TEST_ASSERT(res == 1);
+	TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_str_isprint(void)
 {
 	int res;
-	int pass = SSL_OK;
 	char test_str[] = {9, 1, 2, 3, 15, 127, 44, 45, 0};
 
 	res = ft_str_isprint(NULL);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isprint(test_str);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	res = ft_str_isprint("0123456789ABCDEFabcdef");
-	pass |= TEST_ASSERT(res == 1);
+	TEST_ASSERT(res == 1);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_bytes_to_hex(void)
 {
-	int pass = SSL_OK;
 	char *test_str;
 	char octets[] = {9, 1, 127, 3, 15, 0};
 	char *ref_str = "9017f030f00";
 
 	test_str = ft_bytes_to_hex(NULL, 20);
-	pass |= TEST_ASSERT(test_str == NULL);
+	TEST_ASSERT(test_str == NULL);
 
 	test_str = ft_bytes_to_hex(octets, 0);
-	pass |= TEST_ASSERT(test_str == NULL);
+	TEST_ASSERT(test_str == NULL);
 
 	test_str = ft_bytes_to_hex(octets, sizeof(octets));
-	pass |= TEST_ASSERT(strcmp(test_str, ref_str) == 0);
+	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	free(test_str);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_hex_to_bytes(void)
 {
-	int pass = SSL_OK;
 	char ref_str[6] = {9, 1, 127, 3, 15, 0};
 	char test_str[6] = {0};
 	char *hex = "9017f030f00";
 
 	ft_hex_to_bytes(test_str, hex, strlen(hex));
-	pass |= TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
+	TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_uint_to_bytes(void)
 {
 	uint32_t num = 3271454934;
 	uint32_t zero = 0;
-	char ref_str[6] = {194, 254, 112, 214};
+	char ref_str[4] = {194, 254, 112, 214};
 	char buf[4] = {0};
-	int pass = SSL_OK;
 
 	ft_uint_to_bytes(buf, num, sizeof(num));
-	pass |= ft_strncmp(buf, ref_str, sizeof(buf));
+
+	TEST_ASSERT(ft_strncmp(buf, ref_str, sizeof(buf)));
 
 	bzero(buf, sizeof(buf));
 	bzero(ref_str, sizeof(ref_str));
 	ft_uint_to_bytes(buf, zero, sizeof(zero));
-	pass |= ft_strncmp(buf, ref_str, sizeof(buf));
+	TEST_ASSERT(ft_strncmp(buf, ref_str, sizeof(buf)));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_get_next_line(void)
@@ -1346,26 +1155,21 @@ static int __test_get_next_line(void)
 	ssize_t rbytes;
 	ssize_t ref_rbytes;
 	size_t linecapp = 0;
-	int pass = SSL_OK;
 
 	ref_stream = fopen(file, "r");
 	fd = open(file, O_RDONLY);
-	pass |= TEST_ASSERT(fd >= 0);
-	pass |= TEST_ASSERT(ref_stream != NULL);
-
-	if (fd < 0 || ref_stream == NULL) {
-		return (TEST_FAIL());
-	}
+	TEST_ASSERT(fd >= 0);
+	TEST_ASSERT(ref_stream != NULL);
 
 	while ((rbytes = get_next_line(fd, &line)) > 0) {
 		ref_rbytes = getline(&ref_line, &linecapp, ref_stream);
 
-		pass |= TEST_ASSERT(ref_rbytes > 0);
-		pass |= TEST_ASSERT(ref_rbytes == rbytes);
+		TEST_ASSERT(ref_rbytes > 0);
+		TEST_ASSERT(ref_rbytes == rbytes);
 
 		if (ref_line && line) {
-			pass |= TEST_ASSERT(strlen(ref_line) == strlen(line));
-			pass |= TEST_ASSERT(strcmp(ref_line, line) == 0);
+			TEST_ASSERT(strlen(ref_line) == strlen(line));
+			TEST_ASSERT(strcmp(ref_line, line) == 0);
 		}
 
 		if (NULL != ref_line) {
@@ -1384,11 +1188,7 @@ static int __test_get_next_line(void)
 	close(fd);
 	fclose(ref_stream);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_node(void)
@@ -1396,27 +1196,22 @@ static int __test_ft_node(void)
 	t_node *node;
 	char *key = "some-key";
 	char *content = "some-content";
-	int pass = SSL_OK;
 
 	node = ft_node_create();
-	pass |= TEST_ASSERT(node != NULL);
+	TEST_ASSERT(node != NULL);
 
 	ft_node_del(node, NULL);
 
 	node = ft_node_new(key, content, strlen(content));
-	pass |= TEST_ASSERT(node != NULL);
-	pass |= TEST_ASSERT(node->key != NULL);
-	pass |= TEST_ASSERT(strcmp(node->key, key) == 0);
-	pass |= TEST_ASSERT(node->content != NULL);
-	pass |= TEST_ASSERT(strcmp(node->content, content) == 0);
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(node->key != NULL);
+	TEST_ASSERT(strcmp(node->key, key) == 0);
+	TEST_ASSERT(node->content != NULL);
+	TEST_ASSERT(strcmp(node->content, content) == 0);
 
 	ft_node_del(node, NULL);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 // helper for __test_ft_list()
@@ -1442,47 +1237,45 @@ static int __test_ft_list(void)
 	char **words;
 	int	nwords;
 	int idx;
-	int pass = SSL_OK;
 	int ret;
 
 	// get words, assume all words are unique (required for some tests)
 	words = ft_strsplit(__s2, ' ');
-	pass |= TEST_ASSERT(words != NULL);
+	TEST_ASSERT(words != NULL);
 
 	nwords = ft_2darray_len_null_terminated((void **)words);
 
 	// expect to have at least 6 words
-	pass |= TEST_ASSERT(nwords >= 6);
+	TEST_ASSERT(nwords >= 6);
 
 	if (NULL == words || nwords == 0) {
-		return (TEST_PASS());
+		TEST_PASS();
 	}
 
 	lst = NULL;
 
 	lst_size = ft_lst_size(lst);
-	pass |= TEST_ASSERT(lst_size == 0);
+	TEST_ASSERT(lst_size == 0);
 
 	// test list append
 	idx = 0;
 	while (idx < nwords) {
 		node_key = ft_itoa(idx);
 		node = ft_node_new(node_key, words[idx], strlen(words[idx]));
-		pass |= TEST_ASSERT(node != NULL);
+		TEST_ASSERT(node != NULL);
 
 		ft_lst_append(&lst, node);
-		pass |= TEST_ASSERT(lst != NULL);
+		TEST_ASSERT(lst != NULL);
 
 		if (node_key != NULL) {
 			free(node_key);
 		}
-
 		idx++;
 	}
 
 	// check list size
 	lst_size = ft_lst_size(lst);
-	pass |= TEST_ASSERT(lst_size == nwords);
+	TEST_ASSERT(lst_size == nwords);
 
 	// inspect list node content and order
 	idx = 0;
@@ -1490,9 +1283,9 @@ static int __test_ft_list(void)
 	while (tmp_node != NULL) {
 		node_key = ft_itoa(idx);
 
-		pass |= TEST_ASSERT(idx < nwords);
-		pass |= TEST_ASSERT(strcmp(tmp_node->key, node_key) == 0);
-		pass |= TEST_ASSERT(strcmp((char *)tmp_node->content, words[idx]) == 0);
+		TEST_ASSERT(idx < nwords);
+		TEST_ASSERT(strcmp(tmp_node->key, node_key) == 0);
+		TEST_ASSERT(strcmp((char *)tmp_node->content, words[idx]) == 0);
 
 		if (node_key != NULL) {
 			free(node_key);
@@ -1505,13 +1298,13 @@ static int __test_ft_list(void)
 	// check list delete first node
 	ft_lst_del_first(&lst);
 	lst_size = ft_lst_size(lst);
-	pass |= TEST_ASSERT(lst_size == nwords-1);
-	pass |= TEST_ASSERT(strcmp((char *)lst->content, words[1]) == 0);
+	TEST_ASSERT(lst_size == nwords-1);
+	TEST_ASSERT(strcmp((char *)lst->content, words[1]) == 0);
 
 	// check list delete last node
 	ft_lst_del_last(&lst);
 	lst_size = ft_lst_size(lst);
-	pass |= TEST_ASSERT(lst_size == nwords - 2);
+	TEST_ASSERT(lst_size == nwords - 2);
 
 	// get last node pointer
 	tmp_node = lst;
@@ -1521,7 +1314,7 @@ static int __test_ft_list(void)
 	}
 
 	// check if last node has been deleted
-	pass |= TEST_ASSERT(strcmp((char *)node->content, words[nwords - 2]) == 0);
+	TEST_ASSERT(strcmp((char *)node->content, words[nwords - 2]) == 0);
 
 	// delete all list nodes
 	ft_lst_del(lst);
@@ -1532,25 +1325,24 @@ static int __test_ft_list(void)
 	while (idx < nwords) {
 		node_key = ft_itoa(idx);
 		node = ft_node_new(node_key, words[idx], strlen(words[idx]));
-		pass |= TEST_ASSERT(node != NULL);
+		TEST_ASSERT(node != NULL);
 
 		ft_lst_prepend(&lst, node);
 
 		// test first node content
-		pass |= TEST_ASSERT(lst != NULL);
-		pass |= TEST_ASSERT(strcmp(lst->key, node_key) == 0);
-		pass |= TEST_ASSERT(strcmp((char *)lst->content, words[idx]) == 0);
+		TEST_ASSERT(lst != NULL);
+		TEST_ASSERT(strcmp(lst->key, node_key) == 0);
+		TEST_ASSERT(strcmp((char *)lst->content, words[idx]) == 0);
 
 		if (node_key != NULL) {
 			free(node_key);
 		}
-
 		idx++;
 	}
 
 	// check list size
 	lst_size = ft_lst_size(lst);
-	pass |= TEST_ASSERT(lst_size == nwords);
+	TEST_ASSERT(lst_size == nwords);
 
 	// select some node
 	tmp_node = lst;
@@ -1558,7 +1350,7 @@ static int __test_ft_list(void)
 		tmp_node = tmp_node->next;
 
 	// expect to find node
-	pass |= TEST_ASSERT(tmp_node != NULL);
+	TEST_ASSERT(tmp_node != NULL);
 
 	// test list delete node
 	ft_lst_del_one(&lst, tmp_node);
@@ -1569,7 +1361,7 @@ static int __test_ft_list(void)
 		tmp_node = tmp_node->next;
 
 	// do not expect to find node
-	pass |= TEST_ASSERT(tmp_node == NULL);
+	TEST_ASSERT(tmp_node == NULL);
 
 	// test list map (func sets content to null and size to 0)
 	ft_lst_map(lst, NULL, __func_for_test_ft_list);
@@ -1577,16 +1369,26 @@ static int __test_ft_list(void)
 	// test if nodes have changed
 	tmp_node = lst;
 	while (tmp_node != NULL) {
-		pass |= TEST_ASSERT(tmp_node->content == NULL);
-		pass |= TEST_ASSERT(tmp_node->size == 0);
+		TEST_ASSERT(tmp_node->content == NULL);
+		TEST_ASSERT(tmp_node->size == 0);
 		tmp_node = tmp_node->next;
 	}
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
+	lst = NULL;
 
-	return (TEST_FAIL());
+	ft_lst_prepend(&lst, ft_node_new("1", "1", 1));
+	ft_lst_prepend(&lst, ft_node_new("2", "2", 1));
+	ft_lst_prepend(&lst, ft_node_new("3", "3", 1));
+	ft_lst_prepend(&lst, ft_node_new("4", "4", 1));
+
+	ft_lst_rev(&lst);
+
+	TEST_ASSERT(strcmp((char *)lst->content, "1") == 0);
+	TEST_ASSERT(strcmp((char *)lst->next->content, "2") == 0);
+	TEST_ASSERT(strcmp((char *)lst->next->next->content, "3") == 0);
+	TEST_ASSERT(strcmp((char *)lst->next->next->next->content, "4") == 0);
+
+	TEST_PASS();
 }
 
 static int __test_ft_stack(void)
@@ -1598,21 +1400,16 @@ static int __test_ft_stack(void)
 	char **words;
 	int nwords;
 	int idx;
-	int pass = SSL_OK;
 
 	stack = ft_stack_create();
-	pass |= TEST_ASSERT(stack != NULL);
-	pass |= TEST_ASSERT(ft_stack_is_empty(stack));
-	pass |= TEST_ASSERT(ft_stack_size(stack) == 0);
-
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
+	TEST_ASSERT(stack != NULL);
+	TEST_ASSERT(ft_stack_is_empty(stack));
+	TEST_ASSERT(ft_stack_size(stack) == 0);
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
-	pass |= TEST_ASSERT(words != NULL);
-	pass |= TEST_ASSERT(nwords > 6);
+	TEST_ASSERT(words != NULL);
+	TEST_ASSERT(nwords > 6);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -1620,8 +1417,8 @@ static int __test_ft_stack(void)
 		ft_stack_push(stack, key, words[idx], strlen(words[idx]));
 
 		node = stack->top;
-		pass |= TEST_ASSERT(node != NULL);
-		pass |= TEST_ASSERT(strcmp(node->content, words[idx]) == 0);
+		TEST_ASSERT(node != NULL);
+		TEST_ASSERT(strcmp(node->content, words[idx]) == 0);
 
 		if (key != NULL) {
 			free(key);
@@ -1630,16 +1427,12 @@ static int __test_ft_stack(void)
 		idx++;
 	}
 
-	pass |= TEST_ASSERT(ft_stack_size(stack) == nwords);
+	TEST_ASSERT(ft_stack_size(stack) == nwords);
 
 	node = ft_stack_peek(stack);
-	pass |= TEST_ASSERT(node != NULL);
-	pass |= TEST_ASSERT(!ft_stack_is_empty(stack));
-	pass |= TEST_ASSERT(strcmp(node->content, words[nwords-1]) == 0);
-
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(!ft_stack_is_empty(stack));
+	TEST_ASSERT(strcmp(node->content, words[nwords-1]) == 0);
 
 	while (!ft_stack_is_empty(stack)) {
 		if (--idx < 0) {
@@ -1647,18 +1440,14 @@ static int __test_ft_stack(void)
 		}
 
 		content = ft_stack_pop(stack);
-		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
+		TEST_ASSERT(strcmp(content, words[idx]) == 0);
 	}
 
-	pass |= TEST_ASSERT(ft_stack_is_empty(stack));
-	pass |= TEST_ASSERT(ft_stack_size(stack) == 0);
+	TEST_ASSERT(ft_stack_is_empty(stack));
+	TEST_ASSERT(ft_stack_size(stack) == 0);
 	ft_stack_del(stack);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_queue(void)
@@ -1670,21 +1459,16 @@ static int __test_ft_queue(void)
 	char **words;
 	int nwords;
 	int idx;
-	int pass = SSL_OK;
 
 	queue = ft_queue_create();
-	pass |= TEST_ASSERT(queue != NULL);
-	pass |= TEST_ASSERT(ft_queue_is_empty(queue));
-	pass |= TEST_ASSERT(ft_queue_size(queue) == 0);
-
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
+	TEST_ASSERT(queue != NULL);
+	TEST_ASSERT(ft_queue_is_empty(queue));
+	TEST_ASSERT(ft_queue_size(queue) == 0);
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
-	pass |= TEST_ASSERT(words != NULL);
-	pass |= TEST_ASSERT(nwords > 6);
+	TEST_ASSERT(words != NULL);
+	TEST_ASSERT(nwords > 6);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -1692,8 +1476,8 @@ static int __test_ft_queue(void)
 		ft_queue_enqueue(queue, key, words[idx], strlen(words[idx]));
 
 		node = queue->last;
-		pass |= TEST_ASSERT(node != NULL);
-		pass |= TEST_ASSERT(strcmp(node->content, words[idx]) == 0);
+		TEST_ASSERT(node != NULL);
+		TEST_ASSERT(strcmp(node->content, words[idx]) == 0);
 
 		if (key != NULL) {
 			free(key);
@@ -1702,16 +1486,12 @@ static int __test_ft_queue(void)
 		idx++;
 	}
 
-	pass |= TEST_ASSERT(ft_queue_size(queue) == nwords);
+	TEST_ASSERT(ft_queue_size(queue) == nwords);
 
 	node = ft_queue_first(queue);
-	pass |= TEST_ASSERT(node != NULL);
-	pass |= TEST_ASSERT(!ft_queue_is_empty(queue));
-	pass |= TEST_ASSERT(strcmp(node->content, words[0]) == 0);
-
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(!ft_queue_is_empty(queue));
+	TEST_ASSERT(strcmp(node->content, words[0]) == 0);
 
 	idx = 0;
 	while (!ft_queue_is_empty(queue)) {
@@ -1720,13 +1500,13 @@ static int __test_ft_queue(void)
 		}
 
 		content = ft_queue_dequeue(queue);
-		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
+		TEST_ASSERT(strcmp(content, words[idx]) == 0);
 
 		idx++;
 	}
 
-	pass |= TEST_ASSERT(ft_queue_is_empty(queue));
-	pass |= TEST_ASSERT(ft_queue_size(queue) == 0);
+	TEST_ASSERT(ft_queue_is_empty(queue));
+	TEST_ASSERT(ft_queue_size(queue) == 0);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -1746,7 +1526,7 @@ static int __test_ft_queue(void)
 		node = node->next;
 
 	// expect to find node
-	pass |= TEST_ASSERT(node != NULL);
+	TEST_ASSERT(node != NULL);
 
 	// test queue delete node
 	ft_queue_del_node(queue, node);
@@ -1757,15 +1537,11 @@ static int __test_ft_queue(void)
 		node = node->next;
 
 	// do not expect to find node
-	pass |= TEST_ASSERT(node == NULL);
+	TEST_ASSERT(node == NULL);
 
 	ft_queue_del(queue);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_tuple(void)
@@ -1776,51 +1552,45 @@ static int __test_ft_tuple(void)
 	size_t head_size = ft_strlen(head_content);
 	size_t tail_size = ft_strlen(tail_content);
 
-	int pass = SSL_OK;
-
 	tuple = ft_tuple_new((void *)head_content, head_size, (void *)tail_content, tail_size);
-	pass |= TEST_ASSERT(tuple != NULL);
-	pass |= TEST_ASSERT(tuple->head != NULL);
-	pass |= TEST_ASSERT(tuple->tail != NULL);
-	pass |= TEST_ASSERT(tuple->head->content != NULL);
-	pass |= TEST_ASSERT(tuple->tail->content != NULL);
-	pass |= TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
-	pass |= TEST_ASSERT(tuple->head->size == head_size);
-	pass |= TEST_ASSERT(tuple->tail->size == tail_size);
+	TEST_ASSERT(tuple != NULL);
+	TEST_ASSERT(tuple->head != NULL);
+	TEST_ASSERT(tuple->tail != NULL);
+	TEST_ASSERT(tuple->head->content != NULL);
+	TEST_ASSERT(tuple->tail->content != NULL);
+	TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
+	TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
+	TEST_ASSERT(tuple->head->size == head_size);
+	TEST_ASSERT(tuple->tail->size == tail_size);
 	ft_tuple_del(tuple);
 
 	tuple = ft_tuple_new_with_f_del((void *)ft_strdup(head_content), head_size, (void *)ft_strdup(tail_content), tail_size, free);
-	pass |= TEST_ASSERT(tuple != NULL);
-	pass |= TEST_ASSERT(tuple->head != NULL);
-	pass |= TEST_ASSERT(tuple->tail != NULL);
-	pass |= TEST_ASSERT(tuple->head->content != NULL);
-	pass |= TEST_ASSERT(tuple->tail->content != NULL);
-	pass |= TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
-	pass |= TEST_ASSERT(tuple->head->size == head_size);
-	pass |= TEST_ASSERT(tuple->tail->size == tail_size);
-	pass |= TEST_ASSERT(tuple->head->f_del_content == free);
-	pass |= TEST_ASSERT(tuple->tail->f_del_content == free);
+	TEST_ASSERT(tuple != NULL);
+	TEST_ASSERT(tuple->head != NULL);
+	TEST_ASSERT(tuple->tail != NULL);
+	TEST_ASSERT(tuple->head->content != NULL);
+	TEST_ASSERT(tuple->tail->content != NULL);
+	TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
+	TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
+	TEST_ASSERT(tuple->head->size == head_size);
+	TEST_ASSERT(tuple->tail->size == tail_size);
+	TEST_ASSERT(tuple->head->f_del_content == free);
+	TEST_ASSERT(tuple->tail->f_del_content == free);
 	ft_tuple_del(tuple);
 
 	tuple = ft_tuple_new_with_f_del((void *)ft_strdup(head_content), head_size, (void *)ft_strdup(tail_content), tail_size, NULL);
-	pass |= TEST_ASSERT(tuple->head->f_del_content == NULL);
-	pass |= TEST_ASSERT(tuple->tail->f_del_content == NULL);
+	TEST_ASSERT(tuple->head->f_del_content == NULL);
+	TEST_ASSERT(tuple->tail->f_del_content == NULL);
 	ft_tuple_del_with_f_del(tuple, free);
 
 	tuple = ft_tuple_new((void *)head_content, head_size, (void *)tail_content, tail_size);
-	pass |= TEST_ASSERT(ft_tuple_get(tuple, 0) != NULL);
-	pass |= TEST_ASSERT(ft_tuple_get(tuple, 1) != NULL);
-	pass |= TEST_ASSERT(ft_strcmp(ft_tuple_get(tuple, 0), head_content) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(ft_tuple_get(tuple, 1), tail_content) == 0);
+	TEST_ASSERT(ft_tuple_get(tuple, 0) != NULL);
+	TEST_ASSERT(ft_tuple_get(tuple, 1) != NULL);
+	TEST_ASSERT(ft_strcmp(ft_tuple_get(tuple, 0), head_content) == 0);
+	TEST_ASSERT(ft_strcmp(ft_tuple_get(tuple, 1), tail_content) == 0);
 	ft_tuple_del(tuple);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_htbl(void)
@@ -1834,12 +1604,11 @@ static int __test_ft_htbl(void)
 	int test_num;
 	int nwords;
 	int idx;
-	int pass = SSL_OK;
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
-	pass |= TEST_ASSERT(words != NULL);
-	pass |= TEST_ASSERT(nwords > 6);
+	TEST_ASSERT(words != NULL);
+	TEST_ASSERT(nwords > 6);
 
 	LIBFT_ALLOC(test_content, sizeof(char *) * (nwords + 1));
 
@@ -1850,16 +1619,16 @@ static int __test_ft_htbl(void)
 	}
 
 	htbl = ft_htbl_init(nwords);
-	pass |= TEST_ASSERT(htbl != NULL);
-	pass |= TEST_ASSERT(htbl->size > 0);
-	pass |= TEST_ASSERT(htbl->arr != NULL);
+	TEST_ASSERT(htbl != NULL);
+	TEST_ASSERT(htbl->size > 0);
+	TEST_ASSERT(htbl->arr != NULL);
 
 	idx = 0;
 	while (idx < nwords) {
 		ft_htbl_add(htbl, words[idx], words[idx]);
 		content = ft_htbl_get(htbl, words[idx]);
-		pass |= TEST_ASSERT(content != NULL);
-		pass |= TEST_ASSERT(strcmp(content, words[idx]) == 0);
+		TEST_ASSERT(content != NULL);
+		TEST_ASSERT(strcmp(content, words[idx]) == 0);
 
 		idx++;
 	}
@@ -1869,10 +1638,10 @@ static int __test_ft_htbl(void)
 		content = test_content[idx];
 		ft_htbl_assign(htbl, content, words[idx]);
 		content = ft_htbl_get(htbl, words[idx]);
-		pass |= TEST_ASSERT(content != NULL);
+		TEST_ASSERT(content != NULL);
 
 		if (content) {
-			pass |= TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
+			TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
 		}
 
 		idx++;
@@ -1880,15 +1649,15 @@ static int __test_ft_htbl(void)
 
 	test_num = htbl->size;
 	ft_htbl_resize(htbl, 2 * LIBFT_HT_SIZE);
-	pass |= TEST_ASSERT(htbl->size == 2 * LIBFT_HT_SIZE);
+	TEST_ASSERT(htbl->size == 2 * LIBFT_HT_SIZE);
 
 	idx = 0;
 	while (idx < nwords) {
 		content = ft_htbl_get(htbl, words[idx]);
-		pass |= TEST_ASSERT(content != NULL);
+		TEST_ASSERT(content != NULL);
 
 		if (content) {
-			pass |= TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
+			TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
 		}
 
 		idx++;
@@ -1904,11 +1673,11 @@ static int __test_ft_htbl(void)
 	iter = ft_htbl_iter(htbl);
 	node = iter;
 
-	pass |= TEST_ASSERT(node != NULL);
+	TEST_ASSERT(node != NULL);
 
 	idx = 0;
 	while (idx < nwords) {
-		pass |= TEST_ASSERT(node != NULL);
+		TEST_ASSERT(node != NULL);
 
 		if (node == NULL) {
 			break ;
@@ -1945,8 +1714,8 @@ static int __test_ft_htbl(void)
 	}
 
 	ft_lst_del(iter);
-	pass |= TEST_ASSERT(idx == nwords);
-	pass |= TEST_ASSERT(node == NULL);
+	TEST_ASSERT(idx == nwords);
+	TEST_ASSERT(node == NULL);
 
 	idx = 0;
 	while (idx < nwords) {
@@ -1957,22 +1726,18 @@ static int __test_ft_htbl(void)
 		idx++;
 	}
 
-	pass |= TEST_ASSERT(idx == nwords);
+	TEST_ASSERT(idx == nwords);
 
 	ft_htbl_del_key(htbl, words[3]);
 	content = ft_htbl_get(htbl, words[3]);
 
-	pass |= TEST_ASSERT(content == NULL);
+	TEST_ASSERT(content == NULL);
 
 	ft_htbl_del(htbl);
 	ft_2darray_del_null_terminated((void **)words);
 	ft_2darray_del_null_terminated((void **)test_content);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_htbl_rawkey(void)
@@ -1985,12 +1750,11 @@ static int __test_ft_htbl_rawkey(void)
 	size_t *len_arr;
 	int nwords;
 	int idx;
-	int pass = SSL_OK;
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
-	pass |= TEST_ASSERT(words != NULL);
-	pass |= TEST_ASSERT(nwords > 6);
+	TEST_ASSERT(words != NULL);
+	TEST_ASSERT(nwords > 6);
 
 	LIBFT_ALLOC(len_arr, sizeof(size_t *) * nwords);
 
@@ -2006,16 +1770,16 @@ static int __test_ft_htbl_rawkey(void)
 	}
 
 	htbl = ft_htbl_init(nwords);
-	pass |= TEST_ASSERT(htbl != NULL);
-	pass |= TEST_ASSERT(htbl->size > 0);
-	pass |= TEST_ASSERT(htbl->arr != NULL);
+	TEST_ASSERT(htbl != NULL);
+	TEST_ASSERT(htbl->size > 0);
+	TEST_ASSERT(htbl->arr != NULL);
 
 	idx = 0;
 	while (idx < nwords) {
 		ft_htbl_add_rawkey(htbl, words[idx], words[idx], len_arr[idx]);
 		content = ft_htbl_get_rawkey(htbl, words[idx], len_arr[idx]);
-		pass |= TEST_ASSERT(content != NULL);
-		pass |= TEST_ASSERT(memcmp(content, words[idx], len_arr[idx]) == 0);
+		TEST_ASSERT(content != NULL);
+		TEST_ASSERT(memcmp(content, words[idx], len_arr[idx]) == 0);
 
 		idx++;
 	}
@@ -2026,10 +1790,10 @@ static int __test_ft_htbl_rawkey(void)
 	while (idx < nwords) {
 		ft_htbl_assign_rawkey(htbl, word, words[idx], len_arr[idx]);
 		content = ft_htbl_get_rawkey(htbl, words[idx], len_arr[idx]);
-		pass |= TEST_ASSERT(content != NULL);
+		TEST_ASSERT(content != NULL);
 
 		if (content) {
-			pass |= TEST_ASSERT(memcmp(content, word, strlen(word)) == 0);
+			TEST_ASSERT(memcmp(content, word, strlen(word)) == 0);
 		}
 
 		idx++;
@@ -2039,11 +1803,7 @@ static int __test_ft_htbl_rawkey(void)
 	ft_2darray_del_null_terminated((void **)words);
 	LIBFT_FREE(len_arr);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_htbl_conversion(void)
@@ -2059,12 +1819,11 @@ static int __test_ft_htbl_conversion(void)
 	char **words;
 	int nwords;
 	int idx;
-	int pass = SSL_OK;
 
 	words = ft_strsplit(__s2, ' ');
 	nwords = ft_2darray_len_null_terminated((void **)words);
-	pass |= TEST_ASSERT(words != NULL);
-	pass |= TEST_ASSERT(nwords > 6);
+	TEST_ASSERT(words != NULL);
+	TEST_ASSERT(nwords > 6);
 
 	lst = NULL;
 	stack = ft_stack_create();
@@ -2092,10 +1851,10 @@ static int __test_ft_htbl_conversion(void)
 		key = ft_itoa(idx);
 		word = ft_htbl_get(htbl, key);
 
-		pass |= TEST_ASSERT(word != NULL);
+		TEST_ASSERT(word != NULL);
 
 		if (word) {
-			pass |= TEST_ASSERT(strcmp(word, words[idx]) == 0);
+			TEST_ASSERT(strcmp(word, words[idx]) == 0);
 		}
 
 		LIBFT_FREE(key);
@@ -2111,10 +1870,10 @@ static int __test_ft_htbl_conversion(void)
 		key = ft_itoa(idx);
 		word = ft_htbl_get(htbl, key);
 
-		pass |= TEST_ASSERT(word != NULL);
+		TEST_ASSERT(word != NULL);
 
 		if (word) {
-			pass |= TEST_ASSERT(strcmp(word, words[idx]) == 0);
+			TEST_ASSERT(strcmp(word, words[idx]) == 0);
 		}
 
 		LIBFT_FREE(key);
@@ -2130,10 +1889,10 @@ static int __test_ft_htbl_conversion(void)
 		key = ft_itoa(idx);
 		word = ft_htbl_get(htbl, key);
 
-		pass |= TEST_ASSERT(word != NULL);
+		TEST_ASSERT(word != NULL);
 
 		if (word) {
-			pass |= TEST_ASSERT(strcmp(word, words[idx]) == 0);
+			TEST_ASSERT(strcmp(word, words[idx]) == 0);
 		}
 
 		LIBFT_FREE(key);
@@ -2148,11 +1907,7 @@ static int __test_ft_htbl_conversion(void)
 
 	ft_2darray_del_null_terminated((void **)words);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int __test_ft_ntree_dfs_depth_func(t_node *node, const void *farg)
@@ -2255,7 +2010,6 @@ static int __test_ft_ntree(void)
 	int size;
 	int idx;
 	int ret;
-	int pass = SSL_OK;
 
 	const char *map = "product:0{ "\
 		"colors:1{ "\
@@ -2284,7 +2038,7 @@ static int __test_ft_ntree(void)
 
 	// construct tree from map
 	ntree = ft_ntree_construct(map);
-	pass |= TEST_ASSERT(ntree != NULL);
+	TEST_ASSERT(ntree != NULL);
 
 	// filter out words
 	// make tmp words array
@@ -2340,7 +2094,7 @@ static int __test_ft_ntree(void)
 
 	// count words in ntree using words htable
 	ret = ft_ntree_bfs(NULL, ntree, word_ht, __test_ft_ntree_helper_func);
-	pass |= TEST_ASSERT(ret == 0);
+	TEST_ASSERT(ret == 0);
 
 	// check if all words are present in ntree exactly once
 	idx = 0;
@@ -2349,7 +2103,7 @@ static int __test_ft_ntree(void)
 			break;
 		}
 
-	pass |= TEST_ASSERT(idx == nwords);
+	TEST_ASSERT(idx == nwords);
 
 	//
 	// test ntree DFS
@@ -2365,7 +2119,7 @@ static int __test_ft_ntree(void)
 
 	// count words in ntree using words htable
 	ret = ft_ntree_dfs(NULL, ntree, word_ht, __test_ft_ntree_helper_func);
-	pass |= TEST_ASSERT(ret == 0);
+	TEST_ASSERT(ret == 0);
 
 	// check if all words are present in ntree exactly once
 	idx = 0;
@@ -2374,14 +2128,14 @@ static int __test_ft_ntree(void)
 			break;
 		}
 
-	pass |= TEST_ASSERT(idx == nwords);
+	TEST_ASSERT(idx == nwords);
 
 	//
 	// check word depth distribution within ntree using DFS
 	//
 
 	ret = ft_ntree_dfs(NULL, ntree, NULL, __test_ft_ntree_dfs_depth_func);
-	pass |= TEST_ASSERT(ret == 0);
+	TEST_ASSERT(ret == 0);
 
 	//
 	// check topology of ntree nodes by matching the order of words
@@ -2391,7 +2145,7 @@ static int __test_ft_ntree(void)
 	char **tmp_ptr = words;
 
 	ret = ft_ntree_dfs(NULL, ntree, &tmp_ptr, __test_ft_ntree_dfs_order_func);
-	pass |= TEST_ASSERT(ret == 0);
+	TEST_ASSERT(ret == 0);
 
 	//
 	// test ntree "iterator"
@@ -2404,7 +2158,7 @@ static int __test_ft_ntree(void)
 
 	// get iterator list
 	iter = ft_ntree_iter(ntree);
-	pass |= TEST_ASSERT(iter != NULL);
+	TEST_ASSERT(iter != NULL);
 
 	// init counter array to zeros
 	bzero(counter_arr, sizeof(counter_arr));
@@ -2439,14 +2193,9 @@ static int __test_ft_ntree(void)
 	// size of ntree
 	size = ft_ntree_size(ntree);
 
-	pass |= TEST_ASSERT(size == nwords);
+	TEST_ASSERT(size == nwords);
 
 	ft_2darray_del_null_terminated((void **)words);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
-

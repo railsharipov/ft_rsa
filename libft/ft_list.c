@@ -175,6 +175,28 @@ size_t	ft_lst_size(t_node *lst)
 	return (size);
 }
 
+void	ft_lst_rev(t_node **lst)
+{
+	t_node	*prev;
+	t_node	*cur;
+	t_node	*next;
+
+	if (NULL == lst || NULL == *lst) {
+		return ;
+	}
+
+	prev = NULL;
+	cur = *lst;
+
+	while (cur) {
+		next = cur->next;
+		cur->next = prev;
+		prev = cur;
+		cur = next;
+	}
+	*lst = prev;
+}
+
 void	ft_lst_del(t_node *lst)
 {
 	t_node	*tmp;

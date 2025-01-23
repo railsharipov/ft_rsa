@@ -11,10 +11,14 @@
         {
           "name" : "testId",
           "in" : "path",
+          "version" : 3,
+          "size" : 36127812312,
+          "value" : -123123123123,
           "required" : true,
           "type" : "integer",
           "format" : "int64"
-        }, {
+        },
+        {
           "in" : "body",
           "name" : "body",
           "required" : false,

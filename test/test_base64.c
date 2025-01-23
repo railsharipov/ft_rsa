@@ -15,18 +15,16 @@ static int	__test_base64_check(void);
 
 int	test_base64(void)
 {
-	int	res;
-
 	if (SSL_OK != __test_base64_setup()) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
-		return (SSL_ERR);
+		TEST_FAIL();
 	}
 
-	res = __test_base64_encode();
-	res |= __test_base64_decode();
-	res |= __test_base64_check();
-
-	return (res);
+	return (
+		__test_base64_encode()
+		| __test_base64_decode()
+		| __test_base64_check()
+	);
 }
 
 static int	__test_base64_setup(void)
@@ -52,20 +50,15 @@ static int	__test_base64_encode(void)
 	char	*output;
 	size_t	outsize;
 	int		ret_val;
-	int		pass;
 
 	ret_val = base64_encode(__binary.content, __binary.size, &output, &outsize);
 
-	pass = TEST_ASSERT(SSL_OK == ret_val);
-	pass |= TEST_ASSERT(NULL != output);
-	pass |= TEST_ASSERT(outsize == __base64.size);
-	pass |= TEST_ASSERT(!ft_memcmp(output, __base64.content, outsize));
+	TEST_ASSERT(SSL_OK == ret_val);
+	TEST_ASSERT(NULL != output);
+	TEST_ASSERT(outsize == __base64.size);
+	TEST_ASSERT(!ft_memcmp(output, __base64.content, outsize));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_base64_decode(void)
@@ -73,20 +66,15 @@ static int	__test_base64_decode(void)
 	char	*output;
 	size_t	outsize;
 	int		ret_val;
-	int		pass;
 
 	ret_val = base64_decode(__base64.content, __base64.size, &output, &outsize);
 
-	pass = TEST_ASSERT(SSL_OK == ret_val);
-	pass |= TEST_ASSERT(NULL != output);
-	pass |= TEST_ASSERT(outsize == __binary.size);
-	pass |= TEST_ASSERT(!ft_memcmp(output, __binary.content, outsize));
+	TEST_ASSERT(SSL_OK == ret_val);
+	TEST_ASSERT(NULL != output);
+	TEST_ASSERT(outsize == __binary.size);
+	TEST_ASSERT(!ft_memcmp(output, __binary.content, outsize));
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_base64_check(void)
@@ -94,7 +82,6 @@ static int	__test_base64_check(void)
 	const char	inval_chars[] = "#$%^&@";
 	t_ostring	inval_b64;
 	int			ret_val;
-	int			pass;
 
 	inval_b64.size = __base64.size + sizeof(inval_chars);
 	SSL_ALLOC(inval_b64.content, inval_b64.size);
@@ -102,14 +89,10 @@ static int	__test_base64_check(void)
 	ft_memcpy(inval_b64.content, __base64.content, __base64.size);
 	ft_memcpy(inval_b64.content, inval_chars, sizeof(inval_chars));
 
-	pass = TEST_ASSERT(SSL_OK == base64_check(__base64.content, __base64.size));
-	pass |= TEST_ASSERT(SSL_OK != base64_check(inval_b64.content, inval_b64.size));
+	TEST_ASSERT(SSL_OK == base64_check(__base64.content, __base64.size));
+	TEST_ASSERT(SSL_OK != base64_check(inval_b64.content, inval_b64.size));
 
 	SSL_FREE(inval_b64.content);
 
-	if (SSL_TRUE != pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }

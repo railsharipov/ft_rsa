@@ -9,16 +9,18 @@
 
 # define TEST_LOG(LEVEL, MES, ...)	test_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-# define TEST_ENABLE_ASSERT_PASS_LOG
+// # define TEST_ENABLE_ASSERT_PASS_LOG
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 
-# define TEST_INFO(MODULE_ID)				test_info(MODULE_ID, SSL_TRUE);
-# define TEST_SUMMARY(RES_ARR, ARR_SIZE)	test_summary(RES_ARR, ARR_SIZE, SSL_TRUE);
-# define TEST_RESULT(RES, __FUN, __FIL)		test_result(RES, SSL_TRUE, __FUN, __FIL)
-# define TEST_ASSERT(EXPR)					test_assert((EXPR), #EXPR, __func__, __FILE__, __LINE__)
+# define TEST_RESULT(RES)	do { if ((RES == SSL_OK)) { TEST_LOG(INFO, TXT_B_GREEN("TEST OK")); } else { TEST_LOG(ERROR, TXT_B_RED("TEST FAIL")); } } while (0)
+# define TEST_PASS()		do { TEST_RESULT(SSL_OK); return (SSL_OK); } while (0)
+# define TEST_FAIL()		do { TEST_RESULT(SSL_ERR); return (SSL_ERR); } while (0)
 
-# define TEST_PASS()		TEST_RESULT(SSL_OK, __func__, __FILE__)
-# define TEST_FAIL()		TEST_RESULT(SSL_ERR, __func__, __FILE__)
+# ifdef TEST_ENABLE_ASSERT_PASS_LOG
+#  define TEST_ASSERT(EXPR)	do { if ((EXPR)) { TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR); } else { TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR); TEST_FAIL(); } } while (0)
+# else
+#  define TEST_ASSERT(EXPR)	do { if (!(EXPR)) { TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR); TEST_FAIL(); } } while (0)
+# endif
 
 typedef int	(*FUNC_TEST)(void);
 
@@ -41,9 +43,9 @@ extern const size_t		TEST_DESC_ARR_SIZE;
 int		test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int		test_info(int module_id, int verbose);
-int		test_assert(int boolean, const char *expr, const char *func, const char *file, int line);
+int		test_assert(int boolean, const char *expr);
 int		test_get_file_content(const char *testfile_path, t_ostring *ostring);
-int		test_result(int res, int verbose, const char *func_name, const char *file_name);
+int		test_result(int res, int verbose);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 
 int		test_libft(void);

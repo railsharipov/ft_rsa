@@ -7,15 +7,42 @@
 #include <libft/list.h>
 #include <libft/tuple.h>
 #include <libft/queue.h>
+
 /*
-**	VALUE	=	OBJ | ARR | STR | NUM | BOOL | NULL
-**	NULL	=	null
-**	BOOL	=	true | false
-**	NUM		=	[0-9]+
-**	STR		=	"[^"]*"
-**	OBJ		=	"{" (KV ("," KV)*)? "}"
-**	ARR		=	"[" (VALUE ("," VALUE)*)? "]"
-**	KV		=	STR ":" VALUE
+** VALUE ::= CHOICE {
+**     obj     OBJ,
+**     arr     ARR,
+**     str     STR,
+**     num     NUM,
+**     bool    BOOL,
+**     null    NULL
+** }
+**
+** NULL ::= NULL
+**
+** BOOL ::= BOOLEAN
+**
+** NUM ::= CHOICE {
+**     integer         INTEGER,
+**     float           REAL,
+**     exponential     REAL
+** }
+**
+** STR ::= UTF8String
+**
+** OBJ ::= SEQUENCE {
+**     "{" kvs "}" WHERE kvs ::= KV *("," KV)
+** }
+**
+** ARR ::= SEQUENCE {
+**     "[" values "]" WHERE values ::= VALUE *("," VALUE)
+** }
+**
+** KV ::= SEQUENCE {
+**     key STR,
+**     colon ":",
+**     value VALUE
+** }
 */
 
 enum	e_json_status
@@ -323,11 +350,6 @@ static int	__parse_string(const char *s, t_node *node)
 	return (JSON_MATCH);
 }
 
-/*
-**	NOTE:
-**		use node->key for storing key
-*/
-
 static int	__parse_kv(const char *s, t_node *node)
 {
 	t_node	*key_node, *value_node;
@@ -370,16 +392,16 @@ static int	__parse_kv(const char *s, t_node *node)
 label_exit:
 	if (status != JSON_MATCH) {
 		__pos = old_pos;
+		ft_node_del(key_node);
+		ft_node_del(value_node);
 	}
-	ft_node_del(key_node);
-	ft_node_del(value_node);
 
 	return (status);
 }
 
 static int	__parse_object(const char *s, t_node *node)
 {
-	t_queue	*kv_node_queue;
+	t_node	*kv_node_list;
 	size_t  old_pos;
 	int     status;
 
@@ -388,7 +410,7 @@ static int	__parse_object(const char *s, t_node *node)
 
 	JSON_LOG(TRACE, "parsing object at index %zu: %.20s...", __pos, s + __pos);
 
-	kv_node_queue = ft_queue_create();
+	kv_node_list = NULL;
 
 	if (s[__pos] != '{') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -397,9 +419,9 @@ static int	__parse_object(const char *s, t_node *node)
 	}
 	__pos++;
 
-	ft_queue_enqueue_node(kv_node_queue, ft_node_create());
+	ft_lst_prepend(&kv_node_list, ft_node_create());
 
-	if (JSON_MATCH != (status = __parse_kv(s, ft_queue_first(kv_node_queue)))) {
+	if (JSON_MATCH != (status = __parse_kv(s, kv_node_list))) {
 		JSON_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
 		goto label_exit;
 	}
@@ -408,9 +430,9 @@ static int	__parse_object(const char *s, t_node *node)
 	while (s[__pos] == ',') {
 		__pos++;
 
-		ft_queue_enqueue_node(kv_node_queue, ft_node_create());
+		ft_lst_prepend(&kv_node_list, ft_node_create());
 
-		if (JSON_MATCH != (status = __parse_kv(s, ft_queue_first(kv_node_queue)))) {
+		if (JSON_MATCH != (status = __parse_kv(s, kv_node_list))) {
 			JSON_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
 			goto label_exit;
 		}
@@ -424,7 +446,7 @@ static int	__parse_object(const char *s, t_node *node)
 	__pos++;
 
 	node->type = JSON_OBJECT;
-	node->content = ft_queue_pop_list(kv_node_queue);
+	node->content = kv_node_list;
 	node->size = sizeof(t_node);
 	node->f_del_content = json_get_f_del(JSON_OBJECT);
 
@@ -433,15 +455,15 @@ static int	__parse_object(const char *s, t_node *node)
 label_exit:
 	if (status != JSON_MATCH) {
 		__pos = old_pos;
+		ft_lst_del(kv_node_list);
 	}
-	ft_queue_del(kv_node_queue);
 
 	return (status);
 }
 
 static int	__parse_array(const char *s, t_node *node)
 {
-	t_queue	*value_node_queue;
+	t_node	*value_node_list;
 	size_t	old_pos;
 	int 	status;
 
@@ -450,7 +472,7 @@ static int	__parse_array(const char *s, t_node *node)
 
 	JSON_LOG(TRACE, "parsing array at index %zu: %.20s...", __pos, s + __pos);
 
-	value_node_queue = ft_queue_create();
+	value_node_list = NULL;
 
 	if (s[__pos] != '[') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -459,9 +481,9 @@ static int	__parse_array(const char *s, t_node *node)
 	}
 	__pos++;
 
-	ft_queue_enqueue_node(value_node_queue, ft_node_create());
+	ft_lst_prepend(&value_node_list, ft_node_create());
 
-	if (JSON_MATCH != (status = __parse_value(s, ft_queue_first(value_node_queue)))) {
+	if (JSON_MATCH != (status = __parse_value(s, value_node_list))) {
 		JSON_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", __pos, s + __pos);
 		goto label_exit;
 	}
@@ -470,9 +492,9 @@ static int	__parse_array(const char *s, t_node *node)
 	while (s[__pos] == ',') {
 		__pos++;
 
-		ft_queue_enqueue_node(value_node_queue, ft_node_create());
+		ft_lst_prepend(&value_node_list, ft_node_create());
 
-		if (JSON_MATCH != (status = __parse_value(s, ft_queue_first(value_node_queue)))) {
+		if (JSON_MATCH != (status = __parse_value(s, value_node_list))) {
 			JSON_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", __pos, s + __pos);
 			goto label_exit;
 		}
@@ -486,7 +508,7 @@ static int	__parse_array(const char *s, t_node *node)
 	__pos++;
 
 	node->type = JSON_ARRAY;
-	node->content = ft_queue_pop_list(value_node_queue);
+	node->content = value_node_list;
 	node->size = sizeof(t_node);
 	node->f_del_content = json_get_f_del(JSON_ARRAY);
 
@@ -495,8 +517,8 @@ static int	__parse_array(const char *s, t_node *node)
 label_exit:
 	if (status != JSON_MATCH) {
 		__pos = old_pos;
+		ft_lst_del(value_node_list);
 	}
-	ft_queue_del(value_node_queue);
 
 	return (status);
 }

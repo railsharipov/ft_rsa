@@ -9,7 +9,7 @@ static t_num	__zero_num;
 static t_num	__one_num;
 
 static int	__test_bnum_setup(void);
-static void	__test_bnum_cleanup(void);
+static int	__test_bnum_cleanup(void);
 
 static int	__test_bnum_to_hex_u(void);
 static int	__test_bnum_from_hex_u(void);
@@ -51,54 +51,54 @@ static int	__test_bnum_m_powmod(void);
 
 int	test_bnum(void)
 {
-	int	res;
+	int		ret;
 
 	if (SSL_OK != __test_bnum_setup()) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
-		return (SSL_ERR);
+		TEST_FAIL();
 	}
 
-	res = __test_bnum_to_hex_u();
-	res |= __test_bnum_from_hex_u();
-	res |= __test_bnum_to_dec();
-	res |= __test_bnum_from_dec();
-	res |= __test_bnum_abs();
-	res |= __test_bnum_add_dig_u();
-	res |= __test_bnum_sub_dig_u();
-	res |= __test_bnum_add_dig();
-	res |= __test_bnum_sub_dig();
-	res |= __test_bnum_add();
-	res |= __test_bnum_sub();
-	res |= __test_bnum_increm_u();
-	res |= __test_bnum_decrem_u();
-	res |= __test_bnum_from_bytes_u();
-	res |= __test_bnum_to_bytes_u();
-	res |= __test_bnum_skip_zeros();
-	res |= __test_bnum_lsh_dig_inpl();
-	res |= __test_bnum_rsh_dig_inpl();
-	res |= __test_bnum_lsh_bit_inpl();
-	res |= __test_bnum_rsh_bit_inpl();
-	res |= __test_bnum_cmp_dig();
-	res |= __test_bnum_cmp_u();
-	res |= __test_bnum_cmp();
-	res |= __test_bnum_copy();
-	res |= __test_bnum_mul();
-	res |= __test_bnum_sqr();
-	res |= __test_bnum_div2_inpl();
-	res |= __test_bnum_divmod();
-	res |= __test_bnum_divmod_dig();
-	res |= __test_bnum_exp();
-	res |= __test_bnum_exp2();
-	res |= __test_bnum_gcd();
-	res |= __test_bnum_invmod();
-	res |= __test_bnum_lcm();
-	res |= __test_bnum_lmbit();
-	res |= __test_bnum_powmod();
-	res |= __test_bnum_m_powmod();
+	ret = __test_bnum_to_hex_u()
+		| __test_bnum_from_hex_u()
+		| __test_bnum_to_dec()
+		| __test_bnum_from_dec()
+		| __test_bnum_abs()
+		| __test_bnum_add_dig_u()
+		| __test_bnum_sub_dig_u()
+		| __test_bnum_add_dig()
+		| __test_bnum_sub_dig()
+		| __test_bnum_add()
+		| __test_bnum_sub()
+		| __test_bnum_increm_u()
+		| __test_bnum_decrem_u()
+		| __test_bnum_from_bytes_u()
+		| __test_bnum_to_bytes_u()
+		| __test_bnum_skip_zeros()
+		| __test_bnum_lsh_dig_inpl()
+		| __test_bnum_rsh_dig_inpl()
+		| __test_bnum_lsh_bit_inpl()
+		| __test_bnum_rsh_bit_inpl()
+		| __test_bnum_cmp_dig()
+		| __test_bnum_cmp_u()
+		| __test_bnum_cmp()
+		| __test_bnum_copy()
+		| __test_bnum_mul()
+		| __test_bnum_sqr()
+		| __test_bnum_div2_inpl()
+		| __test_bnum_divmod()
+		| __test_bnum_divmod_dig()
+		| __test_bnum_exp()
+		| __test_bnum_exp2()
+		| __test_bnum_gcd()
+		| __test_bnum_invmod()
+		| __test_bnum_lcm()
+		| __test_bnum_lmbit()
+		| __test_bnum_powmod()
+		| __test_bnum_m_powmod();
 
 	__test_bnum_cleanup();
 
-	return (res);
+	return (ret);
 }
 
 static int	__test_bnum_setup(void)
@@ -116,10 +116,12 @@ static int	__test_bnum_setup(void)
 	return (SSL_OK);
 }
 
-static void	__test_bnum_cleanup(void)
+static int	__test_bnum_cleanup(void)
 {
 	bnum_clear(&__zero_num);
 	bnum_clear(&__one_num);
+
+	return (SSL_OK);
 }
 
 static int	__test_bnum_to_hex_u(void)
@@ -129,9 +131,7 @@ static int	__test_bnum_to_hex_u(void)
 	uint64_t	digit;
 	char		*test_hex, *zero_test_hex, *ref_hex, *ref_hex_ptr;
 	size_t		hexsize, digit_hexsize;
-	int			idx, pass;
-
-	pass = SSL_OK;
+	int			idx;
 
 	bnum_init(&test_num);
 	bnum_set_rand(&test_num, 1709);
@@ -157,28 +157,21 @@ static int	__test_bnum_to_hex_u(void)
 	test_hex = bnum_to_hex_u(&test_num);
 	zero_test_hex = bnum_to_hex_u(&__zero_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(ref_hex, test_hex) == 0);
-	pass |= TEST_ASSERT(ft_strcmp("0", zero_test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(ref_hex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp("0", zero_test_hex) == 0);
 
 	bnum_clear(&test_num);
 	SSL_FREE(ref_hex);
 	SSL_FREE(test_hex);
 	SSL_FREE(zero_test_hex);
 
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
 
 static int	__test_bnum_from_hex_u(void)
 {
 	t_num	test_num, *tmp_num;
 	char	*test_hex, *zero_test_hex, *ref_hex;
-	int		pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 	bnum_set_rand(&test_num, 2366);
@@ -193,19 +186,15 @@ static int	__test_bnum_from_hex_u(void)
 	zero_test_hex = bnum_to_hex_u(tmp_num);
 	bnum_del(tmp_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(zero_test_hex, "0") == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(zero_test_hex, "0") == 0);
 
 	bnum_clear(&test_num);
 	SSL_FREE(ref_hex);
 	SSL_FREE(test_hex);
 	SSL_FREE(zero_test_hex);
 
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
 
 static int __test_bnum_to_dec(void)
@@ -215,33 +204,26 @@ static int __test_bnum_to_dec(void)
 	const char *ref_dec_neg = "-128423608384323182818436687568124979770729";
 	char 	*test_dec, *test_dec_neg, *test_dec_zero;
 	t_num	*test_num;
-	int 	pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(ref_hex);
 	test_dec = bnum_to_dec(test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_dec, ref_dec) == 0);
+	TEST_ASSERT(ft_strcmp(test_dec, ref_dec) == 0);
 
 	test_num->sign = BNUM_NEG;
 	test_dec_neg = bnum_to_dec(test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_dec_neg, ref_dec_neg) == 0);
+	TEST_ASSERT(ft_strcmp(test_dec_neg, ref_dec_neg) == 0);
 	bnum_bzero(test_num);
 
 	bnum_set_dig_u(test_num, 0u);
 	test_dec_zero = bnum_to_dec(test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_dec_zero, "0") == 0);
+	TEST_ASSERT(ft_strcmp(test_dec_zero, "0") == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_dec);
 	SSL_FREE(test_dec_neg);
 	SSL_FREE(test_dec_zero);
 
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
 
 static int __test_bnum_from_dec(void)
@@ -249,9 +231,6 @@ static int __test_bnum_from_dec(void)
 	char 	*test_dec, *test_dec_neg;
 	char	*test_hex, *test_hex_from_neg, *ref_hex;
 	t_num	*test_num, tmp_num;
-	int 	pass;
-
-	pass = SSL_OK;
 
 	test_num = NULL;
 	bnum_init(&tmp_num);
@@ -261,20 +240,20 @@ static int __test_bnum_from_dec(void)
 	test_dec = bnum_to_dec(&tmp_num);
 	test_num = bnum_from_dec(test_dec);
 	test_hex = bnum_to_hex_u(test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
 	bnum_del(test_num);
 
 	tmp_num.sign = BNUM_NEG;
 	test_dec_neg = bnum_to_dec(&tmp_num);
 	test_num = bnum_from_dec(test_dec_neg);
 	test_hex_from_neg = bnum_to_hex_u(test_num);
-	pass |= TEST_ASSERT(test_dec_neg[0] == '-');
-	pass |= TEST_ASSERT(ft_strcmp(test_hex_from_neg, ref_hex) == 0);
+	TEST_ASSERT(test_dec_neg[0] == '-');
+	TEST_ASSERT(ft_strcmp(test_hex_from_neg, ref_hex) == 0);
 	bnum_del(test_num);
 
 	test_num = bnum_from_dec("0");
-	pass |= TEST_ASSERT(BNUM_ZERO(test_num));
-	pass |= TEST_ASSERT(BNUM_SIGN(test_num) == BNUM_POS);
+	TEST_ASSERT(BNUM_ZERO(test_num));
+	TEST_ASSERT(BNUM_SIGN(test_num) == BNUM_POS);
 	bnum_del(test_num);
 
 	bnum_clear(&tmp_num);
@@ -284,20 +263,13 @@ static int __test_bnum_from_dec(void)
 	SSL_FREE(test_hex);
 	SSL_FREE(test_hex_from_neg);
 
-	if (SSL_OK != pass) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
 
 static int __test_bnum_abs(void)
 {
 	char	*hex;
 	t_num	test_num, res_num;
-	int		pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 	bnum_init(&res_num);
@@ -305,19 +277,14 @@ static int __test_bnum_abs(void)
 	test_num.sign = BNUM_NEG;
 	bnum_abs(&test_num, &res_num);
 
-	pass |= TEST_ASSERT(test_num.len == res_num.len);
-	pass |= TEST_ASSERT(res_num.sign == BNUM_POS);
-	pass |= TEST_ASSERT(
-		ft_memcmp(test_num.val, res_num.val, res_num.len * sizeof(uint64_t)) == 0);
+	TEST_ASSERT(test_num.len == res_num.len);
+	TEST_ASSERT(res_num.sign == BNUM_POS);
+	TEST_ASSERT(ft_memcmp(test_num.val, res_num.val, res_num.len * sizeof(uint64_t)) == 0);
 
 	bnum_clear(&test_num);
 	bnum_clear(&res_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_add_dig_u(void)
@@ -327,9 +294,6 @@ static int	__test_bnum_add_dig_u(void)
 	char		*test_hex;
 	uint64_t	digit = 0x592d6266f6a4090d;
 	t_num		*n1, test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	n1 = bnum_from_hex_u(n1_hex);
 
@@ -337,17 +301,13 @@ static int	__test_bnum_add_dig_u(void)
 	bnum_add_dig_u(n1, digit, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
 
 	bnum_del(n1);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_sub_dig_u(void)
@@ -357,9 +317,6 @@ static int	__test_bnum_sub_dig_u(void)
 	char		*test_hex;
 	uint64_t	digit = 0x592d6266f6a4090d;
 	t_num		*n1, test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	n1 = bnum_from_hex_u(n1_hex);
 
@@ -367,17 +324,13 @@ static int	__test_bnum_sub_dig_u(void)
 	bnum_sub_dig_u(n1, digit, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
 
 	bnum_del(n1);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_add_dig(void)
@@ -388,9 +341,6 @@ static int	__test_bnum_add_dig(void)
 	char		*test_hex, *test_hex2;
 	uint64_t	digit = 0x592d6266f6a4090d;
 	t_num		*n1, test_num, test_num2;
-	int			pass;
-
-	pass = SSL_OK;
 
 	n1 = bnum_from_hex_u(n1_hex);
 
@@ -403,19 +353,15 @@ static int	__test_bnum_add_dig(void)
 	bnum_add_dig(n1, digit, &test_num2);
 	test_hex2 = bnum_to_hex_u(&test_num2);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex2, ref_hex2) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex2, ref_hex2) == 0);
 
 	bnum_del(n1);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 	SSL_FREE(test_hex2);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_sub_dig(void)
@@ -426,9 +372,6 @@ static int	__test_bnum_sub_dig(void)
 	char		*test_hex, *test_hex2;
 	uint64_t	digit = 0x592d6266f6a4090d;
 	t_num		*n1, test_num, test_num2;
-	int			pass;
-
-	pass = SSL_OK;
 
 	n1 = bnum_from_hex_u(n1_hex);
 
@@ -441,19 +384,15 @@ static int	__test_bnum_sub_dig(void)
 	bnum_sub_dig(n1, digit, &test_num2);
 	test_hex2 = bnum_to_hex_u(&test_num2);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex2, ref_hex2) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex2, ref_hex2) == 0);
 
 	bnum_del(n1);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 	SSL_FREE(test_hex2);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_add(void)
@@ -464,9 +403,6 @@ static int	__test_bnum_add(void)
 	const char	*ref_hex2 = "288878d563b5f7e3e6dfacc031eef3e02837";
 	char		*test_hex;
 	t_num		*n1, *n2, test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -475,8 +411,8 @@ static int	__test_bnum_add(void)
 
 	bnum_add(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_POS);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_POS);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
@@ -484,8 +420,8 @@ static int	__test_bnum_add(void)
 	n2->sign = BNUM_POS;
 	bnum_add(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_POS);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_POS);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
@@ -493,8 +429,8 @@ static int	__test_bnum_add(void)
 	n2->sign = BNUM_NEG;
 	bnum_add(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_NEG);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_NEG);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
@@ -502,19 +438,15 @@ static int	__test_bnum_add(void)
 	n2->sign = BNUM_NEG;
 	bnum_add(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_NEG);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_NEG);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
 	bnum_del(n1);
 	bnum_del(n2);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_sub(void)
@@ -525,9 +457,6 @@ static int	__test_bnum_sub(void)
 	const char	*ref_hex2 = "2b7b4733faefc1e220afc06b0d6a765200ef";
 	char		*test_hex;
 	t_num		*n1, *n2, test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -536,8 +465,8 @@ static int	__test_bnum_sub(void)
 
 	bnum_sub(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_NEG);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_NEG);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
@@ -545,8 +474,8 @@ static int	__test_bnum_sub(void)
 	n2->sign = BNUM_POS;
 	bnum_sub(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_NEG);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_NEG);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
@@ -554,8 +483,8 @@ static int	__test_bnum_sub(void)
 	n2->sign = BNUM_NEG;
 	bnum_sub(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_POS);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex2) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_POS);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
@@ -563,19 +492,15 @@ static int	__test_bnum_sub(void)
 	n2->sign = BNUM_NEG;
 	bnum_sub(n1, n2, &test_num);
 	test_hex = bnum_to_hex_u(&test_num);
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
-	pass |= TEST_ASSERT(test_num.sign == BNUM_POS);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(test_num.sign == BNUM_POS);
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 
 	bnum_del(n1);
 	bnum_del(n2);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_increm_u(void)
@@ -584,25 +509,18 @@ static int	__test_bnum_increm_u(void)
 	const char	*ref_hex = "179672f4b9ce4ff1ce809d56dbdc138ec5d";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 
 	bnum_increm_u(test_num);
 	test_hex = bnum_to_hex_u(test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_decrem_u(void)
@@ -611,25 +529,18 @@ static int	__test_bnum_decrem_u(void)
 	const char	*ref_hex = "179672f4b9ce4ff1ce809d56dbdc138ec5b";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 
 	bnum_decrem_u(test_num);
 	test_hex = bnum_to_hex_u(test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
+	TEST_ASSERT(ft_strcmp(test_hex, ref_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_from_bytes_u(void)
@@ -638,9 +549,6 @@ static int	__test_bnum_from_bytes_u(void)
 	char		*test_hex, *bin;
 	size_t		binsize, hexsize;
 	t_num		test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	hexsize = ft_strlen(hex);
 	binsize = NBITS_TO_NBYTES(4 * hexsize);
@@ -652,17 +560,13 @@ static int	__test_bnum_from_bytes_u(void)
 	bnum_from_bytes_u(&test_num, bin, binsize);
 	test_hex = bnum_to_hex_u(&test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
 
 	bnum_clear(&test_num);
 	SSL_FREE(test_hex);
 	SSL_FREE(bin);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_to_bytes_u(void)
@@ -671,26 +575,19 @@ static int	__test_bnum_to_bytes_u(void)
 	char		*bin, *test_hex;
 	size_t		binsize;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 	bnum_to_bytes_u(test_num, &bin, &binsize);
 
 	test_hex = ft_bytes_to_hex(bin, binsize);
 
-	pass |= TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 	SSL_FREE(bin);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_skip_zeros(void)
@@ -698,9 +595,6 @@ static int	__test_bnum_skip_zeros(void)
 	const char	*hex = "179672f4b9ce4ff1ce809d56dbdc138ec5c";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 	bnum_increase_size(test_num, test_num->len+1);
@@ -709,16 +603,12 @@ static int	__test_bnum_skip_zeros(void)
 	bnum_skip_zeros(test_num);
 	test_hex = bnum_to_hex_u(test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_lsh_dig_inpl(void)
@@ -727,24 +617,17 @@ static int	__test_bnum_lsh_dig_inpl(void)
 	const char	*refhex = "179672f4b9ce4ff1ce809d56dbdc138ec5c000000000000000";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 
 	bnum_lsh_dig_inpl(test_num, 1);
 	test_hex = bnum_to_hex_u(test_num);
-	pass |= TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_rsh_dig_inpl(void)
@@ -753,25 +636,18 @@ static int	__test_bnum_rsh_dig_inpl(void)
 	const char	*refhex = "179672f4b9ce4ff1ce80";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 
 	bnum_rsh_dig_inpl(test_num, 1);
 	test_hex = bnum_to_hex_u(test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_lsh_bit_inpl(void)
@@ -780,25 +656,18 @@ static int	__test_bnum_lsh_bit_inpl(void)
 	const char	*refhex = "bcb397a5ce727f8e7404eab6dee09c762e00000000000000000";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 
 	bnum_lsh_bit_inpl(test_num, 67);
 	test_hex = bnum_to_hex_u(test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_rsh_bit_inpl(void)
@@ -807,25 +676,18 @@ static int	__test_bnum_rsh_bit_inpl(void)
 	const char	*refhex = "2f2ce5e9739c9fe39d";
 	char		*test_hex;
 	t_num		*test_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	test_num = bnum_from_hex_u(hex);
 
 	bnum_rsh_bit_inpl(test_num, 67);
 	test_hex = bnum_to_hex_u(test_num);
 
-	pass |= TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
+	TEST_ASSERT(ft_strcmp(refhex, test_hex) == 0);
 
 	bnum_del(test_num);
 	SSL_FREE(test_hex);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_cmp_dig(void)
@@ -834,51 +696,45 @@ static int	__test_bnum_cmp_dig(void)
 	const char	*hex2 = "179672f4b9ce4ff1ce809d56dbd";
 	const char	*hex3 = "4b9ce4ff1ce9";
 	t_num		*test_num, *test_num2, *test_num3;
-	int			res, pass;
-
-	pass = SSL_OK;
+	int			res;
 
 	test_num = bnum_from_hex_u(hex);
 	test_num2 = bnum_from_hex_u(hex2);
 	test_num3 = bnum_from_hex_u(hex3);
 
 	res = bnum_cmp_dig(test_num, 0x972f4b9ce4ff1ce8);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	res = bnum_cmp_dig(test_num, 0x4b9ce4ff1ce7);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	test_num->sign = BNUM_NEG;
 	res = bnum_cmp_dig(test_num, 0x72f4b9ce4ff1ce8);
-	pass |= TEST_ASSERT(res < 0);
+	TEST_ASSERT(res < 0);
 
 	res = bnum_cmp_dig(test_num2, 0x972f4b9ce4ff1ce8);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	res = bnum_cmp_dig(test_num2, 0x4b9ce4ff1ce7);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	res = bnum_cmp_dig(test_num3, 0x972f4b9ce4ff1ce8);
-	pass |= TEST_ASSERT(res < 0);
+	TEST_ASSERT(res < 0);
 
 	res = bnum_cmp_dig(test_num3, 0x4b9ce4ff1ce7);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	res = bnum_cmp_dig(test_num3, 0x4b9ce4ff1cff);
-	pass |= TEST_ASSERT(res < 0);
+	TEST_ASSERT(res < 0);
 
 	res = bnum_cmp_dig(test_num3, 0x4b9ce4ff1ce9);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	bnum_del(test_num);
 	bnum_del(test_num2);
 	bnum_del(test_num3);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_cmp_u(void)
@@ -886,30 +742,24 @@ static int	__test_bnum_cmp_u(void)
 	const char	*hex = "179672f4b9ce4ff1ce809d56dbdc138ec5caaa123123";
 	const char	*hex2 = "179672f4b9ce4ff1ce809d56dbd";
 	t_num		*test_num, *test_num2;
-	int			res, pass;
-
-	pass = SSL_OK;
+	int			res;
 
 	test_num = bnum_from_hex_u(hex);
 	test_num2 = bnum_from_hex_u(hex2);
 
 	res = bnum_cmp_u(test_num, test_num2);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	res = bnum_cmp_u(test_num2, test_num);
-	pass |= TEST_ASSERT(res < 0);
+	TEST_ASSERT(res < 0);
 
 	res = bnum_cmp_u(test_num, test_num);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	bnum_del(test_num);
 	bnum_del(test_num2);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_cmp(void)
@@ -917,9 +767,7 @@ static int	__test_bnum_cmp(void)
 	const char	*hex = "179672f4b9ce4ff1ce809d56dbdc138ec5caaa123123";
 	const char	*hex2 = "179672f4b9ce4ff1ce809d56dbd";
 	t_num		*test_num, *test_num2;
-	int			res, pass;
-
-	pass = SSL_OK;
+	int			res;
 
 	test_num = bnum_from_hex_u(hex);
 	test_num2 = bnum_from_hex_u(hex2);
@@ -927,64 +775,53 @@ static int	__test_bnum_cmp(void)
 	test_num->sign = BNUM_POS;
 	test_num2->sign = BNUM_POS;
 	res = bnum_cmp(test_num, test_num2);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	test_num->sign = BNUM_NEG;
 	test_num2->sign = BNUM_NEG;
 	res = bnum_cmp(test_num, test_num2);
-	pass |= TEST_ASSERT(res < 0);
+	TEST_ASSERT(res < 0);
 
 	test_num->sign = BNUM_NEG;
 	test_num2->sign = BNUM_POS;
 	res = bnum_cmp(test_num, test_num2);
-	pass |= TEST_ASSERT(res < 0);
+	TEST_ASSERT(res < 0);
 
 	test_num->sign = BNUM_POS;
 	test_num2->sign = BNUM_NEG;
 	res = bnum_cmp(test_num, test_num2);
-	pass |= TEST_ASSERT(res > 0);
+	TEST_ASSERT(res > 0);
 
 	test_num->sign = BNUM_NEG;
 	res = bnum_cmp(test_num, test_num);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	test_num->sign = BNUM_POS;
 	res = bnum_cmp(test_num, test_num);
-	pass |= TEST_ASSERT(res == 0);
+	TEST_ASSERT(res == 0);
 
 	bnum_del(test_num);
 	bnum_del(test_num2);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_copy(void)
 {
 	const char	*hex = "179672f4b9ce4ff1ce809d56dbdc138ec5caaa123123";
 	t_num	*num, copy;
-	int		pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&copy);
 
 	num = bnum_from_hex_u(hex);
 	bnum_copy(num, &copy);
 
-	pass |= TEST_ASSERT(bnum_cmp(num, &copy) == 0);
+	TEST_ASSERT(bnum_cmp(num, &copy) == 0);
 
 	bnum_del(num);
 	bnum_clear(&copy);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_mul(void)
@@ -1008,9 +845,6 @@ static int	__test_bnum_mul(void)
 								"71df2dade99e16b7445ccf764e5355ebc503e29fc86d2a"\
 								"634435d9d918a3a3";
 	t_num			*num1, *num2, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1019,30 +853,26 @@ static int	__test_bnum_mul(void)
 	ref_num = bnum_from_hex_u(ref_hex);
 
 	bnum_mul_comba(num1, num2, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_mul(num1, num2, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_exp(num1, 10u, num1);
 	bnum_exp(num2, 10u, num2);
 	bnum_mul_karatsuba(num1, num2, &test_num);
 	bnum_mul_comba(num1, num2, ref_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_mul(num1, num2, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_del(num1);
 	bnum_del(num2);
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_sqr(void)
@@ -1066,9 +896,6 @@ static int	__test_bnum_sqr(void)
 								"7f837543a30f5fae579440f86b32ffc1da1299493d2f3f"\
 								"6efc89";
 	t_num			*num, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1076,28 +903,24 @@ static int	__test_bnum_sqr(void)
 	ref_num = bnum_from_hex_u(ref_hex);
 
 	bnum_sqr_comba(num, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_sqr(num, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_exp(num, 10u, num);
 	bnum_sqr_karatsuba(num, &test_num);
 	bnum_sqr_comba(num, ref_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_sqr(num, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_del(num);
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_div2_inpl(void)
@@ -1107,34 +930,27 @@ static int	__test_bnum_div2_inpl(void)
 	const char	*ref_hex = "30f178f5944738ef68b0b0bc03a227df5e544842662b528e72da6709bacee7e6";
 	const char	*ref_hex2 = "30f178f5944738ef68b0b0bc03a227df5e544842662b528e72da6709bacee7e7";
 	t_num	*num, *ref_num;
-	int		pass;
-
-	pass = SSL_OK;
 
 	ref_num = bnum_from_hex_u(ref_hex);
 	num = bnum_from_hex_u(hex);
 	bnum_div2_inpl(num);
-	pass |= TEST_ASSERT(bnum_cmp(num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(num, ref_num) == 0);
 	bnum_del(num);
 	bnum_del(ref_num);
 
 	ref_num = bnum_from_hex_u(ref_hex2);
 	num = bnum_from_hex_u(hex2);
 	bnum_div2_inpl(num);
-	pass |= TEST_ASSERT(bnum_cmp(num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(num, ref_num) == 0);
 	bnum_del(num);
 	bnum_del(ref_num);
 
 	num = bnum_from_hex_u("0");
 	bnum_div2_inpl(num);
-	pass |= TEST_ASSERT(bnum_cmp(num, &__zero_num) == 0);
+	TEST_ASSERT(bnum_cmp(num, &__zero_num) == 0);
 	bnum_del(num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_divmod(void)
@@ -1144,9 +960,6 @@ static int	__test_bnum_divmod(void)
 	const char	*ref_quot_hex = "b32a27bb";
 	const char	*ref_rem_hex = "132fd09e5fa8b7c3485487add0a3ce69418f";
 	t_num		*num, *div_num, quot_num, rem_num, *ref_quot_num, *ref_rem_num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	bnum_init_multi(&quot_num, &rem_num, NULL);
 
@@ -1157,14 +970,14 @@ static int	__test_bnum_divmod(void)
 
 	bnum_divmod(num, div_num, &quot_num, &rem_num);
 
-	pass |= TEST_ASSERT(bnum_cmp(&quot_num, ref_quot_num) == 0);
-	pass |= TEST_ASSERT(bnum_cmp(&rem_num, ref_rem_num) == 0);
+	TEST_ASSERT(bnum_cmp(&quot_num, ref_quot_num) == 0);
+	TEST_ASSERT(bnum_cmp(&rem_num, ref_rem_num) == 0);
 
 	bnum_set_dig_u(num, 0);
 	bnum_divmod(num, div_num, &quot_num, &rem_num);
 
-	pass |= TEST_ASSERT(bnum_cmp(&quot_num, &__zero_num) == 0);
-	pass |= TEST_ASSERT(bnum_cmp(&rem_num, &__zero_num) == 0);
+	TEST_ASSERT(bnum_cmp(&quot_num, &__zero_num) == 0);
+	TEST_ASSERT(bnum_cmp(&rem_num, &__zero_num) == 0);
 
 	bnum_del(num);
 	bnum_del(div_num);
@@ -1172,11 +985,7 @@ static int	__test_bnum_divmod(void)
 	bnum_del(ref_rem_num);
 	bnum_clear_multi(&quot_num, &rem_num, NULL);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_divmod_dig(void)
@@ -1187,9 +996,6 @@ static int	__test_bnum_divmod_dig(void)
 	const uint64_t	ref_rem_digit = 0x18663777a03998eb;
 	t_num			*num, quot_num, *ref_quot_num;
 	uint64_t		rem_digit;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&quot_num);
 
@@ -1198,24 +1004,20 @@ static int	__test_bnum_divmod_dig(void)
 
 	bnum_divmod_dig(num, div_digit, &quot_num, &rem_digit);
 
-	pass |= TEST_ASSERT(bnum_cmp(&quot_num, ref_quot_num) == 0);
-	pass |= TEST_ASSERT(rem_digit == ref_rem_digit);
+	TEST_ASSERT(bnum_cmp(&quot_num, ref_quot_num) == 0);
+	TEST_ASSERT(rem_digit == ref_rem_digit);
 
 	bnum_set_dig_u(num, 0);
 	bnum_divmod_dig(num, div_digit, &quot_num, &rem_digit);
 
-	pass |= TEST_ASSERT(bnum_cmp(&quot_num, &__zero_num) == 0);
-	pass |= TEST_ASSERT(rem_digit == 0);
+	TEST_ASSERT(bnum_cmp(&quot_num, &__zero_num) == 0);
+	TEST_ASSERT(rem_digit == 0);
 
 	bnum_del(num);
 	bnum_del(ref_quot_num);
 	bnum_clear(&quot_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_exp(void)
@@ -1230,9 +1032,6 @@ static int	__test_bnum_exp(void)
 		"5fab55fa96c1c70f81c8e94e745968ff88e5cf469";
 	const uint64_t	exp_digit = 0xa;
 	t_num			*num, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1240,23 +1039,19 @@ static int	__test_bnum_exp(void)
 	ref_num = bnum_from_hex_u(ref_hex);
 
 	bnum_exp(num, exp_digit, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_exp(num, 0, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
 
 	bnum_exp(&__zero_num, exp_digit, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, &__zero_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, &__zero_num) == 0);
 
 	bnum_del(num);
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_exp2(void)
@@ -1270,28 +1065,21 @@ static int	__test_bnum_exp2(void)
 								"00000000000000000000000000000";
 	const uint64_t	powers_of_two_digit = 0x400;
 	t_num			test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
 	ref_num = bnum_from_hex_u(ref_hex);
 
 	bnum_exp2(&test_num, powers_of_two_digit);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_exp2(&test_num, 0);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
 
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_gcd(void)
@@ -1301,9 +1089,6 @@ static int	__test_bnum_gcd(void)
 	const char		*num2_hex =	"1aa092dcd526845fa1474d57154348d4c91581";
 	const char		*ref_hex =	"aaaaaaabbb";
 	t_num			*num, *num2, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1312,24 +1097,20 @@ static int	__test_bnum_gcd(void)
 	ref_num = bnum_from_hex_u(ref_hex);
 
 	bnum_gcd(num, num2, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_gcd(num, &__one_num, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
 
 	bnum_gcd(&__one_num, num, &test_num);
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, &__one_num) == 0);
 
 	bnum_del(num);
 	bnum_del(num2);
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_invmod(void)
@@ -1341,9 +1122,6 @@ static int	__test_bnum_invmod(void)
 	const char		*ref_hex =	"3ef2b6f98a5892c498eb07ef47728698428582"\
 								"ddc016720f1a1743bb73705dc8";
 	t_num			*num, *mod_num, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1353,18 +1131,14 @@ static int	__test_bnum_invmod(void)
 
 	bnum_invmod(num, mod_num, &test_num);
 
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_del(num);
 	bnum_del(mod_num);
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_lcm(void)
@@ -1376,9 +1150,6 @@ static int	__test_bnum_lcm(void)
 								"8a1e0fd497502e692c7573fb8a036fadee4c1a"\
 								"da1a3";
 	t_num			*num, *num2, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1388,18 +1159,14 @@ static int	__test_bnum_lcm(void)
 
 	bnum_lcm(num, num2, &test_num);
 
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_del(num);
 	bnum_del(num2);
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_lmbit(void)
@@ -1409,22 +1176,15 @@ static int	__test_bnum_lmbit(void)
 	const int	ref_nbits = 212;
 	int			nbits;
 	t_num		*num;
-	int			pass;
-
-	pass = SSL_OK;
 
 	num = bnum_from_hex_u(hex);
 	nbits = bnum_lmbit(num);
 
-	pass |= TEST_ASSERT(nbits == ref_nbits);
+	TEST_ASSERT(nbits == ref_nbits);
 
 	bnum_del(num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_powmod(void)
@@ -1444,9 +1204,6 @@ static int	__test_bnum_powmod(void)
 								"af53b1e944053dcd8f3475ac72ef832924fee76b494039"\
 								"371bc72e301219e37409b64238e31018ca7b";
 	t_num			*num, *exp_num, *mod_num, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1457,7 +1214,7 @@ static int	__test_bnum_powmod(void)
 
 	bnum_powmod(num, exp_num, mod_num, &test_num);
 
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_del(num);
 	bnum_del(exp_num);
@@ -1465,11 +1222,7 @@ static int	__test_bnum_powmod(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }
 
 static int	__test_bnum_m_powmod(void)
@@ -1489,9 +1242,6 @@ static int	__test_bnum_m_powmod(void)
 								"af53b1e944053dcd8f3475ac72ef832924fee76b494039"\
 								"371bc72e301219e37409b64238e31018ca7b";
 	t_num			*num, *exp_num, *mod_num, test_num, *ref_num;
-	int				pass;
-
-	pass = SSL_OK;
 
 	bnum_init(&test_num);
 
@@ -1502,7 +1252,7 @@ static int	__test_bnum_m_powmod(void)
 
 	bnum_m_powmod(num, exp_num, mod_num, &test_num);
 
-	pass |= TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
+	TEST_ASSERT(bnum_cmp(&test_num, ref_num) == 0);
 
 	bnum_del(num);
 	bnum_del(exp_num);
@@ -1510,9 +1260,5 @@ static int	__test_bnum_m_powmod(void)
 	bnum_del(ref_num);
 	bnum_clear(&test_num);
 
-	if (SSL_OK == pass) {
-		return (TEST_PASS());
-	}
-
-	return (TEST_FAIL());
+	TEST_PASS();
 }

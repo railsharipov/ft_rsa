@@ -24,18 +24,16 @@ static size_t	__lorem_size;
 
 int	test_io(void)
 {
-	int	res;
-
 	if (SSL_OK != __test_io_setup()) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
-		return (SSL_ERR);
+		TEST_FAIL();
 	}
 
-	res = __test_io_init();
-	res |= __test_io_read();
-	res |= __test_io_write();
-
-	return (res);
+	return (
+		__test_io_init()
+		| __test_io_read()
+		| __test_io_write()
+	);
 }
 
 static int	__test_io_setup(void)
@@ -49,41 +47,36 @@ static int	__test_io_init(void)
 {
 	t_ostring	osbuf;
 	t_iodes		iodes;
-	int			res;
 
 	io_init(&iodes, IO_READ|IO_FILE, "./Makefile");
 
-	res = TEST_ASSERT(iodes.fd > 2);
-	res |= TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
+	TEST_ASSERT(iodes.fd > 2);
+	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
 
 	io_init(&iodes, IO_READ|IO_STDIN);
 
-	res |= TEST_ASSERT(iodes.fd == STDIN_FILENO);
-	res |= TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
+	TEST_ASSERT(iodes.fd == STDIN_FILENO);
+	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
 
 	io_init(&iodes, IO_WRITE|IO_STDOUT);
 
-	res |= TEST_ASSERT(iodes.fd == STDOUT_FILENO);
-	res |= TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
+	TEST_ASSERT(iodes.fd == STDOUT_FILENO);
+	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
 
 	osbuf.content = "some_content";
 	osbuf.size = ft_strlen(osbuf.content);
 
 	io_init(&iodes, IO_READ|IO_OSBUF, &osbuf);
 
-	res |= TEST_ASSERT(iodes.osbuf == &osbuf);
-	res |= TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
+	TEST_ASSERT(iodes.osbuf == &osbuf);
+	TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
 
 	io_init(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
 
-	res |= TEST_ASSERT(iodes.osbuf == &osbuf);
-	res |= TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
+	TEST_ASSERT(iodes.osbuf == &osbuf);
+	TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
 
-	if (SSL_OK != res) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
 
 static int	__test_io_read(void)
@@ -95,7 +88,6 @@ static int	__test_io_read(void)
 	char		test_buf[__lorem_size/10];
 	ssize_t		test_rbytes;
 	int			test_fd;
-	int			res;
 
 	osbuf.content = (char *)__lorem;
 	osbuf.size = __lorem_size;
@@ -103,8 +95,8 @@ static int	__test_io_read(void)
 	io_init(&iodes, IO_READ|IO_OSBUF, &osbuf);
 	rbytes = io_read(&iodes, buf, sizeof(buf));
 
-	res = TEST_ASSERT(rbytes == __lorem_size/10);
-	res |= TEST_ASSERT(ft_strncmp(__lorem, buf, sizeof(buf)) == 0);
+	TEST_ASSERT(rbytes == __lorem_size/10);
+	TEST_ASSERT(ft_strncmp(__lorem, buf, sizeof(buf)) == 0);
 
 	test_fd = open("./Makefile", 0644);
 	test_rbytes = read(test_fd, test_buf, sizeof(test_buf));
@@ -112,16 +104,12 @@ static int	__test_io_read(void)
 	io_init(&iodes, IO_READ|IO_FILE, "./Makefile");
 	rbytes = io_read(&iodes, buf, sizeof(buf));
 
-	res |= TEST_ASSERT(test_rbytes > 0);
-	res |= TEST_ASSERT(rbytes > 0);
-	res |= TEST_ASSERT(rbytes == test_rbytes);
-	res |= TEST_ASSERT(ft_strncmp(test_buf, buf, sizeof(buf)) == 0);
+	TEST_ASSERT(test_rbytes > 0);
+	TEST_ASSERT(rbytes > 0);
+	TEST_ASSERT(rbytes == test_rbytes);
+	TEST_ASSERT(ft_strncmp(test_buf, buf, sizeof(buf)) == 0);
 
-	if (SSL_OK != res) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
 
 static int	__test_io_write(void)
@@ -129,7 +117,6 @@ static int	__test_io_write(void)
 	t_ostring	osbuf;
 	t_iodes		iodes;
 	ssize_t		wbytes;
-	int			res;
 
 	osbuf.content = NULL;
 	osbuf.size = 0;
@@ -137,10 +124,10 @@ static int	__test_io_write(void)
 	io_init(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
 	wbytes = io_write(&iodes, __lorem, __lorem_size);
 
-	res = TEST_ASSERT(wbytes == __lorem_size);
-	res |= TEST_ASSERT(osbuf.size == __lorem_size);
-	res |= TEST_ASSERT(osbuf.content != NULL);
-	res |= TEST_ASSERT(ft_strncmp(__lorem, osbuf.content, osbuf.size) == 0);
+	TEST_ASSERT(wbytes == __lorem_size);
+	TEST_ASSERT(osbuf.size == __lorem_size);
+	TEST_ASSERT(osbuf.content != NULL);
+	TEST_ASSERT(ft_strncmp(__lorem, osbuf.content, osbuf.size) == 0);
 
 	SSL_FREE(osbuf.content);
 	osbuf.size = 0;
@@ -152,26 +139,20 @@ static int	__test_io_write(void)
 
 	wbytes = io_write(&iodes, __lorem, __lorem_size);
 
-	res |= TEST_ASSERT(wbytes == 2*__lorem_size);
-	res |= TEST_ASSERT(osbuf.size == 2*__lorem_size);
-	res |= TEST_ASSERT(osbuf.content != NULL);
+	TEST_ASSERT(wbytes == 2*__lorem_size);
+	TEST_ASSERT(osbuf.size == 2*__lorem_size);
+	TEST_ASSERT(osbuf.content != NULL);
 
-	if (SSL_OK == res) {
-		int check;
-		int ix;
+	int check;
+	int ix;
 
-		check = 1;
-		for (ix = 0; ix < wbytes; ix++)
-			if (2*ix < osbuf.size && __lorem[ix] != osbuf.content[2*ix]) {
-				check = 0;
-			}
-
-		res |= TEST_ASSERT(check);
+	check = 1;
+	for (ix = 0; ix < wbytes; ix++) {
+		if (2*ix < osbuf.size && __lorem[ix] != osbuf.content[2*ix]) {
+			check = 0;
+		}
 	}
+	TEST_ASSERT(check);
 
-	if (SSL_OK != res) {
-		return (TEST_FAIL());
-	}
-
-	return (TEST_PASS());
+	TEST_PASS();
 }
