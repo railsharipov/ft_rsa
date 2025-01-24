@@ -1135,12 +1135,12 @@ static int __test_ft_uint_to_bytes(void)
 
 	ft_uint_to_bytes(buf, num, sizeof(num));
 
-	TEST_ASSERT(ft_strncmp(buf, ref_str, sizeof(buf)));
+	TEST_ASSERT(ft_memcmp(buf, ref_str, sizeof(buf)) == 0);
 
 	bzero(buf, sizeof(buf));
 	bzero(ref_str, sizeof(ref_str));
 	ft_uint_to_bytes(buf, zero, sizeof(zero));
-	TEST_ASSERT(ft_strncmp(buf, ref_str, sizeof(buf)));
+	TEST_ASSERT(ft_memcmp(buf, ref_str, sizeof(buf)) == 0);
 
 	TEST_PASS();
 }

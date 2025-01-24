@@ -35,6 +35,8 @@ int	cli_test(const char **opt, const char *name)
 
 		if (SSL_OK != ret[idx]) {
 			CLI_LOG(ERROR, "test failed");
+		} else {
+			num_passed++;
 		}
 		idx++;
 	}

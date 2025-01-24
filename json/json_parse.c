@@ -445,6 +445,8 @@ static int	__parse_object(const char *s, t_node *node)
 	}
 	__pos++;
 
+	ft_lst_rev(&kv_node_list);
+
 	node->type = JSON_OBJECT;
 	node->content = kv_node_list;
 	node->size = sizeof(t_node);
@@ -506,6 +508,8 @@ static int	__parse_array(const char *s, t_node *node)
 		goto label_exit;
 	}
 	__pos++;
+
+	ft_lst_rev(&value_node_list);
 
 	node->type = JSON_ARRAY;
 	node->content = value_node_list;

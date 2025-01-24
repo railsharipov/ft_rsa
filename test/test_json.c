@@ -378,8 +378,6 @@ static int	__test_json_parse_complex_object(void)
 
 	TEST_ASSERT(k->type == JSON_CSTR);
 
-	TEST_LOG(INFO, "k->content: %s", k->content);
-
 	TEST_ASSERT(ft_strcmp(k->content, "tags") == 0);
 	TEST_ASSERT(v->type == JSON_ARRAY);
 
@@ -403,6 +401,10 @@ static int	__test_json_parse_complex_object(void)
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_KV);
+
+	tuple = kv_node->content;
+	k = ft_tuple_get(tuple, 0);
+	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_CSTR);
 	TEST_ASSERT(ft_strcmp(k->content, "description") == 0);
