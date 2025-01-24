@@ -24,361 +24,169 @@
 **	INDEX ::= "[" INTEGER (0..MAX) "]"
 */
 
+#define __JQ_INVALID_SELECTOR	"invalid selector"
+#define __JQ_BAD_QUERY			"bad query"
+
 enum e_json_q_type {
 	JSON_Q_OBJECT = 0,
 	JSON_Q_ARRAY,
-	JSON_Q_ANY,
-	JSON_Q_INVALID
+	JSON_Q_SELF
 };
 
-struct	s_json_query {
-	enum e_json_q_type	type;
-	char				*key;
-	int					index;
-};
+static size_t	__pos;
 
-struct t_node *__get_selectors(t_node *node, const char *s);
-ssize_t __get_object_by_key(t_node *node, const char *s, t_node **ret_node);
-ssize_t __get_object_by_selector(t_node *node, const char *s, t_node **ret_node);
-ssize_t __get_string_key(const char *s, char **ret);
+int 	__parse_selector(const char *s, t_node *query);
+int 	__select_node(t_node *node, t_node *query, t_node **ret_node);
+int 	__select_object(t_node *node, t_node *query, t_node **ret_node);
+int 	__select_array(t_node *node, t_node *query, t_node **ret_node);
 
-// t_node *json_query(t_node *json_node, const char *s)
-// {
-// 	ssize_t	rbytes;
-// 	t_node	*ret_node;
-// 	t_node	*selectors;
+t_node *json_query(const char *s, t_node *json)
+{
+	t_node	*query;
+	t_node	*node;
+	int		status;
 
-// 	ret_node = NULL;
+	if (NULL == json || NULL == s) {
+		return (NULL);
+	}
+	node = json;
+	__pos = 0;
 
-// 	if (NULL == json_node || NULL == s) {
-// 		return (NULL);
-// 	}
+	while (s[__pos] != '\0') {
+		query = ft_node_create();
 
-// 	selectors = __get_selectors(json_node, s);
+		if (JSON_MATCH == (status = __parse_selector(s, query))) {
+			status = __select_node(node, query, &node);
+		}
 
-// 	return (ret_node);
-// }
+		ft_node_del(query);
 
-// void	__f_del_selector(void *content) {
-// 	struct s_selector *selector;
+		if (status != JSON_MATCH) {
+			JSON_LOG(ERROR, "query failed");
+			return (NULL);
+		}
+	}
 
-// 	selector = (struct s_selector *)content;
+	return (node);
+}
 
-// 	if (NULL != selector) {
-// 		SSL_FREE(selector->key);
-// 		SSL_FREE(selector);
-// 	}
-// }
+int __parse_selector(const char *s, t_node *query)
+{
+	size_t	begin, end;
 
-// struct t_node *__get_selectors(t_node *node, const char *s)
-// {
-// 	t_node	*selectors;
-// 	struct s_selector	*selector;
-// 	ssize_t	rbytes, tbytes;
+	if (s[__pos] == '.') {
+		__pos++;
+		begin = __pos;
 
-// 	tbytes = 0;
-// 	selectors = NULL;
+		while (ft_isprint(s[__pos])) {
+			__pos++;
+		}
+		end = __pos;
 
-// 	while (s[tbytes] != 0) {
-// 		while (ft_iseolws(*s)) {
-// 			tbytes++;
-// 		}
-// 		SSL_ALLOC(selector, sizeof(struct s_selector));
+		if (begin == end) {
+			query->type = JSON_Q_SELF;
+		} else {
+			query->type = JSON_Q_OBJECT;
+			query->key = ft_strsub(s, begin, end);
+		}
+	}
+	else if (s[__pos] == '[') {
+		__pos++;
+		begin = __pos;
 
-// 		rbytes = __get_selector(s + tbytes, selector);
+		while (ft_isdigit(s[__pos])) {
+			__pos++;
+		}
+		end = __pos;
 
-// 		ft_lst_append(&selectors, ft_node_new(NULL, selector, sizeof(struct s_selector)));
+		if (s[__pos] != ']') {
+			JSON_LOG(ERROR, __JQ_INVALID_SELECTOR ": expected `]`, got `%c`", s[__pos]);
+			return (JSON_BAD_FORMAT);
+		}
+		__pos++;
 
-// 		if (rbytes < 0) {
-// 			break ;
-// 		}
-// 		tbytes += rbytes;
-// 	}
-// 	if (rbytes < 0) {
-// 		ft_lst_del_with_f_del(selectors, __f_del_selector);
-// 		return (NULL);
-// 	}
-// 	return (selectors);
-// }
+		query->type = JSON_Q_ARRAY;
+		query->key = ft_strsub(s, begin, end);
+	}
+	else {
+		JSON_LOG(ERROR, __JQ_INVALID_SELECTOR ": `%c`", s[__pos]);
+		return (JSON_BAD_FORMAT);
+	}
 
-// ssize_t __get_selector(const char *s, struct s_selector *selector) {
-// 	ssize_t	tbytes, rbytes;
+	return (JSON_MATCH);
+}
 
-// 	selector->key = NULL;
-// 	selector->type = JSON_INVALID_SELECTOR;
-// 	tbytes = 0;
+int 	__select_node(t_node *node, t_node *query, t_node **ret_node)
+{
+	if (query->type == JSON_Q_OBJECT) {
+		return (__select_object(node, query, ret_node));
+	}
+	else if (query->type == JSON_Q_ARRAY) {
+		return (__select_array(node, query, ret_node));
+	}
+	else if (query->type == JSON_Q_SELF) {
+		*ret_node = node;
+		return (JSON_MATCH);
+	}
+	JSON_LOG(ERROR, "unknown query type");
+	return (JSON_NO_MATCH);
+}
 
-// 	if (s[tbytes] == '.') {
-// 		selector->type = JSON_SELECT_KEY;
-// 		rbytes = __get_dot_key(s, &(selector->key));
-// 	} else if (s[tbytes] == '[') {
-// 		tbytes++;
-// 		if (s[tbytes] == '"') {
-// 			selector->type = JSON_SELECT_KEY;
-// 			rbytes = __get_string_key(s, &(selector->key));
-// 		} else {
-// 			selector->type = JSON_SELECT_INDEX;
-// 			rbytes = __get_index_key(s, &(selector->key));
-// 		}
-// 	} else {
-// 		JSON_LOG(ERROR, "Invalid object selector");
-// 		return (-1);
-// 	}
-// 	if (rbytes < 0) {
-// 		return (-1);
-// 	}
-// 	tbytes += rbytes;
-// 	return (tbytes);
-// }
+int 	__select_object(t_node *node, t_node *query, t_node **ret_node)
+{
+	t_node	*kv_node;
+	t_node	*k, *v;
 
-// ssize_t __get_dot_key(const char *s, char **ret) {
-// 	ssize_t	tbytes, rbytes;
+	if (node->type != JSON_OBJECT) {
+		JSON_LOG(ERROR, "Using key for non-object type");
+		return (JSON_BAD_FORMAT);
+	}
 
-// 	tbytes = 1; // skip dot
-// 	rbytes = __get_string_key(s + tbytes, &ret);
+	kv_node = node->content;
 
-// 	if (rbytes < 0) {
-// 		return (-1);
-// 	}
-// 	tbytes += rbytes;
+	if (kv_node->type != JSON_KV) {
+		JSON_LOG(ERROR, __JQ_BAD_QUERY);
+		return (JSON_BAD_FORMAT);
+	}
 
-// 	return (tbytes);
-// }
+	while (kv_node != NULL) {
+		k = kv_node->content;
+		v = kv_node->next;
 
-// ssize_t __get_index_key(const char *s, char **ret) {
-// 	ssize_t	tbytes, begin, rbytes;
-// 	char	quote;
+		if (ft_strcmp(k->key, query->key) == 0) {
+			*ret_node = v;
+			return (JSON_MATCH);
+		}
+		kv_node = kv_node->next;
+	}
 
-// 	tbytes = 1; // skip square bracket
-// 	rbytes = __get_string_key(s + tbytes, &ret);
+	JSON_LOG(ERROR, __JQ_BAD_QUERY);
+	return (JSON_BAD_FORMAT);
+}
 
-// 	if (rbytes < 0) {
-// 		return (-1);
-// 	}
-// 	tbytes += rbytes;
+int 	__select_array(t_node *node, t_node *query, t_node **ret_node)
+{
+	t_node	*arr_item;
+	int		target_idx, idx;
 
-// 	if (s[tbytes] != ']') {
-// 		JSON_LOG(ERROR, "Expected matching `]` for index key");
-// 		return (-1);
-// 	} else {
-// 		tbytes++;
-// 	}
+	if (node->type != JSON_ARRAY) {
+		JSON_LOG(ERROR, "Using index for non-array type");
+		return (JSON_BAD_FORMAT);
+	}
 
-// 	return (tbytes);
-// }
+	arr_item = node->content;
+	target_idx = ft_atoi(query->key);
 
-// ssize_t __get_string_key(const char *s, char **ret) {
-// 	char	*key;
-// 	ssize_t	idx;
-// 	ssize_t	begin;
-// 	char	quote;
+	idx = 0;
+	while (arr_item != NULL) {
+		if (idx == target_idx) {
+			*ret_node = arr_item;
+			return (JSON_MATCH);
+		}
+		arr_item = arr_item->next;
+		idx++;
+	}
 
-// 	*ret = NULL;
-// 	idx = 0;
-
-// 	if (s[idx] == '"') {
-// 		quote = s[idx++];
-// 	} else {
-// 		quote = 0;
-// 	}
-// 	begin = idx;
-
-// 	while(ft_isalnum(s[idx])) {
-// 		idx++;
-// 	}
-// 	key = ft_strsub(s, begin, idx);
-
-// 	if (quote) {
-// 		if (s[idx] == quote) {
-// 			idx++;
-// 		} else {
-// 			JSON_LOG(ERROR, "Expected matching `%c` end of string for key: `%s`", quote, key);
-// 			return (-1);
-// 		}
-// 	}
-// 	*ret = key;
-// 	return (idx);
-// }
-
-// ssize_t __get_object_by_key(t_node *node, const char *s, t_node **ret_node)
-// {
-// 	char	*key;
-// 	ssize_t	idx;
-// 	ssize_t	begin;
-// 	t_htbl	*htbl;
-// 	t_node	*target_node;
-// 	char	quote;
-
-// 	target_node = NULL;
-// 	key = NULL;
-// 	idx = 0;
-// 	target_node = NULL;
-// 	key = NULL;
-// 	idx = 0;
-
-// 	if (node->type != JSON_OBJECT) {
-// 		JSON_LOG(ERROR, "Using key for non-object type");
-// 		return (-1);
-// 	}
-
-// 	if (s[idx] == '"') {
-// 		idx++;
-// 		quote = s[idx];
-// 	} else {
-// 		quote = 0;
-// 	}
-// 	begin = idx;
-// 	if (s[idx] == '"') {
-// 		idx++;
-// 		quote = s[idx];
-// 	} else {
-// 		quote = 0;
-// 	}
-// 	begin = idx;
-
-// 	while(ft_isalnum(s[idx])) {
-// 		idx++;
-// 	}
-// 	key = ft_strsub(s, begin, idx);
-// 	while(ft_isalnum(s[idx])) {
-// 		idx++;
-// 	}
-// 	key = ft_strsub(s, begin, idx);
-
-// 	if (quote) {
-// 		if (s[idx] == quote) {
-// 			idx++;
-// 		} else {
-// 			JSON_LOG(ERROR, "Expected matching `%c` end of string for key: `%s`", quote, key);
-// 			goto err;
-// 		}
-// 	}
-
-// 	htbl = (t_htbl *)node->content;
-// 	target_node = (t_node *)ft_htbl_get(htbl, key);
-// 	htbl = (t_htbl *)node->content;
-// 	target_node = (t_node *)ft_htbl_get(htbl, key);
-
-// 	if (NULL == target_node) {
-// 		JSON_LOG(ERROR, "No such key in object: `%s`", key);
-// 		goto err;
-// 	}
-
-// 	SSL_FREE(key);
-// 	*ret_node = target_node;
-// 	return (idx);
-// 	SSL_FREE(key);
-// 	*ret_node = target_node;
-// 	return (idx);
-
-// err:
-// 	SSL_FREE(key);
-// 	*ret_node = NULL;
-// 	return (-1);
-// }
-// err:
-// 	SSL_FREE(key);
-// 	*ret_node = NULL;
-// 	return (-1);
-// }
-
-// ssize_t __get_object_by_selector(t_node *node, const char *s, t_node **ret_node)
-// {
-// 	char 	*num_str;
-// 	ssize_t idx;
-// 	ssize_t begin;
-// 	t_node	*lst;
-// 	t_node 	*target_node;
-// 	int		target_arr_idx;
-
-// 	target_node = NULL;
-// 	num_str = NULL;
-// 	idx = 0;
-// 	target_node = NULL;
-// 	num_str = NULL;
-// 	idx = 0;
-
-// 	if (node->type != JSON_OBJECT) {
-// 		JSON_LOG(ERROR, "Using key for non-object type");
-// 		return (-1);
-// 	}
-
-// 	if (s[idx] == '[') {
-// 		idx++;
-// 	} else {
-// 		return (-1);
-// 	}
-// 	if (s[idx] == '[') {
-// 		idx++;
-// 	} else {
-// 		return (-1);
-// 	}
-
-// 	while (ft_iseolws(s[idx])) {
-// 		idx++;
-// 	}
-// 	while (ft_iseolws(s[idx])) {
-// 		idx++;
-// 	}
-
-// 	if (s[idx] == '"') {
-// 		return (__get_object_by_key(node, s + idx, &target_node));
-// 	}
-// 	begin = idx;
-// 	if (s[idx] == '"') {
-// 		return (__get_object_by_key(node, s + idx, &target_node));
-// 	}
-// 	begin = idx;
-
-// 	while (ft_isdigit(s[idx])) {
-// 		idx++;
-// 	}
-// 	num_str = ft_strsub(s, begin, idx);
-// 	target_arr_idx = ft_atoi(num_str);
-// 	while (ft_isdigit(s[idx])) {
-// 		idx++;
-// 	}
-// 	num_str = ft_strsub(s, begin, idx);
-// 	target_arr_idx = ft_atoi(num_str);
-
-// 	while (ft_iseolws(s[idx])) {
-// 		idx++;
-// 	}
-// 	while (ft_iseolws(s[idx])) {
-// 		idx++;
-// 	}
-
-// 	if (s[idx] != ']'){
-// 		JSON_LOG(ERROR, "Expected end of index selector for number: %s", num_str);
-// 		goto err;
-// 	}
-
-// 	lst = (t_node *)node->content;
-// 	lst = (t_node *)node->content;
-
-// 	if (ft_lst_size(lst) <= target_arr_idx) {
-// 		JSON_LOG(ERROR, "Array index is out of bounds: %d", target_arr_idx);
-// 		goto err;
-// 	}
-
-// 	while (target_arr_idx > 0) {
-// 		target_arr_idx--;
-// 		lst = lst->next;
-// 	}
-// 	while (target_arr_idx > 0) {
-// 		target_arr_idx--;
-// 		lst = lst->next;
-// 	}
-
-// 	SSL_FREE(num_str);
-// 	*ret_node = lst;
-// 	return (idx);
-// 	SSL_FREE(num_str);
-// 	*ret_node = lst;
-// 	return (idx);
-
-// err:
-// 	SSL_FREE(num_str);
-// 	*ret_node = NULL;
-// 	return (-1);
-// }
+	JSON_LOG(ERROR, __JQ_BAD_QUERY);
+	return (JSON_BAD_FORMAT);
+}

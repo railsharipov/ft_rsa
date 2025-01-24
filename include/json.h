@@ -8,7 +8,7 @@
 
 # define JSON_LOG(LEVEL, MES, ...)	json_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-enum e_json_type {
+enum	e_json_type {
     JSON_ARRAY,
     JSON_OBJECT,
     JSON_KV,
@@ -17,6 +17,13 @@ enum e_json_type {
     JSON_BOOLEAN,
     JSON_NULL,
     JSON_NONE,
+};
+
+enum	e_json_status
+{
+	JSON_MATCH 		= SSL_STATUS_COUNT,
+	JSON_NO_MATCH	= SSL_STATUS_COUNT + 1,
+	JSON_BAD_FORMAT = SSL_STATUS_COUNT + 2,
 };
 
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);

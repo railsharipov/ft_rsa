@@ -45,20 +45,6 @@
 ** }
 */
 
-enum	e_json_status
-{
-	JSON_MATCH 		= SSL_STATUS_COUNT,
-	JSON_NO_MATCH	= SSL_STATUS_COUNT + 1,
-	JSON_BAD_FORMAT = SSL_STATUS_COUNT + 2,
-};
-
-typedef struct			s_json_value
-{
-	char				*content;
-	size_t				size;
-	enum e_json_type	type;
-}						t_json_value;
-
 typedef int (*FUNC_JSON_PARSE)(const char *, t_node *);
 
 static size_t	__pos;
