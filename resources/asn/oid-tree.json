@@ -1,0 +1,228 @@
+{
+    "description": "iso",
+    "id": "1",
+    "nodes": [
+        {
+            "description": "member-body",
+            "id": "2",
+            "nodes": [
+                {
+                    "description": "us",
+                    "id": "840",
+                    "nodes": [
+                        {
+                            "description": "rsadsi",
+                            "id": "113549",
+                            "nodes": [
+                                {
+                                    "description": "pkcs",
+                                    "id": "1",
+                                    "nodes": [
+                                        {
+                                            "description": "pkcs-1",
+                                            "id": "1",
+                                            "nodes": [
+                                                {
+                                                    "description": "rsaEncryption",
+                                                    "id": "1"
+                                                },
+                                                {
+                                                    "description": "md2withRSAEncryption",
+                                                    "id": "2"
+                                                },
+                                                {
+                                                    "description": "md5withRSAEncryption",
+                                                    "id": "4"
+                                                },
+                                                {
+                                                    "description": "sha1WithRSAEncryption",
+                                                    "id": "5"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "pkcs-3",
+                                            "id": "3",
+                                            "nodes": [
+                                                {
+                                                    "description": "dhKeyAgreement",
+                                                    "id": "1"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "pkcs-5",
+                                            "id": "5",
+                                            "nodes": [
+                                                {
+                                                    "description": "pbeWithMD2AndDES-CBC",
+                                                    "id": "1"
+                                                },
+                                                {
+                                                    "description": "pbeWithMD5AndDES-CBC",
+                                                    "id": "3"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "pkcs-7",
+                                            "id": "7",
+                                            "nodes": [
+                                                {
+                                                    "description": "data",
+                                                    "id": "1"
+                                                },
+                                                {
+                                                    "description": "signedData",
+                                                    "id": "2"
+                                                },
+                                                {
+                                                    "description": "envelopedData",
+                                                    "id": "3"
+                                                },
+                                                {
+                                                    "description": "signedAndEnvelopedData",
+                                                    "id": "4"
+                                                },
+                                                {
+                                                    "description": "digestData",
+                                                    "id": "5"
+                                                },
+                                                {
+                                                    "description": "encryptedData",
+                                                    "id": "6"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "pkcs-9",
+                                            "id": "9",
+                                            "nodes": [
+                                                {
+                                                    "description": "emailAddress",
+                                                    "id": "1"
+                                                },
+                                                {
+                                                    "description": "unstructuredName",
+                                                    "id": "2"
+                                                },
+                                                {
+                                                    "description": "contentType",
+                                                    "id": "3"
+                                                },
+                                                {
+                                                    "description": "messageDigest",
+                                                    "id": "4"
+                                                },
+                                                {
+                                                    "description": "signingTime",
+                                                    "id": "5"
+                                                },
+                                                {
+                                                    "description": "countersignature",
+                                                    "id": "6"
+                                                },
+                                                {
+                                                    "description": "challengePassword",
+                                                    "id": "7"
+                                                },
+                                                {
+                                                    "description": "unstructuredAddress",
+                                                    "id": "8"
+                                                },
+                                                {
+                                                    "description": "extendedCertificateAttributes",
+                                                    "id": "9"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "description": "pkcs-11",
+                                            "id": "11"
+                                        },
+                                        {
+                                            "description": "pkcs-12",
+                                            "id": "12",
+                                            "nodes": [
+                                                {
+                                                    "description": "pkcs-12PbeIds",
+                                                    "id": "1",
+                                                    "nodes": [
+                                                        {
+                                                            "description": "pbeWithSHA1And128BitRC4",
+                                                            "id": "1"
+                                                        },
+                                                        {
+                                                            "description": "pbeWithSHA1And40BitRC4",
+                                                            "id": "2"
+                                                        },
+                                                        {
+                                                            "description": "pbeWithSHA1And3-KeyTripleDES-CBC",
+                                                            "id": "3"
+                                                        },
+                                                        {
+                                                            "description": "pbeWithSHA1And2-KeyTripleDES-CBC",
+                                                            "id": "4"
+                                                        },
+                                                        {
+                                                            "description": "pbeWithSHA1And128BitRC2-CBC",
+                                                            "id": "5"
+                                                        },
+                                                        {
+                                                            "description": "pbeWithSHA1And40BitRC2-CBC",
+                                                            "id": "6"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "description": "digestAlgorithm",
+                                    "id": "2",
+                                    "nodes": [
+                                        {
+                                            "description": "md2",
+                                            "id": "2"
+                                        },
+                                        {
+                                            "description": "md4",
+                                            "id": "4"
+                                        },
+                                        {
+                                            "description": "md5",
+                                            "id": "5"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "description": "encryptionAlgorithm",
+                                    "id": "3",
+                                    "nodes": [
+                                        {
+                                            "description": "rc2-cbc",
+                                            "id": "2"
+                                        },
+                                        {
+                                            "description": "des-ede3-cbc",
+                                            "id": "7"
+                                        },
+                                        {
+                                            "description": "RC5CBC",
+                                            "id": "8"
+                                        },
+                                        {
+                                            "description": "RC5CBCPAD",
+                                            "id": "9"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

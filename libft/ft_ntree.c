@@ -85,43 +85,9 @@ t_node *ft_ntree_construct(const char *map)
 {
 	// Construct ntree from a map.
 	//
-	// MAP is a null-terminated string.
-	// MAP represents an ITEMS sequence:
-	//		ITEMS[0], ITEMS[1], ..., ITEMS[n]
+	// map: 	"colors{ RGB{ 25 27 30 } RGBA{ 32 35 40 0.5 } } sizes{ S M L }"
 	//
-	// Each item in ITEMS is a word separated by a single space.
-	// Item is one of the following types:
-	//
-	// 1.	NODE = any word that is not NODE_SEQUENCE_START or NODE_SEQUENCE_END.
-	// 		A node with NODE as a node key.
-	//
-	// 2.	NODE_SEQUENCE_START = "NODE{".
-	// 		A parent node with NODE as node key. Every ITEM following
-	//		NODE_SEQUENCE_START, until NODE_SEQUENCE_END, is a child node.
-	//
-	// 3.	NODE_SEQUENCE_END = "}".
-	// 		NODE_SEQUENCE_END represents end of child node sequence.
-	//
-	// Curly brackets are NOT included in node keys.
-	//
-	// Node struct is defined as:
-	//
-	// typedef struct 		s_node
-	// {
-	// 		uint64_t 		hash;
-	// 		char 			*key;
-	// 		void 			*content;
-	// 		size_t 			size;
-	// 		struct s_node 	*next;
-	// 		struct s_node 	*nodes;
-	// } 					t_node;
-	//
-	// Nodes that have the same parent node are linked using linked list.
-	// <next> pointer points to a next node in this linked list.
-	// <nodes> pointer points to linked list containing child nodes.
-	//
-	// Example: "colors{ RGB{ 25 27 30 } RGBA{ 32 35 40 0.5 } } sizes{ S M L }"
-	//
+	// result:
 	//							colors         ------>       sizes
 	//						/			\					/  \   \
 	//					RGB	  			RGBA				S   M   L

@@ -1,0 +1,40 @@
+{
+    "description": "publicKey",
+    "type": "sequence",
+    "value": [
+        {
+            "description": "algorithmId",
+            "type": "sequence",
+            "value": [
+                {
+                    "description": "rsaEncryption",
+                    "type": "objectId"
+                },
+                {
+                    "description": null,
+                    "type": "null"
+                }
+            ]
+        },
+        {
+            "description": null,
+            "type": "bitstring",
+            "value": [
+                {
+                    "description": null,
+                    "type": "sequence",
+                    "value": [
+                        {
+                            "description": "modulus",
+                            "type": "int"
+                        },
+                        {
+                            "description": "publicExponent",
+                            "type": "int"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
