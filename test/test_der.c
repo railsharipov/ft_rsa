@@ -1,9 +1,11 @@
-#include <common.h>
-#include <asn.h>
-#include <der.h>
-#include <rand.h>
-#include <test.h>
-#include <io.h>
+#ifdef INCLUDE_TEST
+
+# include <common.h>
+# include <asn.h>
+# include <der.h>
+# include <rand.h>
+# include <test.h>
+# include <io.h>
 
 static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);
@@ -711,3 +713,5 @@ static void	__test_der_cleanup(void)
 // {
 // 	TEST_PASS();
 // }
+
+#endif

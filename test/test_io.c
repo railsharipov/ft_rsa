@@ -1,8 +1,10 @@
-#include <common.h>
-#include <io.h>
-#include <test.h>
-#include <unistd.h>
-#include <fcntl.h>
+#ifdef INCLUDE_TEST
+
+# include <common.h>
+# include <io.h>
+# include <test.h>
+# include <unistd.h>
+# include <fcntl.h>
 
 static int	__test_io_setup(void);
 static int	__test_io_init(void);
@@ -156,3 +158,5 @@ static int	__test_io_write(void)
 
 	TEST_PASS();
 }
+
+#endif

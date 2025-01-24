@@ -1,5 +1,7 @@
-#include <common.h>
-#include <test.h>
+#ifdef INCLUDE_TEST
+
+# include <common.h>
+# include <test.h>
 
 int	test_assert(int bool, const char *expr)
 {
@@ -17,3 +19,5 @@ int	test_assert(int bool, const char *expr)
 		return (SSL_ERR);
 	}
 }
+
+#endif

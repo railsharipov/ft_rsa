@@ -1,6 +1,8 @@
-#include <common.h>
-#include <base64.h>
-#include <test.h>
+#ifdef INCLUDE_TEST
+
+# include <common.h>
+# include <base64.h>
+# include <test.h>
 
 static const char	*__binary_file_path = "test/testfiles/file";
 static const char	*__base64_file_path = "test/testfiles/base64_message.txt";
@@ -96,3 +98,5 @@ static int	__test_base64_check(void)
 
 	TEST_PASS();
 }
+
+#endif

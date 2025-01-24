@@ -1,20 +1,22 @@
-#include <string.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <ctype.h>
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <common.h>
-#include <test.h>
-#include <libft/std.h>
-#include <libft/node.h>
-#include <libft/list.h>
-#include <libft/stack.h>
-#include <libft/queue.h>
-#include <libft/tuple.h>
-#include <libft/ntree.h>
-#include <libft/2darray.h>
-#include <libft/bytes.h>
+#ifdef INCLUDE_TEST
+
+# include <string.h>
+# include <inttypes.h>
+# include <limits.h>
+# include <ctype.h>
+# include <unistd.h>
+# include <sys/fcntl.h>
+# include <common.h>
+# include <test.h>
+# include <libft/std.h>
+# include <libft/node.h>
+# include <libft/list.h>
+# include <libft/stack.h>
+# include <libft/queue.h>
+# include <libft/tuple.h>
+# include <libft/ntree.h>
+# include <libft/2darray.h>
+# include <libft/bytes.h>
 
 static char 	*__s1;
 static char 	*__s2;
@@ -2199,3 +2201,5 @@ static int __test_ft_ntree(void)
 
 	TEST_PASS();
 }
+
+#endif

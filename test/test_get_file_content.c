@@ -1,8 +1,10 @@
-#include <sys/fcntl.h>
-#include <unistd.h>
-#include <common.h>
-#include <test.h>
-#include <io.h>
+#ifdef INCLUDE_TEST
+
+# include <sys/fcntl.h>
+# include <unistd.h>
+# include <common.h>
+# include <test.h>
+# include <io.h>
 
 int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 {
@@ -36,3 +38,5 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 
 	return (SSL_OK);
 }
+
+#endif

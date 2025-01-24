@@ -1,6 +1,8 @@
-#include <common.h>
-#include <cli.h>
-#include <test.h>
+#ifdef INCLUDE_TEST
+
+# include <common.h>
+# include <cli.h>
+# include <test.h>
 
 #define __CLI_TEST_LINE_BREAK	"----------------------------------------"
 
@@ -66,3 +68,5 @@ int	cli_test(const char **opt, const char *name)
 
 	return (SSL_OK);
 }
+
+#endif

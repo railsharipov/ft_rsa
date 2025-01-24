@@ -1,8 +1,10 @@
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <libft/logger.h>
-#include <alloc.h>
-#include <common.h>
+#ifdef INCLUDE_TEST
+
+# include <unistd.h>
+# include <sys/fcntl.h>
+# include <libft/logger.h>
+# include <alloc.h>
+# include <common.h>
 
 #define TEST_LOG_PREFIX  "test: "
 
@@ -39,3 +41,5 @@ int test_logger_log(const char *func_name, const char *file_name, int line_numbe
 
 	return (ret);
 }
+
+#endif

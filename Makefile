@@ -43,8 +43,11 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_PREFIX)/$*.d
 
 all: $(NAME)
 
-debug: override CC = gcc -Og -g -fsanitize=address
+debug: override CC = gcc -Og -g -std=c11 -fsanitize=address
 debug: $(NAME)
+
+test: override CC = gcc -Og -g -std=c11 -fsanitize=address -DINCLUDE_TEST
+test: $(NAME)
 
 $(NAME): $(OBJS)
 	@echo linking: $(NAME)

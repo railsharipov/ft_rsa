@@ -1,9 +1,11 @@
-#include <common.h>
-#include <rand.h>
-#include <bnum.h>
-#include <test.h>
-#include <printnl.h>
-#include <libft/bytes.h>
+#ifdef INCLUDE_TEST
+
+# include <common.h>
+# include <rand.h>
+# include <bnum.h>
+# include <test.h>
+# include <printnl.h>
+# include <libft/bytes.h>
 
 static t_num	__zero_num;
 static t_num	__one_num;
@@ -1262,3 +1264,5 @@ static int	__test_bnum_m_powmod(void)
 
 	TEST_PASS();
 }
+
+#endif
