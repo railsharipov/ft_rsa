@@ -17,14 +17,17 @@
 # include <libft/node.h>
 # include <libft/htable.h>
 
-t_node	*ft_ntree_construct(const char *);
-int 	ft_ntree_dfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
+typedef int 	(*FUNC_NTREE_MAP)(t_node *node, const void *farg);
+typedef void	(*FUNC_NTREE_PRINT)(t_node *node, int space);
+
+t_node	*ft_ntree_construct(const char *map);
+int 	ft_ntree_dfs(t_node **res, t_node *ntree, const void *farg, FUNC_NTREE_MAP f);
 int		ft_ntree_dfs_cur_depth(void);
-int		ft_ntree_bfs(t_node **res, t_node *, const void *, int (*f)(t_node *, const void *));
-void	ft_ntree_del(t_node *, FUNC_CONTENT_DEL);
-void	ft_ntree_print(t_node *, void (*f_print)(t_node *, int));
-int		ft_ntree_size(t_node *);
-t_node	*ft_ntree_iter(t_node *);
-t_htbl	*ft_ntree_to_htable(t_node *);
+int		ft_ntree_bfs(t_node **res, t_node *node, const void *farg, FUNC_NTREE_MAP f);
+void	ft_ntree_del(t_node *ntree, FUNC_CONTENT_DEL f_del);
+void	ft_ntree_print(t_node *ntree, FUNC_NTREE_PRINT f_print);
+int		ft_ntree_size(t_node *node);
+t_node	*ft_ntree_iter(t_node *ntree);
+t_htbl	*ft_ntree_to_htable(t_node *node);
 
 #endif

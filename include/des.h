@@ -42,11 +42,11 @@ int		des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph, const char *pa
 int		des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass);
 
 /* Low level functions */
-void	des_encrypt_schedule(uint64_t *, uint64_t *);
-void	des_decrypt_schedule(uint64_t *, uint64_t *);
-void	des_permute_key(uint64_t *, unsigned char *);
-void	des_permute_block_init(uint64_t *);
-void	des_permute_block(uint64_t *, uint64_t *);
-void	des_permute_block_final(uint64_t *);
+void	des_encrypt_schedule(uint64_t *permut_key, uint64_t *ksched);
+void	des_decrypt_schedule(uint64_t *permut_key, uint64_t *ksched);
+void	des_permute_key(uint64_t *permut_key, unsigned char *key);
+void	des_permute_block_init(uint64_t *block);
+void	des_permute_block(uint64_t *block, uint64_t *ksched);
+void	des_permute_block_final(uint64_t *block);
 
 #endif

@@ -39,6 +39,14 @@
 # define ASN_LEN_SHORT				0x0
 # define ASN_LEN_LONG				0x80
 
+# define ASN_TYPE_KEY_SEQUENCE		"sequence"
+# define ASN_TYPE_KEY_OSTRING		"ostring"
+# define ASN_TYPE_KEY_BITSTRING		"bitstring"
+# define ASN_TYPE_KEY_OBJECTID		"objectId"
+# define ASN_TYPE_KEY_INT			"int"
+# define ASN_TYPE_KEY_NULL			"null"
+# define ASN_TYPE_KEY_BOOL			"bool"
+
 # define ASN_LOG(LEVEL, MES, ...)	asn_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct	s_iasn

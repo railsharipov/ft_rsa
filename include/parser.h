@@ -12,12 +12,12 @@
 
 int		parser_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-int		parser_find(const char *, int, const char *, int);
-void	parser_del_blank(const char *, int, char **, int *);
-void	parser_del_wspace(const char *, int, char **, int *);
-void	parser_del_eolws(const char *, int, char **, int *);
-void	parser_del_empty_lines(const char *, int, char **, int *);
-char	*parser_line(const char *, int, const char *, int);
-void	parser_insert_delim(char **, size_t *, int, int);
+int		parser_find(const char *octets, int olen, const char *pattern, int patlen);
+void	parser_del_blank(const char *arr, int asize, char **p, int *psize);
+void	parser_del_wspace(const char *arr, int asize, char **p, int *psize);
+void	parser_del_eolws(const char *arr, int asize, char **p, int *psize);
+void	parser_del_empty_lines(const char *arr, int asize, char **p, int *psize);
+char	*parser_line(const char *arr, int asize, const char *pattern, int patlen);
+void	parser_insert_delim(char **arr, size_t *asize, int delim, int step);
 
 #endif

@@ -62,8 +62,9 @@ ssize_t io_fread(t_iodes *iodes, char *buf, size_t nbytes)
 	if (iodes->delim) {
 		rbytes = __fread_delim(iodes, (char *)buf, nbytes);
 	}
-	else
+	else {
 		rbytes = __fread(iodes, (char *)buf, nbytes);
+	}
 
 	return (rbytes);
 }

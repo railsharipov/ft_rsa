@@ -23,10 +23,10 @@ typedef	struct	s_ostring
 }				t_ostring;
 
 t_ostring	*ft_ostr_init(void);
-t_ostring	*ft_ostr_new(size_t);
-t_ostring	*ft_ostr_dup(t_ostring *);
-void		ft_ostr_del(t_ostring *);
-void		ft_ostr_clean(t_ostring *);
+t_ostring	*ft_ostr_new(size_t size);
+t_ostring	*ft_ostr_dup(t_ostring *ostring);
+void		ft_ostr_del(t_ostring *ostring);
+void		ft_ostr_clean(t_ostring *ostring);
 void		ft_ostr_append(t_ostring *ostring, void *content, size_t size);
 void		ft_ostr_prepend(t_ostring *ostring, void *content, size_t size);
 char		*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len);

@@ -16,9 +16,9 @@
 # include <string.h>
 # include <libft/common.h>
 
-void		ft_2darray_del(void **, int);
-void 		ft_2darray_del_null_terminated(void **);
-int			ft_2darray_len_null_terminated(void **);
-char		*ft_2darray_strjoin(char **, size_t, const char *);
+void		ft_2darray_del(void **arr, int arr_len);
+void 		ft_2darray_del_null_terminated(void **arr);
+int			ft_2darray_len_null_terminated(void **arr);
+char		*ft_2darray_strjoin(char **str_arr, size_t str_arr_len, const char *delim);
 
 #endif

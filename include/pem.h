@@ -14,12 +14,12 @@ typedef struct	s_pem
 
 int		pem_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-t_pem	*pem_init();
-void	pem_del(t_pem *);
-void	pem_clear(t_pem *);
-int		pem_encode(t_ostring *, t_pem **, const char *type, const char *pass);
-int		pem_decode(t_pem *, const char *type, t_ostring **, const char *pass);
-void	pem_encap(t_pem **, const char *type, char *, size_t);
-int		pem_decap(t_pem *pem, const char *type, char **con, size_t *);
+t_pem	*pem_init(void);
+void	pem_del(t_pem *pem);
+void	pem_clear(t_pem *pem);
+int		pem_encode(t_ostring *content, t_pem **pem, const char *type, const char *pass);
+int		pem_decode(t_pem *pem, const char *type, t_ostring **content, const char *pass);
+void	pem_encap(t_pem **pem, const char *type, char *content, size_t consize);
+int		pem_decap(t_pem *pem, const char *type, char **content, size_t *consize);
 
 #endif

@@ -26,6 +26,8 @@ enum	e_json_status
 	JSON_BAD_FORMAT = SSL_STATUS_COUNT + 2,
 };
 
+typedef int (*FUNC_JSON_MAP)(t_node *node);
+
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int     json_parse(const char *s, t_node **node);

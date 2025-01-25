@@ -25,26 +25,26 @@ typedef struct		s_htbl
 	int				size;
 }					t_htbl;
 
-uint32_t	ft_hash(const unsigned char *, size_t);
+uint32_t	ft_hash(const unsigned char *key, size_t keysize);
 
-void		*ft_htbl_init(int);
-t_node		*ft_htbl_iter(t_htbl *);
-void		(ft_htbl_add)(t_htbl *, void *, const char *);
-void		(ft_htbl_add_rawkey)(t_htbl *, void *, const void *, size_t);
-void		(ft_htbl_assign)(t_htbl *, void *, const char *);
-void		(ft_htbl_assign_rawkey)(t_htbl *, void *, const void *, size_t);
-void		(ft_htbl_del)(t_htbl *);
+void		*ft_htbl_init(int size);
+t_node		*ft_htbl_iter(t_htbl *htbl);
+void		(ft_htbl_add)(t_htbl *htbl, void *content, const char *key);
+void		(ft_htbl_add_rawkey)(t_htbl *htbl, void *content, const void *rawkey, size_t rksize);
+void		(ft_htbl_assign)(t_htbl *htbl, void *content, const char *key);
+void		(ft_htbl_assign_rawkey)(t_htbl *htbl, void *content, const void *rawkey, size_t rksize);
+void		(ft_htbl_del)(t_htbl *htbl);
 void		(ft_htbl_del_key)(t_htbl *htbl, const char *key);
-void		(ft_htbl_del_rawkey)(t_htbl *htbl, const char *key, const void *, size_t);
-void		ft_htbl_add_with_f_del(t_htbl *, void *, const char *, FUNC_CONTENT_DEL);
-void		ft_htbl_add_rawkey_with_f_del(t_htbl *, void *, const void *, size_t, FUNC_CONTENT_DEL);
-void		ft_htbl_assign_with_f_del(t_htbl *, void *, const char *, FUNC_CONTENT_DEL);
-void		ft_htbl_assign_rawkey_with_f_del(t_htbl *, void *, const void *, size_t, FUNC_CONTENT_DEL);
-void		ft_htbl_del_with_f_del(t_htbl *, FUNC_CONTENT_DEL);
-void		ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, FUNC_CONTENT_DEL);
-void		ft_htbl_del_rawkey_with_f_del(t_htbl *htbl, const char *key, const void *, size_t, FUNC_CONTENT_DEL);
-void		*ft_htbl_get(t_htbl *, const char *);
-void		*ft_htbl_get_rawkey(t_htbl *, const void *, size_t);
+void		(ft_htbl_del_rawkey)(t_htbl *htbl, const char *key, const void *rawkey, size_t rksize);
+void		ft_htbl_add_with_f_del(t_htbl *htbl, void *content, const char *key, FUNC_CONTENT_DEL f_del);
+void		ft_htbl_add_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del);
+void		ft_htbl_assign_with_f_del(t_htbl *htbl, void *content, const char *key, FUNC_CONTENT_DEL f_del);
+void		ft_htbl_assign_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del);
+void		ft_htbl_del_with_f_del(t_htbl *htbl, FUNC_CONTENT_DEL f_del);
+void		ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, FUNC_CONTENT_DEL f_del);
+void		ft_htbl_del_rawkey_with_f_del(t_htbl *htbl, const char *key, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del);
+void		*ft_htbl_get(t_htbl *htbl, const char *key);
+void		*ft_htbl_get_rawkey(t_htbl *htbl, const void *rawkey, size_t rksize);
 void 		ft_htbl_resize(t_htbl *htbl, int size);
 
 # define 	ft_htbl_add4(...) ft_htbl_add_with_f_del(__VA_ARGS__)

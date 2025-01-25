@@ -38,16 +38,16 @@ typedef struct	s_task
 int     cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 int		cli_logger_print_file(const char *file_name);
 int		cli_read_stdin_pass(char *buf, size_t bufsize);
-t_htbl  *cli_task_htable(const t_task *, int);
-void	cli_task_htable_del(const t_htbl *);
+t_htbl  *cli_task_htable(const t_task *task, int size);
+void    cli_task_htable_del(const t_htbl *htbl);
 
-int     cli_base64(const char **, const char *);
-int     cli_hash(const char **, const char *);
-int     cli_des_ecb(const char **, const char *);
-int     cli_des_cbc(const char **, const char *);
-int     cli_rsa_gen(const char **, const char *);
-int     cli_rsa(const char **, const char *);
-int     cli_rsa_utl(const char **, const char *);
-int     cli_test(const char **, const char *);
+int     cli_base64(const char **opt, const char *name_comm);
+int     cli_hash(const char **opt, const char *name_comm);
+int     cli_des_ecb(const char **opt, const char *name_comm);
+int     cli_des_cbc(const char **opt, const char *name_comm);
+int     cli_rsa_gen(const char **opt, const char *name_comm);
+int     cli_rsa(const char **opt, const char *name_comm);
+int     cli_rsa_utl(const char **opt, const char *name);
+int     cli_test(const char **opt, const char *name);
 
 #endif

@@ -6,17 +6,7 @@
 # include <libft/string.h>
 # include <libft/logger.h>
 
-# define IO_BUFSIZE (256 * 1024)
-
-# if (IO_BUFSIZE > (256 * 1024))
-#   undef IO_BUFSIZE
-#   define IO_BUFSIZE (256 * 1024)
-# endif
-
-# if (IO_BUFSIZE < 256)
-#   undef IO_BUFSIZE
-#   define IO_BUFSIZE 256
-# endif
+# define IO_BUFSIZE 512
 
 # define IO_LOG(LEVEL, MES, ...)	io_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
@@ -87,9 +77,9 @@ ssize_t			io_fread(t_iodes *iodes, char *buf, size_t nbytes);
 ssize_t			io_write(t_iodes *iodes, const char *buf, size_t nbytes);
 ssize_t			io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes);
 ssize_t			io_swrite(t_iodes *iodes, const char *buf, size_t nbytes);
-void 			io_print_stats(const t_iodes *, const char *);
-void 			io_copy(t_iodes * const, t_iodes * const);
-void			io_close(t_iodes * const);
-void			io_close_multi(t_iodes *, ...);
+void 			io_print_stats(const t_iodes *iodes, const char *name);
+void 			io_copy(t_iodes * const dst, t_iodes * const src);
+void			io_close(t_iodes * const iodes);
+void			io_close_multi(t_iodes *iodes, ...);
 
 #endif

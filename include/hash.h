@@ -75,35 +75,35 @@ typedef struct	s_hash
 int		hash_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 t_hash	*hash_md5_init(void);
-void	hash_md5_update(t_hash *, const char *, size_t);
-void	hash_md5_final(t_hash *, const char *, size_t);
+void	hash_md5_update(t_hash *md5, const char *buf, size_t bufsize);
+void	hash_md5_final(t_hash *md5, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha1_init(void);
-void	hash_sha1_update(t_hash *, const char *, size_t);
-void	hash_sha1_final(t_hash *, const char *, size_t);
+void	hash_sha1_update(t_hash *sha1, const char *buf, size_t bufsize);
+void	hash_sha1_final(t_hash *sha1, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha256_init(void);
-void	hash_sha256_update(t_hash *, const char *, size_t);
-void	hash_sha256_final(t_hash *, const char *, size_t);
+void	hash_sha256_update(t_hash *sha256, const char *buf, size_t bufsize);
+void	hash_sha256_final(t_hash *sha256, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha224_init(void);
-void	hash_sha224_update(t_hash *, const char *, size_t);
-void	hash_sha224_final(t_hash *, const char *, size_t);
+void	hash_sha224_update(t_hash *sha224, const char *buf, size_t bufsize);
+void	hash_sha224_final(t_hash *sha224, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha512_init(void);
-void	hash_sha512_update(t_hash *, const char *, size_t);
-void	hash_sha512_final(t_hash *, const char *, size_t);
+void	hash_sha512_update(t_hash *sha512, const char *buf, size_t bufsize);
+void	hash_sha512_final(t_hash *sha512, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha384_init(void);
-void	hash_sha384_update(t_hash *, const char *, size_t);
-void	hash_sha384_final(t_hash *, const char *, size_t);
+void	hash_sha384_update(t_hash *sha384, const char *buf, size_t bufsize);
+void	hash_sha384_final(t_hash *sha384, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha512_256_init(void);
-void	hash_sha512_256_update(t_hash *, const char *, size_t);
-void	hash_sha512_256_final(t_hash *, const char *, size_t);
+void	hash_sha512_256_update(t_hash *sha512_256, const char *buf, size_t bufsize);
+void	hash_sha512_256_final(t_hash *sha512_256, const char *buf, size_t bufsize);
 
 t_hash	*hash_sha512_224_init(void);
-void	hash_sha512_224_update(t_hash *, const char *, size_t);
-void	hash_sha512_224_final(t_hash *, const char *, size_t);
+void	hash_sha512_224_update(t_hash *sha512_224, const char *buf, size_t bufsize);
+void	hash_sha512_224_final(t_hash *sha512_224, const char *buf, size_t bufsize);
 
 #endif

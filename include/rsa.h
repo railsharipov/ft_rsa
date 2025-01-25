@@ -57,7 +57,7 @@ int			rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand);
 int			rsa_check(t_node *asn_key);
 int 		rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key);
 int 		rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key);
-int			rsa_os2i(t_num *, unsigned char *, size_t);
-int			rsa_i2os(t_num *, unsigned char **, size_t);
+int			rsa_os2i(t_num *num, unsigned char *octets, size_t osize);
+int			rsa_i2os(t_num *num, unsigned char **octets, size_t osize);
 
 #endif

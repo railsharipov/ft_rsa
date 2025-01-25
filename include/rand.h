@@ -1,4 +1,3 @@
-
 #ifndef SSL_RAND_H
 # define SSL_RAND_H
 
@@ -28,12 +27,12 @@
 
 int			rand_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-int			rand_bytes(uint64_t, void *, size_t);
-int			rand_useed(uint64_t *, int);
-int			rand_mseed(uint64_t *, int);
-int			rand_fseed(uint64_t *, const char *);
-int			rand_mgf(char *, int, char *, int);
-void  		rand_mtw_init(uint64_t);
+int			rand_bytes(uint64_t seed, void *buf, size_t bufsize);
+int			rand_useed(uint64_t *seed, int size);
+int			rand_mseed(uint64_t *seed, int size);
+int			rand_fseed(uint64_t *seed, const char *files);
+int			rand_mgf(char *seed, int seedlen, char *mask, int masklen);
+void  		rand_mtw_init(uint64_t seed);
 uint64_t	rand_mtw_extract(void);
 int         rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass);
 
