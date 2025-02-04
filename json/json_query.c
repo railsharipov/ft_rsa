@@ -5,6 +5,7 @@
 #include <libft/logger.h>
 #include <libft/string.h>
 #include <libft/list.h>
+#include <libft/tuple.h>
 
 /*
 **	QUERY ::= SEQUENCE {
@@ -24,13 +25,14 @@
 **	INDEX ::= "[" INTEGER (0..MAX) "]"
 */
 
-#define __JQ_INVALID_SELECTOR	"invalid selector"
-#define __JQ_BAD_QUERY			"bad query"
+#define __JQ_BAD_SELECTOR_ERROR	"bad selector"
+#define __JQ_BAD_QUERY_ERROR	"bad query"
+#define __JQ_BAD_TYPE_ERROR		"bad type"
 
-enum e_json_q_type {
-	JSON_Q_OBJECT = 0,
-	JSON_Q_ARRAY,
-	JSON_Q_SELF
+enum __e_json_q_type {
+	__JSON_Q_OBJECT = 0,
+	__JSON_Q_ARRAY,
+	__JSON_Q_SELF
 };
 
 static size_t	__pos;
@@ -40,34 +42,40 @@ int 	__select_node(t_node *node, t_node *query, t_node **ret_node);
 int 	__select_object(t_node *node, t_node *query, t_node **ret_node);
 int 	__select_array(t_node *node, t_node *query, t_node **ret_node);
 
-t_node *json_query(const char *s, t_node *json)
+int json_query(const char *s, t_node *json, t_node **ret_node)
 {
 	t_node	*query;
-	t_node	*node;
 	int		status;
 
-	if (NULL == json || NULL == s) {
-		return (NULL);
+	if (NULL == s) {
+		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
+		return (JSON_BAD_QUERY);
 	}
-	node = json;
+
+	if (NULL == json || NULL == ret_node) {
+		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+
+	*ret_node = NULL;
 	__pos = 0;
 
 	while (s[__pos] != '\0') {
 		query = ft_node_create();
 
 		if (JSON_MATCH == (status = __parse_selector(s, query))) {
-			status = __select_node(node, query, &node);
+			status = __select_node(json, query, ret_node);
 		}
 
 		ft_node_del(query);
 
-		if (status != JSON_MATCH) {
-			JSON_LOG(ERROR, "query failed");
-			return (NULL);
+		if (status == JSON_BAD_QUERY) {
+			JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
+			return (SSL_ERR);
 		}
 	}
 
-	return (node);
+	return (SSL_OK);
 }
 
 int __parse_selector(const char *s, t_node *query)
@@ -84,9 +92,9 @@ int __parse_selector(const char *s, t_node *query)
 		end = __pos;
 
 		if (begin == end) {
-			query->type = JSON_Q_SELF;
+			query->type = __JSON_Q_SELF;
 		} else {
-			query->type = JSON_Q_OBJECT;
+			query->type = __JSON_Q_OBJECT;
 			query->key = ft_strsub(s, begin, end);
 		}
 	}
@@ -100,17 +108,17 @@ int __parse_selector(const char *s, t_node *query)
 		end = __pos;
 
 		if (s[__pos] != ']') {
-			JSON_LOG(ERROR, __JQ_INVALID_SELECTOR ": expected `]`, got `%c`", s[__pos]);
-			return (JSON_BAD_FORMAT);
+			JSON_LOG(ERROR, __JQ_BAD_SELECTOR_ERROR ": expected `]`, got `%c`", s[__pos]);
+			return (JSON_BAD_QUERY);
 		}
 		__pos++;
 
-		query->type = JSON_Q_ARRAY;
+		query->type = __JSON_Q_ARRAY;
 		query->key = ft_strsub(s, begin, end);
 	}
 	else {
-		JSON_LOG(ERROR, __JQ_INVALID_SELECTOR ": `%c`", s[__pos]);
-		return (JSON_BAD_FORMAT);
+		JSON_LOG(ERROR, __JQ_BAD_SELECTOR_ERROR ": `%c`", s[__pos]);
+		return (JSON_BAD_QUERY);
 	}
 
 	return (JSON_MATCH);
@@ -118,24 +126,26 @@ int __parse_selector(const char *s, t_node *query)
 
 int 	__select_node(t_node *node, t_node *query, t_node **ret_node)
 {
-	if (query->type == JSON_Q_OBJECT) {
+	if (query->type == __JSON_Q_OBJECT) {
 		return (__select_object(node, query, ret_node));
 	}
-	else if (query->type == JSON_Q_ARRAY) {
+	else if (query->type == __JSON_Q_ARRAY) {
 		return (__select_array(node, query, ret_node));
 	}
-	else if (query->type == JSON_Q_SELF) {
+	else if (query->type == __JSON_Q_SELF) {
 		*ret_node = node;
 		return (JSON_MATCH);
 	}
 	JSON_LOG(ERROR, "unknown query type");
-	return (JSON_NO_MATCH);
+
+	return (JSON_BAD_QUERY);
 }
 
 int 	__select_object(t_node *node, t_node *query, t_node **ret_node)
 {
 	t_node	*kv_node;
 	t_node	*k, *v;
+	t_tuple	*tuple;
 
 	if (node->type != JSON_OBJECT) {
 		JSON_LOG(ERROR, "Using key for non-object type");
@@ -144,14 +154,14 @@ int 	__select_object(t_node *node, t_node *query, t_node **ret_node)
 
 	kv_node = node->content;
 
-	if (kv_node->type != JSON_KV) {
-		JSON_LOG(ERROR, __JQ_BAD_QUERY);
-		return (JSON_BAD_FORMAT);
-	}
-
 	while (kv_node != NULL) {
-		k = kv_node->content;
-		v = kv_node->next;
+		if (SSL_OK != json_validate(kv_node)) {
+			JSON_LOG(ERROR, __JQ_BAD_TYPE_ERROR);
+			return (JSON_BAD_FORMAT);
+		}
+		tuple = (t_tuple *)kv_node->content;
+		k = ft_tuple_get(tuple, 0);
+		v = ft_tuple_get(tuple, 1);
 
 		if (ft_strcmp(k->key, query->key) == 0) {
 			*ret_node = v;
@@ -160,7 +170,7 @@ int 	__select_object(t_node *node, t_node *query, t_node **ret_node)
 		kv_node = kv_node->next;
 	}
 
-	JSON_LOG(ERROR, __JQ_BAD_QUERY);
+	JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
 	return (JSON_BAD_FORMAT);
 }
 
@@ -187,6 +197,6 @@ int 	__select_array(t_node *node, t_node *query, t_node **ret_node)
 		idx++;
 	}
 
-	JSON_LOG(ERROR, __JQ_BAD_QUERY);
+	JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
 	return (JSON_BAD_FORMAT);
 }

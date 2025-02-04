@@ -1,29 +1,29 @@
 {
     "description": "publicKey",
     "type": "sequence",
-    "value": [
+    "nodes": [
         {
             "description": "algorithmId",
             "type": "sequence",
-            "value": [
+            "nodes": [
                 {
                     "description": "rsaEncryption",
                     "type": "objectId"
                 },
                 {
-                    "description": null,
+                    "description": "",
                     "type": "null"
                 }
             ]
         },
         {
-            "description": null,
+            "description": "bitstring",
             "type": "bitstring",
-            "value": [
+            "nodes": [
                 {
-                    "description": null,
+                    "description": "",
                     "type": "sequence",
-                    "value": [
+                    "nodes": [
                         {
                             "description": "modulus",
                             "type": "int"

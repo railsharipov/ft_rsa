@@ -1,7 +1,7 @@
 {
     "description": "rsaPrivateKey",
     "type": "sequence",
-    "value": [
+    "nodes": [
         {
             "description": "version",
             "type": "int"
