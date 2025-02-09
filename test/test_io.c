@@ -1,10 +1,10 @@
-#ifdef INCLUDE_TEST
+#include <common.h>
+#include <io.h>
+#include <test.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-# include <common.h>
-# include <io.h>
-# include <test.h>
-# include <unistd.h>
-# include <fcntl.h>
+#ifdef SSL_INCLUDE_TESTS
 
 static int	__test_io_setup(void);
 static int	__test_io_init(void);

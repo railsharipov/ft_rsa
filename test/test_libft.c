@@ -1,22 +1,22 @@
-#ifdef INCLUDE_TEST
+#include <string.h>
+#include <inttypes.h>
+#include <limits.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <common.h>
+#include <test.h>
+#include <libft/std.h>
+#include <libft/node.h>
+#include <libft/list.h>
+#include <libft/stack.h>
+#include <libft/queue.h>
+#include <libft/tuple.h>
+#include <libft/ntree.h>
+#include <libft/2darray.h>
+#include <libft/bytes.h>
 
-# include <string.h>
-# include <inttypes.h>
-# include <limits.h>
-# include <ctype.h>
-# include <unistd.h>
-# include <sys/fcntl.h>
-# include <common.h>
-# include <test.h>
-# include <libft/std.h>
-# include <libft/node.h>
-# include <libft/list.h>
-# include <libft/stack.h>
-# include <libft/queue.h>
-# include <libft/tuple.h>
-# include <libft/ntree.h>
-# include <libft/2darray.h>
-# include <libft/bytes.h>
+#ifdef SSL_INCLUDE_TESTS
 
 static char 	*__s1;
 static char 	*__s2;
@@ -1556,33 +1556,33 @@ static int __test_ft_tuple(void)
 
 	tuple = ft_tuple_new((void *)head_content, head_size, (void *)tail_content, tail_size);
 	TEST_ASSERT(tuple != NULL);
-	TEST_ASSERT(tuple->head != NULL);
-	TEST_ASSERT(tuple->tail != NULL);
-	TEST_ASSERT(tuple->head->content != NULL);
-	TEST_ASSERT(tuple->tail->content != NULL);
-	TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
-	TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
-	TEST_ASSERT(tuple->head->size == head_size);
-	TEST_ASSERT(tuple->tail->size == tail_size);
+	TEST_ASSERT(tuple->__head != NULL);
+	TEST_ASSERT(tuple->__tail != NULL);
+	TEST_ASSERT(tuple->__head->content != NULL);
+	TEST_ASSERT(tuple->__tail->content != NULL);
+	TEST_ASSERT(ft_strcmp(tuple->__head->content, head_content) == 0);
+	TEST_ASSERT(ft_strcmp(tuple->__tail->content, tail_content) == 0);
+	TEST_ASSERT(tuple->__head->size == head_size);
+	TEST_ASSERT(tuple->__tail->size == tail_size);
 	ft_tuple_del(tuple);
 
 	tuple = ft_tuple_new_with_f_del((void *)ft_strdup(head_content), head_size, (void *)ft_strdup(tail_content), tail_size, free);
 	TEST_ASSERT(tuple != NULL);
-	TEST_ASSERT(tuple->head != NULL);
-	TEST_ASSERT(tuple->tail != NULL);
-	TEST_ASSERT(tuple->head->content != NULL);
-	TEST_ASSERT(tuple->tail->content != NULL);
-	TEST_ASSERT(ft_strcmp(tuple->head->content, head_content) == 0);
-	TEST_ASSERT(ft_strcmp(tuple->tail->content, tail_content) == 0);
-	TEST_ASSERT(tuple->head->size == head_size);
-	TEST_ASSERT(tuple->tail->size == tail_size);
-	TEST_ASSERT(tuple->head->f_del_content == free);
-	TEST_ASSERT(tuple->tail->f_del_content == free);
+	TEST_ASSERT(tuple->__head != NULL);
+	TEST_ASSERT(tuple->__tail != NULL);
+	TEST_ASSERT(tuple->__head->content != NULL);
+	TEST_ASSERT(tuple->__tail->content != NULL);
+	TEST_ASSERT(ft_strcmp(tuple->__head->content, head_content) == 0);
+	TEST_ASSERT(ft_strcmp(tuple->__tail->content, tail_content) == 0);
+	TEST_ASSERT(tuple->__head->size == head_size);
+	TEST_ASSERT(tuple->__tail->size == tail_size);
+	TEST_ASSERT(tuple->__head->f_del_content == free);
+	TEST_ASSERT(tuple->__tail->f_del_content == free);
 	ft_tuple_del(tuple);
 
 	tuple = ft_tuple_new_with_f_del((void *)ft_strdup(head_content), head_size, (void *)ft_strdup(tail_content), tail_size, NULL);
-	TEST_ASSERT(tuple->head->f_del_content == NULL);
-	TEST_ASSERT(tuple->tail->f_del_content == NULL);
+	TEST_ASSERT(tuple->__head->f_del_content == NULL);
+	TEST_ASSERT(tuple->__tail->f_del_content == NULL);
 	ft_tuple_del_with_f_del(tuple, free);
 
 	tuple = ft_tuple_new((void *)head_content, head_size, (void *)tail_content, tail_size);

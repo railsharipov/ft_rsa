@@ -1,8 +1,8 @@
-#ifdef INCLUDE_TEST
+#include <common.h>
+#include <base64.h>
+#include <test.h>
 
-# include <common.h>
-# include <base64.h>
-# include <test.h>
+#ifdef SSL_INCLUDE_TESTS
 
 static const char	*__binary_file_path = "test/testfiles/file";
 static const char	*__base64_file_path = "test/testfiles/base64_message.txt";

@@ -10,8 +10,8 @@ static int __f_logger(const char *mes);
 
 static t_logger __logger = {
     .f_logger = __f_logger,
-    .log_level = LIBFT_LOG_LEVEL_ERROR,
-    .ansi_colored = 1,
+    .log_level = LIBFT_LOG_LEVEL_DEBUG,
+    .is_ansi_colored = 1,
 };
 
 static int  __f_logger(const char *mes) {

@@ -1,11 +1,11 @@
-#ifdef INCLUDE_TEST
+#include <common.h>
+#include <asn.h>
+#include <der.h>
+#include <rand.h>
+#include <test.h>
+#include <io.h>
 
-# include <common.h>
-# include <asn.h>
-# include <der.h>
-# include <rand.h>
-# include <test.h>
-# include <io.h>
+#ifdef SSL_INCLUDE_TESTS
 
 static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);

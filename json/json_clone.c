@@ -8,6 +8,7 @@
 
 static void	__init_copy_node(t_node *src, t_node *dst);
 static int	__copy_node(t_node *src, t_node *dst);
+static int	__copy_node_of_type(t_node *src, t_node *dst, int type);
 static int	__copy_kv_node(t_node *src, t_node *dst);
 
 static int	__copy_object(t_node *src, t_node *dst);
@@ -29,45 +30,59 @@ int	json_clone(t_node *json, t_node **ret_json)
 	*ret_json = NULL;
 	node = ft_node_create();
 
-	return (__copy_node(json, node));
+	if (SSL_OK != __copy_node(json, node)) {
+		ft_node_del(node);
+		return (SSL_ERR);
+	}
+
+	*ret_json = node;
+	return (SSL_OK);
 }
 
 static int	__copy_node(t_node *src, t_node *dst)
 {
-	uint8_t	type;
+	return (__copy_node_of_type(src, dst, src->type));
+}
+
+static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
+{
 	int		ret;
 
-	if (NULL == src) {
+	if (NULL == src || NULL == dst) {
 		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	if (src->type != type) {
+		JSON_LOG(ERROR, "expected %s, got %s", json_get_type_name(type), json_get_type_name(src->type));
 		return (SSL_ERR);
 	}
 
 	__init_copy_node(src, dst);
 
-	switch (src->type) {
-		case JSON_OBJECT:
+	switch (type) {
+		case JSON_TYPE_OBJECT:
 			ret = __copy_object(src, dst);
 			break;
-		case JSON_ARRAY:
+		case JSON_TYPE_KV:
+			ret = __copy_kv_node(src, dst);
+			break;
+		case JSON_TYPE_ARRAY:
 			ret = __copy_array(src, dst);
 			break;
-		case JSON_CSTR:
+		case JSON_TYPE_STRING:
 			ret = __copy_string(src, dst);
 			break;
-		case JSON_NUMBER:
+		case JSON_TYPE_NUMBER:
 			ret = __copy_number(src, dst);
 			break;
-		case JSON_BOOLEAN:
+		case JSON_TYPE_BOOLEAN:
 			ret = __copy_boolean(src, dst);
 			break;
-		case JSON_NULL:
+		case JSON_TYPE_NULL:
 			ret = __copy_null(src, dst);
 			break;
-		case JSON_UNKNOWN:
-			JSON_LOG(ERROR, "invalid type: " JSON_TYPE_NAME_UNKNOWN);
-			return (SSL_ERR);
 		default:
-			JSON_LOG(ERROR, "unknown type");
+			JSON_LOG(ERROR, "cannot clone type: %s", json_get_type_name(src->type));
 			return (SSL_ERR);
 	}
 
@@ -90,14 +105,9 @@ static int	__copy_object(t_node *src, t_node *dst)
 	kv_arr_item = (t_node *)src->content;
 
 	while (kv_arr_item) {
-		if (kv_arr_item->type != JSON_KV) {
-			JSON_LOG(ERROR, "Expected key-value pair");
-			ft_lst_del(dst_kv_list);
-			return (SSL_ERR);
-		}
 		ft_lst_prepend(&dst_kv_list, ft_node_create());
 
-		if (SSL_OK != __copy_kv_node(kv_arr_item, dst_kv_list)) {
+		if (SSL_OK != __copy_node_of_type(kv_arr_item, dst_kv_list, JSON_TYPE_KV)) {
 			ft_lst_del(dst_kv_list);
 			return (SSL_ERR);
 		}
@@ -118,21 +128,12 @@ static int	__copy_kv_node(t_node *src, t_node *dst)
 	t_node	*dst_k, *dst_v;
 
 	tuple = (t_tuple *)src->content;
-	k = tuple->head;
-	v = tuple->tail;
-
-	if (NULL == k || NULL == v) {
-		JSON_LOG(ERROR, "Invalid key-value pair");
-		return (SSL_ERR);
-	}
-	if (k->type != JSON_CSTR) {
-		JSON_LOG(ERROR, "Expected key to be a string type");
-		return (SSL_ERR);
-	}
+	k = ft_tuple_get(tuple, 0);
+	v = ft_tuple_get(tuple, 1);
 
 	dst_k = ft_node_create();
 
-	if (SSL_OK != __copy_node(k, dst_k)) {
+	if (SSL_OK != __copy_node_of_type(k, dst_k, JSON_TYPE_STRING)) {
 		ft_node_del(dst_k);
 		return (SSL_ERR);
 	}

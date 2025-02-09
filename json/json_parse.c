@@ -96,7 +96,7 @@ static void	__skip_ws(const char *s)
 
 static void	__init_node(t_node *node)
 {
-	node->type = JSON_UNKNOWN;
+	node->type = JSON_TYPE_UNDEFINED;
 	node->content = NULL;
 	node->size = 0;
 	node->f_del_content = NULL;
@@ -144,8 +144,8 @@ static int	__parse_null(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing null at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_NULL;
-	node->f_del_content = json_get_f_del(JSON_NULL);
+	node->type = JSON_TYPE_NULL;
+	node->f_del_content = json_get_f_del(JSON_TYPE_NULL);
 
 	if (ft_strncmp(s + __pos, "null", 4) == 0) {
 		__pos += 4;
@@ -168,8 +168,8 @@ static int	__parse_boolean(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing boolean at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_BOOLEAN;
-	node->f_del_content = json_get_f_del(JSON_BOOLEAN);
+	node->type = JSON_TYPE_BOOLEAN;
+	node->f_del_content = json_get_f_del(JSON_TYPE_BOOLEAN);
 
 	if (ft_strncmp(s + __pos, "true", 4) == 0) {
 		__pos += 4;
@@ -212,8 +212,8 @@ static int	__parse_number(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing number at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_NUMBER;
-	node->f_del_content = json_get_f_del(JSON_NUMBER);
+	node->type = JSON_TYPE_NUMBER;
+	node->f_del_content = json_get_f_del(JSON_TYPE_NUMBER);
 
 	if (!ft_isdigit(s[__pos]) && s[__pos] != '-') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -317,8 +317,8 @@ static int	__parse_string(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing string at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_CSTR;
-	node->f_del_content = json_get_f_del(JSON_CSTR);
+	node->type = JSON_TYPE_STRING;
+	node->f_del_content = json_get_f_del(JSON_TYPE_STRING);
 
 	if (s[__pos] != '"') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -357,8 +357,8 @@ static int	__parse_kv(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing key-value at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_KV;
-	node->f_del_content = json_get_f_del(JSON_KV);
+	node->type = JSON_TYPE_KV;
+	node->f_del_content = json_get_f_del(JSON_TYPE_KV);
 
 	key_node = ft_node_create();
 	value_node = ft_node_create();
@@ -408,8 +408,8 @@ static int	__parse_object(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing object at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_OBJECT;
-	node->f_del_content = json_get_f_del(JSON_OBJECT);
+	node->type = JSON_TYPE_OBJECT;
+	node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
 
 	kv_node_list = NULL;
 
@@ -480,8 +480,8 @@ static int	__parse_array(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing array at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_ARRAY;
-	node->f_del_content = json_get_f_del(JSON_ARRAY);
+	node->type = JSON_TYPE_ARRAY;
+	node->f_del_content = json_get_f_del(JSON_TYPE_ARRAY);
 
 	value_node_list = NULL;
 

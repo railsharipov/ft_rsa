@@ -18,25 +18,25 @@ void json_del(t_node *node)
 
 FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
 {
-	if (type == JSON_ARRAY) {
+	if (type == JSON_TYPE_ARRAY) {
 		return (__delete_array);
 
-	} else if (type == JSON_OBJECT) {
+	} else if (type == JSON_TYPE_OBJECT) {
 		return (__delete_object);
 
-	} else if (type == JSON_KV) {
+	} else if (type == JSON_TYPE_KV) {
 		return (__delete_key_value);
 
-	} else if (type == JSON_CSTR) {
+	} else if (type == JSON_TYPE_STRING) {
 		return (__delete_string);
 
-	} else if (type == JSON_NULL) {
+	} else if (type == JSON_TYPE_NULL) {
 		return (__delete_null);
 
-	} else if (type == JSON_BOOLEAN) {
+	} else if (type == JSON_TYPE_BOOLEAN) {
 		return (__delete_boolean);
 
-	} else if (type == JSON_NUMBER) {
+	} else if (type == JSON_TYPE_NUMBER) {
 		return (__delete_number);
 	}
 	return (NULL);

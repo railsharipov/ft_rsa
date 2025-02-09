@@ -1,10 +1,10 @@
-#ifdef INCLUDE_TEST
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <libft/logger.h>
+#include <alloc.h>
+#include <common.h>
 
-# include <unistd.h>
-# include <sys/fcntl.h>
-# include <libft/logger.h>
-# include <alloc.h>
-# include <common.h>
+#ifdef SSL_INCLUDE_TESTS
 
 #define TEST_LOG_PREFIX  "test: "
 
@@ -13,7 +13,7 @@ static int __f_logger(const char *mes);
 static t_logger __logger = {
     .f_logger = __f_logger,
     .log_level = LIBFT_LOG_LEVEL_DEBUG,
-    .ansi_colored = 1,
+    .is_ansi_colored = 1,
 };
 
 static int  __f_logger(const char *mes) {

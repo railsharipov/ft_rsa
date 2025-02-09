@@ -1,7 +1,7 @@
-#ifdef INCLUDE_TEST
+#include <common.h>
+#include <test.h>
 
-# include <common.h>
-# include <test.h>
+#ifdef SSL_INCLUDE_TESTS
 
 #define ARR_SIZE(ARR)	sizeof(ARR) / sizeof(ARR[0])
 
