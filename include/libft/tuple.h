@@ -6,8 +6,8 @@
 
 typedef struct	s_tuple
 {
-	t_node		*head;
-	t_node		*tail;
+	t_node		*__head;
+	t_node		*__tail;
 }				t_tuple;
 
 t_tuple					*ft_tuple_new(void *head, size_t head_size, void *tail, size_t tail_size);

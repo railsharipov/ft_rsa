@@ -36,9 +36,10 @@ typedef struct	s_logger
 {
 	FUNC_LOGGER f_logger;
 	uint8_t 	log_level;
-	uint8_t 	ansi_colored;
+	uint8_t 	is_ansi_colored;
 } 				t_logger;
 
+int	ft_logger_f_default_logger(const char *mes);
 int	ft_logger_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, ...);
 int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
 

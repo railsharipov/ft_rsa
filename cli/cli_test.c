@@ -1,8 +1,8 @@
-#ifdef INCLUDE_TEST
+#include <common.h>
+#include <cli.h>
+#include <test.h>
 
-# include <common.h>
-# include <cli.h>
-# include <test.h>
+#ifdef SSL_INCLUDE_TESTS
 
 #define __CLI_TEST_LINE_BREAK	"----------------------------------------"
 
@@ -25,6 +25,7 @@ int	cli_test(const char **opt, const char *name)
 			TEST_LOG(ERROR, INVALID_INPUT_ERROR);
 			return (SSL_ERR);
 		}
+		CLI_LOG(INFO, __CLI_TEST_LINE_BREAK);
 		CLI_LOG(INFO, "TEST MODULE: " TXT_CYAN("%s"), TEST_DESC_ARR[idx]);
 
 		f_test = TESTS[idx];

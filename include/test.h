@@ -9,7 +9,7 @@
 
 # define TEST_LOG(LEVEL, MES, ...)	test_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-// # define TEST_ENABLE_ASSERT_PASS_LOG
+# define TEST_ENABLE_ASSERT_PASS_LOG
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 
 # define TEST_RESULT(RES)	do { if ((RES == SSL_OK)) { TEST_LOG(INFO, TXT_B_GREEN("TEST OK")); } else { TEST_LOG(ERROR, TXT_B_RED("TEST FAIL")); } } while (0)

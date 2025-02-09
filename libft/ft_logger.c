@@ -11,7 +11,13 @@
 #define FT_LOGGER_DEBUG_LOG_PREFIX	"[debug] "
 #define FT_LOGGER_TRACE_LOG_PREFIX	"[trace] "
 
+#define __DEBUG_INFO_MSG(TXT, COLORED)		(COLORED ? TXT_YELL(TXT) : TXT)
+
 static int __log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
+
+int ft_logger_f_default_logger(const char *mes) {
+	return (ft_printf("%@%s\n", mes));
+}
 
 int	ft_logger_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, ...)
 {
@@ -50,13 +56,14 @@ static int	__log(const char *func_name, const char *file_name, int line_number, 
 	char	*full_mes;
 	char	*debug_info;
 	char	*level_prefix;
+	char    *mes_prefix;
 	char	*mes;
 	int		colored;
 	int		ret;
 
 	debug_info = NULL;
 	mes = NULL;
-	colored = logger->ansi_colored;
+	colored = logger->is_ansi_colored;
 
 	if (level == LIBFT_LOG_LEVEL_CRIT) {
 		level_prefix = colored ? TXT_MAGEN(FT_LOGGER_CRIT_LOG_PREFIX) : FT_LOGGER_CRIT_LOG_PREFIX;
@@ -72,14 +79,14 @@ static int	__log(const char *func_name, const char *file_name, int line_number, 
 		level_prefix = FT_LOGGER_INFO_LOG_PREFIX;
 	}
 
-	if (NULL == func_name && NULL == file_name) {
-		debug_info = ft_strdup("");
+	if (NULL != func_name && NULL != file_name) {
+		ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s, %s:%d)", colored), func_name, file_name, line_number);
+	} else if (NULL != func_name) {
+		ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s)", colored), func_name);
+	} else if (NULL != file_name) {
+		ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s:%d)", colored), file_name, line_number);
 	} else {
-		if (colored) {
-			ft_sprintf(&debug_info, TXT_YELL(" (%s, %s:%d)"), func_name, file_name, line_number);
-		} else {
-			ft_sprintf(&debug_info, " (%s, %s:%d)", func_name, file_name, line_number);
-		}
+		debug_info = ft_strdup("");
 	}
 
 	ft_vsprintf(&mes, fmt, va_arg);

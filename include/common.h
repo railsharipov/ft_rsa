@@ -10,13 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef FT_COMMON_H
-# define FT_COMMON_H
+#ifndef SSL_COMMON_H
+# define SSL_COMMON_H
 
 # include <stdint.h>
 # include <stddef.h>
 # include <alloc.h>
 # include <libft/common.h>
+
+# define SSL_INCLUDE_TESTS
+# define SSL_GLOBAL_LOG_LEVEL		LIBFT_LOG_LEVEL_DEBUG
 
 # define CLI_FLAG(F,X)		((int)(((X)&(F))==(F)))
 

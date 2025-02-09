@@ -46,7 +46,7 @@ all: $(NAME)
 debug: override CC = gcc -Og -g -std=c11 -fsanitize=address
 debug: $(NAME)
 
-test: override CC = gcc -Og -g -std=c11 -fsanitize=address -DINCLUDE_TEST
+test: override CC = gcc -Og -g -std=c11 -fsanitize=address -DSSL_INCLUDE_TESTS
 test: $(NAME)
 
 $(NAME): $(OBJS)
