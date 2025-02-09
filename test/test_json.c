@@ -193,7 +193,7 @@ static int	__test_json_parse_simple_number(void)
 	ref_num = bnum_from_dec(json_s);
 
 	TEST_ASSERT(node->type == JSON_TYPE_NUMBER);
-	TEST_ASSERT(node->size == sizeof(t_num));
+	TEST_ASSERT(node->size == 0);
 	TEST_ASSERT(node->content != NULL);
 	TEST_ASSERT(bnum_cmp((t_num *)node->content, ref_num) == 0);
 	TEST_ASSERT(node->f_del_content != NULL);
@@ -267,8 +267,6 @@ static int	__test_json_parse_simple_null(void)
 
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
-
-
 
 	TEST_ASSERT(node->type == JSON_TYPE_NULL);
 	TEST_ASSERT(node->size == 0);
@@ -578,6 +576,7 @@ static int	__test_json_query_complex_object(void)
 static int	__test_json_clone_complex_object(void)
 {
 	t_node	*json, *cloned_json;
+	t_node	*node, *cloned_node;
 	char	*json_s;
 	int		ret;
 
@@ -591,6 +590,109 @@ static int	__test_json_clone_complex_object(void)
 
 	TEST_ASSERT(SSL_OK == json_validate(json));
 	TEST_ASSERT(SSL_OK == json_validate(cloned_json));
+
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey.post", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey.post", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey.post.tags", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey.post.tags", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(ft_lst_size(node->content) == ft_lst_size(cloned_node->content));
+
+	for (; node != NULL; node = node->next, cloned_node = cloned_node->next) {
+		TEST_ASSERT(node->type == cloned_node->type);
+		TEST_ASSERT(node->size == cloned_node->size);
+	}
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_ARRAY);
+	TEST_ASSERT(ft_lst_size(node->content) == ft_lst_size(cloned_node->content));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0]", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0]", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_OBJECT);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].size", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].size", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(bnum_cmp((t_num *)node->content, (t_num *)cloned_node->content) == 0);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].name", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].name", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(ft_strcmp(node->content, cloned_node->content) == 0);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_OBJECT);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].required", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].required", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_BOOLEAN);
+	TEST_ASSERT(ft_strcmp(node->content, cloned_node->content) == 0);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema['$ref']", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema['$ref']", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(ft_strcmp(node->content, cloned_node->content) == 0);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].description", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].description", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(ft_strcmp(node->content, cloned_node->content) == 0);
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].schema.type", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].schema.type", cloned_json, &cloned_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(cloned_node != NULL);
+	TEST_ASSERT(node->type == cloned_node->type);
+	TEST_ASSERT(node->size == cloned_node->size);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(ft_strcmp(node->content, cloned_node->content) == 0);
 
 	json_del(json);
 	json_del(cloned_json);

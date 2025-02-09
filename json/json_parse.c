@@ -300,7 +300,7 @@ static int	__parse_number(const char *s, t_node *node)
 	bnum_del(mantissa);
 
 	node->content = number;
-	node->size = sizeof(t_num);
+	node->size = 0;
 
 	return (JSON_MATCH);
 }
@@ -382,7 +382,7 @@ static int	__parse_kv(const char *s, t_node *node)
 	}
 
 	node->content = ft_tuple_new(key_node, sizeof(t_node), value_node, sizeof(t_node));
-	node->size = sizeof(t_tuple);
+	node->size = 0;
 
 	status = JSON_MATCH;
 
@@ -455,7 +455,7 @@ static int	__parse_object(const char *s, t_node *node)
 	ft_lst_rev(&kv_node_list);
 
 	node->content = kv_node_list;
-	node->size = sizeof(t_node);
+	node->size = ft_lst_size(kv_node_list);
 
 	status = JSON_MATCH;
 
@@ -521,7 +521,7 @@ static int	__parse_array(const char *s, t_node *node)
 	ft_lst_rev(&value_node_list);
 
 	node->content = value_node_list;
-	node->size = sizeof(t_node);
+	node->size = ft_lst_size(value_node_list);
 
 	status = JSON_MATCH;
 
