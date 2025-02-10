@@ -86,6 +86,8 @@ static int	__map_object(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	t_node	*src_kv_list;
 	t_node	*dst_kv_list;
 	t_node	*kv_node;
+	t_node  *tmp_node;
+	int		status;
 
 	JSON_LOG(TRACE, "mapping object with %d key-value pairs", node->size);
 
@@ -104,14 +106,20 @@ static int	__map_object(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 		ft_lst_prepend(&dst_kv_list, kv_node);
 		src_kv_list = src_kv_list->next;
 	}
-
 	ft_lst_rev(&dst_kv_list);
-	result_node->type = JSON_TYPE_OBJECT;
-	result_node->content = dst_kv_list;
-	result_node->size = ft_lst_size(dst_kv_list);
-	result_node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
 
-	return (SSL_OK);
+	tmp_node = ft_node_create();
+
+	tmp_node->type = JSON_TYPE_OBJECT;
+	tmp_node->content = dst_kv_list;
+	tmp_node->size = ft_lst_size(dst_kv_list);
+	tmp_node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
+
+	status = f(tmp_node, result_node);
+
+	ft_node_del(tmp_node);
+
+	return (status);
 }
 
 static int	__map_kv(t_node *node, FUNC_JSON_MAP f, t_node *result_node)

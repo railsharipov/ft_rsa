@@ -230,7 +230,7 @@ static void	__del_node_recur(t_node *node, FUNC_CONTENT_DEL f_del)
 	}
 	__del_node_recur(node->nodes, f_del);
 	__del_node_recur(node->next, f_del);
-	ft_node_del(node, f_del);
+	ft_node_del_with_f_del(node, f_del);
 }
 
 static int	__iter_func(t_node *node, const void *ptr)

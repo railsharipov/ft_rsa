@@ -15,6 +15,7 @@
 
 # include <string.h>
 # include <stdint.h>
+# include <stddef.h>
 # include <libft/common.h>
 
 typedef __uint128_t	uint128_t;

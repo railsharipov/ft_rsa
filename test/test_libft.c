@@ -1202,7 +1202,7 @@ static int __test_ft_node(void)
 	node = ft_node_create();
 	TEST_ASSERT(node != NULL);
 
-	ft_node_del(node, NULL);
+	ft_node_del(node);
 
 	node = ft_node_new(key, content, strlen(content));
 	TEST_ASSERT(node != NULL);
@@ -1211,7 +1211,7 @@ static int __test_ft_node(void)
 	TEST_ASSERT(node->content != NULL);
 	TEST_ASSERT(strcmp(node->content, content) == 0);
 
-	ft_node_del(node, NULL);
+	ft_node_del(node);
 
 	TEST_PASS();
 }
