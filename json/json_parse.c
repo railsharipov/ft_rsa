@@ -168,18 +168,16 @@ static int	__parse_boolean(const char *s, t_node *node)
 	JSON_LOG(TRACE, "parsing boolean at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
-	node->type = JSON_TYPE_BOOLEAN;
-	node->f_del_content = json_get_f_del(JSON_TYPE_BOOLEAN);
 
 	if (ft_strncmp(s + __pos, "true", 4) == 0) {
 		__pos += 4;
-		node->content = ft_strdup("true");
-		node->size = 4;
+		node->type = JSON_TYPE_BOOL_TRUE;
+		node->f_del_content = json_get_f_del(JSON_TYPE_BOOL_TRUE);
 		return (JSON_MATCH);
 	} else if (ft_strncmp(s + __pos, "false", 5) == 0) {
 		__pos += 5;
-		node->content = ft_strdup("false");
-		node->size = 5;
+		node->type = JSON_TYPE_BOOL_FALSE;
+		node->f_del_content = json_get_f_del(JSON_TYPE_BOOL_FALSE);
 		return (JSON_MATCH);
 	} else {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);

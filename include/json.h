@@ -17,7 +17,8 @@ enum	e_json_type {
     JSON_TYPE_KV,
     JSON_TYPE_STRING,
     JSON_TYPE_NUMBER,
-    JSON_TYPE_BOOLEAN,
+    JSON_TYPE_BOOL_TRUE,
+    JSON_TYPE_BOOL_FALSE,
     JSON_TYPE_NULL,
 	JSON_TYPE_INVALID,
 	JSON_TYPE_COUNT
@@ -33,7 +34,7 @@ enum	e_json_status
 	JSON_BAD_QUERY	= SSL_STATUS_COUNT + 5,
 };
 
-typedef int (*FUNC_JSON_MAP)(t_node *node);
+typedef int (*FUNC_JSON_MAP)(t_node *src, t_node *dst);
 
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
@@ -43,7 +44,7 @@ int     json_validate(t_node *node);
 int     json_validate_node(t_node *node);
 int     json_validate_node_type(int type);
 int     json_validate_node_is_of_type(t_node *node, int type);
-int     json_map(t_node *node, FUNC_JSON_MAP f, t_node **ret_node);
+int     json_map_values(t_node *node, FUNC_JSON_MAP f, t_node **ret_node);
 int     json_clone(t_node *node, t_node **ret_node);
 void	json_del(t_node *node);
 

@@ -74,7 +74,8 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 		case JSON_TYPE_NUMBER:
 			ret = __copy_number(src, dst);
 			break;
-		case JSON_TYPE_BOOLEAN:
+		case JSON_TYPE_BOOL_TRUE:
+		case JSON_TYPE_BOOL_FALSE:
 			ret = __copy_boolean(src, dst);
 			break;
 		case JSON_TYPE_NULL:
@@ -116,7 +117,7 @@ static int	__copy_object(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_OBJECT;
 	dst->content = dst_kv_list;
 	dst->size = ft_lst_size(dst_kv_list);
-	dst->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
+	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);
 }
@@ -153,7 +154,7 @@ static int	__copy_kv_node(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_KV;
 	dst->content = ft_tuple_new(dst_k, sizeof(t_node), dst_v, sizeof(t_node));
 	dst->size = 0;
-	dst->f_del_content = json_get_f_del(JSON_TYPE_KV);
+	dst->f_del_content = json_get_f_del(src->type);
 	return (SSL_OK);
 }
 
@@ -185,7 +186,7 @@ static int	__copy_array(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_ARRAY;
 	dst->content = dst_list;
 	dst->size = ft_lst_size(dst_list);
-	dst->f_del_content = json_get_f_del(JSON_TYPE_ARRAY);
+	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);
 }
@@ -197,7 +198,7 @@ static int	__copy_string(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_STRING;
 	dst->content = ft_strdup(src->content);
 	dst->size = src->size;
-	dst->f_del_content = json_get_f_del(JSON_TYPE_STRING);
+	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);
 }
@@ -214,7 +215,7 @@ static int	__copy_number(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_NUMBER;
 	dst->content = num;
 	dst->size = 0;
-	dst->f_del_content = json_get_f_del(JSON_TYPE_NUMBER);
+	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);
 }
@@ -223,10 +224,10 @@ static int	__copy_boolean(t_node *src, t_node *dst)
 {
 	JSON_LOG(TRACE, "cloning boolean: %s", src->content);
 
-	dst->type = JSON_TYPE_BOOLEAN;
-	dst->content = ft_strdup(src->content);
-	dst->size = ft_strlen(dst->content);
-	dst->f_del_content = json_get_f_del(JSON_TYPE_BOOLEAN);
+	dst->type = src->type;
+	dst->content = NULL;
+	dst->size = 0;
+	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);
 }
@@ -240,7 +241,7 @@ static int	__copy_null(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_NULL;
 	dst->content = NULL;
 	dst->size = 0;
-	dst->f_del_content = json_get_f_del(JSON_TYPE_NULL);
+	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);
 }

@@ -33,7 +33,10 @@ FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
 	} else if (type == JSON_TYPE_NULL) {
 		return (__delete_null);
 
-	} else if (type == JSON_TYPE_BOOLEAN) {
+	} else if (type == JSON_TYPE_BOOL_TRUE) {
+		return (__delete_boolean);
+
+	} else if (type == JSON_TYPE_BOOL_FALSE) {
 		return (__delete_boolean);
 
 	} else if (type == JSON_TYPE_NUMBER) {
@@ -75,7 +78,7 @@ static void __delete_null(void *content)
 static void __delete_boolean(void *content)
 {
 	JSON_LOG(TRACE, "deleting boolean");
-	LIBFT_FREE(content);
+	return ;
 }
 
 static void __delete_number(void *content)

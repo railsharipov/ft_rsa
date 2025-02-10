@@ -83,7 +83,8 @@ static int	__validate_node(t_node *node)
 			return (__validate_string(node));
 		case JSON_TYPE_NUMBER:
 			return (__validate_number(node));
-		case JSON_TYPE_BOOLEAN:
+		case JSON_TYPE_BOOL_TRUE:
+		case JSON_TYPE_BOOL_FALSE:
 			return (__validate_boolean(node));
 		case JSON_TYPE_NULL:
 			return (__validate_null(node));
@@ -204,12 +205,8 @@ static int	__validate_number(t_node *node)
 
 static int	__validate_boolean(t_node *node)
 {
-	if (node->content == NULL) {
-		JSON_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_BOOLEAN));
-		return (SSL_ERR);
-	}
-	if (node->type != JSON_TYPE_BOOLEAN) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_BOOLEAN), json_get_type_name(node->type));
+	if (node->type != JSON_TYPE_BOOL_TRUE && node->type != JSON_TYPE_BOOL_FALSE) {
+		JSON_LOG(DEBUG, "expected boolean type, got %s", json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -217,10 +214,6 @@ static int	__validate_boolean(t_node *node)
 
 static int	__validate_null(t_node *node)
 {
-	if (NULL == node) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
 	if (node->type != JSON_TYPE_NULL) {
 		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_NULL), json_get_type_name(node->type));
 		return (SSL_ERR);

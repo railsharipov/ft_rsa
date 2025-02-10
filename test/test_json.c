@@ -19,6 +19,7 @@ static int	__test_json_parse_simple_null(void);
 static int	__test_json_parse_complex_object(void);
 static int	__test_json_query_complex_object(void);
 static int	__test_json_clone_complex_object(void);
+static int	__test_json_map_values(void);
 
 static const char	*__simple_null_json_file_path = "test/testfiles/json/simple-null.json";
 static const char	*__simple_false_json_file_path = "test/testfiles/json/simple-false.json";
@@ -47,14 +48,14 @@ int	test_json(void)
 		TEST_FAIL();
 	}
 
-	ret = __test_json_query()
-		| __test_json_parse_simple_string()
+	ret = __test_json_parse_simple_string()
 		| __test_json_parse_simple_number()
 		| __test_json_parse_simple_boolean()
 		| __test_json_parse_simple_null()
 		| __test_json_parse_complex_object()
 		| __test_json_query_complex_object()
-		| __test_json_clone_complex_object();
+		| __test_json_clone_complex_object()
+		| __test_json_map_values();
 
 	__test_json_cleanup();
 
@@ -104,42 +105,6 @@ static void	__test_json_cleanup(void)
 	return ;
 }
 
-static int __test_json_query(void)
-{
-	t_node *json_lst;
-	t_node *json_node;
-	t_num *num;
-	int ret;
-
-	json_lst = NULL;
-
-	num = bnum_from_dec("0");
-
-	json_node = ft_node_new_with_f_del(NULL, num, sizeof(*num), json_get_f_del(JSON_TYPE_NUMBER));
-	ft_lst_append(&json_lst, json_node);
-
-	json_node = ft_node_new_with_f_del(NULL, "\"apple\"", 5, json_get_f_del(JSON_TYPE_STRING));
-	ft_lst_append(&json_lst, json_node);
-
-	json_node = ft_node_new_with_f_del(NULL, "null", 4, json_get_f_del(JSON_TYPE_NULL));
-	ft_lst_append(&json_lst, json_node);
-
-	json_node = ft_node_new_with_f_del(NULL, "true", 4, json_get_f_del(JSON_TYPE_BOOLEAN));
-	ft_lst_append(&json_lst, json_node);
-
-	char *json_s = "[ 0, 'apple', null, true ]";
-	size_t json_slen;
-
-	// json_s = ft_ostr_to_cstr(&__complex_array_json, 0, __complex_array_json.size);
-	// json_slen = ft_strlen(json_s);
-
-	// assert(json_slen >= 2);
-	// assert(json_s[0] == '[');
-	// assert(json_s[json_slen - 1] == ']');
-
-	TEST_PASS();
-}
-
 static int	__test_json_parse_simple_string(void)
 {
 	t_node	*node;
@@ -165,7 +130,7 @@ static int	__test_json_parse_simple_string(void)
 	TEST_ASSERT(node->size == ref_slen);
 	TEST_ASSERT(node->content != NULL);
 	TEST_ASSERT(ft_strcmp(node->content, ref_s) == 0);
-	TEST_ASSERT(node->f_del_content != NULL);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -196,7 +161,7 @@ static int	__test_json_parse_simple_number(void)
 	TEST_ASSERT(node->size == 0);
 	TEST_ASSERT(node->content != NULL);
 	TEST_ASSERT(bnum_cmp((t_num *)node->content, ref_num) == 0);
-	TEST_ASSERT(node->f_del_content != NULL);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
 
 	bnum_del(ref_num);
 	SSL_FREE(json_s);
@@ -221,13 +186,8 @@ static int	__test_json_parse_simple_boolean(void)
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
 
-
-
-	TEST_ASSERT(node->type == JSON_TYPE_BOOLEAN);
-	TEST_ASSERT(node->size == 5);
-	TEST_ASSERT(node->content != NULL);
-	TEST_ASSERT(ft_strcmp(node->content, "false") == 0);
-	TEST_ASSERT(node->f_del_content != NULL);
+	TEST_ASSERT(node->type == JSON_TYPE_BOOL_FALSE);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_BOOL_FALSE));
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -241,13 +201,8 @@ static int	__test_json_parse_simple_boolean(void)
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
 
-
-
-	TEST_ASSERT(node->type == JSON_TYPE_BOOLEAN);
-	TEST_ASSERT(node->size == 4);
-	TEST_ASSERT(node->content != NULL);
-	TEST_ASSERT(ft_strcmp(node->content, "true") == 0);
-	TEST_ASSERT(node->f_del_content != NULL);
+	TEST_ASSERT(node->type == JSON_TYPE_BOOL_TRUE);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_BOOL_TRUE));
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -271,7 +226,7 @@ static int	__test_json_parse_simple_null(void)
 	TEST_ASSERT(node->type == JSON_TYPE_NULL);
 	TEST_ASSERT(node->size == 0);
 	TEST_ASSERT(node->content == NULL);
-	TEST_ASSERT(node->f_del_content != NULL);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_NULL));
 
 	SSL_FREE(json_s);
 	json_del(node);
@@ -300,10 +255,11 @@ static int	__test_json_parse_complex_object(void)
 
 	obj_node = root_node;
 	TEST_ASSERT(obj_node->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(obj_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
 	kv_node = obj_node->content;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
 	v = ft_tuple_get(tuple, 1);
@@ -311,9 +267,11 @@ static int	__test_json_parse_complex_object(void)
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
 	TEST_ASSERT(ft_strcmp(k->content, "/test/apiKey") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
 	kv_node = v->content;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
@@ -321,11 +279,13 @@ static int	__test_json_parse_complex_object(void)
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
 	TEST_ASSERT(ft_strcmp(k->content, "post") == 0);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(v->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
 	kv_node = v->content;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 	TEST_ASSERT(ft_lst_size(kv_node) == 8);
 
 	tuple = kv_node->content;
@@ -336,11 +296,12 @@ static int	__test_json_parse_complex_object(void)
 
 	TEST_ASSERT(ft_strcmp(k->content, "tags") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 	TEST_ASSERT(ft_lst_size(v->content) == 1);
 
 	array_item = v->content;
 	TEST_ASSERT(array_item->type == JSON_TYPE_STRING);
+	TEST_ASSERT(array_item->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(array_item->content, "test") == 0);
 
 	kv_node = kv_node->next;
@@ -351,36 +312,44 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "summary") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "Test JSON") == 0);
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "description") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "") == 0);
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "operationId") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "testJson") == 0);
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
@@ -388,16 +357,19 @@ static int	__test_json_parse_complex_object(void)
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
 	TEST_ASSERT(ft_strcmp(k->content, "consumes") == 0);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 	TEST_ASSERT(ft_lst_size(v->content) == 1);
 
 	array_item = v->content;
 	TEST_ASSERT(array_item->type == JSON_TYPE_STRING);
+	TEST_ASSERT(array_item->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(array_item->content, "application/json") == 0);
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
@@ -405,53 +377,65 @@ static int	__test_json_parse_complex_object(void)
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
 	TEST_ASSERT(ft_strcmp(k->content, "produces") == 0);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 	TEST_ASSERT(ft_lst_size(v->content) == 1);
 
 	array_item = v->content;
 	TEST_ASSERT(array_item->type == JSON_TYPE_STRING);
+	TEST_ASSERT(array_item->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(array_item->content, "application/json") == 0);
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "parameters") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 	TEST_ASSERT(ft_lst_size(v->content) == 2);
 
 	array_item = v->content;
 	obj_node = array_item;
 
 	TEST_ASSERT(obj_node->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(obj_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
 	kv_node = obj_node->content;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "name") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "testId") == 0);
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
 
 	tuple = kv_node->content;
 	k = ft_tuple_get(tuple, 0);
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "in") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "path") == 0);
 
 	kv_node = kv_node->next;
@@ -462,8 +446,10 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "version") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
 	TEST_ASSERT(bnum_cmp((t_num *)v->content, bnum_from_dec("3")) == 0);
 
 	kv_node = kv_node->next;
@@ -474,8 +460,10 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "size") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
 	TEST_ASSERT(bnum_cmp((t_num *)v->content, bnum_from_dec("36127812312")) == 0);
 
 	kv_node = kv_node->next;
@@ -486,8 +474,10 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "value") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
 	TEST_ASSERT(bnum_cmp((t_num *)v->content, bnum_from_dec("-123123123123")) == 0);
 
 	kv_node = kv_node->next;
@@ -498,9 +488,10 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "required") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_BOOLEAN);
-	TEST_ASSERT(ft_strcmp(v->content, "true") == 0);
+	TEST_ASSERT(v->type == JSON_TYPE_BOOL_TRUE);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_BOOL_TRUE));
 
 	kv_node = kv_node->next;
 	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
@@ -510,8 +501,10 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "type") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "integer") == 0);
 
 	kv_node = kv_node->next;
@@ -522,8 +515,10 @@ static int	__test_json_parse_complex_object(void)
 	v = ft_tuple_get(tuple, 1);
 
 	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(k->content, "format") == 0);
 	TEST_ASSERT(v->type == JSON_TYPE_STRING);
+	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
 	TEST_ASSERT(ft_strcmp(v->content, "int64") == 0);
 
 	SSL_FREE(json_s);
@@ -664,8 +659,8 @@ static int	__test_json_clone_complex_object(void)
 	TEST_ASSERT(cloned_node != NULL);
 	TEST_ASSERT(node->type == cloned_node->type);
 	TEST_ASSERT(node->size == cloned_node->size);
-	TEST_ASSERT(cloned_node->type == JSON_TYPE_BOOLEAN);
-	TEST_ASSERT(ft_strcmp(node->content, cloned_node->content) == 0);
+	TEST_ASSERT(cloned_node->type == JSON_TYPE_BOOL_FALSE);
+	TEST_ASSERT(node->content == cloned_node->content);
 
 	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema['$ref']", json, &node));
 	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema['$ref']", cloned_json, &cloned_node));
@@ -696,6 +691,54 @@ static int	__test_json_clone_complex_object(void)
 
 	json_del(json);
 	json_del(cloned_json);
+	SSL_FREE(json_s);
+
+	TEST_PASS();
+}
+
+static int	__test_json_map_values_f_map_string(t_node *src, t_node *dst)
+{
+	switch (src->type) {
+		case JSON_TYPE_STRING:
+			dst->type = JSON_TYPE_STRING;
+			dst->content = ft_strjoin(src->content, "_mapped");
+			dst->size = ft_strlen(dst->content);
+			break;
+		case JSON_TYPE_NUMBER:
+			dst->type = JSON_TYPE_STRING;
+			dst->content = bnum_to_dec((t_num *)src->content);
+			dst->size = ft_strlen(dst->content);
+			break;
+		case JSON_TYPE_BOOL_TRUE:
+			dst->type = JSON_TYPE_BOOL_FALSE;
+			break;
+		case JSON_TYPE_BOOL_FALSE:
+			dst->type = JSON_TYPE_BOOL_TRUE;
+			break;
+		case JSON_TYPE_NULL:
+			dst->type = JSON_TYPE_BOOL_FALSE;
+			break;
+		default:
+			return (SSL_OK);
+	}
+	return (SSL_OK);
+}
+
+static int	__test_json_map_values(void)
+{
+	t_node	*json, *mapped_json;
+	char	*json_s;
+	int		ret;
+
+	mapped_json = NULL;
+
+	json_s = ft_ostr_to_cstr(&__complex_object_json, 0, __complex_object_json.size);
+
+	TEST_ASSERT(SSL_OK == json_parse(json_s, &json));
+	TEST_ASSERT(SSL_OK == json_map_values(json, __test_json_map_values_f_map_string, &mapped_json));
+
+	json_del(json);
+	json_del(mapped_json);
 	SSL_FREE(json_s);
 
 	TEST_PASS();
