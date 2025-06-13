@@ -19,7 +19,7 @@ static int	__test_json_parse_simple_null(void);
 static int	__test_json_parse_complex_object(void);
 static int	__test_json_query_complex_object(void);
 static int	__test_json_clone_complex_object(void);
-static int	__test_json_map_values(void);
+static int	__test_json_map(void);
 
 static const char	*__simple_null_json_file_path = "test/testfiles/json/simple-null.json";
 static const char	*__simple_false_json_file_path = "test/testfiles/json/simple-false.json";
@@ -55,7 +55,7 @@ int	test_json(void)
 		| __test_json_parse_complex_object()
 		| __test_json_query_complex_object()
 		| __test_json_clone_complex_object()
-		| __test_json_map_values();
+		| __test_json_map();
 
 	__test_json_cleanup();
 
@@ -696,37 +696,63 @@ static int	__test_json_clone_complex_object(void)
 	TEST_PASS();
 }
 
-static int	__test_json_map_values_f_map_string(t_node *src, t_node *dst)
+static int	__test_json_map_f_map(t_node *node)
 {
-	switch (src->type) {
+	void *content;
+
+	switch (node->type) {
 		case JSON_TYPE_STRING:
-			dst->type = JSON_TYPE_STRING;
-			dst->content = ft_strjoin(src->content, "_mapped");
-			dst->size = ft_strlen(dst->content);
+			content = ft_strup(ft_strdup(node->content));
 			break;
 		case JSON_TYPE_NUMBER:
-			dst->type = JSON_TYPE_STRING;
-			dst->content = bnum_to_dec((t_num *)src->content);
-			dst->size = ft_strlen(dst->content);
+			content = bnum_to_dec((t_num *)node->content);
 			break;
 		case JSON_TYPE_BOOL_TRUE:
-			dst->type = JSON_TYPE_BOOL_FALSE;
+			content = ft_strdup("true");
 			break;
 		case JSON_TYPE_BOOL_FALSE:
-			dst->type = JSON_TYPE_BOOL_TRUE;
+			content = ft_strdup("false");
 			break;
 		case JSON_TYPE_NULL:
-			dst->type = JSON_TYPE_BOOL_FALSE;
+			content = ft_strdup("null");
 			break;
 		default:
 			return (SSL_OK);
 	}
+
+	node->type = JSON_TYPE_STRING;
+	node->content = content;
+	node->size = ft_strlen(content);
+	node->f_del_content = json_get_f_del(JSON_TYPE_STRING);
+
 	return (SSL_OK);
 }
 
-static int	__test_json_map_values(void)
+static int	__test_json_check_mapping_result(t_node *src, t_node *res)
+{
+	switch (src->type) {
+		case JSON_TYPE_STRING:
+			return (res->type == JSON_TYPE_STRING && ft_strcmp(res->content, ft_strup(src->content)) == 0);
+		case JSON_TYPE_NUMBER:
+			return (res->type == JSON_TYPE_STRING && ft_strcmp(res->content, bnum_to_dec((t_num *)src->content)) == 0);
+		case JSON_TYPE_BOOL_TRUE:
+			return (res->type == JSON_TYPE_STRING && ft_strcmp(res->content, "true") == 0);
+		case JSON_TYPE_BOOL_FALSE:
+			return (res->type == JSON_TYPE_STRING && ft_strcmp(res->content, "false") == 0);
+		case JSON_TYPE_NULL:
+			return (res->type == JSON_TYPE_STRING && ft_strcmp(res->content, "null") == 0);
+		case JSON_TYPE_OBJECT:
+		case JSON_TYPE_ARRAY:
+			return (res->type == src->type);
+		default:
+			return (0);
+	}
+}
+
+static int	__test_json_map(void)
 {
 	t_node	*json, *mapped_json;
+	t_node	*node, *mapped_node;
 	char	*json_s;
 	int		ret;
 
@@ -735,7 +761,61 @@ static int	__test_json_map_values(void)
 	json_s = ft_ostr_to_cstr(&__complex_object_json, 0, __complex_object_json.size);
 
 	TEST_ASSERT(SSL_OK == json_parse(json_s, &json));
-	TEST_ASSERT(SSL_OK == json_map_values(json, __test_json_map_values_f_map_string, &mapped_json));
+	TEST_ASSERT(SSL_OK == json_map(json, __test_json_map_f_map, &mapped_json));
+
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey.post.tags[0]", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("./test/apiKey.post.tags[0]", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].size", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].size", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].name", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[0].name", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].required", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].required", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema['$ref']", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.parameters[1].schema['$ref']", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].description", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].description", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
+
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].schema.type", json, &node));
+	TEST_ASSERT(SSL_OK == json_query("['/test/apiKey'].post.responses['200'].schema.type", mapped_json, &mapped_node));
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(mapped_node != NULL);
+	TEST_ASSERT(__test_json_check_mapping_result(node, mapped_node));
 
 	json_del(json);
 	json_del(mapped_json);

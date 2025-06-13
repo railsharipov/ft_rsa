@@ -37,6 +37,7 @@ typedef struct	s_logger
 	FUNC_LOGGER f_logger;
 	uint8_t 	log_level;
 	uint8_t 	is_ansi_colored;
+	uint8_t 	debug_info_thres;
 } 				t_logger;
 
 int	ft_logger_f_default_logger(const char *mes);

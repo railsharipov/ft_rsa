@@ -14,11 +14,16 @@ static t_logger __logger = {
     .f_logger = __f_logger,
     .log_level = LIBFT_LOG_LEVEL_DEBUG,
     .is_ansi_colored = 1,
+	.debug_info_thres = LIBFT_LOG_LEVEL_INFO,
 };
 
 static int  __f_logger(const char *mes) {
     ft_printf("%@%s\n", mes);
     return (SSL_OK);
+}
+
+void test_logger_set_level(uint8_t level) {
+	__logger.log_level = level;
 }
 
 int test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {

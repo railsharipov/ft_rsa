@@ -6,22 +6,24 @@
 #include <libft/tuple.h>
 #include <libft/list.h>
 
-static int	__map_node(t_node *node, FUNC_JSON_MAP f, t_node **ret_node);
-static int	__map_node_of_type(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node);
+static int	__map_node(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node);
 
-static int	__map_object(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
-static int	__map_array(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
-static int	__map_kv(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
-static int	__map_value(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_object_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_array_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_kv_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_string_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_number_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_boolean_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_null_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 
-int	json_map_values(t_node *json, FUNC_JSON_MAP f, t_node **ret_json)
+int	json_map(t_node *json, FUNC_JSON_MAP f, t_node **ret_json)
 {
 	if (json == NULL || f == NULL || ret_json == NULL) {
 		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != __map_node(json, f, ret_json)) {
+	if (SSL_OK != __map_node(json, json->type, f, ret_json)) {
 		JSON_LOG(ERROR, "failed to map values");
 		return (SSL_ERR);
 	}
@@ -29,12 +31,7 @@ int	json_map_values(t_node *json, FUNC_JSON_MAP f, t_node **ret_json)
 	return (SSL_OK);
 }
 
-static int	__map_node(t_node *node, FUNC_JSON_MAP f, t_node **ret_node)
-{
-	return (__map_node_of_type(node, node->type, f, ret_node));
-}
-
-static int	__map_node_of_type(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node)
+static int	__map_node(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node)
 {
 	t_node	*result_node;
 	int		ret;
@@ -50,26 +47,26 @@ static int	__map_node_of_type(t_node *node, int type, FUNC_JSON_MAP f, t_node **
 
 	switch (type) {
 		case JSON_TYPE_OBJECT:
-			ret = __map_object(node, f, result_node);
+			ret = __map_object_node(node, f, result_node);
 			break;
 		case JSON_TYPE_KV:
-			ret = __map_kv(node, f, result_node);
+			ret = __map_kv_node(node, f, result_node);
 			break;
 		case JSON_TYPE_ARRAY:
-			ret = __map_array(node, f, result_node);
+			ret = __map_array_node(node, f, result_node);
 			break;
 		case JSON_TYPE_STRING:
-			ret = __map_value(node, f, result_node);
+			ret = __map_string_node(node, f, result_node);
 			break;
 		case JSON_TYPE_NUMBER:
-			ret = __map_value(node, f, result_node);
+			ret = __map_number_node(node, f, result_node);
 			break;
 		case JSON_TYPE_BOOL_TRUE:
 		case JSON_TYPE_BOOL_FALSE:
-			ret = __map_value(node, f, result_node);
+			ret = __map_boolean_node(node, f, result_node);
 			break;
 		case JSON_TYPE_NULL:
-			ret = __map_value(node, f, result_node);
+			ret = __map_null_node(node, f, result_node);
 			break;
 		default:
 			JSON_LOG(ERROR, "cannot map over type: %s", json_get_type_name(node->type));
@@ -81,7 +78,7 @@ static int	__map_node_of_type(t_node *node, int type, FUNC_JSON_MAP f, t_node **
 	return (ret);
 }
 
-static int	__map_object(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+static int	__map_object_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 {
 	t_node	*src_kv_list;
 	t_node	*dst_kv_list;
@@ -97,7 +94,7 @@ static int	__map_object(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	while (src_kv_list) {
 		kv_node = ft_node_create();
 
-		if (SSL_OK != __map_node_of_type(src_kv_list, JSON_TYPE_KV, f, &kv_node)) {
+		if (SSL_OK != __map_node(src_kv_list, JSON_TYPE_KV, f, &kv_node)) {
 			ft_node_del(kv_node);
 			ft_lst_del(dst_kv_list);
 			return (SSL_ERR);
@@ -108,21 +105,17 @@ static int	__map_object(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	}
 	ft_lst_rev(&dst_kv_list);
 
-	tmp_node = ft_node_create();
+	result_node->type = JSON_TYPE_OBJECT;
+	result_node->content = dst_kv_list;
+	result_node->size = ft_lst_size(dst_kv_list);
+	result_node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
 
-	tmp_node->type = JSON_TYPE_OBJECT;
-	tmp_node->content = dst_kv_list;
-	tmp_node->size = ft_lst_size(dst_kv_list);
-	tmp_node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
-
-	status = f(tmp_node, result_node);
-
-	ft_node_del(tmp_node);
+	status = f(result_node);
 
 	return (status);
 }
 
-static int	__map_kv(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+static int	__map_kv_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 {
 	t_tuple	*tuple;
 	t_node	*k, *v;
@@ -143,7 +136,7 @@ static int	__map_kv(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 
 	dst_v = ft_node_create();
 
-	if (SSL_OK != __map_node_of_type(v, v->type, f, &dst_v)) {
+	if (SSL_OK != __map_node(v, v->type, f, &dst_v)) {
 		ft_node_del(dst_k);
 		ft_node_del(dst_v);
 		return (SSL_ERR);
@@ -157,7 +150,7 @@ static int	__map_kv(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	return (SSL_OK);
 }
 
-static int	__map_array(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+static int	__map_array_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 {
 	t_node	*src_list;
 	t_node	*dst_list;
@@ -173,7 +166,7 @@ static int	__map_array(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 
 		JSON_LOG(TRACE, "mapping array item of type: %s", json_get_type_name(src_list->type));
 
-		if (SSL_OK != __map_node_of_type(src_list, src_list->type, f, &item)) {
+		if (SSL_OK != __map_node(src_list, src_list->type, f, &item)) {
 			ft_node_del(item);
 			ft_lst_del(dst_list);
 			return (SSL_ERR);
@@ -192,21 +185,47 @@ static int	__map_array(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	return (SSL_OK);
 }
 
-static int	__map_value(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+static int	__map_string_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 {
-	if (SSL_OK != f(node, result_node)) {
-		return (SSL_ERR);
-	}
-	if (SSL_OK != json_validate_node_type(result_node->type)) {
-		JSON_LOG(ERROR, "bad mapping result: invalid type: %s", json_get_type_name(result_node->type));
-		return (SSL_ERR);
-	}
-	result_node->f_del_content = json_get_f_del(result_node->type);
+	result_node->type = node->type;
+	result_node->content = ft_strdup(node->content);
+	result_node->size = node->size;
+	result_node->f_del_content = node->f_del_content;
 
-	if (SSL_OK != json_validate_node(result_node)) {
-		JSON_LOG(ERROR, "bad mapping result: invalid node: %s", json_get_type_name(result_node->type));
-		return (SSL_ERR);
-	}
+	return (f(result_node));
+}
 
-	return (SSL_OK);
+static int	__map_number_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+{
+	t_num	*copy;
+
+	copy = bnum_create();
+	bnum_copy((t_num *)node->content, copy);
+
+	result_node->type = node->type;
+	result_node->content = copy;
+	result_node->size = node->size;
+	result_node->f_del_content = node->f_del_content;
+
+	return (f(result_node));
+}
+
+static int	__map_boolean_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+{
+	result_node->type = node->type;
+	result_node->content = NULL;
+	result_node->size = 0;
+	result_node->f_del_content = node->f_del_content;
+
+	return (f(result_node));
+}
+
+static int	__map_null_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+{
+	result_node->type = node->type;
+	result_node->content = NULL;
+	result_node->size = 0;
+	result_node->f_del_content = node->f_del_content;
+
+	return (f(result_node));
 }

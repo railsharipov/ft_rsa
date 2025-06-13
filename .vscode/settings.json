@@ -5,6 +5,7 @@
         "alloc.h": "c",
         "complex": "c",
         "error.h": "c",
-        "rand.h": "c"
+        "rand.h": "c",
+        "htable.h": "c"
     }
 }

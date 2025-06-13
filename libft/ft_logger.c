@@ -58,12 +58,13 @@ static int	__log(const char *func_name, const char *file_name, int line_number, 
 	char	*level_prefix;
 	char    *mes_prefix;
 	char	*mes;
-	int		colored;
+	int		colored, debug_info_thres;
 	int		ret;
 
 	debug_info = NULL;
 	mes = NULL;
 	colored = logger->is_ansi_colored;
+	debug_info_thres = logger->debug_info_thres;
 
 	if (level == LIBFT_LOG_LEVEL_CRIT) {
 		level_prefix = colored ? TXT_MAGEN(FT_LOGGER_CRIT_LOG_PREFIX) : FT_LOGGER_CRIT_LOG_PREFIX;
@@ -79,14 +80,16 @@ static int	__log(const char *func_name, const char *file_name, int line_number, 
 		level_prefix = FT_LOGGER_INFO_LOG_PREFIX;
 	}
 
-	if (NULL != func_name && NULL != file_name) {
-		ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s, %s:%d)", colored), func_name, file_name, line_number);
-	} else if (NULL != func_name) {
-		ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s)", colored), func_name);
-	} else if (NULL != file_name) {
-		ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s:%d)", colored), file_name, line_number);
-	} else {
-		debug_info = ft_strdup("");
+	if (level <= debug_info_thres) {
+		if (NULL != func_name && NULL != file_name) {
+			ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s, %s:%d)", colored), func_name, file_name, line_number);
+		} else if (NULL != func_name) {
+			ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s)", colored), func_name);
+		} else if (NULL != file_name) {
+			ft_sprintf(&debug_info, __DEBUG_INFO_MSG(" (%s:%d)", colored), file_name, line_number);
+		} else {
+			debug_info = ft_strdup("");
+		}
 	}
 
 	ft_vsprintf(&mes, fmt, va_arg);

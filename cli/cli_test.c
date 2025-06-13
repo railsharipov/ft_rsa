@@ -13,8 +13,21 @@ int	cli_test(const char **opt, const char *name)
 	int			idx;
 	int			num_passed;
 
-	(void)opt;
+	const char 	*flag = *opt;
+	const char 	*flag_val = *(opt+1);;
+
 	(void)name;
+
+	TEST_LOG_SET_LEVEL(ERROR);
+
+	if (NULL != flag && NULL != flag_val && ft_strcmp(flag, "-v") == 0) {
+		if (ft_strcmp(flag_val, "all") == 0) {
+			TEST_LOG_SET_LEVEL(DEBUG);
+		} else {
+			TEST_LOG(ERROR, "invalid flag value: %s: %s", flag, flag_val);
+			return (SSL_ERR);
+		}
+	}
 
 	ft_bzero(ret, sizeof(ret));
 	num_passed = 0;
