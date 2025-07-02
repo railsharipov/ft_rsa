@@ -22,7 +22,6 @@ static uint32_t	__calculate_hash(const char *key);
 static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, FUNC_CONTENT_DEL f_del);
 static void 	__add_node_to_htable(t_htbl *htbl, const char *key, void *content, FUNC_CONTENT_DEL f_del);
 static void 	__assign_content_to_node(t_node *node, void *content, FUNC_CONTENT_DEL f_del);
-static t_node 	*__get_list_from_htable(t_htbl *htbl, uint32_t hash);
 static t_node	*__get_node_from_htable(t_htbl *htbl, const char *key);
 static t_node	*__get_node_from_list(t_node *list, const char *key);
 static int		__get_htable_array_idx(t_htbl *htbl, uint32_t hash);
@@ -240,15 +239,6 @@ static void 	__assign_content_to_node(t_node *node, void *content, FUNC_CONTENT_
 	node->f_del_content = f_del;
 }
 
-static t_node	*__get_list_from_htable(t_htbl *htbl, uint32_t hash)
-{
-	int idx;
-
-	idx = (int)(hash % (uint32_t)htbl->size);
-
-	return (htbl->arr[idx]);
-}
-
 static t_node	*__get_node_from_list(t_node *list, const char *key)
 {
 	t_node		*node;
@@ -270,7 +260,8 @@ static t_node	*__get_node_from_htable(t_htbl *htbl, const char *key)
 	uint32_t	hash;
 
 	hash = __calculate_hash(key);
-	list = __get_list_from_htable(htbl, hash);
+
+	list = htbl->arr[hash % (uint32_t)htbl->size];
 
 	if (NULL == list) {
 		return (NULL);
@@ -349,4 +340,34 @@ t_node	*ft_htbl_iter(t_htbl *htbl)
 	LIBFT_FREE(queue);
 
 	return (iter);
+}
+
+t_node	*ft_htbl_get_next_node(t_htbl *htbl, t_node *node)
+{
+	t_node	*item;
+	int		idx;
+
+	if (NULL == htbl) {
+		return (NULL);
+	}
+	if (node && node->next) {
+		return (node->next);
+	}
+
+	if (node) {
+		idx = (int)(node->hash % (uint32_t)htbl->size);
+	} else {
+		idx = 0;
+	}
+
+	while (idx < htbl->size) {
+		item = htbl->arr[idx];
+
+		if (NULL != item) {
+			return (item);
+		}
+		idx++;
+	}
+
+	return (0);
 }
