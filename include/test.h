@@ -10,18 +10,13 @@
 # define TEST_LOG(LEVEL, MES, ...)	test_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 # define TEST_LOG_SET_LEVEL(LEVEL)	test_logger_set_level(LIBFT_LOG_LEVEL_##LEVEL)
 
-# define TEST_ENABLE_ASSERT_PASS_LOG
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 
 # define TEST_RESULT(RES)	do { if ((RES == SSL_OK)) { TEST_LOG(INFO, TXT_B_GREEN("TEST OK")); } else { TEST_LOG(ERROR, TXT_B_RED("TEST FAIL")); } } while (0)
 # define TEST_PASS()		do { TEST_RESULT(SSL_OK); return (SSL_OK); } while (0)
 # define TEST_FAIL()		do { TEST_RESULT(SSL_ERR); return (SSL_ERR); } while (0)
 
-# ifdef TEST_ENABLE_ASSERT_PASS_LOG
-#  define TEST_ASSERT(EXPR)	do { if ((EXPR)) { TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR); } else { TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR); TEST_FAIL(); } } while (0)
-# else
-#  define TEST_ASSERT(EXPR)	do { if (!(EXPR)) { TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR); TEST_FAIL(); } } while (0)
-# endif
+# define TEST_ASSERT(EXPR)	do { if ((EXPR)) { TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR); } else { TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR); TEST_FAIL(); } } while (0)
 
 typedef int	(*FUNC_TEST)(void);
 

@@ -29,7 +29,7 @@ uint32_t	ft_hash(const unsigned char *key, size_t keysize);
 
 void		*ft_htbl_init(int size);
 
-t_node		*ft_htbl_iter(t_htbl *htbl);
+t_node		*ft_htbl_node_next(t_htbl *htbl, t_node *node);
 
 void		*ft_htbl_get(t_htbl *htbl, const char *key);
 void		*ft_htbl_get_rawkey(t_htbl *htbl, const void *rawkey, size_t rksize);

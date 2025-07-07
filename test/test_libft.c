@@ -1641,11 +1641,7 @@ static int __test_ft_htbl(void)
 		ft_htbl_assign(htbl, content, words[idx]);
 		content = ft_htbl_get(htbl, words[idx]);
 		TEST_ASSERT(content != NULL);
-
-		if (content) {
-			TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
-		}
-
+		TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
 		idx++;
 	}
 
@@ -1657,78 +1653,40 @@ static int __test_ft_htbl(void)
 	while (idx < nwords) {
 		content = ft_htbl_get(htbl, words[idx]);
 		TEST_ASSERT(content != NULL);
-
-		if (content) {
-			TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
-		}
-
+		TEST_ASSERT(strcmp(content, test_content[idx]) == 0);
 		idx++;
 	}
 
-	t_node *iter;
-	t_node *item;
 	char **content_parts;
 	int	nparts;
 	int word_ht[nwords];
 
 	bzero(word_ht, sizeof(word_ht));
-	iter = ft_htbl_iter(htbl);
-	node = iter;
 
-	TEST_ASSERT(node != NULL);
-
-	idx = 0;
-	while (idx < nwords) {
+	node = NULL;
+	while ((node = ft_htbl_node_next(htbl, node)) != NULL) {
 		TEST_ASSERT(node != NULL);
+		TEST_ASSERT(node->key != NULL);
+		TEST_ASSERT(node->content != NULL);
 
-		if (node == NULL) {
-			break ;
-		}
-
-		item = node->content;
-		content = item->content;
-		content_parts = ft_strsplit(content, '-');
-
-		if (content_parts == NULL) {
-			break ;
-		}
+		content_parts = ft_strsplit(node->content, '-');
+		TEST_ASSERT(content_parts != NULL);
 
 		nparts = ft_2darray_len_null_terminated((void **)content_parts);
+		TEST_ASSERT(nparts == 2);
 
-		if (nparts == 2) {
-			test_num = atoi(content_parts[1]);
-		}
+		test_num = atoi(content_parts[1]);
+		TEST_ASSERT(test_num < nwords);
 
 		ft_2darray_del_null_terminated((void **)content_parts);
 
-		if (nparts != 2 || test_num > nwords-1) {
-			break ;
-		}
-
 		word_ht[test_num] += 1;
-
-		if (strcmp(content, test_content[test_num]) != 0) {
-			break ;
-		}
-
-		node = node->next;
-		idx++;
 	}
-
-	ft_lst_del(iter);
-	TEST_ASSERT(idx == nwords);
-	TEST_ASSERT(node == NULL);
-
 	idx = 0;
 	while (idx < nwords) {
-		if (word_ht[idx] != 1) {
-			break ;
-		}
-
+		TEST_ASSERT(word_ht[idx] == 1);
 		idx++;
 	}
-
-	TEST_ASSERT(idx == nwords);
 
 	ft_htbl_del_key(htbl, words[3]);
 	content = ft_htbl_get(htbl, words[3]);

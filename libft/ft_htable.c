@@ -153,10 +153,7 @@ void	ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, FUNC_CONTENT_DEL 
 void ft_htbl_resize(t_htbl *htbl, int size)
 {
 	t_htbl new_htbl;
-	t_node *item;
-	t_node *iter;
 	t_node *node;
-	int idx;
 
 	new_htbl.size = MAX(LIBFT_HT_SIZE, size);
 	new_htbl.size = CEIL(new_htbl.size, LIBFT_HT_SIZE);
@@ -167,18 +164,13 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 
 	LIBFT_ALLOC(new_htbl.arr, new_htbl.size * sizeof(void *));
 
-	iter = ft_htbl_iter(htbl);
-	node = iter;
+	node = ft_htbl_node_next(htbl, NULL);
 
-	idx = 0;
 	while (node != NULL) {
-		item = node->content;
-		__add_node_to_htable(&new_htbl, item->key, item->content, item->f_del_content);
-		node = node->next;
-		idx++;
+		__add_node_to_htable(&new_htbl, node->key, node->content, node->f_del_content);
+		node = ft_htbl_node_next(htbl, node);
 	}
 
-	ft_lst_del(iter);
 	__del_htable_array(htbl, NULL);
 
 	htbl->arr = new_htbl.arr;
@@ -311,51 +303,20 @@ static void	__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
 	htbl->size = 0;
 }
 
-t_node	*ft_htbl_iter(t_htbl *htbl)
-{
-	t_queue	*queue;
-	t_node	*iter;
-	t_node	*item;
-	int		idx;
-
-	if ((NULL == htbl) || (NULL == htbl->arr)) {
-		return (NULL);
-	}
-
-	if (NULL == (queue = ft_queue_create())) {
-		return (NULL);
-	}
-
-	idx = 0;
-	while (idx < htbl->size) {
-		item = htbl->arr[idx++];
-
-		while (NULL != item) {
-			ft_queue_enqueue(queue, NULL, item, 0);
-			item = item->next;
-		}
-	}
-
-	iter = ft_queue_first(queue);
-	LIBFT_FREE(queue);
-
-	return (iter);
-}
-
-t_node	*ft_htbl_get_next_node(t_htbl *htbl, t_node *node)
+t_node	*ft_htbl_node_next(t_htbl *htbl, t_node *node)
 {
 	t_node	*item;
-	int		idx;
+	int	idx;
 
 	if (NULL == htbl) {
 		return (NULL);
 	}
-	if (node && node->next) {
+	if (node && node->next != NULL) {
 		return (node->next);
 	}
 
 	if (node) {
-		idx = (int)(node->hash % (uint32_t)htbl->size);
+		idx = (int)(node->hash % (uint32_t)htbl->size) + 1;
 	} else {
 		idx = 0;
 	}
@@ -368,6 +329,5 @@ t_node	*ft_htbl_get_next_node(t_htbl *htbl, t_node *node)
 		}
 		idx++;
 	}
-
-	return (0);
+	return (NULL);
 }
