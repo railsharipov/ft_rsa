@@ -10,7 +10,6 @@ static int	__map_node(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node
 
 static int	__map_object_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_array_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
-static int	__map_kv_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_string_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_number_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_boolean_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
@@ -49,9 +48,6 @@ static int	__map_node(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node
 		case JSON_TYPE_OBJECT:
 			ret = __map_object_node(node, f, result_node);
 			break;
-		case JSON_TYPE_KV:
-			ret = __map_kv_node(node, f, result_node);
-			break;
 		case JSON_TYPE_ARRAY:
 			ret = __map_array_node(node, f, result_node);
 			break;
@@ -80,74 +76,41 @@ static int	__map_node(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node
 
 static int	__map_object_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 {
-	t_node	*src_kv_list;
-	t_node	*dst_kv_list;
-	t_node	*kv_node;
-	t_node  *tmp_node;
+	t_htbl	*htbl;
+	t_htbl	*dst_htbl;
+	t_node	*item;
+	t_node	*value_node;
+	t_node	*dst_value_node;
 	int		status;
 
-	JSON_LOG(TRACE, "mapping object with %d key-value pairs", node->size);
+	JSON_LOG(TRACE, "mapping object node");
 
-	dst_kv_list = NULL;
-	src_kv_list = (t_node *)node->content;
+	htbl = node->content;
+	dst_htbl = ft_htbl_init(0);
 
-	while (src_kv_list) {
-		kv_node = ft_node_create();
+	item = NULL;
+	while ((item = ft_htbl_node_next(htbl, item)) != NULL) {
+		value_node = item->content;
+		dst_value_node = ft_node_create();
 
-		if (SSL_OK != __map_node(src_kv_list, JSON_TYPE_KV, f, &kv_node)) {
-			ft_node_del(kv_node);
-			ft_lst_del(dst_kv_list);
+		JSON_LOG(TRACE, "mapping over node with key: `%s`", item->key);
+
+		if (SSL_OK != __map_node(value_node, value_node->type, f, &dst_value_node)) {
+			ft_node_del(dst_value_node);
+			ft_htbl_del(dst_htbl);
 			return (SSL_ERR);
 		}
-
-		ft_lst_prepend(&dst_kv_list, kv_node);
-		src_kv_list = src_kv_list->next;
+		ft_htbl_add(dst_htbl, dst_value_node, item->key);
 	}
-	ft_lst_rev(&dst_kv_list);
 
 	result_node->type = JSON_TYPE_OBJECT;
-	result_node->content = dst_kv_list;
-	result_node->size = ft_lst_size(dst_kv_list);
+	result_node->content = dst_htbl;
+	result_node->size = 0;
 	result_node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
 
 	status = f(result_node);
 
 	return (status);
-}
-
-static int	__map_kv_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
-{
-	t_tuple	*tuple;
-	t_node	*k, *v;
-	t_node	*dst_k, *dst_v;
-
-	tuple = (t_tuple *)node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	JSON_LOG(TRACE, "mapping over key-value pair: `%s` -> `%s`", k->content, json_get_type_name(v->type));
-
-	dst_k = ft_node_create();
-
-	dst_k->type = JSON_TYPE_STRING;
-	dst_k->content = ft_strdup(k->content);
-	dst_k->size = ft_strlen(dst_k->content);
-	dst_k->f_del_content = json_get_f_del(JSON_TYPE_STRING);
-
-	dst_v = ft_node_create();
-
-	if (SSL_OK != __map_node(v, v->type, f, &dst_v)) {
-		ft_node_del(dst_k);
-		ft_node_del(dst_v);
-		return (SSL_ERR);
-	}
-
-	result_node->type = JSON_TYPE_KV;
-	result_node->content = ft_tuple_new(dst_k, sizeof(t_node), dst_v, sizeof(t_node));
-	result_node->size = 0;
-	result_node->f_del_content = json_get_f_del(JSON_TYPE_KV);
-
-	return (SSL_OK);
 }
 
 static int	__map_array_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)

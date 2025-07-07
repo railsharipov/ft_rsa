@@ -187,9 +187,8 @@ static int 	__select_node(t_node *node, t_node *query, t_node **ret_node)
 
 static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node)
 {
-	t_node	*kv_node;
-	t_node	*k, *v;
-	t_tuple	*tuple;
+	t_htbl	*htbl;
+	t_node	*value_node;
 
 	JSON_LOG(TRACE, "searching for object key: `%s`", query->content);
 
@@ -198,27 +197,13 @@ static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node)
 		return (JSON_BAD_FORMAT);
 	}
 
-	kv_node = node->content;
+	htbl = node->content;
+	value_node = ft_htbl_get(htbl, query->content);
 
-	JSON_LOG(TRACE, "object has %d key-value pairs", ft_lst_size(node->content));
-
-	while (kv_node != NULL) {
-		if (SSL_OK != json_validate_node_is_of_type(kv_node, JSON_TYPE_KV)) {
-			JSON_LOG(ERROR, __JQ_BAD_TYPE_ERROR);
-			return (JSON_BAD_FORMAT);
-		}
-		tuple = (t_tuple *)kv_node->content;
-		k = ft_tuple_get(tuple, 0);
-		v = ft_tuple_get(tuple, 1);
-
-		JSON_LOG(TRACE, "checking key: `%s`", k->content);
-
-		if (ft_strcmp(k->content, query->content) == 0) {
-			JSON_LOG(TRACE, "found node of type `%s`", json_get_type_name(v->type));
-			*ret_node = v;
-			return (JSON_MATCH);
-		}
-		kv_node = kv_node->next;
+	if (value_node != NULL) {
+		JSON_LOG(TRACE, "found node of type `%s`", json_get_type_name(value_node->type));
+		*ret_node = value_node;
+		return (JSON_MATCH);
 	}
 
 	JSON_LOG(TRACE, "no match found");

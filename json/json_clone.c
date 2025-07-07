@@ -8,7 +8,6 @@
 
 static int	__copy_node(t_node *src, t_node *dst);
 static int	__copy_node_of_type(t_node *src, t_node *dst, int type);
-static int	__copy_kv_node(t_node *src, t_node *dst);
 
 static int	__copy_object(t_node *src, t_node *dst);
 static int	__copy_array(t_node *src, t_node *dst);
@@ -62,9 +61,6 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 		case JSON_TYPE_OBJECT:
 			ret = __copy_object(src, dst);
 			break;
-		case JSON_TYPE_KV:
-			ret = __copy_kv_node(src, dst);
-			break;
 		case JSON_TYPE_ARRAY:
 			ret = __copy_array(src, dst);
 			break;
@@ -91,70 +87,35 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 
 static int	__copy_object(t_node *src, t_node *dst)
 {
-	t_node	*src_kv_list;
-	t_node	*dst_kv_list;
-	t_node	*kv_node;
+	t_htbl	*htbl;
+	t_htbl	*dst_htbl;
+	t_node	*item;
+	t_node	*value_node;
+	t_node	*dst_value_node;
 
-	JSON_LOG(TRACE, "cloning object with %d key-value pairs", src->size);
+	JSON_LOG(TRACE, "cloning object node");
 
-	dst_kv_list = NULL;
-	src_kv_list = (t_node *)src->content;
+	htbl = src->content;
+	dst_htbl = ft_htbl_init(0);
+	item = NULL;
 
-	while (src_kv_list) {
-		kv_node = ft_node_create();
+	while ((item = ft_htbl_node_next(htbl, item)) != NULL) {
+		value_node = item->content;
+		dst_value_node = ft_node_create();
 
-		if (SSL_OK != __copy_node_of_type(src_kv_list, kv_node, JSON_TYPE_KV)) {
-			ft_node_del(kv_node);
-			ft_lst_del(dst_kv_list);
+		if (SSL_OK != __copy_node(value_node, dst_value_node)) {
+			ft_node_del(dst_value_node);
+			ft_htbl_del(dst_htbl);
 			return (SSL_ERR);
 		}
-
-		ft_lst_prepend(&dst_kv_list, kv_node);
-		src_kv_list = src_kv_list->next;
+		ft_htbl_add(dst_htbl, dst_value_node, item->key);
 	}
 
-	ft_lst_rev(&dst_kv_list);
 	dst->type = JSON_TYPE_OBJECT;
-	dst->content = dst_kv_list;
-	dst->size = ft_lst_size(dst_kv_list);
-	dst->f_del_content = json_get_f_del(src->type);
-
-	return (SSL_OK);
-}
-
-static int	__copy_kv_node(t_node *src, t_node *dst)
-{
-	t_tuple	*tuple;
-	t_node	*k, *v;
-	t_node	*dst_k, *dst_v;
-
-	JSON_LOG(TRACE, "cloning key-value pair");
-
-	tuple = (t_tuple *)src->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	JSON_LOG(TRACE, "cloning key: %s", k->content);
-	JSON_LOG(TRACE, "cloning value of type: %s", json_get_type_name(v->type));
-
-	dst_k = ft_node_create();
-
-	if (SSL_OK != __copy_node_of_type(k, dst_k, JSON_TYPE_STRING)) {
-		ft_node_del(dst_k);
-		return (SSL_ERR);
-	}
-
-	dst_v = ft_node_create();
-
-	if (SSL_OK != __copy_node(v, dst_v)) {
-		ft_node_del(dst_v);
-		return (SSL_ERR);
-	}
-
-	dst->type = JSON_TYPE_KV;
-	dst->content = ft_tuple_new(dst_k, sizeof(t_node), dst_v, sizeof(t_node));
+	dst->content = dst_htbl;
 	dst->size = 0;
-	dst->f_del_content = json_get_f_del(src->type);
+	dst->f_del_content = json_get_f_del(dst->type);
+
 	return (SSL_OK);
 }
 

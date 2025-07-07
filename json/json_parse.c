@@ -54,7 +54,7 @@ static int	__parse_null(const char *s, t_node *node);
 static int	__parse_boolean(const char *s, t_node *node);
 static int	__parse_number(const char *s, t_node *node);
 static int	__parse_string(const char *s, t_node *node);
-static int	__parse_kv(const char *s, t_node *node);
+static int	__parse_kv(const char *s, t_htbl *htbl);
 static int	__parse_object(const char *s, t_node *node);
 static int	__parse_array(const char *s, t_node *node);
 static void	__skip_ws(const char *s);
@@ -343,7 +343,7 @@ static int	__parse_string(const char *s, t_node *node)
 	return (JSON_MATCH);
 }
 
-static int	__parse_kv(const char *s, t_node *node)
+static int	__parse_kv(const char *s, t_htbl *htbl)
 {
 	t_node	*key_node, *value_node;
 	size_t 	old_pos;
@@ -353,10 +353,6 @@ static int	__parse_kv(const char *s, t_node *node)
 	old_pos = __pos;
 
 	JSON_LOG(TRACE, "parsing key-value at index %zu: %.20s...", __pos, s + __pos);
-
-	__init_node(node);
-	node->type = JSON_TYPE_KV;
-	node->f_del_content = json_get_f_del(JSON_TYPE_KV);
 
 	key_node = ft_node_create();
 	value_node = ft_node_create();
@@ -378,16 +374,15 @@ static int	__parse_kv(const char *s, t_node *node)
 		JSON_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected value", __pos, s + __pos);
 		goto label_exit;
 	}
-
-	node->content = ft_tuple_new(key_node, sizeof(t_node), value_node, sizeof(t_node));
-	node->size = 0;
-
 	status = JSON_MATCH;
 
+	ft_htbl_add_with_f_del(htbl, value_node, key_node->content, json_get_f_del(value_node->type));
+
 label_exit:
+	ft_node_del(key_node);
+
 	if (status != JSON_MATCH) {
 		__pos = old_pos;
-		ft_node_del(key_node);
 		ft_node_del(value_node);
 	}
 
@@ -396,7 +391,7 @@ label_exit:
 
 static int	__parse_object(const char *s, t_node *node)
 {
-	t_node	*kv_node_list;
+	t_htbl	*htbl;
 	size_t  old_pos;
 	int     status;
 
@@ -409,7 +404,7 @@ static int	__parse_object(const char *s, t_node *node)
 	node->type = JSON_TYPE_OBJECT;
 	node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
 
-	kv_node_list = NULL;
+	htbl = ft_htbl_init(0);
 
 	if (s[__pos] != '{') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
@@ -424,25 +419,15 @@ static int	__parse_object(const char *s, t_node *node)
 		goto label_exit;
 	}
 
-	ft_lst_prepend(&kv_node_list, ft_node_create());
-
-	if (JSON_MATCH != (status = __parse_kv(s, kv_node_list))) {
-		JSON_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
-		goto label_exit;
-	}
-	__skip_ws(s);
-
-	while (s[__pos] == ',') {
-		__pos++;
-
-		ft_lst_prepend(&kv_node_list, ft_node_create());
-
-		if (JSON_MATCH != (status = __parse_kv(s, kv_node_list))) {
+	do {
+		if (JSON_MATCH != (status = __parse_kv(s, htbl))) {
 			JSON_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
 			goto label_exit;
 		}
 		__skip_ws(s);
-	}
+
+	} while ((s[__pos] == ',') && (++__pos));
+
 	if (s[__pos] != '}') {
 		JSON_LOG(ERROR, "bad object format at index %d, %.20s...: expected '}', got '%c'", __pos, s + __pos, s[__pos]);
 		status = JSON_BAD_FORMAT;
@@ -450,19 +435,15 @@ static int	__parse_object(const char *s, t_node *node)
 	}
 	__pos++;
 
-	ft_lst_rev(&kv_node_list);
-
-	node->content = kv_node_list;
-	node->size = ft_lst_size(kv_node_list);
+	node->content = htbl;
 
 	status = JSON_MATCH;
 
 label_exit:
 	if (status != JSON_MATCH) {
 		__pos = old_pos;
-		ft_lst_del(kv_node_list);
+		ft_htbl_del(htbl);
 	}
-
 	return (status);
 }
 

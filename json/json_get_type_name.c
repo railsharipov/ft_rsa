@@ -2,7 +2,6 @@
 
 # define __JSON_TYPE_NAME_OBJECT		"object"
 # define __JSON_TYPE_NAME_ARRAY			"array"
-# define __JSON_TYPE_NAME_KV			"key-value"
 # define __JSON_TYPE_NAME_CSTR			"string"
 # define __JSON_TYPE_NAME_NUMBER		"number"
 # define __JSON_TYPE_NAME_BOOLEAN		"boolean"
@@ -15,7 +14,6 @@
 static const char	*__JSON_TYPE_NAME_MAP[] = {
 	[JSON_TYPE_UNDEFINED]	= __JSON_TYPE_NAME_UNDEFINED,
 	[JSON_TYPE_OBJECT]		= __JSON_TYPE_NAME_OBJECT,
-	[JSON_TYPE_KV]			= __JSON_TYPE_NAME_KV,
 	[JSON_TYPE_ARRAY]		= __JSON_TYPE_NAME_ARRAY,
 	[JSON_TYPE_STRING]		= __JSON_TYPE_NAME_CSTR,
 	[JSON_TYPE_NUMBER]		= __JSON_TYPE_NAME_NUMBER,

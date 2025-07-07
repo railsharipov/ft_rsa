@@ -24,9 +24,6 @@ FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
 	} else if (type == JSON_TYPE_OBJECT) {
 		return (__delete_object);
 
-	} else if (type == JSON_TYPE_KV) {
-		return (__delete_key_value);
-
 	} else if (type == JSON_TYPE_STRING) {
 		return (__delete_string);
 
@@ -54,13 +51,7 @@ static void __delete_array(void *content)
 static void __delete_object(void *content)
 {
 	JSON_LOG(TRACE, "deleting object");
-	ft_lst_del((t_node *)(content));
-}
-
-static void __delete_key_value(void *content)
-{
-	JSON_LOG(TRACE, "deleting key value");
-	ft_tuple_del((t_tuple *)(content));
+	ft_htbl_del((t_htbl *)(content));
 }
 
 static void __delete_string(void *content)

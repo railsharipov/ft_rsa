@@ -236,10 +236,9 @@ static int	__test_json_parse_simple_null(void)
 
 static int	__test_json_parse_complex_object(void)
 {
-	t_node	*root_node, *obj_node;
-	t_node	*kv_node, *k, *v;
+	t_node	*root_node, *node;
+	t_htbl	*htbl;
 	t_node	*array_node, *array_item;
-	t_tuple	*tuple;
 	char	*json_s;
 	size_t	json_slen;
 	int		ret;
@@ -252,274 +251,112 @@ static int	__test_json_parse_complex_object(void)
 	ret = json_parse(json_s, &root_node);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(root_node != NULL);
+	TEST_ASSERT(root_node->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(root_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
-	obj_node = root_node;
-	TEST_ASSERT(obj_node->type == JSON_TYPE_OBJECT);
-	TEST_ASSERT(obj_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
+	root_node = ft_htbl_get(root_node->content, "/test/apiKey");
+	TEST_ASSERT(root_node != NULL);
+	TEST_ASSERT(root_node->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(root_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
-	kv_node = obj_node->content;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
+	root_node = ft_htbl_get(root_node->content, "post");
+	TEST_ASSERT(root_node != NULL);
+	TEST_ASSERT(root_node->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(root_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(ft_strcmp(k->content, "/test/apiKey") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_OBJECT);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
+	node = ft_htbl_get(root_node->content, "tags");
+	TEST_ASSERT(node != NULL);
+	TEST_ASSERT(node->type == JSON_TYPE_ARRAY);
+	TEST_ASSERT(ft_lst_size(node->content) == 1);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 
-	kv_node = v->content;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
+	node = node->content;
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "test") == 0);
 
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
+	node = ft_htbl_get(root_node->content, "summary");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "Test JSON") == 0);
 
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(ft_strcmp(k->content, "post") == 0);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(v->type == JSON_TYPE_OBJECT);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
+	node = ft_htbl_get(root_node->content, "description");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "") == 0);
 
-	kv_node = v->content;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-	TEST_ASSERT(ft_lst_size(kv_node) == 8);
+	node = ft_htbl_get(root_node->content, "operationId");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "testJson") == 0);
 
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
+	node = ft_htbl_get(root_node->content, "consumes");
+	TEST_ASSERT(node->type == JSON_TYPE_ARRAY);
+	TEST_ASSERT(ft_lst_size(node->content) == 1);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
+	node = node->content;
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "application/json") == 0);
 
-	TEST_ASSERT(ft_strcmp(k->content, "tags") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
-	TEST_ASSERT(ft_lst_size(v->content) == 1);
+	node = ft_htbl_get(root_node->content, "produces");
+	TEST_ASSERT(node->type == JSON_TYPE_ARRAY);
+	TEST_ASSERT(ft_lst_size(node->content) == 1);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 
-	array_item = v->content;
-	TEST_ASSERT(array_item->type == JSON_TYPE_STRING);
-	TEST_ASSERT(array_item->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(array_item->content, "test") == 0);
+	node = node->content;
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "application/json") == 0);
 
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
+	root_node = ft_htbl_get(root_node->content, "parameters");
+	TEST_ASSERT(root_node->type == JSON_TYPE_ARRAY);
+	TEST_ASSERT(ft_lst_size(root_node->content) == 2);
+	TEST_ASSERT(root_node->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
 
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
+	root_node = root_node->content;
+	TEST_ASSERT(root_node->type == JSON_TYPE_OBJECT);
+	TEST_ASSERT(root_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
 
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "summary") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "Test JSON") == 0);
+	node = ft_htbl_get(root_node->content, "name");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "testId") == 0);
 
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
+	node = ft_htbl_get(root_node->content, "in");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "path") == 0);
 
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "description") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "") == 0);
+	node = ft_htbl_get(root_node->content, "version");
+	TEST_ASSERT(node->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
+	TEST_ASSERT(bnum_cmp((t_num *)node->content, bnum_from_dec("3")) == 0);
 
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
+	node = ft_htbl_get(root_node->content, "size");
+	TEST_ASSERT(node->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
+	TEST_ASSERT(bnum_cmp((t_num *)node->content, bnum_from_dec("36127812312")) == 0);
 
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
+	node = ft_htbl_get(root_node->content, "value");
+	TEST_ASSERT(node->type == JSON_TYPE_NUMBER);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
+	TEST_ASSERT(bnum_cmp((t_num *)node->content, bnum_from_dec("-123123123123")) == 0);
 
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "operationId") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "testJson") == 0);
+	node = ft_htbl_get(root_node->content, "required");
+	TEST_ASSERT(node->type == JSON_TYPE_BOOL_TRUE);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_BOOL_TRUE));
 
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
+	node = ft_htbl_get(root_node->content, "type");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "integer") == 0);
 
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(ft_strcmp(k->content, "consumes") == 0);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
-	TEST_ASSERT(ft_lst_size(v->content) == 1);
-
-	array_item = v->content;
-	TEST_ASSERT(array_item->type == JSON_TYPE_STRING);
-	TEST_ASSERT(array_item->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(array_item->content, "application/json") == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(ft_strcmp(k->content, "produces") == 0);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
-	TEST_ASSERT(ft_lst_size(v->content) == 1);
-
-	array_item = v->content;
-	TEST_ASSERT(array_item->type == JSON_TYPE_STRING);
-	TEST_ASSERT(array_item->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(array_item->content, "application/json") == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "parameters") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_ARRAY);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_ARRAY));
-	TEST_ASSERT(ft_lst_size(v->content) == 2);
-
-	array_item = v->content;
-	obj_node = array_item;
-
-	TEST_ASSERT(obj_node->type == JSON_TYPE_OBJECT);
-	TEST_ASSERT(obj_node->f_del_content == json_get_f_del(JSON_TYPE_OBJECT));
-
-	kv_node = obj_node->content;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "name") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "testId") == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-	TEST_ASSERT(kv_node->f_del_content == json_get_f_del(JSON_TYPE_KV));
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "in") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "path") == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "version") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_NUMBER);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
-	TEST_ASSERT(bnum_cmp((t_num *)v->content, bnum_from_dec("3")) == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "size") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_NUMBER);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
-	TEST_ASSERT(bnum_cmp((t_num *)v->content, bnum_from_dec("36127812312")) == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "value") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_NUMBER);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_NUMBER));
-	TEST_ASSERT(bnum_cmp((t_num *)v->content, bnum_from_dec("-123123123123")) == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "required") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_BOOL_TRUE);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_BOOL_TRUE));
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "type") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "integer") == 0);
-
-	kv_node = kv_node->next;
-	TEST_ASSERT(kv_node->type == JSON_TYPE_KV);
-
-	tuple = kv_node->content;
-	k = ft_tuple_get(tuple, 0);
-	v = ft_tuple_get(tuple, 1);
-
-	TEST_ASSERT(k->type == JSON_TYPE_STRING);
-	TEST_ASSERT(k->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(k->content, "format") == 0);
-	TEST_ASSERT(v->type == JSON_TYPE_STRING);
-	TEST_ASSERT(v->f_del_content == json_get_f_del(JSON_TYPE_STRING));
-	TEST_ASSERT(ft_strcmp(v->content, "int64") == 0);
+	node = ft_htbl_get(root_node->content, "format");
+	TEST_ASSERT(node->type == JSON_TYPE_STRING);
+	TEST_ASSERT(node->f_del_content == json_get_f_del(JSON_TYPE_STRING));
+	TEST_ASSERT(ft_strcmp(node->content, "int64") == 0);
 
 	SSL_FREE(json_s);
 	json_del(root_node);

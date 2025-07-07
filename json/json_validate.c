@@ -15,7 +15,6 @@ static int  __deep_scan;
 static int	__validate_node(t_node *node);
 
 static int	__validate_object(t_node *node);
-static int	__validate_kv(t_node *node);
 static int	__validate_array(t_node *node);
 static int	__validate_string(t_node *node);
 static int	__validate_number(t_node *node);
@@ -75,8 +74,6 @@ static int	__validate_node(t_node *node)
 	switch (node->type) {
 		case JSON_TYPE_OBJECT:
 			return (__validate_object(node));
-		case JSON_TYPE_KV:
-			return (__validate_kv(node));
 		case JSON_TYPE_ARRAY:
 			return (__validate_array(node));
 		case JSON_TYPE_STRING:
@@ -99,7 +96,9 @@ static int	__validate_node(t_node *node)
 
 static int	__validate_object(t_node *node)
 {
-	t_node	*kv_arr_item;
+	t_htbl	*htbl;
+	t_node	*item;
+	t_node	*value_node;
 
 	if (node->type != JSON_TYPE_OBJECT) {
 		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_OBJECT), json_get_type_name(node->type));
@@ -107,46 +106,15 @@ static int	__validate_object(t_node *node)
 	}
 
 	if (__deep_scan) {
-		kv_arr_item = (t_node *)node->content;
+		htbl = node->content;
+		item = NULL;
 
-		while (kv_arr_item) {
-			if (SSL_OK != __validate_kv(kv_arr_item)) {
-				JSON_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_KV));
+		while ((item = ft_htbl_node_next(htbl, item)) != NULL) {
+			value_node = item->content;
+			if (SSL_OK != __validate_node(value_node)) {
+				JSON_LOG(DEBUG, "bad object kv: bad value for key `%s`", item->key);
 				return (SSL_ERR);
 			}
-			kv_arr_item = kv_arr_item->next;
-		}
-	}
-
-	return (SSL_OK);
-}
-
-static int	__validate_kv(t_node *node)
-{
-	t_tuple	*tuple;
-	t_node	*k, *v;
-
-	if (node->content == NULL) {
-		JSON_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_KV));
-		return (SSL_ERR);
-	}
-	if (node->type != JSON_TYPE_KV) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_KV), json_get_type_name(node->type));
-		return (SSL_ERR);
-	}
-
-	if (__deep_scan) {
-		tuple = (t_tuple *)node->content;
-		k = ft_tuple_get(tuple, 0);
-		v = ft_tuple_get(tuple, 1);
-
-		if (NULL == k || SSL_OK != __validate_string(k)) {
-			JSON_LOG(DEBUG, "%s: expected key", json_get_type_name(JSON_TYPE_KV));
-			return (SSL_ERR);
-		}
-		if (NULL == v || SSL_OK != __validate_node(v)) {
-			JSON_LOG(DEBUG, "%s: expected value", json_get_type_name(JSON_TYPE_KV));
-			return (SSL_ERR);
 		}
 	}
 

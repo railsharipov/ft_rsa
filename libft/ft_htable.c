@@ -33,8 +33,7 @@ void *ft_htbl_init(int size)
 
 	LIBFT_ALLOC(htbl, sizeof(t_htbl));
 
-	htbl->size = MAX(LIBFT_HT_SIZE, size);
-	htbl->size = CEIL(htbl->size, LIBFT_HT_SIZE);
+	htbl->size = MAX(LIBFT_HT_SIZE, CEIL(size, LIBFT_HT_SIZE));
 
 	LIBFT_ALLOC(htbl->arr, htbl->size * sizeof(void *));
 
@@ -155,8 +154,11 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 	t_htbl new_htbl;
 	t_node *node;
 
-	new_htbl.size = MAX(LIBFT_HT_SIZE, size);
-	new_htbl.size = CEIL(new_htbl.size, LIBFT_HT_SIZE);
+	if (NULL == htbl || size <= 0) {
+		return;
+	}
+
+	new_htbl.size = MAX(LIBFT_HT_SIZE, CEIL(size, LIBFT_HT_SIZE));
 
 	if (new_htbl.size <= htbl->size) {
 		return;
@@ -263,12 +265,18 @@ static t_node	*__get_node_from_htable(t_htbl *htbl, const char *key)
 
 void	(ft_htbl_del)(t_htbl *htbl)
 {
+	if (NULL == htbl) {
+		return;
+	}
 	__del_htable_array(htbl, NULL);
 	LIBFT_FREE(htbl);
 }
 
 void	ft_htbl_del_with_f_del(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
 {
+	if (NULL == htbl) {
+		return;
+	}
 	__del_htable_array(htbl, f_del);
 	LIBFT_FREE(htbl);
 }
@@ -279,7 +287,7 @@ static void	__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
 	t_node *tmp;
 	int idx;
 
-	if (NULL == htbl) {
+	if (htbl->arr == NULL) {
 		return;
 	}
 	idx = 0;
