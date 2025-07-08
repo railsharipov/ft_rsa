@@ -1,63 +1,81 @@
 #include <common.h>
 #include <asn.h>
+#include <json.h>
 #include <libft/node.h>
 #include <libft/ntree.h>
 #include <libft/2darray.h>
 #include <libft/string.h>
-
-static int	__init_func(t_node *node, const void *p);
-static void	__f_del_content(void *content);
-
-static int	__error_status;
+#include <libft/list.h>
+#include <bnum.h>
 
 t_node	*asn_tree_create(t_node *json_schema)
 {
-	t_node	*tree;
+	t_htbl	*htbl;
+	t_node	*type, *desc, *nodes;
+	t_node	*asn_node, *child_asn_node;
+	t_iasn	*asn_item;
 
-	__error_status = SSL_OK;
+	asn_node = ft_node_create();
+	asn_item = asn_item_create();
 
-	return (tree);
-}
+	if (NULL == json_schema) {
+		ASN_LOG(ERROR, "invalid json schema: expected object");
+		goto label_error;
+	}
+	if (json_schema->type != JSON_TYPE_OBJECT) {
+		ASN_LOG(ERROR, "invalid json schema: expected: %s, got: %s", json_get_type_name(JSON_TYPE_OBJECT), json_get_type_name(json_schema->type));
+		goto label_error;
+	}
+	htbl = json_schema->content;
 
-static int	__init_func(t_node *node, const void *p)
-{
-	t_iasn	*item;
-	char	**strings;
-	size_t	num_strings;
-	char	type_key[128] = {0};
-	char	description[256] = {0};
+	desc = ft_htbl_get(htbl, "description");
+	type = ft_htbl_get(htbl, "type");
 
-	if (NULL == node) {
-		return (0);
+	if (NULL == desc) {
+		ASN_LOG(ERROR, "invalid json schema: expected description key");
+		goto label_error;
+	}
+	if (NULL == type) {
+		ASN_LOG(ERROR, "invalid json schema: expected type key");
+		goto label_error;
 	}
 
-	strings = ft_strsplit(node->key, ':');
-	num_strings = ft_2darray_len_null_terminated((void **)strings);
-
-	if (NULL == strings || num_strings != 2) {
-		ASN_LOG(ERROR, "invalid asn map: invalid key: %s", node->key);
-		return (-1);
+	if (SSL_OK != asn_item_set_type(asn_item, (char *)type->content)) {
+		ASN_LOG(ERROR, "failed to set asn node type");
+		goto label_error;
 	}
+	asn_item->description = ft_strdup((char *)desc->content);
 
-	ft_strncpy(type_key, strings[0], sizeof(type_key)-1);
-	ft_strncpy(description, strings[1], sizeof(description)-1);
+	if (asn_item->tagnum == ASN_TAGNUM_SEQUENCE) {
+		asn_node->type = JSON_TYPE_ARRAY;
+		asn_node->f_del_content = json_get_f_del(JSON_TYPE_ARRAY);
 
-	ft_2darray_del_null_terminated((void **)strings);
+		nodes = ft_htbl_get(htbl, "nodes");
+		if (NULL == nodes) {
+			ASN_LOG(ERROR, "invalid json schema: expected: %s, got: %s", json_get_type_name(JSON_TYPE_ARRAY), json_get_type_name(nodes->type));
+			goto label_error;
+		}
 
-	item = asn_item_init();
+		for (t_node *child = nodes->content; child != NULL; child = child->next) {
+			child_asn_node = __create_asn_node(child);
+			if (NULL == child_asn_node) {
+				ASN_LOG(ERROR, "failed to create asn node");
+				goto label_error;
+			}
+			ft_lst_append(&asn_node->content, child_asn_node);
+		}
+		asn_node->size = ft_lst_size(asn_node->content);
 
-	if (SSL_OK != asn_item_set_type(item, type_key)) {
-		ASN_LOG(ERROR, "failed to set asn item type: %s", type_key);
-		return (-1);
+	} else {
+		asn_node->type = JSON_TYPE_BYTES;
+		asn_node->f_del_content = asn_item_del;
+		asn_node->content = asn_item;
+		asn_node->size = sizeof(asn_item);
 	}
+	return (asn_node);
 
-	item->description = ft_strdup(description);
-	node->content = item;
-
-	return (0);
-}
-
-static void	__f_del_content(void *content)
-{
-	asn_item_del((t_iasn *)content);
+label_error:
+	ft_node_del(asn_node);
+	asn_item_del(asn_item);
+	return (NULL);
 }

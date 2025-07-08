@@ -71,9 +71,9 @@ void			asn_tree_items_del(t_htbl *);
 int 			asn_tree_der_encode(struct s_node *, struct s_der **);
 int				asn_tree_der_decode(struct s_der *, const char *, struct s_node **);
 
-t_iasn			*asn_item_init(void);
+t_iasn			*asn_item_create(void);
 void			asn_item_del(t_iasn *);
-void			asn_item_clean(t_iasn *);
+void			asn_item_init(t_iasn *);
 t_iasn			*asn_item_dup(t_iasn *);
 int				asn_item_set_type(t_iasn *, char *type_key);
 
