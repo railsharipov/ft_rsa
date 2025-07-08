@@ -61,9 +61,12 @@ typedef struct	s_iasn
 struct s_der;
 struct s_node;
 
+typedef struct s_node t_asn_node;
+
 int				asn_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 struct s_node	*asn_tree(const char *);
+t_node			*asn_tree_create(t_node *schema_json);
 void			asn_tree_del(struct s_node *);
 void			*asn_tree_get(t_node *, const char *);
 t_htbl			*asn_tree_items(struct s_node *);

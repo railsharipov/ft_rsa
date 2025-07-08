@@ -5,8 +5,6 @@
 #include <printnl.h>
 #include <libft/bytes.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 static t_num	__zero_num;
 static t_num	__one_num;
 
@@ -1264,5 +1262,3 @@ static int	__test_bnum_m_powmod(void)
 
 	TEST_PASS();
 }
-
-#endif

@@ -1,8 +1,6 @@
 #include <common.h>
 #include <test.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 int	test_assert(int bool, const char *expr)
 {
 	if (bool) {
@@ -19,5 +17,3 @@ int	test_assert(int bool, const char *expr)
 		return (SSL_ERR);
 	}
 }
-
-#endif

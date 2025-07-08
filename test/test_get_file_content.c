@@ -4,8 +4,6 @@
 #include <test.h>
 #include <io.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 {
 	int 	fd;
@@ -38,5 +36,3 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 
 	return (SSL_OK);
 }
-
-#endif

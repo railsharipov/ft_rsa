@@ -33,12 +33,21 @@ enum	e_json_status
 	JSON_BAD_QUERY	= SSL_STATUS_COUNT + 5,
 };
 
+enum    e_json_q_type
+{
+    JSON_Q_OBJECT_KEY = 0,
+    JSON_Q_ARRAY_INDEX,
+    JSON_Q_SELF
+};
+
 typedef int (*FUNC_JSON_MAP)(t_node *node);
+typedef int (*FUNC_JSON_SELECTOR)(t_node *node, t_node *query_node, t_node **ret_node);
 
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int     json_parse(const char *s, t_node **node);
 int     json_query(const char *s, t_node *json, t_node **ret_node);
+int     json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector);
 int     json_validate(t_node *node);
 int     json_validate_node(t_node *node);
 int     json_validate_node_type(int type);

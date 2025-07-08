@@ -5,8 +5,6 @@
 #include <test.h>
 #include <io.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);
 
@@ -713,5 +711,3 @@ static void	__test_der_cleanup(void)
 // {
 // 	TEST_PASS();
 // }
-
-#endif

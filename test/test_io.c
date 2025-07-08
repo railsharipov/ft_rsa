@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 static int	__test_io_setup(void);
 static int	__test_io_init(void);
 static int	__test_io_read(void);
@@ -158,5 +156,3 @@ static int	__test_io_write(void)
 
 	TEST_PASS();
 }
-
-#endif

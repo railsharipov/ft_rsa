@@ -6,8 +6,6 @@
 #include <io.h>
 #include <bnum.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 static int	__test_json_setup(void);
 static void	__test_json_cleanup(void);
 
@@ -660,5 +658,3 @@ static int	__test_json_map(void)
 
 	TEST_PASS();
 }
-
-#endif

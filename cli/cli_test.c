@@ -2,7 +2,20 @@
 #include <cli.h>
 #include <test.h>
 
-#ifdef SSL_INCLUDE_TESTS
+const struct {
+	const char *name;
+	FUNC_TEST f_test;
+} TEST_MAP[] = {
+	{"libft",  test_libft},
+	{"io",     test_io},
+	{"bnum",   test_bnum},
+	{"base64", test_base64},
+	{"der",    test_der},
+	{"json",   test_json},
+	{"asn",    test_asn}
+};
+
+const int NUM_TESTS = sizeof(TEST_MAP) / sizeof(TEST_MAP[0]);
 
 #define __CLI_TEST_LINE_BREAK	"----------------------------------------"
 
@@ -34,13 +47,13 @@ int	cli_test(const char **opt, const char *name)
 
 	idx = 0;
 	while (idx < NUM_TESTS) {
-		if (idx < 0 || idx >= TEST_DESC_ARR_SIZE) {
+		if (idx < 0 || idx >= NUM_TESTS) {
 			TEST_LOG(ERROR, INVALID_INPUT_ERROR);
 			return (SSL_ERR);
 		}
-		CLI_LOG(INFO, TXT_CYAN("testing %s"), TEST_DESC_ARR[idx]);
+		CLI_LOG(INFO, TXT_CYAN("testing %s"), TEST_MAP[idx].name);
 
-		f_test = TESTS[idx];
+		f_test = TEST_MAP[idx].f_test;
 
 		if (NULL == f_test) {
 			CLI_LOG(ERROR, "unknown test");
@@ -71,9 +84,9 @@ int	cli_test(const char **opt, const char *name)
 	while (idx < NUM_TESTS) {
 		if (SSL_OK == ret[idx]) {
 			num_passed++;
-			CLI_LOG(INFO, TXT_B_GREEN("PASS") TXT_CYAN(" %s"), TEST_DESC_ARR[idx]);
+			CLI_LOG(INFO, TXT_B_GREEN("PASS") TXT_CYAN(" %s"), TEST_MAP[idx].name);
 		} else {
-			CLI_LOG(INFO, TXT_B_RED("FAIL") TXT_CYAN(" %s"), TEST_DESC_ARR[idx]);
+			CLI_LOG(INFO, TXT_B_RED("FAIL") TXT_CYAN(" %s"), TEST_MAP[idx].name);
 		}
 		idx++;
 	}
@@ -81,5 +94,3 @@ int	cli_test(const char **opt, const char *name)
 
 	return (SSL_OK);
 }
-
-#endif

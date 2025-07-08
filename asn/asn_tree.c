@@ -8,14 +8,41 @@
 #include <libft/list.h>
 #include <bnum.h>
 
-t_node	*asn_tree_create(t_node *json_schema)
-{
-	t_htbl	*htbl;
-	t_node	*type, *desc, *nodes;
-	t_node	*asn_node, *child_asn_node;
-	t_iasn	*asn_item;
+// temporary
 
-	asn_node = ft_node_create();
+t_node	*asn_tree(const char *map) {
+	return (NULL);
+}
+
+void	asn_tree_del(t_node *tree)
+{
+	return ;
+}
+
+void	*asn_tree_get(t_node *tree, const char *key)
+{
+	return (NULL);
+}
+
+t_htbl	*asn_tree_items(t_node *tree)
+{
+	return (NULL);
+}
+
+void	asn_tree_items_del(t_htbl *items)
+{
+	return ;
+}
+
+// 
+
+t_asn_node	*asn_tree_create(t_node *json_schema)
+{
+	t_htbl		*htbl;
+	t_node		*type, *desc, *nodes;
+	t_asn_node	*asn_node, *child_asn_node;
+	t_iasn		*asn_item;
+
 	asn_item = asn_item_create();
 
 	if (NULL == json_schema) {
@@ -30,12 +57,13 @@ t_node	*asn_tree_create(t_node *json_schema)
 
 	desc = ft_htbl_get(htbl, "description");
 	type = ft_htbl_get(htbl, "type");
+	nodes = ft_htbl_get(htbl, "nodes");
 
-	if (NULL == desc) {
+	if (NULL == desc || desc->type != JSON_TYPE_STRING) {
 		ASN_LOG(ERROR, "invalid json schema: expected description key");
 		goto label_error;
 	}
-	if (NULL == type) {
+	if (NULL == type || type->type != JSON_TYPE_STRING) {
 		ASN_LOG(ERROR, "invalid json schema: expected type key");
 		goto label_error;
 	}
@@ -46,36 +74,27 @@ t_node	*asn_tree_create(t_node *json_schema)
 	}
 	asn_item->description = ft_strdup((char *)desc->content);
 
-	if (asn_item->tagnum == ASN_TAGNUM_SEQUENCE) {
-		asn_node->type = JSON_TYPE_ARRAY;
-		asn_node->f_del_content = json_get_f_del(JSON_TYPE_ARRAY);
-
-		nodes = ft_htbl_get(htbl, "nodes");
-		if (NULL == nodes) {
-			ASN_LOG(ERROR, "invalid json schema: expected: %s, got: %s", json_get_type_name(JSON_TYPE_ARRAY), json_get_type_name(nodes->type));
-			goto label_error;
-		}
-
+	if (nodes != NULL) {
 		for (t_node *child = nodes->content; child != NULL; child = child->next) {
-			child_asn_node = __create_asn_node(child);
+			child_asn_node = asn_tree_create(child);
+
 			if (NULL == child_asn_node) {
-				ASN_LOG(ERROR, "failed to create asn node");
+				ASN_LOG(ERROR, "failed to create a child asn node");
 				goto label_error;
 			}
-			ft_lst_append(&asn_node->content, child_asn_node);
+			ft_lst_append((t_node **)&asn_item->content, child_asn_node);
 		}
-		asn_node->size = ft_lst_size(asn_node->content);
-
-	} else {
-		asn_node->type = JSON_TYPE_BYTES;
-		asn_node->f_del_content = asn_item_del;
-		asn_node->content = asn_item;
-		asn_node->size = sizeof(asn_item);
 	}
+
+	asn_node = ft_node_create();
+	asn_node->type = JSON_TYPE_BYTES;
+	asn_node->f_del_content = (void (*)(void *))asn_item_del;
+	asn_node->content = asn_item;
+	asn_node->size = sizeof(asn_item);
+
 	return (asn_node);
 
 label_error:
-	ft_node_del(asn_node);
 	asn_item_del(asn_item);
 	return (NULL);
 }

@@ -4,8 +4,6 @@
 #include <alloc.h>
 #include <common.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 #define TEST_LOG_PREFIX  "test: "
 
 static int __f_logger(const char *mes);
@@ -46,5 +44,3 @@ int test_logger_log(const char *func_name, const char *file_name, int line_numbe
 
 	return (ret);
 }
-
-#endif

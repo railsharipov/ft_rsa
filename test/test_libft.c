@@ -16,8 +16,6 @@
 #include <libft/2darray.h>
 #include <libft/bytes.h>
 
-#ifdef SSL_INCLUDE_TESTS
-
 static char 	*__s1;
 static char 	*__s2;
 static char 	*__s3;
@@ -2159,5 +2157,3 @@ static int __test_ft_ntree(void)
 
 	TEST_PASS();
 }
-
-#endif

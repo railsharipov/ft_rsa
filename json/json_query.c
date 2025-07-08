@@ -29,21 +29,18 @@
 #define __JQ_BAD_QUERY_ERROR	"bad query"
 #define __JQ_BAD_TYPE_ERROR		"bad type"
 
-enum __e_json_q_type {
-	__JSON_Q_OBJECT_KEY = 0,
-	__JSON_Q_ARRAY_INDEX,
-	__JSON_Q_SELF
-};
-
 static size_t	__pos;
 
-static int 	__run_query(const char *s, t_node *json, t_node **ret_node);
+static int 	__run_query(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector);
 static int 	__parse_selector(const char *s, t_node *query);
 static int 	__select_node(t_node *node, t_node *query, t_node **ret_node);
 static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node);
 static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node);
+static int 	__select_with_f_selector(t_node *node, t_node *query, t_node **ret_node, FUNC_JSON_SELECTOR f_selector);
 
-static const char	*__get_json_q_type_name(enum __e_json_q_type type);
+static void	*__f_default_content_getter(t_node *node);
+
+static const char	*__get_json_q_type_name(enum e_json_q_type type);
 
 int json_query(const char *s, t_node *json, t_node **ret_node)
 {
@@ -57,7 +54,7 @@ int json_query(const char *s, t_node *json, t_node **ret_node)
 		return (SSL_ERR);
 	}
 
-	if (JSON_MATCH != __run_query(s, json, ret_node)) {
+	if (JSON_MATCH != __run_query(s, json, ret_node, NULL)) {
 		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
 		return (SSL_ERR);
 	}
@@ -65,7 +62,27 @@ int json_query(const char *s, t_node *json, t_node **ret_node)
 	return (SSL_OK);
 }
 
-static int 	__run_query(const char *s, t_node *json, t_node **ret_node)
+int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
+{
+	if (NULL == s) {
+		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
+		return (JSON_BAD_QUERY);
+	}
+
+	if (NULL == json || NULL == ret_node) {
+		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+
+	if (JSON_MATCH != __run_query(s, json, ret_node, f_selector)) {
+		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
+		return (SSL_ERR);
+	}
+
+	return (SSL_OK);
+}
+
+static int __run_query(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
 {
 	t_node	*query;
 	t_node	*cur_node;
@@ -82,7 +99,12 @@ static int 	__run_query(const char *s, t_node *json, t_node **ret_node)
 
 		if (JSON_QUERY_OK == (status = __parse_selector(s, query))) {
 			JSON_LOG(TRACE, "parsed %s", __get_json_q_type_name(query->type));
-			status = __select_node(cur_node, query, &selected_node);
+
+			if (f_selector == NULL) {
+				status = __select_node(cur_node, query, &selected_node);
+			} else {
+				status = __select_with_f_selector(cur_node, query, &selected_node, f_selector);
+			}
 		} else {
 			JSON_LOG(ERROR, "failed to parse query");
 		}
@@ -114,9 +136,9 @@ static int 	__parse_selector(const char *s, t_node *query)
 		end = __pos;
 
 		if (begin == end) {
-			query->type = __JSON_Q_SELF;
+			query->type = JSON_Q_SELF;
 		} else {
-			query->type = __JSON_Q_OBJECT_KEY;
+			query->type = JSON_Q_OBJECT_KEY;
 			query->content = ft_strsub(s, begin, end - begin);
 		}
 	}
@@ -131,7 +153,7 @@ static int 	__parse_selector(const char *s, t_node *query)
 				__pos++;
 			}
 			end = __pos;
-			query->type = __JSON_Q_ARRAY_INDEX;
+			query->type = JSON_Q_ARRAY_INDEX;
 		}
 		else if (s[__pos] == '"' || s[__pos] == '\'') {
 			JSON_LOG(TRACE, "parsing object key");
@@ -149,7 +171,7 @@ static int 	__parse_selector(const char *s, t_node *query)
 			}
 			end = __pos;
 			__pos++;
-			query->type = __JSON_Q_OBJECT_KEY;
+			query->type = JSON_Q_OBJECT_KEY;
 		}
 
 		if (s[__pos] != ']') {
@@ -170,13 +192,13 @@ static int 	__parse_selector(const char *s, t_node *query)
 
 static int 	__select_node(t_node *node, t_node *query, t_node **ret_node)
 {
-	if (query->type == __JSON_Q_OBJECT_KEY) {
+	if (query->type == JSON_Q_OBJECT_KEY) {
 		return (__select_object_key(node, query, ret_node));
 	}
-	else if (query->type == __JSON_Q_ARRAY_INDEX) {
+	else if (query->type == JSON_Q_ARRAY_INDEX) {
 		return (__select_array_index(node, query, ret_node));
 	}
-	else if (query->type == __JSON_Q_SELF) {
+	else if (query->type == JSON_Q_SELF) {
 		*ret_node = node;
 		return (JSON_MATCH);
 	}
@@ -225,7 +247,7 @@ static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
 	arr_item = node->content;
 	target_idx = ft_atoi(query->content);
 
-	JSON_LOG(TRACE, "array has %d items", ft_lst_size(node->content));
+	JSON_LOG(TRACE, "array has %d items", ft_lst_size(arr_item));
 
 	idx = 0;
 	while (arr_item != NULL) {
@@ -242,14 +264,21 @@ static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
 	return (JSON_NO_MATCH);
 }
 
-static const char	*__get_json_q_type_name(enum __e_json_q_type type)
+static int	__select_with_f_selector(t_node *node, t_node *query, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
+{
+	JSON_LOG(TRACE, "using custom selector to select node");
+
+	return (f_selector(node, query, ret_node));
+}
+
+static const char	*__get_json_q_type_name(enum e_json_q_type type)
 {
 	switch (type) {
-		case __JSON_Q_OBJECT_KEY:
+		case JSON_Q_OBJECT_KEY:
 			return ("object key");
-		case __JSON_Q_ARRAY_INDEX:
+		case JSON_Q_ARRAY_INDEX:
 			return ("array index");
-		case __JSON_Q_SELF:
+		case JSON_Q_SELF:
 			return ("self");
 		default:
 			return ("undefined");
