@@ -1,40 +1,40 @@
 {
-    "description": "publicKey",
-    "type": "sequence",
-    "nodes": [
+  "description": "publicKey",
+  "type": "sequence",
+  "nodes": [
+    {
+      "description": "algorithmId",
+      "type": "sequence",
+      "nodes": [
         {
-            "description": "algorithmId",
-            "type": "sequence",
-            "nodes": [
-                {
-                    "description": "rsaEncryption",
-                    "type": "objectId"
-                },
-                {
-                    "description": "",
-                    "type": "null"
-                }
-            ]
+          "description": "rsaEncryption",
+          "type": "objectId"
         },
         {
-            "description": "bitstring",
-            "type": "bitstring",
-            "nodes": [
-                {
-                    "description": "",
-                    "type": "sequence",
-                    "nodes": [
-                        {
-                            "description": "modulus",
-                            "type": "int"
-                        },
-                        {
-                            "description": "publicExponent",
-                            "type": "int"
-                        }
-                    ]
-                }
-            ]
+          "description": "",
+          "type": "null"
         }
-    ]
+      ]
+    },
+    {
+      "description": "bitstring",
+      "type": "bitstring",
+      "nodes": [
+        {
+          "description": "",
+          "type": "sequence",
+          "nodes": [
+            {
+              "description": "modulus",
+              "type": "int"
+            },
+            {
+              "description": "publicExponent",
+              "type": "int"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

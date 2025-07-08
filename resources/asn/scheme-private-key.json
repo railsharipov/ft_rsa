@@ -1,42 +1,42 @@
 {
-    "description": "rsaPrivateKey",
-    "type": "sequence",
-    "nodes": [
-        {
-            "description": "version",
-            "type": "int"
-        },
-        {
-            "description": "modulus",
-            "type": "int"
-        },
-        {
-            "description": "publicExponent",
-            "type": "int"
-        },
-        {
-            "description": "privateExponent",
-            "type": "int"
-        },
-        {
-            "description": "prime1",
-            "type": "int"
-        },
-        {
-            "description": "prime2",
-            "type": "int"
-        },
-        {
-            "description": "exponent1",
-            "type": "int"
-        },
-        {
-            "description": "exponent2",
-            "type": "int"
-        },
-        {
-            "description": "coefficient",
-            "type": "int"
-        }
-    ]
+  "description": "rsaPrivateKey",
+  "type": "sequence",
+  "nodes": [
+    {
+      "description": "version",
+      "type": "int"
+    },
+    {
+      "description": "modulus",
+      "type": "int"
+    },
+    {
+      "description": "publicExponent",
+      "type": "int"
+    },
+    {
+      "description": "privateExponent",
+      "type": "int"
+    },
+    {
+      "description": "prime1",
+      "type": "int"
+    },
+    {
+      "description": "prime2",
+      "type": "int"
+    },
+    {
+      "description": "exponent1",
+      "type": "int"
+    },
+    {
+      "description": "exponent2",
+      "type": "int"
+    },
+    {
+      "description": "coefficient",
+      "type": "int"
+    }
+  ]
 }
