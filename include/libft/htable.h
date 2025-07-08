@@ -27,7 +27,7 @@ typedef struct		s_htbl
 
 uint32_t	ft_hash(const unsigned char *key, size_t keysize);
 
-void		*ft_htbl_init(int size);
+void		*ft_htbl_create(int size);
 
 t_node		*ft_htbl_node_next(t_htbl *htbl, t_node *node);
 

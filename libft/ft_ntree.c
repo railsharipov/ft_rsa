@@ -62,7 +62,7 @@ t_htbl	*ft_ntree_to_htable(t_node *node)
 		return (NULL);
 	}
 
-	htbl = ft_htbl_init(ft_ntree_size(node));
+	htbl = ft_htbl_create(ft_ntree_size(node));
 	ft_ntree_bfs(NULL, node, htbl, __htable_func);
 
 	return (htbl);

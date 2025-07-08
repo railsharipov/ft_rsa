@@ -528,6 +528,11 @@ int		ft_strcmp(const char *s1, const char *s2)
 	return (s1[i] - s2[i]);
 }
 
+int	ft_streq(const char *a, const char *b)
+{
+	return (ft_strcmp(a, b) == 0);
+}
+
 int	ft_tolower(int c)
 {
 	if (c >= 65 && c <= 90) {

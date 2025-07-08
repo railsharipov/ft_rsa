@@ -171,7 +171,7 @@ static void	__init_func_htable(void)
 	t_htbl	*htbl;
 	int		idx;
 
-	htbl = ft_htbl_init(sizeof(T)/sizeof(*T));
+	htbl = ft_htbl_create(sizeof(T)/sizeof(*T));
 
 	for (idx = 0; idx < sizeof(T)/sizeof(*T); idx++) {
 		ft_htbl_add_rawkey(htbl, T[idx].f_enc, &(T[idx].tagnum), sizeof(T[idx].tagnum));

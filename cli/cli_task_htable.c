@@ -23,7 +23,7 @@ t_htbl  *cli_task_htable(const t_task *task, int size)
 		return (NULL);
 	}
 
-	if (NULL == (htbl = ft_htbl_init(size))) {
+	if (NULL == (htbl = ft_htbl_create(size))) {
 		return (NULL);
 	}
 

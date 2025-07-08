@@ -1620,7 +1620,7 @@ static int __test_ft_htbl(void)
 		idx++;
 	}
 
-	htbl = ft_htbl_init(nwords);
+	htbl = ft_htbl_create(nwords);
 	TEST_ASSERT(htbl != NULL);
 	TEST_ASSERT(htbl->size > 0);
 	TEST_ASSERT(htbl->arr != NULL);
@@ -1729,7 +1729,7 @@ static int __test_ft_htbl_rawkey(void)
 		idx++;
 	}
 
-	htbl = ft_htbl_init(nwords);
+	htbl = ft_htbl_create(nwords);
 	TEST_ASSERT(htbl != NULL);
 	TEST_ASSERT(htbl->size > 0);
 	TEST_ASSERT(htbl->arr != NULL);
@@ -2039,7 +2039,7 @@ static int __test_ft_ntree(void)
 	//
 
 	// init words htable
-	word_ht = ft_htbl_init(nwords);
+	word_ht = ft_htbl_create(nwords);
 
 	// create hash map for word counts
 	int counter_arr[nwords];

@@ -10,7 +10,9 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <libft/std.h>
 #include <libft/list.h>
+#include <unistd.h>
 
 void	ft_lst_append(t_node **lst, t_node *node)
 {
@@ -240,7 +242,7 @@ t_htbl	*ft_lst_to_htable(t_node *lst)
 	if (NULL == lst) {
 		return (NULL);
 	}
-	htbl = ft_htbl_init(ft_lst_size(lst));
+	htbl = ft_htbl_create(ft_lst_size(lst));
 
 	while (lst) {
 		ft_htbl_add(htbl, lst->content, lst->key);

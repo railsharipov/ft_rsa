@@ -27,7 +27,7 @@ static t_node	*__get_node_from_list(t_node *list, const char *key);
 static int		__get_htable_array_idx(t_htbl *htbl, uint32_t hash);
 static void		__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del);
 
-void *ft_htbl_init(int size)
+void *ft_htbl_create(int size)
 {
 	t_htbl	*htbl;
 

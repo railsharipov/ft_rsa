@@ -38,7 +38,7 @@ int	cli_test(const char **opt, const char *name)
 			TEST_LOG(ERROR, INVALID_INPUT_ERROR);
 			return (SSL_ERR);
 		}
-		CLI_LOG(INFO, __CLI_TEST_LINE_BREAK TXT_CYAN("[	%-10s ]") __CLI_TEST_LINE_BREAK, TEST_DESC_ARR[idx]);
+		CLI_LOG(INFO, TXT_CYAN("testing %s"), TEST_DESC_ARR[idx]);
 
 		f_test = TESTS[idx];
 

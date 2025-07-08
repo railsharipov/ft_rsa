@@ -518,7 +518,7 @@ static void	__test_der_cleanup(void)
 // 	size_t		read_size;
 ////
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_ostring(der, __content, CHAR_BIT*__consize);
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
@@ -549,7 +549,7 @@ static void	__test_der_cleanup(void)
 // 	size_t		read_size;
 ////
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_bitstring(der, __content, CHAR_BIT*__consize-2);
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
@@ -583,7 +583,7 @@ static void	__test_der_cleanup(void)
 // 	size_t		consize = ft_strlen(content);
 ////
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_bool(der, content, consize);
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
@@ -602,7 +602,7 @@ static void	__test_der_cleanup(void)
 // 	der_del(der);
 //
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_bool(der, NULL, 0);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
 // 	der_read_bool_octets(item, der->content+read_size+1, der->size-read_size-1);
@@ -627,7 +627,7 @@ static void	__test_der_cleanup(void)
 // 	size_t		read_size;
 ////
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_int(der, __content, CHAR_BIT*__consize);
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
@@ -659,7 +659,7 @@ static void	__test_der_cleanup(void)
 // 	size_t		read_size;
 ////
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_null(der, content, sizeof(content));
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
@@ -687,7 +687,7 @@ static void	__test_der_cleanup(void)
 // 	size_t		consize = ft_strlen(content);
 ////
 // 	der = der_init();
-// 	item = asn_item_init();
+// 	item = asn_item_create();
 // 	der_append_oid(der, content, CHAR_BIT*consize);
 // 	der_read_tag(&tag, der->content, der->size);
 // 	der_read_len_octets(&len, &read_size, der->content+1, der->size-1);
