@@ -85,9 +85,8 @@ static int	__validate_node(t_node *node)
 			return (__validate_boolean(node));
 		case JSON_TYPE_NULL:
 			return (__validate_null(node));
-		case JSON_TYPE_UNDEFINED:
-			JSON_LOG(DEBUG, "unexpected type: %s", json_get_type_name(JSON_TYPE_UNDEFINED));
-			return (SSL_ERR);
+		case JSON_TYPE_BYTES:
+			return (SSL_OK);
 		default:
 			JSON_LOG(DEBUG, __JSON_INVALID_TYPE_ERROR);
 			return (SSL_ERR);

@@ -8,11 +8,11 @@
 # define __JSON_TYPE_NAME_BOOL_TRUE		"bool-true"
 # define __JSON_TYPE_NAME_BOOL_FALSE	"bool-false"
 # define __JSON_TYPE_NAME_NULL			"null"
-# define __JSON_TYPE_NAME_UNDEFINED		"undefined type"
+# define __JSON_TYPE_NAME_BYTES			"bytes"
 # define __JSON_TYPE_NAME_UNKNOWN		"???"
 
 static const char	*__JSON_TYPE_NAME_MAP[] = {
-	[JSON_TYPE_UNDEFINED]	= __JSON_TYPE_NAME_UNDEFINED,
+	[JSON_TYPE_BYTES]		= __JSON_TYPE_NAME_BYTES,
 	[JSON_TYPE_OBJECT]		= __JSON_TYPE_NAME_OBJECT,
 	[JSON_TYPE_ARRAY]		= __JSON_TYPE_NAME_ARRAY,
 	[JSON_TYPE_STRING]		= __JSON_TYPE_NAME_CSTR,

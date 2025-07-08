@@ -11,7 +11,7 @@
 # define JSON_LOG(LEVEL, MES, ...)	json_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_json_type {
-    JSON_TYPE_UNDEFINED = 0,
+    JSON_TYPE_BYTES = 0,
     JSON_TYPE_ARRAY,
     JSON_TYPE_OBJECT,
     JSON_TYPE_STRING,

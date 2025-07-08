@@ -15,6 +15,7 @@ static int	__copy_string(t_node *src, t_node *dst);
 static int	__copy_number(t_node *src, t_node *dst);
 static int	__copy_boolean(t_node *src, t_node *dst);
 static int	__copy_null(t_node *src, t_node *dst);
+static int	__copy_bytes(t_node *src, t_node *dst);
 
 int	json_clone(t_node *json, t_node **ret_json)
 {
@@ -77,6 +78,9 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 		case JSON_TYPE_NULL:
 			ret = __copy_null(src, dst);
 			break;
+		case JSON_TYPE_BYTES:
+			ret = __copy_bytes(src, dst);
+			break;
 		default:
 			JSON_LOG(ERROR, "cannot clone type: %s", json_get_type_name(src->type));
 			return (SSL_ERR);
@@ -96,7 +100,7 @@ static int	__copy_object(t_node *src, t_node *dst)
 	JSON_LOG(TRACE, "cloning object node");
 
 	htbl = src->content;
-	dst_htbl = ft_htbl_init(0);
+	dst_htbl = ft_htbl_create(0);
 	item = NULL;
 
 	while ((item = ft_htbl_node_next(htbl, item)) != NULL) {
@@ -202,6 +206,18 @@ static int	__copy_null(t_node *src, t_node *dst)
 	dst->type = JSON_TYPE_NULL;
 	dst->content = NULL;
 	dst->size = 0;
+	dst->f_del_content = json_get_f_del(src->type);
+
+	return (SSL_OK);
+}
+
+static int	__copy_bytes(t_node *src, t_node *dst)
+{
+	JSON_LOG(TRACE, "cloning bytes");
+
+	dst->type = JSON_TYPE_BYTES;
+	dst->content = ft_memdup(src->content, src->size);
+	dst->size = src->size;
 	dst->f_del_content = json_get_f_del(src->type);
 
 	return (SSL_OK);

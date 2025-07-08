@@ -10,6 +10,7 @@ static void __delete_string(void *content);
 static void __delete_number(void *content);
 static void __delete_boolean(void *content);
 static void __delete_null(void *content);
+static void __delete_bytes(void *content);
 
 void json_del(t_node *node)
 {
@@ -38,6 +39,9 @@ FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
 
 	} else if (type == JSON_TYPE_NUMBER) {
 		return (__delete_number);
+	}
+	else if (type == JSON_TYPE_BYTES) {
+		return (__delete_bytes);
 	}
 	return (NULL);
 }
@@ -76,5 +80,11 @@ static void __delete_number(void *content)
 {
 	JSON_LOG(TRACE, "deleting number");
 	bnum_del((t_num *)(content));
+}
+
+static void __delete_bytes(void *content)
+{
+	JSON_LOG(TRACE, "deleting bytes");
+	LIBFT_FREE(content);
 }
 

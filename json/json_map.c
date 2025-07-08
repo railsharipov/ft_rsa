@@ -14,6 +14,7 @@ static int	__map_string_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_number_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_boolean_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 static int	__map_null_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
+static int	__map_bytes_node(t_node *node, FUNC_JSON_MAP f, t_node *ret_node);
 
 int	json_map(t_node *json, FUNC_JSON_MAP f, t_node **ret_json)
 {
@@ -64,6 +65,9 @@ static int	__map_node(t_node *node, int type, FUNC_JSON_MAP f, t_node **ret_node
 		case JSON_TYPE_NULL:
 			ret = __map_null_node(node, f, result_node);
 			break;
+		case JSON_TYPE_BYTES:
+			ret = __map_bytes_node(node, f, result_node);
+			break;
 		default:
 			JSON_LOG(ERROR, "cannot map over type: %s", json_get_type_name(node->type));
 			return (SSL_ERR);
@@ -86,7 +90,7 @@ static int	__map_object_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	JSON_LOG(TRACE, "mapping object node");
 
 	htbl = node->content;
-	dst_htbl = ft_htbl_init(0);
+	dst_htbl = ft_htbl_create(0);
 
 	item = NULL;
 	while ((item = ft_htbl_node_next(htbl, item)) != NULL) {
@@ -188,6 +192,16 @@ static int	__map_null_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
 	result_node->type = node->type;
 	result_node->content = NULL;
 	result_node->size = 0;
+	result_node->f_del_content = node->f_del_content;
+
+	return (f(result_node));
+}
+
+static int	__map_bytes_node(t_node *node, FUNC_JSON_MAP f, t_node *result_node)
+{
+	result_node->type = node->type;
+	result_node->content = ft_memdup(node->content, node->size);
+	result_node->size = node->size;
 	result_node->f_del_content = node->f_del_content;
 
 	return (f(result_node));

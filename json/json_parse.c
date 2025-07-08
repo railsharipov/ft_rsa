@@ -96,7 +96,7 @@ static void	__skip_ws(const char *s)
 
 static void	__init_node(t_node *node)
 {
-	node->type = JSON_TYPE_UNDEFINED;
+	node->type = JSON_TYPE_BYTES;
 	node->content = NULL;
 	node->size = 0;
 	node->f_del_content = NULL;
@@ -404,7 +404,7 @@ static int	__parse_object(const char *s, t_node *node)
 	node->type = JSON_TYPE_OBJECT;
 	node->f_del_content = json_get_f_del(JSON_TYPE_OBJECT);
 
-	htbl = ft_htbl_init(0);
+	htbl = ft_htbl_create(0);
 
 	if (s[__pos] != '{') {
 		JSON_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
