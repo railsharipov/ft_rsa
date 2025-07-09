@@ -12,7 +12,7 @@
 
 static int 	__f_asn_node_selector(t_node *node, t_node *query, t_node **ret_asn_node);
 
-int asn_tree_query(const char *s, t_asn_node *asn_tree, t_node **ret_asn_node)
+int asn_tree_query(const char *s, t_asn_node *asn_tree, t_asn_node **ret_asn_node)
 {
 	if (NULL == s) {
 		ASN_LOG(ERROR, __ASNQ_BAD_QUERY_ERROR);
@@ -24,7 +24,7 @@ int asn_tree_query(const char *s, t_asn_node *asn_tree, t_node **ret_asn_node)
 		return (SSL_ERR);
 	}
 
-	if (JSON_MATCH != json_query_with_f_selector(s, asn_tree, ret_asn_node, __f_asn_node_selector)) {
+	if (SSL_OK != json_query_with_f_selector(s, (t_node *)asn_tree, (t_node **)ret_asn_node, __f_asn_node_selector)) {
 		ASN_LOG(ERROR, __ASNQ_BAD_QUERY_ERROR);
 		return (SSL_ERR);
 	}
@@ -44,11 +44,13 @@ static int 	__f_asn_node_selector(t_node *node, t_node *query, t_node **ret_node
 	}
 	else if (query->type == JSON_Q_ARRAY_INDEX) {
 		t_asn_node	*arr_item;
+		t_iasn		*asn_item;
 		int			target_idx, idx;
 
 		ASN_LOG(TRACE, "indexing asn node array at: `%s`", query->content);
 
-		arr_item = node->content;
+		asn_item = node->content;
+		arr_item = asn_item->content;
 		target_idx = ft_atoi(query->content);
 
 		ASN_LOG(TRACE, "array has %d items", ft_lst_size(arr_item));

@@ -23,9 +23,9 @@ void 	io_print_stats(const t_iodes *iodes, const char *name)
 	for (ix = 0, mode_desc = NULL; ix < sizeof(F)/(sizeof(F[0])); ix++) {
 		if (iodes->mode == F[ix].mode) {
 			mode_desc = F[ix].mode_desc;
+			break;
 		}
 	}
-
 	ft_printf("---------------------------------------------\n");
 
 	if (name != NULL) {

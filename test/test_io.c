@@ -48,17 +48,17 @@ static int	__test_io_init(void)
 	t_ostring	osbuf;
 	t_iodes		iodes;
 
-	io_init(&iodes, IO_READ|IO_FILE, "./Makefile");
+	io_fopen(&iodes, IO_READ|IO_FILE, NULL);
 
 	TEST_ASSERT(iodes.fd > 2);
 	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
 
-	io_init(&iodes, IO_READ|IO_STDIN);
+	io_fopen(&iodes, IO_READ|IO_STDIN, NULL);
 
 	TEST_ASSERT(iodes.fd == STDIN_FILENO);
 	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
 
-	io_init(&iodes, IO_WRITE|IO_STDOUT);
+	io_fopen(&iodes, IO_WRITE|IO_STDOUT, NULL);
 
 	TEST_ASSERT(iodes.fd == STDOUT_FILENO);
 	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
@@ -66,12 +66,12 @@ static int	__test_io_init(void)
 	osbuf.content = "some_content";
 	osbuf.size = ft_strlen(osbuf.content);
 
-	io_init(&iodes, IO_READ|IO_OSBUF, &osbuf);
+	io_osbuf(&iodes, IO_READ|IO_OSBUF, &osbuf);
 
 	TEST_ASSERT(iodes.osbuf == &osbuf);
 	TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
 
-	io_init(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
+	io_osbuf(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
 
 	TEST_ASSERT(iodes.osbuf == &osbuf);
 	TEST_ASSERT(iodes.mode == IO_MODE_OSBUF);
@@ -92,7 +92,7 @@ static int	__test_io_read(void)
 	osbuf.content = (char *)__lorem;
 	osbuf.size = __lorem_size;
 
-	io_init(&iodes, IO_READ|IO_OSBUF, &osbuf);
+	io_osbuf(&iodes, IO_READ|IO_OSBUF, &osbuf);
 	rbytes = io_read(&iodes, buf, sizeof(buf));
 
 	TEST_ASSERT(rbytes == __lorem_size/10);
@@ -101,7 +101,7 @@ static int	__test_io_read(void)
 	test_fd = open("./Makefile", 0644);
 	test_rbytes = read(test_fd, test_buf, sizeof(test_buf));
 
-	io_init(&iodes, IO_READ|IO_FILE, "./Makefile");
+	io_fopen(&iodes, IO_READ|IO_FILE, NULL);
 	rbytes = io_read(&iodes, buf, sizeof(buf));
 
 	TEST_ASSERT(test_rbytes > 0);
@@ -121,7 +121,7 @@ static int	__test_io_write(void)
 	osbuf.content = NULL;
 	osbuf.size = 0;
 
-	io_init(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
+	io_osbuf(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
 	wbytes = io_write(&iodes, __lorem, __lorem_size);
 
 	TEST_ASSERT(wbytes == __lorem_size);
@@ -132,7 +132,7 @@ static int	__test_io_write(void)
 	SSL_FREE(osbuf.content);
 	osbuf.size = 0;
 
-	io_init(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
+	io_osbuf(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
 
 	iodes.delim = '&';
 	iodes.lwidth = 1;
