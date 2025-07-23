@@ -36,9 +36,7 @@ static const struct {
 	{	"genrsa",		cli_rsa_gen		},
 	{	"rsa",			cli_rsa			},
 	{	"rsautl",		cli_rsa_utl		},
-#ifdef SSL_INCLUDE_TESTS
 	{	"test",			cli_test		},
-#endif
 	{	NULL,			NULL			}
 };
 

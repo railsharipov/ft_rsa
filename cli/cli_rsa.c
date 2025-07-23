@@ -73,12 +73,12 @@ int	cli_rsa(const char **opt, const char *name_comm)
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != io_init(&__in, IO_READ_STDIN)) {
+	if (SSL_OK != io_fopen(&__in, IO_READ_STDIN, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT)) {
+	if (SSL_OK != io_fopen(&__out, IO_WRITE_STDOUT, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -155,7 +155,7 @@ static int	__run_task(void)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (CLI_FLAG(RSA_CHECK, __gflag)) {
+	if (SSL_FLAG(RSA_CHECK, __gflag)) {
 		if (SSL_OK != rsa_check(asn_key)) {
 			asn_tree_del(asn_key);
 			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
@@ -207,7 +207,7 @@ static int	__get_input(char **input, size_t *insize)
 
 static int	__write_output(char *output, size_t outsize)
 {
-	if (!CLI_FLAG(RSA_NOOUT, __gflag)) {
+	if (!SSL_FLAG(RSA_NOOUT, __gflag)) {
 		ft_putstr("writing RSA key\n");
 
 		if (io_write(&__out, output, outsize) < 0) {
@@ -222,14 +222,14 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	iodes = (CLI_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 
-	return (io_init(iodes, task->oflag, opt));
+	return (io_fopen(iodes, task->oflag, NULL));
 }
 
 static int	__set_type(const char *opt, const t_task *task)
 {
-	if (CLI_FLAG(RSA_PUBIN, task->tflag)) {
+	if (SSL_FLAG(RSA_PUBIN, task->tflag)) {
 		__in_type = TYPE_X509_PUBLIC_KEY;
 		__in_map = MAP_X509_PUBLIC_KEY;
 	} else {
@@ -243,7 +243,7 @@ static int	__set_form(const char *opt, const t_task *task)
 {
 	uint32_t	*form;
 
-	form = (CLI_FLAG(RSA_INFORM, task->tflag)) ? (&__inform) : (&__outform);
+	form = (SSL_FLAG(RSA_INFORM, task->tflag)) ? (&__inform) : (&__outform);
 
 	if (!ft_strcmp(opt, "PEM")) {
 		*form = RSA_PEM;
@@ -259,7 +259,7 @@ static int	__set_form(const char *opt, const t_task *task)
 
 static int	__get_pass(const char *opt, const t_task *task)
 {
-	if (CLI_FLAG(RSA_PASSIN, task->tflag)) {
+	if (SSL_FLAG(RSA_PASSIN, task->tflag)) {
 		__passin = (char *)opt;
 	}
 	else
@@ -274,10 +274,10 @@ static void	__key_info(t_node *asn_key)
 	t_iasn	*asn_item;
 	char	*snum;
 
-	if (CLI_FLAG(RSA_TEXT, __gflag)) {
+	if (SSL_FLAG(RSA_TEXT, __gflag)) {
 		asn_print(asn_key);
 	}
-	if (CLI_FLAG(RSA_MODULUS, __gflag)) {
+	if (SSL_FLAG(RSA_MODULUS, __gflag)) {
 		asn_item = asn_tree_get(asn_key, "modulus");
 
 		if (NULL != asn_item) {
@@ -291,11 +291,11 @@ static int	__key_type(t_node **asn_key)
 {
 	t_node	*asn_pubkey;
 
-	if (CLI_FLAG(RSA_PUBIN, __gflag)) {
+	if (SSL_FLAG(RSA_PUBIN, __gflag)) {
 		__out_type = TYPE_X509_PUBLIC_KEY;
 		__out_map = MAP_X509_PUBLIC_KEY;
 	}
-	else if (CLI_FLAG(RSA_PUBOUT, __gflag)) {
+	else if (SSL_FLAG(RSA_PUBOUT, __gflag)) {
 		asn_pubkey = asn_tree(MAP_X509_PUBLIC_KEY);
 
 		if (SSL_OK != asn_transform(*asn_key, asn_pubkey)) {
@@ -343,7 +343,7 @@ static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 		return (SSL_ERR);
 	}
 	if (RSA_PEM == __outform) {
-		if (CLI_FLAG(RSA_ENCRYPT, __gflag)) {
+		if (SSL_FLAG(RSA_ENCRYPT, __gflag)) {
 			ret = pem_encode((t_ostring *)der_key, (t_pem **)outkey, __out_type, __passout);
 		} else {
 			ret = pem_encode((t_ostring *)der_key, (t_pem **)outkey, __out_type, NULL);

@@ -37,7 +37,7 @@ static int	__bnum_set_rand(const char *opt, const t_task *task)
 
 static int	__init_io(const char *opt, const t_task *task)
 {
-	return (io_init(&__out, task->oflag, opt));
+	return (io_fopen(&__out, task->oflag, NULL));
 }
 
 static int	__set_modsize(const char *opt)
@@ -52,7 +52,7 @@ static int	__set_modsize(const char *opt)
 	return (SSL_OK);
 }
 
-static void	__clean(void)
+static void	__clear(void)
 {
 	ft_htbl_del(__rsa_htable);
 	asn_tree_del(__asn_pkey);
@@ -139,7 +139,7 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT)) {
+	if (SSL_OK != io_fopen(&__out, IO_WRITE_STDOUT, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -150,7 +150,7 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 		ret = __run_task();
 	}
 	io_close(&__out);
-	__clean();
+	__clear();
 
 	if (SSL_OK != ret) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);

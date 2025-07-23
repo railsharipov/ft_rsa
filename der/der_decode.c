@@ -2,222 +2,540 @@
 #include <io.h>
 #include <asn.h>
 #include <der.h>
+#include <json.h>
+#include <libft/list.h>
 #include <libft/node.h>
 #include <libft/htable.h>
+#include <libft/2darray.h>
+#include <libft/bytes.h>
+#include <unistd.h>
 
-static void		__init_func_htable(void);
-static void		__del_func_htable(void);
-static t_node	*__create_asn_tree(t_iodes *);
-static ssize_t	__read_tag(t_iasn *item, t_iodes *iodes);
-static ssize_t	__read_content_octets(t_iasn *item, t_iodes *iodes);
-static ssize_t	__read_octets_indef(t_iasn *item, t_iodes *iodes);
-static ssize_t	__read_octets(t_iasn *item, size_t size, t_iodes *iodes);
-static int		__is_construct(t_iasn *item);
+static int		__decode(t_node **node, t_iodes *in);
+static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in);
+static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in);
+static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in);
 
-static t_node	*__create_construct_node(t_iasn *);
-static t_node	*__create_primitive_node(t_iasn *);
+static int	__decode_construct(t_node **nodes, t_ostring *encoded);
+static int	__decode_primitive(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_ostring(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_bitstring(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_bool(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_sequence(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
-static const struct {
-	unsigned char	type;
-	int		(*f_read)(t_ostring *, unsigned char *, size_t);
-} T[] = {
-	{	ASN_TAGNUM_SEQUENCE,		der_decode_sequence		},
-	{	ASN_TAGNUM_BOOLEAN,			der_decode_bool			},
-	{	ASN_TAGNUM_OBJECT_ID,		der_decode_oid			},
-	{	ASN_TAGNUM_INT,				der_decode_int			},
-	{	ASN_TAGNUM_OCTET_STRING,	der_decode_ostring		},
-	{	ASN_TAGNUM_BIT_STRING,		der_decode_bitstring	},
-	{	ASN_TAGNUM_NULL,			der_decode_null			}
-};
+typedef int	(*FUNC_DER_DECODE)(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
-static t_htbl	*__func_htable;
-static int		__err;
-
-int	der_decode(t_node **tree, t_iodes *iodes)
+int	der_decode(t_node **tree, t_iodes *in)
 {
-	if (NULL == tree || NULL == iodes) {
+	t_node	*node;
+
+	DER_LOG(TRACE, "starting DER decode");
+
+	if (NULL == tree || NULL == in) {
 		DER_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
-	__err = SSL_OK;
-	__init_func_htable();
-
-	*tree = __create_asn_tree(iodes);
-
-	__del_func_htable();
-
-	if (__err) {
-		asn_tree_del(*tree);
+	if (SSL_OK != __decode(&node, in)) {
+		DER_LOG(TRACE, "DER decode failed");
+		return (SSL_ERR);
 	}
 
-	return (__err);
+	*tree = node;
+	DER_LOG(TRACE, "DER decode completed successfully");
+
+	return (SSL_OK);
 }
 
-static t_node	*__create_asn_tree(t_iodes *iodes)
+static int	__decode(t_node **node, t_iodes *in)
 {
-	t_node		*node;
-	t_iasn		item;
+	FUNC_DER_DECODE	f_decode;
+	t_ostring		encoded, decoded;
+	t_iasn			*asn_item;
+	ssize_t			rbytes;
+	uint8_t			tag;
+	uint32_t		tagnum;
+	int				ret;
+
+	*node = NULL;
+
+	// If no tag octets, then end of encoding.
+	if ((rbytes = __read_tag(&tag, &tagnum, in)) == 0) {
+		DER_LOG(TRACE, "end of encoding reached");
+		return (SSL_OK);
+	}
+	if (rbytes < 0) {
+		DER_LOG(ERROR, "read tag error");
+		return (SSL_ERR);
+	}
+
+	ft_ostr_init(&encoded);
+	ft_ostr_init(&decoded);
+
+	DER_LOG(TRACE, "decoding tag number: %u, tag: %u", tagnum, tag);
+
+	switch (tagnum) {
+		case ASN_TAGNUM_SEQUENCE:
+			f_decode = __decode_sequence;
+			break;
+		case ASN_TAGNUM_BOOLEAN:
+			f_decode = __decode_bool;
+			break;
+		case ASN_TAGNUM_OBJECT_ID:
+			f_decode = __decode_oid;
+			break;
+		case ASN_TAGNUM_INT:
+			f_decode = __decode_int;
+			break;
+		case ASN_TAGNUM_OCTET_STRING:
+			f_decode = __decode_ostring;
+			break;
+		case ASN_TAGNUM_BIT_STRING:
+			f_decode = __decode_bitstring;
+			break;
+		case ASN_TAGNUM_NULL:
+			f_decode = __decode_null;
+			break;
+		default:
+			DER_LOG(ERROR, "unknown tag number");
+			return (SSL_ERR);
+	}
+
+	if (__read_content_octets(&encoded, in) < 0) {
+		DER_LOG(ERROR, "read content octets error");
+		return (SSL_ERR);
+	}
+
+	DER_LOG(TRACE, "content octets read, size: %zu", encoded.size);
+
+	ret = f_decode(tag, &decoded, &encoded);
+
+	ft_ostr_clear(&encoded);
+
+	if (SSL_OK != ret) {
+		DER_LOG(ERROR, "decode function failed for tag: %u", tagnum);
+		return (SSL_ERR);
+	}
+
+	asn_item = asn_item_create();
+	asn_item->tag = tag;
+	asn_item->tagnum = tagnum;
+	asn_item->content = decoded.content;
+	asn_item->size = decoded.size;
+	*node = asn_node_create(asn_item);
+
+	DER_LOG(TRACE, "node created successfully for tag: %u", tagnum);
+
+	return (SSL_OK);
+}
+
+static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in)
+{
+	char		octet;
 	ssize_t		rbytes;
+	ssize_t		tbytes;
 
-	ft_bzero(&item, sizeof(t_iasn));
-
-	// if no tag octets, then end of encoding
-	if ((rbytes = __read_tag(&item, iodes)) == 0) {
-		return (NULL);
-	}
-
-	if (rbytes < 0) {
-		goto error;
-	}
-
-	if (__read_content_octets(&item, iodes) < 0) {
-		goto error;
-	}
-
-	if (__is_construct(&item)) {
-		node = __create_construct_node(&item);
-	}
-	else
-		node = __create_primitive_node(&item);
-
-	asn_item_init(&item);
-
-	if (NULL == node) {
-		goto error;
-	}
-
-	node->next = __create_asn_tree(iodes);
-	return (node);
-
-error:
-	DER_LOG(ERROR, "invalid der encoding");
-	return (NULL);
-}
-
-static ssize_t	__read_tag(t_iasn *item, t_iodes *iodes)
-{
-	return (der_read_tag(&item->tag, &item->tagnum, iodes));
-}
-
-static ssize_t	__read_content_octets(t_iasn *item, t_iodes *iodes)
-{
-	ssize_t	rbytes;
-	ssize_t	tbytes;
-	size_t	len;
-	uint8_t	lenform;
-
-	if ((rbytes = der_read_len(&len, &lenform, iodes)) <= 0) {
+	if (NULL == tag || NULL == tagnum || NULL == in) {
 		return (-1);
 	}
+	*tag = 0;
+	tbytes = 0;
 
-	tbytes += rbytes;
-
-	if (ASN_LEN_LONG == lenform && len == 0) {
-		rbytes = __read_octets_indef(item, iodes);
-	} else {
-		rbytes = __read_octets(item, len, iodes);
-	}
-
-	if (rbytes < 0) {
+	if ((rbytes = io_read(in, (char *)tag, 1)) < 0) {
+		DER_LOG(ERROR, "read tag error: bad read");
 		return (-1);
 	}
-
+	if (rbytes == 0) {
+		DER_LOG(TRACE, "no tag bytes read");
+		return (0);
+	}
 	tbytes += rbytes;
+
+	*tagnum = *tag & 0x1F;
+	*tag = *tag & 0xE0;
+
+	DER_LOG(TRACE, "read tag number: %u, tag: %u", *tagnum, *tag);
+
+	if (ASN_TAGNUM_COMPLEX == *tagnum) {
+		*tagnum = 0;
+
+		while ((rbytes = io_read(in, (char *)&octet, 1)) > 0) {
+			*tagnum <<= 7;
+			*tagnum |= (uint32_t)octet & 0x7F;
+
+			tbytes += rbytes;
+		}
+
+		if ((rbytes < 0) || !(octet & 0x80)) {
+			DER_LOG(ERROR, "read complex tag error: bad read");
+			return (-1);
+		}
+		DER_LOG(TRACE, "complex tag number: %u", *tagnum);
+	}
 
 	return (tbytes);
 }
 
-static ssize_t	__read_octets_indef(t_iasn *item, t_iodes *iodes)
+static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in)
 {
-	ssize_t	rbytes;
-	char	*content;
-	size_t	size;
+	uint8_t		octet;
+	ssize_t		rbytes;
+	ssize_t		tbytes;
+	size_t		lensize;
 
-	rbytes = der_read_octets_indef(&content, &size, iodes);
-
-	if (rbytes < 0) {
+	if (NULL == len || NULL == form || NULL == in) {
 		return (-1);
 	}
 
-	item->content = content;
-	item->size = size;
+	*len = 0;
 
-	return (rbytes);
-}
-
-static ssize_t	__read_octets(t_iasn *item, size_t size, t_iodes *iodes)
-{
-	ssize_t	rbytes;
-	char	*content;
-
-	SSL_ALLOC(content, size);
-
-	rbytes = der_read_octets(content, size, iodes);
-
-	if (rbytes < 0) {
-		SSL_FREE(content);
+	if ((rbytes = io_read(in, (char *)&octet, 1)) < 0) {
+		DER_LOG(ERROR, "read length error: bad read");
 		return (-1);
 	}
+	if (rbytes == 0) {
+		DER_LOG(TRACE, "no length bytes read");
+		return (0);
+	}
+	tbytes += rbytes;
 
-	item->content = content;
-	item->size = size;
+	if (octet & ASN_LEN_LONG) {
+		*form = ASN_LEN_LONG;
+		lensize = octet & 0x7F;
 
-	return (rbytes);
-}
+		DER_LOG(TRACE, "reading long length form, size bytes: %zu", lensize);
 
-static int	__is_construct(t_iasn *item)
-{
-	return (CLI_FLAG(ASN_ENCODE_CONSTRUCT, item->tag));
-}
+		while (lensize > 0) {
+			if ((rbytes = io_read(in, (char *)&octet, 1)) <= 0) {
+				DER_LOG(ERROR, "read long length form error: bad read");
+				return (-1);
+			}
+			*len <<= CHAR_BIT;
+			*len |= (size_t)octet;
 
-static t_node	*__create_construct_node(t_iasn *item)
-{
-	t_iodes		temp_iodes;
-	t_ostring	osbuf;
-	t_node		*child_nodes;
-	t_node		*node;
-
-	ft_ostr_set_content(&osbuf, item->content, item->size);
-
-	if (SSL_OK != io_init(&temp_iodes, IO_READ|IO_OSBUF, &osbuf)) {
-		return (NULL);
+			tbytes += rbytes;
+			lensize--;
+		}
+	}
+	else {
+		*form = ASN_LEN_SHORT;
+		*len = (size_t)octet;
+		DER_LOG(TRACE, "reading short length form: %zu", *len);
 	}
 
-	if (NULL == (child_nodes = __create_asn_tree(&temp_iodes))) {
-		return (NULL);
+	DER_LOG(TRACE, "length read: %zu, form: %u", *len, *form);
+
+	return (tbytes);
+}
+
+static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
+{
+	ssize_t	rbytes, tbytes;
+	size_t	len;
+	uint8_t	lenform;
+
+	if ((rbytes = __read_len(&len, &lenform, in)) <= 0) {
+		DER_LOG(ERROR, "read content octets error: bad read");
+		return (-1);
+	}
+	tbytes += rbytes;
+
+	DER_LOG(TRACE, "reading content octets, length: %zu", len);
+
+	if (ASN_LEN_LONG == lenform && len == 0) {
+		t_iodes	out;
+		char	octet;
+		int		null_count;
+
+		DER_LOG(TRACE, "reading indefinite length content");
+
+		if (SSL_OK != io_osbuf(&out, IO_WRITE|IO_OSBUF, osbuf)) {
+			return (-1);
+		}
+		null_count = 0;
+		rbytes = 0;
+		tbytes = 0;
+
+		while (null_count < 2) {
+			rbytes = io_read(in, &octet, 1);
+
+			if (rbytes == 1) {
+				tbytes += 1;
+
+				if (io_write(&out, &octet, 1) != 1) {
+					goto label_error;
+				}
+
+				if (octet == 0) {
+					null_count += 1;
+				} else {
+					null_count = 0;
+				}
+			}
+			else if (rbytes == 0) {
+				usleep(100);
+			}
+			else {
+				DER_LOG(ERROR, "read indefinite length content error: bad read");
+				goto label_error;
+			}
+		}
+		DER_LOG(TRACE, "indefinite length content read, total bytes: %zd", tbytes);
+	}
+	else {
+		ft_ostr_init_with_size(osbuf, len);
+
+		if ((rbytes = io_read(in, osbuf->content, len)) < 0) {
+			DER_LOG(ERROR, "read definite length content error: bad read");
+			goto label_error;
+		}
+		osbuf->size = rbytes;
+		DER_LOG(TRACE, "definite length content read, bytes: %zd", rbytes);
+	}
+	tbytes += rbytes;
+
+	return (tbytes);
+
+label_error:
+	ft_ostr_clear(osbuf);
+
+	return (-1);
+}
+
+
+static int	__decode_construct(t_node **nodes, t_ostring *encoded)
+{
+	t_node		*child;
+	t_iodes		iodes;
+
+	*nodes = NULL;
+
+	DER_LOG(TRACE, "decoding constructed type, size: %zu", encoded->size);
+
+	if (SSL_OK != io_osbuf(&iodes, IO_READ|IO_OSBUF, encoded)) {
+		DER_LOG(ERROR, "failed to create input buffer for constructed type");
+		return (SSL_ERR);
 	}
 
-	node = ft_node_create();
-	node->nodes = child_nodes;
-
-	return (node);
-}
-
-static t_node	*__create_primitive_node(t_iasn *item)
-{
-	t_node	*node;
-
-	node = ft_node_create();
-	node->content = asn_item_dup(item);
-	node->size = sizeof(t_iasn);
-
-	return (node);
-}
-
-static void	__init_func_htable(void)
-{
-	t_htbl	*htbl;
-
-	htbl = ft_htbl_create(sizeof(T)/sizeof(*T));
-
-	for (int idx = 0; idx < sizeof(T)/sizeof(*T); idx++) {
-		ft_htbl_add_rawkey(htbl, T[idx].f_read, &(T[idx].type), sizeof(T[idx].type));
+	do {
+		if (SSL_OK != __decode(&child, &iodes)) {
+			DER_LOG(ERROR, "failed to decode child node in constructed type");
+			return (SSL_ERR);
+		}
+		ft_lst_append(nodes, child);
 	}
-	__func_htable = htbl;
+	while (child != NULL);
+
+	DER_LOG(TRACE, "constructed type decoded successfully");
+
+	return (SSL_OK);
 }
 
-static void	__del_func_htable(void)
+static int	__decode_ostring(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
-	ft_htbl_del(__func_htable);
+	DER_LOG(TRACE, "decoding octet string, size: %zu", encoded->size);
+
+	if (encoded->size == 0) {
+		decoded->content = NULL;
+		decoded->size = 0;
+		DER_LOG(TRACE, "empty octet string decoded");
+		return (SSL_OK);
+	}
+
+	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		DER_LOG(ERROR, "invalid der encoding: ostring type: expected primitive, got construct");
+		return (SSL_ERR);
+	}
+
+	ft_ostr_append(decoded, encoded->content, encoded->size);
+	DER_LOG(TRACE, "octet string decoded successfully");
+	return (SSL_OK);
+}
+
+static int	__decode_bitstring(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
+{
+	DER_LOG(TRACE, "decoding bit string, size: %zu", encoded->size);
+
+	if (encoded->size < 1) {
+		DER_LOG(ERROR, "invalid der encoding: bitstring: bad length");
+		return (SSL_ERR);
+	}
+
+	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		t_node	*nodes;
+
+		DER_LOG(TRACE, "decoding constructed bit string");
+
+		if (SSL_OK != __decode_construct(&nodes, encoded)) {
+			DER_LOG(ERROR, "invalid der encoding: bitstring: bad construct");
+			return (SSL_ERR);
+		}
+		for (t_node *child = nodes; child != NULL; child = child->next) {
+			ft_ostr_append(decoded, child->content, child->size);
+		}
+		ft_lst_del(nodes);
+		DER_LOG(TRACE, "constructed bit string decoded successfully");
+		return (SSL_OK);
+	}
+
+	ft_ostr_append(decoded, encoded->content, encoded->size);
+	DER_LOG(TRACE, "primitive bit string decoded successfully");
+	return (SSL_OK);
+}
+
+static int	__decode_bool(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
+{
+	DER_LOG(TRACE, "decoding boolean, size: %zu", encoded->size);
+
+	if (encoded->size != 1) {
+		DER_LOG(ERROR, "invalid der encoding: bool: bad length");
+		return (SSL_ERR);
+	}
+
+	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		DER_LOG(ERROR, "invalid der encoding: bool type: expected primitive, got construct");
+		return (SSL_ERR);
+	}
+
+	ft_ostr_append(decoded, encoded->content, encoded->size);
+	DER_LOG(TRACE, "boolean decoded successfully");
+	return (SSL_OK);
+}
+
+static int	__decode_sequence(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
+{
+	t_node	*nodes;
+
+	DER_LOG(TRACE, "decoding sequence, size: %zu", encoded->size);
+
+	if (!SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		DER_LOG(ERROR, "invalid der encoding: sequence type: expected construct, got primitive");
+		return (SSL_ERR);
+	}
+
+	if (SSL_OK != __decode_construct(&nodes, encoded)) {
+		DER_LOG(ERROR, "sequence construct decode failed");
+		return (SSL_ERR);
+	}
+
+	decoded->content = (char *)nodes;
+	decoded->size = ft_lst_size(nodes);
+
+	DER_LOG(TRACE, "sequence decoded successfully, child nodes: %zu", decoded->size);
+
+	return (SSL_OK);
+}
+
+static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
+{
+	DER_LOG(TRACE, "decoding null, size: %zu", encoded->size);
+
+	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		DER_LOG(ERROR, "invalid der encoding: null type: expected primitive, got construct");
+		return (SSL_ERR);
+	}
+
+	ft_ostr_append(decoded, encoded->content, encoded->size);
+	DER_LOG(TRACE, "null decoded successfully");
+	return (SSL_OK);
+}
+
+static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
+{
+	DER_LOG(TRACE, "decoding integer, size: %zu", encoded->size);
+
+	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		DER_LOG(ERROR, "invalid der encoding: int type: expected primitive, got construct");
+		return (SSL_ERR);
+	}
+
+	ft_ostr_append(decoded, encoded->content, encoded->size);
+	DER_LOG(TRACE, "integer decoded successfully");
+	return (SSL_OK);
+}
+
+static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
+{
+	char		*obj_name, *obj_id;
+	uint32_t	sub_ids[encoded->size + 1];
+	char		*sub_id_strings[encoded->size + 1];
+	int			num_sub_ids;
+
+	DER_LOG(TRACE, "decoding object identifier, size: %zu", encoded->size);
+
+	if (encoded->size == 0) {
+		DER_LOG(ERROR, "invalid der encoding");
+		return (SSL_ERR);
+	}
+
+	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+		DER_LOG(ERROR, "invalid der encoding: oid type: expected primitive, got construct");
+		return (SSL_ERR);
+	}
+
+	num_sub_ids = 0;
+
+	for (int i = 0; i < (int)encoded->size; ) {
+		sub_ids[num_sub_ids] = 0;
+
+		// Get 7-bit blocks, up to the last one
+		while (i < (int)encoded->size && (((char *)encoded->content)[i] & 0x80)) {
+			sub_ids[num_sub_ids] <<= 7;
+			sub_ids[num_sub_ids] |= ((char *)encoded->content)[i] & 0x7F;
+			i++;
+		}
+
+		// If we've reached the end of the encoded content, then we've got an invalid der encoding
+		if (i >= (int)encoded->size) {
+			DER_LOG(ERROR, "invalid der encoding");
+			return (SSL_ERR);
+		}
+
+		// Get the last block
+		sub_ids[num_sub_ids] <<= 7;
+		sub_ids[num_sub_ids] |= ((char *)encoded->content)[i] & 0x7F;
+		i++;
+		num_sub_ids++;
+	}
+
+	DER_LOG(TRACE, "parsed %d sub-identifiers", num_sub_ids);
+
+	if (num_sub_ids < 2) {
+		DER_LOG(ERROR, "invalid number of object sub ids");
+		return (SSL_ERR);
+	}
+
+	//	First two ids are concatenated into one single id using following formula:
+	//	CONCAT_ID = 40 * ID_0 + ID_1
+	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
+	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
+
+	// Get the rest of ids, except the last one
+	for (int i = 1; i < num_sub_ids-1; i++) {
+		ft_sprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
+	}
+
+	// Get the last id
+ 	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
+
+	// Join all sub-id strings into an object id string
+	obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
+
+	DER_LOG(TRACE, "object identifier: %s", obj_id);
+
+	obj_name = asn_oid_tree_get_name(obj_id);
+	SSL_FREE(obj_id);
+
+	if (NULL == obj_name) {
+		DER_LOG(ERROR, "unknown asn object id");
+		return (SSL_ERR);
+	}
+	decoded->content = obj_name;
+	decoded->size = ft_strlen(obj_name);
+
+	DER_LOG(TRACE, "object identifier decoded successfully: %s", obj_name);
+
+	return (SSL_OK);
 }

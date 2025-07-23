@@ -20,7 +20,7 @@
 
 # define SSL_GLOBAL_LOG_LEVEL		LIBFT_LOG_LEVEL_DEBUG
 
-# define CLI_FLAG(F,X)		((int)(((X)&(F))==(F)))
+# define SSL_FLAG(FLAG, FLAGS)			((int)(((FLAGS)&(FLAG))==(FLAG)))
 
 # define INVALID_INPUT_ERROR	"invalid input"
 # define UNSPECIFIED_ERROR		"unspecified error"

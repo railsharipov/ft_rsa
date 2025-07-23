@@ -12,7 +12,7 @@
 
 static int 	__f_asn_node_selector(t_node *node, t_node *query, t_node **ret_asn_node);
 
-int asn_tree_query(const char *s, t_asn_node *asn_tree, t_asn_node **ret_asn_node)
+int asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node)
 {
 	if (NULL == s) {
 		ASN_LOG(ERROR, __ASNQ_BAD_QUERY_ERROR);
@@ -43,7 +43,7 @@ static int 	__f_asn_node_selector(t_node *node, t_node *query, t_node **ret_node
 		return (JSON_MATCH);
 	}
 	else if (query->type == JSON_Q_ARRAY_INDEX) {
-		t_asn_node	*arr_item;
+		t_node	*arr_item;
 		t_iasn		*asn_item;
 		int			target_idx, idx;
 

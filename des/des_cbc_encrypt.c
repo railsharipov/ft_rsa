@@ -57,8 +57,8 @@ static int	__vectors(uint32_t vflag, const char *pass)
 
 	__is_salted = 0;
 
-	if (!CLI_FLAG(DES_K, vflag)) {
-		if (!CLI_FLAG(DES_S, vflag)) {
+	if (!SSL_FLAG(DES_K, vflag)) {
+		if (!SSL_FLAG(DES_S, vflag)) {
 			if (SSL_OK != rand_useed(&rand_seed, sizeof(uint64_t))) {
 				DES_LOG(ERROR, UNSPECIFIED_ERROR);
 				return (SSL_ERR);
@@ -69,12 +69,12 @@ static int	__vectors(uint32_t vflag, const char *pass)
 			}
 			__is_salted = 1;
 		}
-		if (SSL_OK != rand_pbkdf2(__key, __salt, (CLI_FLAG(DES_V, vflag)) ? (NULL):(__vect), pass)) {
+		if (SSL_OK != rand_pbkdf2(__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL):(__vect), pass)) {
 			DES_LOG(ERROR, UNSPECIFIED_ERROR);
 			return (SSL_ERR);
 		}
 	}
-	else if (!CLI_FLAG(DES_V, vflag))
+	else if (!SSL_FLAG(DES_V, vflag))
 	{
 		DES_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);

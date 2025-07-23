@@ -16,7 +16,7 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 	}
 
 	if ((fd = open(testfile_path, O_RDONLY)) < 0) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, "failed to open file %s", testfile_path);
 		return (SSL_ERR);
 	}
 
@@ -30,7 +30,7 @@ int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
 	}
 
 	if (nbytes < 0) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, "failed to read file %s", testfile_path);
 		return (SSL_ERR);
 	}
 

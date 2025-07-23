@@ -53,8 +53,8 @@ int	cli_base64(const char **opt, const char *name_comm)
 		return (SSL_ERR);
 	}
 
-	io_init(&__in, IO_READ|IO_STDIN);
-	io_init(&__out, IO_WRITE|IO_STDOUT);
+	io_fopen(&__in, IO_READ|IO_STDIN, NULL);
+	io_fopen(&__out, IO_WRITE|IO_STDOUT, NULL);
 
 	__f_b64 = base64_encode;
 
@@ -141,7 +141,7 @@ static int	__get_input(char **input, size_t *insize)
 	*input = NULL;
 	*insize = 0;
 
-	if (CLI_FLAG(B64_D, __gflag)) {
+	if (SSL_FLAG(B64_D, __gflag)) {
 		__in.delim = '\n';
 	}
 	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
@@ -185,7 +185,7 @@ static int	__set_op(const char *opt, const t_task *task)
 {
 	(void)opt;
 
-	if (CLI_FLAG(B64_D, task->tflag)) {
+	if (SSL_FLAG(B64_D, task->tflag)) {
 		__f_b64 = base64_decode;
 	}
 
@@ -211,9 +211,9 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	iodes = (CLI_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 
-	if (SSL_OK != io_init(iodes, task->oflag, opt)) {
+	if (SSL_OK != io_fopen(iodes, task->oflag, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

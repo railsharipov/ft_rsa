@@ -16,31 +16,27 @@ void	asn_item_init(t_iasn *item)
 		return ;
 	}
 
-	if (NULL != item->content) {
-		ft_bzero(item->content, item->size);
-		item->size = 0;
-		SSL_FREE(item->content);
+	ft_bzero(item, sizeof(t_iasn));
+}
+
+void asn_item_clear(t_iasn *item)
+{
+	if (NULL == item) {
+		return;
 	}
 
+	SSL_FREE(item->content);
 	SSL_FREE(item->description);
+	ft_bzero(item, sizeof(t_iasn));
 }
 
 void asn_item_del(t_iasn *item)
 {
-	size_t size;
-
-	if (NULL == item)
-	{
+	if (NULL == item) {
 		return;
 	}
 
-	if (NULL != item->content)
-	{
-		ft_bzero(item->content, item->size);
-		item->size = 0;
-		SSL_FREE(item->content);
-	}
-
+	SSL_FREE(item->content);
 	SSL_FREE(item->description);
 	SSL_FREE(item);
 }
@@ -96,4 +92,40 @@ int	asn_item_set_type(t_iasn *item, char *type_key)
 	item->tagnum = tagnum;
 
 	return (SSL_OK);
+}
+
+char	*asn_item_get_type_name(t_iasn *item)
+{
+	char *name;
+
+	if (NULL == item) {
+		return (NULL);
+	}
+
+	if (item->tagnum == ASN_TAGNUM_SEQUENCE) {
+		name = ASN_TYPE_KEY_SEQUENCE;
+	}
+	else if (item->tagnum == ASN_TAGNUM_OCTET_STRING) {
+		name = ASN_TYPE_KEY_OSTRING;
+	}
+	else if (item->tagnum == ASN_TAGNUM_BIT_STRING) {
+		name = ASN_TYPE_KEY_BITSTRING;
+	}
+	else if (item->tagnum == ASN_TAGNUM_OBJECT_ID) {
+		name = ASN_TYPE_KEY_OBJECTID;
+	}
+	else if (item->tagnum == ASN_TAGNUM_INT) {
+		name = ASN_TYPE_KEY_INT;
+	}
+	else if (item->tagnum == ASN_TAGNUM_NULL) {
+		name = ASN_TYPE_KEY_NULL;
+	}
+	else if (item->tagnum == ASN_TAGNUM_BOOLEAN) {
+		name = ASN_TYPE_KEY_BOOL;
+	}
+	else {
+		name = ASN_TYPE_KEY_UNKNOWN;
+	}
+
+	return (name);
 }

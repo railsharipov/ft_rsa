@@ -60,12 +60,12 @@ int	cli_rsa_utl(const char **opt, const char *name_comm)
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != io_init(&__in, IO_READ_STDIN)) {
+	if (SSL_OK != io_fopen(&__in, IO_READ_STDIN, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != io_init(&__out, IO_WRITE_STDOUT)) {
+	if (SSL_OK != io_fopen(&__out, IO_WRITE_STDOUT, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -121,7 +121,7 @@ static int	__setup_task(const char **opt)
 		opt++;
 	}
 
-	if (!io_is_initialized(&__inkey)) {
+	if (!io_is_init(&__inkey)) {
 		CLI_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
@@ -192,7 +192,7 @@ static int	__get_input(t_iodes *iodes, char **input, size_t *insize)
 
 static int	__write_output(char *output, size_t outsize)
 {
-	if (CLI_FLAG(RSA_HEXDUMP, __gflag)) {
+	if (SSL_FLAG(RSA_HEXDUMP, __gflag)) {
 		ft_bytes_write_hex(__out.fd, output, outsize);
 	}
 	else if (io_write(&__out, output, outsize) < 0)
@@ -226,22 +226,22 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	if (CLI_FLAG(IO_INPUT, task->tflag)) {
+	if (SSL_FLAG(IO_INPUT, task->tflag)) {
 		iodes = &__in;
 	}
-	else if (CLI_FLAG(IO_OUTPUT, task->tflag))
+	else if (SSL_FLAG(IO_OUTPUT, task->tflag))
 		iodes = &__out;
 	else
 		iodes = &__inkey;
 
-	return (io_init(iodes, task->oflag, opt));
+	return (io_fopen(iodes, task->oflag, NULL));
 }
 
 static int	__set_op(const char *opt, const t_task *task)
 {
 	(void)opt;
 
-	if (CLI_FLAG(RSA_ENCRYPT, task->tflag)) {
+	if (SSL_FLAG(RSA_ENCRYPT, task->tflag)) {
 		__f_op = rsa_encrypt;
 	}
 	else
@@ -252,7 +252,7 @@ static int	__set_op(const char *opt, const t_task *task)
 
 static int	__set_type(const char *opt, const t_task *task)
 {
-	if (CLI_FLAG(RSA_PUBIN, task->tflag)) {
+	if (SSL_FLAG(RSA_PUBIN, task->tflag)) {
 		__in_type = TYPE_X509_PUBLIC_KEY;
 		__in_map = MAP_X509_PUBLIC_KEY;
 	}

@@ -22,17 +22,15 @@ typedef	struct	s_ostring
 	size_t		size;
 }				t_ostring;
 
-t_ostring	*ft_ostr_init(void);
 t_ostring	*ft_ostr_new(size_t size);
+void 		ft_ostr_init(t_ostring *ostring);
+void 		ft_ostr_init_with_size(t_ostring *ostring, size_t size);
 t_ostring	*ft_ostr_dup(t_ostring *ostring);
 void		ft_ostr_del(t_ostring *ostring);
-void		ft_ostr_clean(t_ostring *ostring);
+void		ft_ostr_clear(t_ostring *ostring);
 void		ft_ostr_append(t_ostring *ostring, void *content, size_t size);
 void		ft_ostr_prepend(t_ostring *ostring, void *content, size_t size);
 char		*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len);
-void		ft_ostr_set_content(t_ostring *ostring, void *content, size_t size);
-void		*ft_ostr_get_content(t_ostring *ostring);
-size_t		ft_ostr_get_size(t_ostring *ostring);
 
 void		ft_strdel(char *s);
 size_t		ft_strlen(const char *s);

@@ -60,11 +60,11 @@ int	cli_des_cbc(const char **opt, const char *name_comm)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN)) {
+	if (SSL_OK != io_fopen(&__in, IO_READ|IO_STDIN, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != io_init(&__out, IO_WRITE|IO_STDOUT)) {
+	if (SSL_OK != io_fopen(&__out, IO_WRITE|IO_STDOUT, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -131,10 +131,10 @@ static int __run_task(void)
 		return (SSL_ERR);
 	}
 
-	if (CLI_FLAG(DES_D, __gflag)) {
-		f_op = (CLI_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
+	if (SSL_FLAG(DES_D, __gflag)) {
+		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
 	} else {
-		f_op = (CLI_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
+		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
 	}
 	if (SSL_OK == (ret = f_op(&input, &output))) {
 		ret = __write_output((char *)output.content, output.size);
@@ -150,8 +150,8 @@ static int	__init_io(const char *opt, const t_task *task)
 {
 	t_iodes	*iodes;
 
-	iodes = (CLI_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
-	return (io_init(iodes, task->oflag, opt));
+	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+	return (io_fopen(iodes, task->oflag, NULL));
 }
 
 static int	__get_vector(const char *opt, const t_task *task)
@@ -207,7 +207,7 @@ static int	__get_input(char **input, size_t *insize)
 	*input = NULL;
 	*insize = 0;
 
-	if (CLI_FLAG(DES_A | DES_D, __gflag)) {
+	if (SSL_FLAG(DES_A | DES_D, __gflag)) {
 		__in.delim = '\n';
 	}
 	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
@@ -226,17 +226,17 @@ static int	__get_input(char **input, size_t *insize)
 
 static int	__write_output(const char *output, size_t outsize)
 {
-	if (CLI_FLAG(DES_N, __gflag)) {
+	if (SSL_FLAG(DES_N, __gflag)) {
 		__dump_vectors();
 	}
-	if (CLI_FLAG(DES_A | DES_E, __gflag)) {
+	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
 		__out.delim = '\n';
 	}
 	if (io_write(&__out, output, outsize) < 0) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (CLI_FLAG(DES_A | DES_E, __gflag)) {
+	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
 		if (io_write(&__out, "\n", 1) < 0) {
 			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 			return (SSL_ERR);

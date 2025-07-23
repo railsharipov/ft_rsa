@@ -2,18 +2,6 @@
 #include <libft/alloc.h>
 #include <libft/std.h>
 
-t_ostring	*ft_ostr_init(void)
-{
-	t_ostring	*ostring;
-
-	LIBFT_ALLOC(ostring, sizeof(t_ostring));
-
-	ostring->content = NULL;
-	ostring->size = 0;
-
-	return (ostring);
-}
-
 t_ostring	*ft_ostr_new(size_t size)
 {
 	t_ostring	*ostring;
@@ -24,6 +12,26 @@ t_ostring	*ft_ostr_new(size_t size)
 	ostring->size = size;
 
 	return (ostring);
+}
+
+void 	ft_ostr_init(t_ostring *ostring)
+{
+	if (NULL == ostring) {
+		return ;
+	}
+
+	ostring->content = NULL;
+	ostring->size = 0;
+}
+
+void 	ft_ostr_init_with_size(t_ostring *ostring, size_t size)
+{
+	if (NULL == ostring) {
+		return ;
+	}
+
+	LIBFT_ALLOC(ostring->content, size);
+	ostring->size = size;
 }
 
 t_ostring	*ft_ostr_dup(t_ostring *src)
@@ -51,7 +59,7 @@ void	ft_ostr_del(t_ostring *ostring)
 	LIBFT_FREE(ostring);
 }
 
-void	ft_ostr_clean(t_ostring *ostring)
+void	ft_ostr_clear(t_ostring *ostring)
 {
 	if (NULL == ostring) {
 		return ;
@@ -104,32 +112,4 @@ char 	*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len)
 	str[len] = 0;
 
 	return str;
-}
-
-void	ft_ostr_set_content(t_ostring *ostring, void *content, size_t size)
-{
-	if (NULL == ostring) {
-		return ;
-	}
-
-	ostring->content = content;
-	ostring->size = size;
-}
-
-void	*ft_ostr_get_content(t_ostring *ostring)
-{
-	if (NULL == ostring) {
-		return NULL;
-	}
-
-	return ostring->content;
-}
-
-size_t	ft_ostr_get_size(t_ostring *ostring)
-{
-	if (NULL == ostring) {
-		return 0;
-	}
-
-	return ostring->size;
 }

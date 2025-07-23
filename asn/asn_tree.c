@@ -36,11 +36,11 @@ void	asn_tree_items_del(t_htbl *items)
 
 // 
 
-t_asn_node	*asn_tree_create(t_node *json_schema)
+t_node	*asn_tree_create(t_node *json_schema)
 {
 	t_htbl		*htbl;
 	t_node		*type, *desc, *nodes;
-	t_asn_node	*asn_node, *child_asn_node;
+	t_node		*asn_node, *child_asn_node;
 	t_iasn		*asn_item;
 
 	asn_item = asn_item_create();
@@ -86,13 +86,7 @@ t_asn_node	*asn_tree_create(t_node *json_schema)
 		}
 	}
 
-	asn_node = ft_node_create();
-	asn_node->type = JSON_TYPE_BYTES;
-	asn_node->f_del_content = (void (*)(void *))asn_item_del;
-	asn_node->content = asn_item;
-	asn_node->size = sizeof(asn_item);
-
-	return (asn_node);
+	return (asn_node_create(asn_item));
 
 label_error:
 	asn_item_del(asn_item);

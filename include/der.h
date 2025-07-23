@@ -14,37 +14,16 @@ typedef struct		s_der
 	size_t			size;
 }					t_der;
 
+struct s_node;
 struct s_iodes;
 
 t_der	*der_init(void);
 void	der_del(t_der *);
-void	der_clean(t_der *);
+void	der_clear(t_der *);
 
-int		der_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+int	der_encode(struct s_node *tree, struct s_iodes *iodes);
+int der_decode(struct s_node **tree, struct s_iodes *iodes);
 
-ssize_t	der_read_octets(char *content, size_t size, struct s_iodes *);
-ssize_t	der_read_octets_indef(char **content, size_t *size, struct s_iodes *);
-ssize_t	der_read_tag(uint8_t *tag, uint32_t *tagnum, struct s_iodes *);
-ssize_t	der_read_len(size_t *len, uint8_t *form, struct s_iodes *);
-
-ssize_t	der_write_octets(char *content, size_t size, struct s_iodes *);
-ssize_t	der_write_tag(uint8_t tag_flags, uint32_t tag_num, struct s_iodes *);
-ssize_t	der_write_len(size_t len, struct s_iodes *);
-
-int		der_encode_sequence(t_ostring *osbuf, void *content, size_t size);
-int		der_encode_bool(t_ostring *osbuf, void *content, size_t size);
-int		der_encode_int(t_ostring *osbuf, void *content, size_t size);
-int		der_encode_ostring(t_ostring *osbuf, void *content, size_t size);
-int		der_encode_bitstring(t_ostring *osbuf, void *content, size_t size);
-int		der_encode_oid(t_ostring *osbuf, void *content, size_t size);
-int		der_encode_null(t_ostring *osbuf, void *content, size_t size);
-
-int		der_decode_sequence(t_ostring *osbuf, uint8_t *enc, size_t size);
-int		der_decode_bool(t_ostring *osbuf, uint8_t *enc, size_t size);
-int		der_decode_int(t_ostring *osbuf, uint8_t *enc, size_t size);
-int		der_decode_ostring(t_ostring *osbuf, uint8_t *enc, size_t size);
-int		der_decode_bitstring(t_ostring *osbuf, uint8_t *enc, size_t size);
-int		der_decode_oid(t_ostring *osbuf, uint8_t *enc, size_t size);
-int		der_decode_null(t_ostring *osbuf, uint8_t *enc, size_t size);
+int	der_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 #endif

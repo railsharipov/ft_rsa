@@ -83,8 +83,8 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 {
 	__is_salted = 0;
 
-	if (!CLI_FLAG(DES_K, vflag)) {
-		if (!CLI_FLAG(DES_S, vflag)) {
+	if (!SSL_FLAG(DES_K, vflag)) {
+		if (!SSL_FLAG(DES_S, vflag)) {
 			if (ciphsize < 16) {
 				DES_LOG(ERROR, UNSPECIFIED_ERROR);
 				return (SSL_ERR);

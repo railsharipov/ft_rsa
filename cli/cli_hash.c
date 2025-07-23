@@ -94,13 +94,13 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 	sformat = NULL;
 	hexhash = ft_bytes_to_hex(__hash->hash, __hash->size);
 
-	if (!CLI_FLAG(HASH_Q, __gflag) && !CLI_FLAG(HASH_P, tflag)) {
-		if (CLI_FLAG(HASH_S, tflag)) {
+	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag)) {
+		if (SSL_FLAG(HASH_S, tflag)) {
 			ft_sprintf(&sformat, "\"%s\"", sarg);
 		}
-		else if (CLI_FLAG(IO_FILE, tflag))
+		else if (SSL_FLAG(IO_FILE, tflag))
 			ft_sprintf(&sformat, "%s", sarg);
-		if (!CLI_FLAG(HASH_R, __gflag)) {
+		if (!SSL_FLAG(HASH_R, __gflag)) {
 			ft_printf("%q (%s) = %s\n", __algo, sformat, hexhash);
 		}
 		else
@@ -124,7 +124,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 	__hash = func_hash_init();
 
 	while ((rbytes = io_read(&__in, buf, bufsize)) == bufsize) {
-		if (CLI_FLAG(HASH_P, tflag)) {
+		if (SSL_FLAG(HASH_P, tflag)) {
 			write(1, buf, bufsize);
 		}
 		func_hash_update(__hash, buf, bufsize);
@@ -135,7 +135,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 		return (SSL_ERR);
 	}
 
-	if (CLI_FLAG(HASH_P, tflag)) {
+	if (SSL_FLAG(HASH_P, tflag)) {
 		write(1, buf, rbytes);
 	}
 
@@ -166,7 +166,7 @@ static int	__next_task(const char **opt)
 			return (SSL_ERR);
 		}
 
-		if (SSL_OK != io_init(&__in, task->oflag, *opt)) {
+		if (SSL_OK != io_fopen(&__in, task->oflag, NULL)) {
 			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 			return (SSL_ERR);
 		}
@@ -185,7 +185,7 @@ static int	__next_task(const char **opt)
 
 static int	__default_task(const char **opt)
 {
-	if (SSL_OK != io_init(&__in, IO_READ|IO_STDIN)) {
+	if (SSL_OK != io_fopen(&__in, IO_READ|IO_STDIN, NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

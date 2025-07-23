@@ -48,7 +48,7 @@ static int	__test_io_init(void)
 	t_ostring	osbuf;
 	t_iodes		iodes;
 
-	io_fopen(&iodes, IO_READ|IO_FILE, NULL);
+	io_fopen(&iodes, IO_READ|IO_FILE, "./Makefile");
 
 	TEST_ASSERT(iodes.fd > 2);
 	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
@@ -101,7 +101,7 @@ static int	__test_io_read(void)
 	test_fd = open("./Makefile", 0644);
 	test_rbytes = read(test_fd, test_buf, sizeof(test_buf));
 
-	io_fopen(&iodes, IO_READ|IO_FILE, NULL);
+	io_fopen(&iodes, IO_READ|IO_FILE, "./Makefile");
 	rbytes = io_read(&iodes, buf, sizeof(buf));
 
 	TEST_ASSERT(test_rbytes > 0);

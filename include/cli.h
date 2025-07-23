@@ -20,7 +20,6 @@
 
 # define CLI_LOG(LEVEL, MES, ...)	cli_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-# define CLI_FLAG(F,X)		((int)(((X)&(F))==(F)))
 # define NONE	0
 
 typedef int		(*FUNC_COM)(const char **, const char *);
