@@ -33,37 +33,21 @@ static size_t	__pos;
 
 static int 	__run_query(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector);
 static int 	__parse_selector(const char *s, t_node *query);
-static int 	__select_node(t_node *node, t_node *query, t_node **ret_node);
+static int 	__f_default_selector(t_node *node, t_node *query, t_node **ret_node);
 static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node);
 static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node);
-static int 	__select_with_f_selector(t_node *node, t_node *query, t_node **ret_node, FUNC_JSON_SELECTOR f_selector);
-
-static void	*__f_default_content_getter(t_node *node);
 
 static const char	*__get_json_q_type_name(enum e_json_q_type type);
 
 int json_query(const char *s, t_node *json, t_node **ret_node)
 {
-	if (NULL == s) {
-		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
-		return (JSON_BAD_QUERY);
-	}
-
-	if (NULL == json || NULL == ret_node) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
-
-	if (JSON_MATCH != __run_query(s, json, ret_node, NULL)) {
-		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
-		return (SSL_ERR);
-	}
-
-	return (SSL_OK);
+	return (json_query_with_f_selector(s, json, ret_node, __f_default_selector));
 }
 
 int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
 {
+	int ret;
+
 	if (NULL == s) {
 		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
 		return (JSON_BAD_QUERY);
@@ -74,8 +58,12 @@ int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, F
 		return (SSL_ERR);
 	}
 
-	if (JSON_MATCH != __run_query(s, json, ret_node, f_selector)) {
-		JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
+	if (JSON_MATCH != (ret = __run_query(s, json, ret_node, f_selector))) {
+		if (ret == JSON_NO_MATCH) {
+			JSON_LOG(TRACE, "no such key: %s", s);
+		} else {
+			JSON_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
+		}
 		return (SSL_ERR);
 	}
 
@@ -99,12 +87,7 @@ static int __run_query(const char *s, t_node *json, t_node **ret_node, FUNC_JSON
 
 		if (JSON_QUERY_OK == (status = __parse_selector(s, query))) {
 			JSON_LOG(TRACE, "parsed %s", __get_json_q_type_name(query->type));
-
-			if (f_selector == NULL) {
-				status = __select_node(cur_node, query, &selected_node);
-			} else {
-				status = __select_with_f_selector(cur_node, query, &selected_node, f_selector);
-			}
+			status = f_selector(cur_node, query, &selected_node);
 		} else {
 			JSON_LOG(ERROR, "failed to parse query");
 		}
@@ -190,7 +173,7 @@ static int 	__parse_selector(const char *s, t_node *query)
 	return (JSON_QUERY_OK);
 }
 
-static int 	__select_node(t_node *node, t_node *query, t_node **ret_node)
+static int 	__f_default_selector(t_node *node, t_node *query, t_node **ret_node)
 {
 	if (query->type == JSON_Q_OBJECT_KEY) {
 		return (__select_object_key(node, query, ret_node));
@@ -262,13 +245,6 @@ static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
 
 	JSON_LOG(TRACE, "no match found");
 	return (JSON_NO_MATCH);
-}
-
-static int	__select_with_f_selector(t_node *node, t_node *query, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
-{
-	JSON_LOG(TRACE, "using custom selector to select node");
-
-	return (f_selector(node, query, ret_node));
 }
 
 static const char	*__get_json_q_type_name(enum e_json_q_type type)

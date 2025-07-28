@@ -1,6 +1,7 @@
 #include <common.h>
 #include <io.h>
 #include <asn.h>
+#include <bnum.h>
 #include <der.h>
 #include <json.h>
 #include <libft/list.h>
@@ -444,6 +445,8 @@ static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
+	t_num	*num;
+
 	DER_LOG(TRACE, "decoding integer, size: %zu", encoded->size);
 
 	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
@@ -451,7 +454,11 @@ static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	ft_ostr_append(decoded, encoded->content, encoded->size);
+	num = bnum_create();
+	bnum_from_bytes_u(num, (char *)encoded->content, encoded->size);
+	decoded->content = (char *)num;
+	decoded->size = 0;
+
 	DER_LOG(TRACE, "integer decoded successfully");
 	return (SSL_OK);
 }

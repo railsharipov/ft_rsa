@@ -1,0 +1,30 @@
+{
+  "description": "privateKeyInfo",
+  "type": "sequence",
+  "data": [
+    {
+      "description": "version",
+      "type": "int"
+    },
+    {
+      "description": "algorithm",
+      "type": "sequence",
+      "data": [
+        {
+          "description": "rsaEncryption",
+          "type": "objectId",
+          "data": "1.2.840.113549.1.1.1"
+        },
+        {
+          "description": "",
+          "type": "null"
+        }
+      ]
+    },
+    {
+      "description": "privateKey",
+      "type": "ostring",
+      "encapsulates": true
+    }
+  ]
+}

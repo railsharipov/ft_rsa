@@ -11,7 +11,7 @@
 # define JSON_LOG(LEVEL, MES, ...)	json_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_json_type {
-    JSON_TYPE_BYTES = 0,
+    JSON_TYPE_BYTES = 1,
     JSON_TYPE_ARRAY,
     JSON_TYPE_OBJECT,
     JSON_TYPE_STRING,
@@ -19,7 +19,6 @@ enum	e_json_type {
     JSON_TYPE_BOOL_TRUE,
     JSON_TYPE_BOOL_FALSE,
     JSON_TYPE_NULL,
-	JSON_TYPE_INVALID,
 	JSON_TYPE_COUNT
 };
 
@@ -35,13 +34,15 @@ enum	e_json_status
 
 enum    e_json_q_type
 {
-    JSON_Q_OBJECT_KEY = 0,
+    JSON_Q_OBJECT_KEY = 1,
     JSON_Q_ARRAY_INDEX,
-    JSON_Q_SELF
+    JSON_Q_SELF,
+    JSON_Q_TYPE_COUNT
 };
 
 typedef int (*FUNC_JSON_MAP)(t_node *node);
 typedef int (*FUNC_JSON_SELECTOR)(t_node *node, t_node *query_node, t_node **ret_node);
+typedef int (*FUNC_JSON_DUMPER)(t_node *node, t_ostring *ostring);
 
 int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
@@ -54,9 +55,12 @@ int     json_validate_node_type(int type);
 int     json_validate_node_is_of_type(t_node *node, int type);
 int     json_map(t_node *node, FUNC_JSON_MAP f, t_node **ret_node);
 int     json_clone(t_node *node, t_node **ret_node);
+char	*json_dumps(t_node *node);
+char	*json_dumps_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper);
 void	json_del(t_node *node);
 
 const char	*json_get_type_name(int type);
+const char	*json_get_query_type_name(int type);
 
 FUNC_CONTENT_DEL	json_get_f_del(enum e_json_type);
 

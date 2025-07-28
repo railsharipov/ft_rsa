@@ -57,37 +57,41 @@ t_iasn *asn_item_dup(t_iasn *item)
 	return (dup_item);
 }
 
-int	asn_item_set_type(t_iasn *item, char *type_key)
+int	asn_item_set_type(t_iasn *item, char *type)
 {
 	uint8_t	tagnum;
 
-	if (NULL == type_key || NULL == item) {
+	if (NULL == type || NULL == item) {
 		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 
-	if (ft_streq(type_key, ASN_TYPE_KEY_SEQUENCE)) {
+	if (ft_streq(type, ASN_TYPE_KEY_SEQUENCE)) {
 		tagnum = ASN_TAGNUM_SEQUENCE;
 	}
-	else if (ft_streq(type_key, ASN_TYPE_KEY_OSTRING)) {
+	else if (ft_streq(type, ASN_TYPE_KEY_OSTRING)) {
 		tagnum = ASN_TAGNUM_OCTET_STRING;
 	}
-	else if (ft_streq(type_key, ASN_TYPE_KEY_BITSTRING)) {
+	else if (ft_streq(type, ASN_TYPE_KEY_BITSTRING)) {
 		tagnum = ASN_TAGNUM_BIT_STRING;
 	}
-	else if (ft_streq(type_key, ASN_TYPE_KEY_OBJECTID)) {
+	else if (ft_streq(type, ASN_TYPE_KEY_OBJECT_ID)) {
 		tagnum = ASN_TAGNUM_OBJECT_ID;
 	}
-	else if (ft_streq(type_key, ASN_TYPE_KEY_INT)) {
+	else if (ft_streq(type, ASN_TYPE_KEY_OBJECT_DESC)) {
+		tagnum = ASN_TAGNUM_OBJECT_DESCR;
+	}
+	else if (ft_streq(type, ASN_TYPE_KEY_INT)) {
 		tagnum = ASN_TAGNUM_INT;
 	}
-	else if (ft_streq(type_key, ASN_TYPE_KEY_NULL)) {
+	else if (ft_streq(type, ASN_TYPE_KEY_NULL)) {
 		tagnum = ASN_TAGNUM_NULL;
 	}
-	else if (ft_streq(type_key, ASN_TYPE_KEY_BOOL)) {
+	else if (ft_streq(type, ASN_TYPE_KEY_BOOL)) {
 		tagnum = ASN_TAGNUM_BOOLEAN;
 	}
 	else {
-		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
+		ASN_LOG(ERROR, "unknown asn type: %s", type);
+		return (SSL_ERR);
 	}
 	item->tagnum = tagnum;
 
@@ -96,36 +100,28 @@ int	asn_item_set_type(t_iasn *item, char *type_key)
 
 char	*asn_item_get_type_name(t_iasn *item)
 {
-	char *name;
-
 	if (NULL == item) {
 		return (NULL);
 	}
 
-	if (item->tagnum == ASN_TAGNUM_SEQUENCE) {
-		name = ASN_TYPE_KEY_SEQUENCE;
+	switch (item->tagnum) {
+		case ASN_TAGNUM_SEQUENCE:
+			return ASN_TYPE_KEY_SEQUENCE;
+		case ASN_TAGNUM_OCTET_STRING:
+			return ASN_TYPE_KEY_OSTRING;
+		case ASN_TAGNUM_BIT_STRING:
+			return ASN_TYPE_KEY_BITSTRING;
+		case ASN_TAGNUM_OBJECT_ID:
+			return ASN_TYPE_KEY_OBJECT_ID;
+		case ASN_TAGNUM_OBJECT_DESCR:
+			return ASN_TYPE_KEY_OBJECT_DESC;
+		case ASN_TAGNUM_INT:
+			return ASN_TYPE_KEY_INT;
+		case ASN_TAGNUM_NULL:
+			return ASN_TYPE_KEY_NULL;
+		case ASN_TAGNUM_BOOLEAN:
+			return ASN_TYPE_KEY_BOOL;
+		default:
+			return ASN_TYPE_KEY_UNKNOWN;
 	}
-	else if (item->tagnum == ASN_TAGNUM_OCTET_STRING) {
-		name = ASN_TYPE_KEY_OSTRING;
-	}
-	else if (item->tagnum == ASN_TAGNUM_BIT_STRING) {
-		name = ASN_TYPE_KEY_BITSTRING;
-	}
-	else if (item->tagnum == ASN_TAGNUM_OBJECT_ID) {
-		name = ASN_TYPE_KEY_OBJECTID;
-	}
-	else if (item->tagnum == ASN_TAGNUM_INT) {
-		name = ASN_TYPE_KEY_INT;
-	}
-	else if (item->tagnum == ASN_TAGNUM_NULL) {
-		name = ASN_TYPE_KEY_NULL;
-	}
-	else if (item->tagnum == ASN_TAGNUM_BOOLEAN) {
-		name = ASN_TYPE_KEY_BOOL;
-	}
-	else {
-		name = ASN_TYPE_KEY_UNKNOWN;
-	}
-
-	return (name);
 }

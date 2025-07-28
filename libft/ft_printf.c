@@ -149,10 +149,14 @@ int ft_sprintf(char **buf, const char *format, ...)
 	num = 0;
 	va_start(arg, format);
 
-	if ((NULL == buf) || (NULL == (data = __l_arg_new(-1)))) {
+	if (NULL == buf) {
 		return (-1);
 	}
-	*buf = malloc(1);
+	*buf = NULL;
+	data = __l_arg_new(-1);
+	if (NULL == data) {
+		return (-1);
+	}
 	data->buf = buf;
 
 	if (format) {
@@ -172,10 +176,14 @@ int ft_vsprintf(char **buf, const char *format, va_list arg)
 
 	num = 0;
 
-	if ((NULL == buf) || (NULL == (data = __l_arg_new(-1)))) {
+	if (NULL == buf) {
 		return (-1);
 	}
-	*buf = malloc(1);
+	*buf = NULL;
+	data = __l_arg_new(-1);
+	if (NULL == data) {
+		return (-1);
+	}
 	data->buf = buf;
 
 	if (format) {

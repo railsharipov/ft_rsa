@@ -89,7 +89,7 @@ static int	__test_der_decode(void)
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
 	char 	*num_str;
-	t_num	num;
+	t_num	*num;
 	t_iodes	iodes;
 	int		ret;
 
@@ -176,10 +176,8 @@ static int	__test_der_decode(void)
 		TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
 		TEST_ASSERT(asn_item->content != NULL);
 
-		bnum_init(&num);
-		bnum_from_bytes_u(&num, asn_item->content, asn_item->size);
-
-		TEST_ASSERT(bnum_cmp(&num, private_key_num[i]) == 0);
+		num = (t_num *)asn_item->content;
+		TEST_ASSERT(bnum_cmp(num, private_key_num[i]) == 0);
 	}
 
 	TEST_PASS();

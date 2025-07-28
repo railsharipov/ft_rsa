@@ -42,7 +42,8 @@
 # define ASN_TYPE_KEY_SEQUENCE		"sequence"
 # define ASN_TYPE_KEY_OSTRING		"ostring"
 # define ASN_TYPE_KEY_BITSTRING		"bitstring"
-# define ASN_TYPE_KEY_OBJECTID		"objectId"
+# define ASN_TYPE_KEY_OBJECT_ID		"objectId"
+# define ASN_TYPE_KEY_OBJECT_DESC	"objectDesc"
 # define ASN_TYPE_KEY_INT			"int"
 # define ASN_TYPE_KEY_NULL			"null"
 # define ASN_TYPE_KEY_BOOL			"bool"
@@ -50,14 +51,15 @@
 
 # define ASN_LOG(LEVEL, MES, ...)	asn_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-typedef struct	s_iasn
+typedef struct		s_iasn
 {
-	uint8_t		tag;
-	uint32_t	tagnum;
-	char		*description;
-	void		*content;
-	size_t		size;
-}				t_iasn;
+	uint8_t			tag;
+	uint32_t		tagnum;
+	uint8_t			encapsulates;
+	char			*description;
+	void			*content;
+	size_t			size;
+}					t_iasn;
 
 struct s_der;
 
@@ -66,12 +68,14 @@ int				asn_logger_log(const char *func_name, const char *file_name, int line_num
 struct s_node	*asn_tree(const char *);
 t_node			*asn_tree_create(t_node *schema_json);
 int				asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node);
+char			*asn_tree_dumps(struct s_node *);
 void			asn_tree_del(struct s_node *);
 void			*asn_tree_get(t_node *, const char *);
 t_htbl			*asn_tree_items(struct s_node *);
 void			asn_tree_items_del(t_htbl *);
 int 			asn_tree_der_encode(struct s_node *, struct s_der **);
 int				asn_tree_der_decode(struct s_der *, const char *, struct s_node **);
+
 
 t_node			*asn_node_create(t_iasn *asn_item);
 void			asn_node_clear(t_node *asn_node);

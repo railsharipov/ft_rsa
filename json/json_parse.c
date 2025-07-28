@@ -141,7 +141,7 @@ static int	__parse_null(const char *s, t_node *node)
 	old_pos = __pos;
 	__skip_ws(s);
 
-	JSON_LOG(TRACE, "parsing null at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing null at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
 	node->type = JSON_TYPE_NULL;
@@ -165,7 +165,7 @@ static int	__parse_boolean(const char *s, t_node *node)
 	old_pos = __pos;
 	__skip_ws(s);
 
-	JSON_LOG(TRACE, "parsing boolean at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing boolean at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
 
@@ -207,7 +207,7 @@ static int	__parse_number(const char *s, t_node *node)
 	old_pos = __pos;
 	__skip_ws(s);
 
-	JSON_LOG(TRACE, "parsing number at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing number at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
 	node->type = JSON_TYPE_NUMBER;
@@ -312,7 +312,7 @@ static int	__parse_string(const char *s, t_node *node)
 	old_pos = __pos;
 	__skip_ws(s);
 
-	JSON_LOG(TRACE, "parsing string at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing string at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
 	node->type = JSON_TYPE_STRING;
@@ -352,7 +352,7 @@ static int	__parse_kv(const char *s, t_htbl *htbl)
 	status = JSON_NO_MATCH;
 	old_pos = __pos;
 
-	JSON_LOG(TRACE, "parsing key-value at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing key-value at index %zu: %.20s...", __pos, s + __pos);
 
 	key_node = ft_node_create();
 	value_node = ft_node_create();
@@ -398,7 +398,7 @@ static int	__parse_object(const char *s, t_node *node)
 	old_pos = __pos;
 	__skip_ws(s);
 
-	JSON_LOG(TRACE, "parsing object at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing object at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
 	node->type = JSON_TYPE_OBJECT;
@@ -456,7 +456,7 @@ static int	__parse_array(const char *s, t_node *node)
 	old_pos = __pos;
 	__skip_ws(s);
 
-	JSON_LOG(TRACE, "parsing array at index %zu: %.20s...", __pos, s + __pos);
+	JSON_LOG(TRACE, "try parsing array at index %zu: %.20s...", __pos, s + __pos);
 
 	__init_node(node);
 	node->type = JSON_TYPE_ARRAY;

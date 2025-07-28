@@ -1,0 +1,14 @@
+{
+  "description": "rsaPublicKey",
+  "type": "sequence",
+  "data": [
+    {
+      "description": "modulus",
+      "type": "int"
+    },
+    {
+      "description": "publicExponent",
+      "type": "int"
+    }
+  ]
+} 

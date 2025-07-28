@@ -1,5 +1,6 @@
 #include <common.h>
 #include <asn.h>
+#include <bnum.h>
 #include <der.h>
 #include <io.h>
 #include <libft/node.h>
@@ -41,8 +42,7 @@ int	der_encode(t_node *tree, t_iodes *out)
 	ret = __encode(tree, out);
 
 	if (SSL_OK != ret) {
-		DER_LOG(ERROR, "invalid asn tree");
-		DER_LOG(TRACE, "DER encode failed");
+		DER_LOG(ERROR, "DER encode failed");
 		return (SSL_ERR);
 	}
 
@@ -374,13 +374,29 @@ static int	__encode_null(uint8_t tag, t_ostring *encoded, t_ostring *data)
 
 static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
+	t_num	*num;
+	char	*buf;
+	size_t	size;
+
 	DER_LOG(TRACE, "encoding integer, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
-	ft_ostr_append(encoded, data->content, data->size);
+	if (data->content == NULL) {
+		DER_LOG(ERROR, "invalid integer type: no content");
+		return (SSL_ERR);
+	}
+	num = (t_num *)data->content;
+	if (num->sign == BNUM_NEG) {
+		// TODO: implement negative integer encoding
+		DER_LOG(ERROR, "invalid integer type: negative integer encoding is not implemented");
+		return (SSL_ERR);
+	}
+	bnum_to_bytes_u(num, &buf, &size);
+	ft_ostr_append(encoded, buf, size);
+	SSL_FREE(buf);
 
 	DER_LOG(TRACE, "integer encoded successfully");
 	return (SSL_OK);

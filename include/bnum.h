@@ -83,6 +83,7 @@ int     bnum_cmp(const t_num *a, const t_num *b);
 int     bnum_cmp_dig(const t_num *a, uint64_t b);
 int     bnum_cmp_u(const t_num *a, const t_num *b);
 void    bnum_copy(const t_num *src, t_num *dst);
+t_num   *bnum_clone(const t_num *src);
 t_num   *bnum_create(void);
 void    bnum_decrem_u(t_num *num);
 void    bnum_del(t_num *num);

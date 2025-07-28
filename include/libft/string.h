@@ -22,7 +22,6 @@ typedef	struct	s_ostring
 	size_t		size;
 }				t_ostring;
 
-t_ostring	*ft_ostr_new(size_t size);
 void 		ft_ostr_init(t_ostring *ostring);
 void 		ft_ostr_init_with_size(t_ostring *ostring, size_t size);
 t_ostring	*ft_ostr_dup(t_ostring *ostring);

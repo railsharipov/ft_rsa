@@ -16,7 +16,7 @@ int asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node)
 {
 	if (NULL == s) {
 		ASN_LOG(ERROR, __ASNQ_BAD_QUERY_ERROR);
-		return (JSON_BAD_QUERY);
+		return (SSL_ERR);
 	}
 
 	if (NULL == asn_tree || NULL == ret_asn_node) {
@@ -24,10 +24,16 @@ int asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node)
 		return (SSL_ERR);
 	}
 
+	ASN_LOG(TRACE, "running query `%s` on asn tree: %s", s, asn_tree_dumps(asn_tree));
+
+	*ret_asn_node = NULL;
+
 	if (SSL_OK != json_query_with_f_selector(s, (t_node *)asn_tree, (t_node **)ret_asn_node, __f_asn_node_selector)) {
 		ASN_LOG(ERROR, __ASNQ_BAD_QUERY_ERROR);
 		return (SSL_ERR);
 	}
+
+	ASN_LOG(TRACE, "query result: %s", asn_tree_dumps(*ret_asn_node));
 
 	return (SSL_OK);
 }
@@ -35,7 +41,7 @@ int asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node)
 static int 	__f_asn_node_selector(t_node *node, t_node *query, t_node **ret_node)
 {
 	if (query->type == JSON_Q_OBJECT_KEY) {
-		ASN_LOG(ERROR, "unexpected asn tree query type");
+		ASN_LOG(ERROR, "unexpected asn tree query type: %s", json_get_query_type_name(query->type));
 		return (JSON_BAD_QUERY);
 	}
 	else if (query->type == JSON_Q_SELF) {
