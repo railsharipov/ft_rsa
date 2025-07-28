@@ -168,7 +168,7 @@ t_node	*asn_tree_create(t_node *json_schema)
 				case ASN_TAGNUM_INT:
 					ASN_LOG(TRACE, "creating asn node from json number: %p, size: %zu", data->content, data->size);
 					asn_item->content = bnum_clone((t_num *)data->content);
-					asn_item->size = 0;
+					asn_item->size = data->size;
 					break;
 				case ASN_TAGNUM_NULL:
 					ASN_LOG(TRACE, "creating asn node from json null: %p, size: %zu", data->content, data->size);

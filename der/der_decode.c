@@ -100,7 +100,7 @@ static int	__decode(t_node **node, t_iodes *in)
 			f_decode = __decode_null;
 			break;
 		default:
-			DER_LOG(ERROR, "unknown tag number");
+			DER_LOG(ERROR, "unknown tag number: %#x", tagnum);
 			return (SSL_ERR);
 	}
 

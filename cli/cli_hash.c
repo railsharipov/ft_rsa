@@ -178,7 +178,7 @@ static int	__next_task(const char **opt)
 			return (SSL_ERR);
 		}
 	}
-	io_close(&__in);
+	io_fclose(&__in);
 
 	return (__next_task(opt + 1));
 }

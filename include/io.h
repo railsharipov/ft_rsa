@@ -66,7 +66,7 @@ ssize_t			io_pread(t_iodes *iodes, size_t nbytes);
 ssize_t			io_pwrite(t_iodes *iodes, size_t nbytes);
 void 			io_print_stats(const t_iodes *iodes, const char *name);
 void 			io_copy(t_iodes * const dst, t_iodes * const src);
-void			io_close(t_iodes * const iodes);
-void			io_close_multi(t_iodes *iodes, ...);
+void			io_fclose(t_iodes * const iodes);
+void			io_fclose_multi(t_iodes *iodes, ...);
 
 #endif

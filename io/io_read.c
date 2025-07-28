@@ -3,15 +3,13 @@
 
 ssize_t	io_read(t_iodes *iodes, char *buf, size_t nbytes)
 {
-	IO_LOG(TRACE, "entering function with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
+	IO_LOG(TRACE, "io read with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
 	
 	if (NULL == iodes || NULL == buf) {
-		IO_LOG(TRACE, "NULL parameter detected - iodes=%p, buf=%p", iodes, buf);
+		IO_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 
-	IO_LOG(TRACE, "iodes mode=%d", iodes->mode);
-	
 	if (iodes->mode == IO_MODE_FILDES) {
 		IO_LOG(TRACE, "routing to io_fread");
 		return (io_fread(iodes, buf, nbytes));
@@ -25,7 +23,7 @@ ssize_t	io_read(t_iodes *iodes, char *buf, size_t nbytes)
 		return (io_pread(iodes, nbytes));
 	}
 	else {
-		IO_LOG(TRACE, "invalid mode %d, returning -1", iodes->mode);
+		IO_LOG(ERROR, "invalid iodes mode %#x", iodes->mode);
 		return (-1);
 	}
 }

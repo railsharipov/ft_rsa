@@ -62,7 +62,7 @@ int	cli_base64(const char **opt, const char *name_comm)
 		ret = __run_task();
 	}
 
-	io_close_multi(&__in, &__out, NULL);
+	io_fclose_multi(&__in, &__out, NULL);
 	cli_task_htable_del(__b64_htable);
 
 	if (SSL_OK != ret) {

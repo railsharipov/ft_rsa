@@ -34,8 +34,6 @@
 # define TXT_MAGEN(STR_LITERAL)	COLOR_MAGENTA STR_LITERAL COLOR_RESET
 # define TXT_CYAN(STR_LITERAL)	COLOR_CYAN STR_LITERAL COLOR_RESET
 
-# define FLAG(F,X)				((int)(((X)&(F))==(F)))
-
 /* Round X down to a multiple of Y */
 # define FLOOR(X,Y)				((X)-((X)%(Y)))
 

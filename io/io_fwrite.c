@@ -3,8 +3,6 @@
 
 static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 {
-	IO_LOG(TRACE, "entering with nbytes=%zu, delim=%d, lwidth=%d", nbytes, iodes->delim, iodes->lwidth);
-	
 	char	tbuf[2*nbytes];
 	ssize_t	wbytes;
 	ssize_t	offset;
@@ -44,62 +42,66 @@ static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 
 	IO_LOG(TRACE, "writing %zd bytes to fd %d", wbytes, iodes->fd);
 	wbytes = write(iodes->fd, tbuf, wbytes);
-	IO_LOG(TRACE, "write returned %zd bytes", wbytes);
+
+	if (wbytes < 0) {
+		IO_LOG(ERROR, "write error: %s (errno=%d)", strerror(errno), errno);
+		return (-1);
+	}
+	IO_LOG(TRACE, "write %zd bytes to fd %d", wbytes, iodes->fd);
 
 	if (wbytes > 0) {
 		iodes->seek += wbytes;
 		IO_LOG(TRACE, "updated seek to %zd", iodes->seek);
 	}
 
-	IO_LOG(TRACE, "returning %zd", wbytes);
 	return (wbytes);
 }
 
 static ssize_t __fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
-	IO_LOG(TRACE, "writing %zu bytes to fd %d", nbytes, iodes->fd);
-	
 	ssize_t	wbytes;
-
+	
+	IO_LOG(TRACE, "writing %zu bytes to fd %d", nbytes, iodes->fd);
 	wbytes = write(iodes->fd, buf, nbytes);
-	IO_LOG(TRACE, "write returned %zd bytes", wbytes);
+
+	if (wbytes < 0) {
+		IO_LOG(ERROR, "write error: %s (errno=%d)", strerror(errno), errno);
+		return (-1);
+	}
+	IO_LOG(TRACE, "write %zd bytes to fd %d", wbytes, iodes->fd);
 
 	if (wbytes > 0) {
 		iodes->seek += wbytes;
 		IO_LOG(TRACE, "updated seek to %zd", iodes->seek);
 	}
 
-	IO_LOG(TRACE, "returning %zd", wbytes);
 	return (wbytes);
 }
 
 ssize_t	io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
-	IO_LOG(TRACE, "entering function with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
-	
 	ssize_t	wbytes;
+	
+	IO_LOG(TRACE, "io fwrite with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
 
 	if (NULL == buf || NULL == iodes) {
-		IO_LOG(TRACE, "NULL parameter detected - buf=%p, iodes=%p", buf, iodes);
+		IO_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 
 	if (nbytes == 0) {
-		IO_LOG(TRACE, "nbytes is 0, returning 0");
+		IO_LOG(TRACE, "buffer size is 0, nothing to write");
 		return (0);
 	}
 
-	IO_LOG(TRACE, "iodes delim=%d", iodes->delim);
-	
 	if (iodes->delim) {
-		IO_LOG(TRACE, "using delimiter-based write");
+		IO_LOG(TRACE, "using delimiter-based write, delim=%d", iodes->delim);
 		wbytes = __fwrite_delim(iodes, (char *)buf, nbytes);
 	}
 	else {
-		IO_LOG(TRACE, "using standard write");
+		IO_LOG(TRACE, "using write without delimiter");
 		wbytes = __fwrite(iodes, (char *)buf, nbytes);
 	}
 
-	IO_LOG(TRACE, "returning %zd", wbytes);
 	return (wbytes);
 }

@@ -10,7 +10,7 @@ typedef struct	s_io_param
 }				t_io_param;
 
 static const t_io_param	T[] = {
-	/*	FLAG				FD				*/
+	/*	flags				fd				*/
 	{	IO_READ|IO_STDIN,	STDIN_FILENO	},
 	{	IO_READ|IO_STDOUT,	STDOUT_FILENO	},
 	{	IO_READ|IO_FILE,	-1				},
@@ -25,76 +25,68 @@ static t_io_param	*__get_param(uint32_t);
 
 int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 {
-	IO_LOG(TRACE, "entering function with flags=0x%x, filename=%s", flags, filename ? filename : "NULL");
+	IO_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "NULL");
 	
 	t_io_param	*param;
 	char		*input;
 	int 		insize;
 
 	if (NULL == iodes) {
-		IO_LOG(TRACE, "NULL iodes parameter, returning -1");
+		IO_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 
-	IO_LOG(TRACE, "initializing iodes structure");
 	ft_bzero(iodes, sizeof(t_iodes));
 
 	if (NULL == (param = __get_param(flags))) {
-		IO_LOG(TRACE, "invalid flags 0x%x, returning -1", flags);
+		IO_LOG(ERROR, "invalid flags %#x", flags);
 		return (-1);
 	}
 
-	IO_LOG(TRACE, "setting fd=%d from param", param->fd);
 	iodes->fd = param->fd;
 
-	if (FLAG(IO_FILE, flags)) {
+	if (SSL_FLAG(IO_FILE, flags)) {
 		if (NULL == filename) {
-			IO_LOG(TRACE, "IO_FILE flag set but filename is NULL, returning -1");
+			IO_LOG(ERROR, "IO_FILE flag set but filename is not");
 			return (-1);
 		}
 
 		IO_LOG(TRACE, "opening file '%s' with flags 0x%x", filename, flags);
-		if (FLAG(IO_READ, flags)) {
+		if (SSL_FLAG(IO_READ, flags)) {
 			iodes->fd = open(filename, O_RDONLY, 0644);
 			IO_LOG(TRACE, "opened file for reading, fd=%d", iodes->fd);
 		}
-		else if (FLAG(IO_WRITE, flags)) {
+		else if (SSL_FLAG(IO_WRITE, flags)) {
 			iodes->fd = open(filename, O_TRUNC|O_RDWR|O_CREAT, 0644);
 			IO_LOG(TRACE, "opened file for writing, fd=%d", iodes->fd);
 		}
 		else {
-			IO_LOG(TRACE, "invalid flags combination, returning -1");
+			IO_LOG(ERROR, "invalid flags combination");
 			return (-1);
 		}
 	}
 
 	if (iodes->fd < 0) {
-		IO_LOG(TRACE, "file open failed, fd=%d, returning -1", iodes->fd);
+		IO_LOG(ERROR, "file open failed, fd=%d", iodes->fd);
 		return (-1);
 	}
 
-	IO_LOG(TRACE, "setting mode to IO_MODE_FILDES");
 	iodes->mode = IO_MODE_FILDES;
 
-	IO_LOG(TRACE, "file open successful, fd=%d, returning 0", iodes->fd);
 	return (0);
 }
 
 static t_io_param	*__get_param(uint32_t flags)
 {
-	IO_LOG(TRACE, "searching for flags 0x%x", flags);
-	
 	int	ix;
 
 	ix = 0;
 	while (ix < TSIZE) {
 		if (T[ix].flag == flags) {
-			IO_LOG(TRACE, "found matching param at index %d", ix);
 			return ((t_io_param *)T+ix);
 		}
 		ix++;
 	}
 
-	IO_LOG(TRACE, "no matching param found for flags 0x%x", flags);
 	return (NULL);
 }

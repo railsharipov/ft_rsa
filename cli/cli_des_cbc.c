@@ -75,7 +75,7 @@ int	cli_des_cbc(const char **opt, const char *name_comm)
 	if (SSL_OK == (ret = __setup_task(opt))) {
 		ret = __run_task();
 	}
-	io_close_multi(&__in, &__out, NULL);
+	io_fclose_multi(&__in, &__out, NULL);
 	cli_task_htable_del(__des_htable);
 
 	if (SSL_OK != ret) {

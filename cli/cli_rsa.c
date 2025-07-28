@@ -92,7 +92,7 @@ int	cli_rsa(const char **opt, const char *name_comm)
 	}
 
 	SSL_FREE(__inkey.content);
-	io_close_multi(&__in, &__out, NULL);
+	io_fclose_multi(&__in, &__out, NULL);
 	cli_task_htable_del(__rsa_htable);
 
 	if (SSL_OK != ret) {

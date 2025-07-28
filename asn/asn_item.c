@@ -65,28 +65,28 @@ int	asn_item_set_type(t_iasn *item, char *type)
 		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 
-	if (ft_streq(type, ASN_TYPE_KEY_SEQUENCE)) {
+	if (ft_streq(type, ASN_TYPE_NAME_SEQUENCE)) {
 		tagnum = ASN_TAGNUM_SEQUENCE;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_OSTRING)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_OSTRING)) {
 		tagnum = ASN_TAGNUM_OCTET_STRING;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_BITSTRING)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_BITSTRING)) {
 		tagnum = ASN_TAGNUM_BIT_STRING;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_OBJECT_ID)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_OBJECT_ID)) {
 		tagnum = ASN_TAGNUM_OBJECT_ID;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_OBJECT_DESC)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_OBJECT_DESC)) {
 		tagnum = ASN_TAGNUM_OBJECT_DESCR;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_INT)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_INT)) {
 		tagnum = ASN_TAGNUM_INT;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_NULL)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_NULL)) {
 		tagnum = ASN_TAGNUM_NULL;
 	}
-	else if (ft_streq(type, ASN_TYPE_KEY_BOOL)) {
+	else if (ft_streq(type, ASN_TYPE_NAME_BOOL)) {
 		tagnum = ASN_TAGNUM_BOOLEAN;
 	}
 	else {
@@ -106,22 +106,22 @@ char	*asn_item_get_type_name(t_iasn *item)
 
 	switch (item->tagnum) {
 		case ASN_TAGNUM_SEQUENCE:
-			return ASN_TYPE_KEY_SEQUENCE;
+			return ASN_TYPE_NAME_SEQUENCE;
 		case ASN_TAGNUM_OCTET_STRING:
-			return ASN_TYPE_KEY_OSTRING;
+			return ASN_TYPE_NAME_OSTRING;
 		case ASN_TAGNUM_BIT_STRING:
-			return ASN_TYPE_KEY_BITSTRING;
+			return ASN_TYPE_NAME_BITSTRING;
 		case ASN_TAGNUM_OBJECT_ID:
-			return ASN_TYPE_KEY_OBJECT_ID;
+			return ASN_TYPE_NAME_OBJECT_ID;
 		case ASN_TAGNUM_OBJECT_DESCR:
-			return ASN_TYPE_KEY_OBJECT_DESC;
+			return ASN_TYPE_NAME_OBJECT_DESC;
 		case ASN_TAGNUM_INT:
-			return ASN_TYPE_KEY_INT;
+			return ASN_TYPE_NAME_INT;
 		case ASN_TAGNUM_NULL:
-			return ASN_TYPE_KEY_NULL;
+			return ASN_TYPE_NAME_NULL;
 		case ASN_TAGNUM_BOOLEAN:
-			return ASN_TYPE_KEY_BOOL;
+			return ASN_TYPE_NAME_BOOL;
 		default:
-			return ASN_TYPE_KEY_UNKNOWN;
+			return ASN_TYPE_NAME_UNKNOWN;
 	}
 }

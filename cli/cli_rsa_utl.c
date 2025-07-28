@@ -78,7 +78,7 @@ int	cli_rsa_utl(const char **opt, const char *name_comm)
 		ret = __run_task();
 	}
 
-	io_close_multi(&__in, &__out, &__inkey, NULL);
+	io_fclose_multi(&__in, &__out, &__inkey, NULL);
 	cli_task_htable_del(__rsa_htable);
 
 	if (SSL_OK != ret) {

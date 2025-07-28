@@ -103,7 +103,7 @@ static int	__test_asn_tree_create_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn_item->description, "algorithm"));
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
 
-	// algorithm -> [ rsaEncryption, null ]
+	// algorithm -> [ rsaEncryption, parameters ]
 	asn_node = NULL;
 	ret = asn_tree_query("[0][0]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -113,6 +113,7 @@ static int	__test_asn_tree_create_subjectPublicKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_OBJECT_ID);
 	TEST_ASSERT(ft_streq(asn_item->description, "rsaEncryption"));
 
+	// algorithm -> parameters
 	asn_node = NULL;
 	ret = asn_tree_query("[0][1]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -120,6 +121,7 @@ static int	__test_asn_tree_create_subjectPublicKeyInfo(void)
 	asn_item = asn_node->content;
 	TEST_ASSERT(asn_item != NULL);
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_NULL);
+	TEST_ASSERT(ft_streq(asn_item->description, "parameters"));
 
 	asn_node = NULL;
 	ret = asn_tree_query("[1]", asn_tree, &asn_node);
@@ -313,7 +315,7 @@ static int __test_asn_tree_create_privateKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn_item->description, "algorithm"));
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
 
-	// algorithm -> [ rsaEncryption, null ]
+	// algorithm -> [ rsaEncryption, parameters ]
 	asn_node = NULL;
 	ret = asn_tree_query("[1][0]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -323,6 +325,7 @@ static int __test_asn_tree_create_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_OBJECT_ID);
 	TEST_ASSERT(ft_streq(asn_item->description, "rsaEncryption"));
 
+	// algorithm -> parameters
 	asn_node = NULL;
 	ret = asn_tree_query("[1][1]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -330,6 +333,7 @@ static int __test_asn_tree_create_privateKeyInfo(void)
 	asn_item = asn_node->content;
 	TEST_ASSERT(asn_item != NULL);
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_NULL);
+	TEST_ASSERT(ft_streq(asn_item->description, "parameters"));
 
 	asn_node = NULL;
 	ret = asn_tree_query("[2]", asn_tree, &asn_node);
@@ -398,6 +402,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
 	TEST_ASSERT(ft_streq(asn_item->description, "privateKeyInfo"));
 
+	// privateKeyInfo -> version
 	asn_node = NULL;
 	ret = asn_tree_query("[0]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -408,6 +413,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
 	TEST_ASSERT(ft_streq(asn_item->description, "version"));
 
+	// privateKeyInfo -> algorithm
 	asn_node = NULL;
 	ret = asn_tree_query("[1]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -418,6 +424,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
 	TEST_ASSERT(ft_streq(asn_item->description, "algorithm"));
 
+	// algorithm -> rsaEncryption
 	asn_node = NULL;
 	ret = asn_tree_query("[1][0]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -428,6 +435,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_OBJECT_ID);
 	TEST_ASSERT(ft_streq(asn_item->description, "rsaEncryption"));
 
+	// algorithm -> parameters
 	asn_node = NULL;
 	ret = asn_tree_query("[1][1]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -436,7 +444,10 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	asn_item = asn_node->content;
 	TEST_ASSERT(asn_item != NULL);
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_NULL);
+	TEST_ASSERT(ft_streq(asn_item->description, "parameters"));
 
+	// privateKeyInfo -> privateKey
+	// decode encapsulated privateKey sequence
 	asn_node = NULL;
 	ret = asn_tree_query("[2]", asn_tree, &asn_node);
 	TEST_ASSERT(ret == SSL_OK);
@@ -466,6 +477,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
 	TEST_ASSERT(ft_streq(asn_item->description, "rsaPrivateKey"));
 
+	// rsaPrivateKey items
 	const char *params[] = { "version", "modulus", "publicExponent", "privateExponent", "prime1", "prime2", "exponent1", "exponent2", "coefficient" };
 	for (int i = 0; i < 9; i++) {
 		char *query;

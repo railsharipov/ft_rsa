@@ -73,7 +73,7 @@ static int	__encode(t_node *node, t_iodes *out)
 	}
 	tagnum = asn_item->tagnum;
 
-	DER_LOG(TRACE, "encoding tag number: %u", tagnum);
+	DER_LOG(TRACE, "encoding asn item: %s, tag number: %#x", asn_item_get_type_name(asn_item), tagnum);
 
 	switch (tagnum) {
 		case ASN_TAGNUM_SEQUENCE:
@@ -105,7 +105,7 @@ static int	__encode(t_node *node, t_iodes *out)
 			tag = ASN_ENCODE_PRIMITIVE;
 			break;
 		default:
-			DER_LOG(ERROR, "unknown tag number");
+			DER_LOG(ERROR, "unknown tag number: %#x", tagnum);
 			return (SSL_ERR);
 	}
 
@@ -118,6 +118,7 @@ static int	__encode(t_node *node, t_iodes *out)
 	data.size = asn_item->size;
 
 	DER_LOG(TRACE, "encoding content, size: %zu", data.size);
+	ft_ostr_init(&encoded);
 
 	if (SSL_OK != f_encode(tag, &encoded, &data)) {
 		DER_LOG(TRACE, "encode function failed for tag: %u", tagnum);
@@ -159,7 +160,7 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)
 {
 	ssize_t	wbytes;
 
-	DER_LOG(TRACE, "writing tag: %u, tag flags: %u", tagnum, tag);
+	DER_LOG(TRACE, "writing tag: %#x, tag flags: %#x", tagnum, tag);
 
 	if (tagnum > 30) {
 		// Complex tag
@@ -195,7 +196,7 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)
 	}
 	else {
 		// Simple tag
-		const int buf_size = 1;
+		size_t buf_size = 1;
 		uint8_t buf[buf_size];
 
 		buf[0] = ASN_TAGNUM_SIMPLE | tag;
@@ -248,7 +249,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 	}
 	else {
 		// Short length form
-		const int buf_size = 1;
+		size_t buf_size = 1;
 		uint8_t buf[buf_size];
 
 		buf[0] = len;

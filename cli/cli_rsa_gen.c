@@ -149,7 +149,7 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 	if (SSL_OK == (ret = __get_task(opt))) {
 		ret = __run_task();
 	}
-	io_close(&__out);
+	io_fclose(&__out);
 	__clear();
 
 	if (SSL_OK != ret) {
