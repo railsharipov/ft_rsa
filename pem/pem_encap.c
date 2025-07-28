@@ -1,6 +1,6 @@
 #include <common.h>
 #include <pem.h>
-#include <parser.h>
+#include <textutil.h>
 
 static void	__concat(t_pem *pem, char *content, size_t consize)
 {

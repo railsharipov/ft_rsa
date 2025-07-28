@@ -1,9 +1,9 @@
-#include <parser.h>
+#include <textutil.h>
 #include <libft/string.h>
 #include <libft/std.h>
 
 // Find ostring 'pattern' in ostring 'octets'
-int parser_find(const char *octets, int olen, const char *pattern, int patlen)
+int textutil_find(const char *octets, int olen, const char *pattern, int patlen)
 {
 	unsigned int pathash, winhash;
 	unsigned char *oct, *pat;

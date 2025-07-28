@@ -1,13 +1,13 @@
-#include <parser.h>
+#include <textutil.h>
 #include <libft/string.h>
 
-char  *parser_line(const char *octets, int olen, const char *pattern, int patlen)
+char  *textutil_line(const char *octets, int olen, const char *pattern, int patlen)
 {
 	int	idx;
 	int	bidx;
 	int	eidx;
 
-	if ((idx = parser_find(octets, olen, pattern, patlen)) < 0) {
+	if ((idx = textutil_find(octets, olen, pattern, patlen)) < 0) {
 		return (NULL);
 	}
 	bidx = idx;

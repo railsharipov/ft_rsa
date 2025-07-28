@@ -4,7 +4,7 @@
 #include <alloc.h>
 #include <common.h>
 
-#define PARSER_LOG_PREFIX  "parser: "
+#define TEXTUTIL_LOG_PREFIX  "parser: "
 
 static int __f_logger(const char *mes);
 
@@ -20,7 +20,7 @@ static int  __f_logger(const char *mes) {
     return (SSL_OK);
 }
 
-int parser_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
+int textutil_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
 	va_list	va_arg;
 	char	*prefixed_fmt;
 	char	*level_prefix;
@@ -31,7 +31,7 @@ int parser_logger_log(const char *func_name, const char *file_name, int line_num
 	}
 	va_start(va_arg, fmt);
 
-    prefixed_fmt = ft_strjoin(PARSER_LOG_PREFIX, fmt);
+    prefixed_fmt = ft_strjoin(TEXTUTIL_LOG_PREFIX, fmt);
 
 	ret = ft_logger_va_log(func_name, file_name, line_number, &__logger, level, prefixed_fmt, va_arg);
 

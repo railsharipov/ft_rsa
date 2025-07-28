@@ -1,8 +1,8 @@
-#include <parser.h>
+#include <textutil.h>
 #include <libft/string.h>
 #include <libft/alloc.h>
 
-void	parser_insert_delim(char **arr, size_t *asize, int delim, int step)
+void	textutil_insert_delim(char **arr, size_t *asize, int delim, int step)
 {
 	char	*rptr;
 	char	*res;

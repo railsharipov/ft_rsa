@@ -1,6 +1,6 @@
 #include <common.h>
 #include <pem.h>
-#include <parser.h>
+#include <textutil.h>
 #include <unistd.h>
 
 int	pem_decap(t_pem *pem, const char *type, char **content, size_t *consize)
@@ -26,8 +26,8 @@ int	pem_decap(t_pem *pem, const char *type, char **content, size_t *consize)
 	}
 	*content = NULL;
 
-	bidx = parser_find(pem->content, pem->size, preen, presize);
-	eidx = parser_find(pem->content, pem->size, posten, postsize);
+	bidx = textutil_find(pem->content, pem->size, preen, presize);
+	eidx = textutil_find(pem->content, pem->size, posten, postsize);
 
 	SSL_FREE(preen);
 	SSL_FREE(posten);

@@ -1,11 +1,13 @@
-#include <parser.h>
+#include <textutil.h>
 #include <libft/string.h>
 #include <libft/alloc.h>
 
-// Remove wspace, excluding LF and CR, in character array
-// wspace = SP / HT / VT / FF
+// Remove blank in character array
+// blank = HT / SP
+// HT = horizontal tab
+// SP = space
 
-void parser_del_wspace(const char *arr, int asize, char **p, int *psize)
+void textutil_del_blank(const char *arr, int asize, char **p, int *psize)
 {
 	int   ix;
 	char  *rptr;
@@ -18,10 +20,10 @@ void parser_del_wspace(const char *arr, int asize, char **p, int *psize)
   	rptr = res;
 
 	for (ix = 0; ix < asize;) {
-		while ((ix < asize) && (!ft_iswspace(arr[ix]))) {
+		while ((ix < asize) && (!ft_isblank(arr[ix]))) {
 			*rptr++ = arr[ix++];
 		}
-		while ((ix < asize) && (ft_iswspace(arr[ix]))) {
+		while ((ix < asize) && (ft_isblank(arr[ix]))) {
 			ix++;
 		}
 	}

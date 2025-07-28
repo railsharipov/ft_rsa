@@ -1,11 +1,11 @@
-#include <parser.h>
+#include <textutil.h>
 #include <libft/string.h>
 #include <libft/alloc.h>
 
 // Remove wspace in character array
 // wspace = LF / CR / SP / HT / VT / FF
 
-void	parser_del_eolws(const char *arr, int asize, char **p, int *psize)
+void	textutil_del_eolws(const char *arr, int asize, char **p, int *psize)
 {
 	char	*rptr;
 	char	*res;

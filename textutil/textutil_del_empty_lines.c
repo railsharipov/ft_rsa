@@ -1,4 +1,4 @@
-#include <parser.h>
+#include <textutil.h>
 #include <libft/string.h>
 #include <libft/alloc.h>
 
@@ -15,7 +15,7 @@ static const int CR = 0xD;
 
 // Delete empty lines in character array
 
-void parser_del_empty_lines(const char *arr, int asize, char **p, int *psize)
+void textutil_del_empty_lines(const char *arr, int asize, char **p, int *psize)
 {
   	int   ix;
   	char  *rptr;

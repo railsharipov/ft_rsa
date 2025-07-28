@@ -3,7 +3,7 @@
 #include <base64.h>
 #include <pem.h>
 #include <des.h>
-#include <parser.h>
+#include <textutil.h>
 #include <libft/2darray.h>
 #include <libft/bytes.h>
 
@@ -134,8 +134,8 @@ static int	__check_crypt_header(const char *proc, const char *dek)
 		return (SSL_ERR);
 	}
 
-	procidx = parser_find(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
-	dekidx = parser_find(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
+	procidx = textutil_find(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
+	dekidx = textutil_find(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
 	proclen = ft_strlen(proc);
 	deklen = ft_strlen(dek);
 
@@ -157,8 +157,8 @@ static void	__remove_crypt_header(void)
 	int		dekidx;
 	int		idx;
 
-	dekidx = parser_find(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
-	dek = parser_line(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
+	dekidx = textutil_find(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
+	dek = textutil_line(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
 	idx = dekidx + ft_strlen(dek);
 
 	// remove header by overriding it and adjusting content size,
@@ -174,8 +174,8 @@ static int	__parse_crypt_header(void)
 	int		ret;
 
 	ret = SSL_OK;
-	dek = parser_line(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
-	proc = parser_line(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
+	dek = textutil_line(__content, __consize, DEK_INFO, ft_strlen(DEK_INFO));
+	proc = textutil_line(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC));
 
 	if (SSL_OK != __check_crypt_header(proc, dek)) {
 		ret = PEM_LOG(ERROR, UNSPECIFIED_ERROR);
@@ -201,7 +201,7 @@ static int __decode(const char *pass)
 
 	ret = SSL_OK;
 
-	if (parser_find(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC)) >= 0) {
+	if (textutil_find(__content, __consize, PEM_PROC, ft_strlen(PEM_PROC)) >= 0) {
 		__encrypted = SSL_TRUE;
 
 		if (SSL_OK != __parse_crypt_header()) {
@@ -210,7 +210,7 @@ static int __decode(const char *pass)
 		}
 		__remove_crypt_header();
 	}
-	parser_del_eolws(__content, __consize, &b64enc, &b64len);
+	textutil_del_eolws(__content, __consize, &b64enc, &b64len);
 	SSL_FREE(__content);
 
 	if (SSL_OK != base64_decode(b64enc, b64len, &__content, &__consize)) {
