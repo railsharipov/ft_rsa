@@ -55,9 +55,14 @@ int     json_validate_node_type(int type);
 int     json_validate_node_is_of_type(t_node *node, int type);
 int     json_map(t_node *node, FUNC_JSON_MAP f, t_node **ret_node);
 int     json_clone(t_node *node, t_node **ret_node);
-char	*json_dumps(t_node *node);
-char	*json_dumps_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper);
 void	json_del(t_node *node);
+
+char	*json_dump(t_node *node);
+char	*json_dumps(t_node *node);
+size_t	json_dumpb(t_node *node, char *buf, size_t size);
+char	*json_dump_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper);
+char	*json_dumps_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper);
+size_t	json_dumpb_with_f_dumper(t_node *node, char *buf, size_t size, FUNC_JSON_DUMPER f_dumper);
 
 const char	*json_get_type_name(int type);
 const char	*json_get_query_type_name(int type);

@@ -46,7 +46,7 @@ t_node	*asn_tree_create(t_node *json_schema)
 	t_iasn		*asn_item;
 
 	ASN_LOG(TRACE, "creating asn tree from json schema node of type: %s", json_get_type_name(json_schema->type));
-	ASN_LOG(TRACE, "json schema: %s", asn_tree_dumps(json_schema));
+	ASN_LOG(TRACE, "json schema: %s", asn_tree_dump(json_schema));
 
 	asn_item = asn_item_create();
 
@@ -221,7 +221,7 @@ t_node	*asn_tree_create(t_node *json_schema)
 	}
 
 	asn_node = asn_node_create(asn_item);
-	ASN_LOG(TRACE, "successfully created asn node: %s", asn_tree_dumps(asn_node));
+	ASN_LOG(TRACE, "successfully created asn node: %s", asn_tree_dump(asn_node));
 
 	return (asn_node);
 

@@ -10,6 +10,12 @@
 
 static int 	__f_asn_node_dumper(t_node *node, t_ostring *ostring);
 
+char	*asn_tree_dump(t_node *asn_tree)
+{
+	return (json_dump_with_f_dumper(asn_tree, __f_asn_node_dumper));
+}
+
+
 char	*asn_tree_dumps(t_node *asn_tree)
 {
 	if (NULL == asn_tree) {
@@ -18,6 +24,11 @@ char	*asn_tree_dumps(t_node *asn_tree)
 	}
 
 	return (json_dumps_with_f_dumper(asn_tree, __f_asn_node_dumper));
+}
+
+size_t	asn_tree_dumpb(t_node *asn_tree, char *buf, size_t size)
+{
+	return (json_dumpb_with_f_dumper(asn_tree, buf, size, __f_asn_node_dumper));
 }
 
 static int	__f_asn_node_dumper(t_node *node, t_ostring *ostring)

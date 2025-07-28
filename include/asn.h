@@ -68,7 +68,9 @@ int				asn_logger_log(const char *func_name, const char *file_name, int line_num
 struct s_node	*asn_tree(const char *);
 t_node			*asn_tree_create(t_node *schema_json);
 int				asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node);
+char			*asn_tree_dump(struct s_node *);
 char			*asn_tree_dumps(struct s_node *);
+size_t			asn_tree_dumpb(struct s_node *, char *, size_t);
 void			asn_tree_del(struct s_node *);
 void			*asn_tree_get(t_node *, const char *);
 t_htbl			*asn_tree_items(struct s_node *);
