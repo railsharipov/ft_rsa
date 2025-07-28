@@ -279,7 +279,7 @@ static int	__encode_ostring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 
 static int	__encode_bitstring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
-	unsigned char	num_unused_bits;
+	uint8_t	num_unused_bits;
 
 	DER_LOG(TRACE, "encoding bit string, size: %zu", data->size);
 
@@ -378,6 +378,7 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	t_num	*num;
 	char	*buf;
 	size_t	size;
+	uint8_t	byte;
 
 	DER_LOG(TRACE, "encoding integer, size: %zu", data->size);
 
@@ -396,6 +397,13 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		return (SSL_ERR);
 	}
 	bnum_to_bytes_u(num, &buf, &size);
+
+	// if a positive integer's most significant bit of its first byte is 1, it must be prefixed with a 0x00 byte
+	if (size > 0 && (((uint8_t *)buf)[0] & 0x80)) {
+		byte = 0x00;
+		ft_ostr_append(encoded, &byte, sizeof(byte));
+	}
+
 	ft_ostr_append(encoded, buf, size);
 	SSL_FREE(buf);
 
