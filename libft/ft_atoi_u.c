@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sys/types.h>
+#include <stddef.h>
 
 static int	__is_blank(char c)
 {
@@ -20,11 +20,10 @@ static int	__is_blank(char c)
 	return (0);
 }
 
-ssize_t	ft_atoi(const char *str)
+size_t	ft_atoi_u(const char *str)
 {
 	int		i;
-	ssize_t	nb;
-	ssize_t	neg;
+	size_t	nb;
 
 	nb = 0;
 
@@ -32,15 +31,9 @@ ssize_t	ft_atoi(const char *str)
 	while (__is_blank(str[i])) {
 		i++;
 	}
-
-	neg = (str[i] == '-') ? -1 : 1;
-
-	if (str[i] == '-' || str[i] == '+') {
-		i++;
-	}
 	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0) {
 		nb = nb * 10 + str[i++] - 48;
 	}
 
-	return (neg * nb);
+	return (nb);
 }

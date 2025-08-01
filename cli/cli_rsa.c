@@ -16,7 +16,7 @@ static char			*TYPE_X509_PUBLIC_KEY = "PUBLIC KEY";
 static t_htbl		*__rsa_htable;
 static t_iodes		__in;
 static t_iodes		__out;
-static t_pem		__inkey;
+static t_ostring		__inkey;
 
 static uint32_t		__gflag;
 static uint32_t		__inform;
@@ -344,9 +344,9 @@ static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 	}
 	if (RSA_PEM == __outform) {
 		if (SSL_FLAG(RSA_ENCRYPT, __gflag)) {
-			ret = pem_encode((t_ostring *)der_key, (t_pem **)outkey, __out_type, __passout);
+			ret = pem_encode((t_ostring *)der_key, (t_ostring **)outkey, __out_type, __passout);
 		} else {
-			ret = pem_encode((t_ostring *)der_key, (t_pem **)outkey, __out_type, NULL);
+			ret = pem_encode((t_ostring *)der_key, (t_ostring **)outkey, __out_type, NULL);
 		}
 	} else {
 		SSL_ALLOC(*outkey, sizeof(t_ostring));

@@ -3,7 +3,7 @@
 #include <textutil.h>
 #include <unistd.h>
 
-int	pem_decap(t_pem *pem, const char *type, char **content, size_t *consize)
+int	pem_decap(t_ostring *pem, const char *type, char **content, size_t *consize)
 {
 	char	*preen;
 	char	*posten;

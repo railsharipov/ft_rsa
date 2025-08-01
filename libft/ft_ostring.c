@@ -2,6 +2,17 @@
 #include <libft/alloc.h>
 #include <libft/std.h>
 
+t_ostring	*ft_ostr_create(void)
+{
+	t_ostring	*ostring;
+
+	LIBFT_ALLOC(ostring, sizeof(t_ostring));
+	ostring->content = NULL;
+	ostring->size = 0;
+
+	return (ostring);
+}
+
 void 	ft_ostr_init(t_ostring *ostring)
 {
 	if (NULL == ostring) {

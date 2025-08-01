@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pbkdf2.c                                           :+:      :+:    :+:   */
+/*   rand_openssl_kdf.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -16,15 +16,20 @@
 #include <rand.h>
 #include <pwd.h>
 
-static char	__buf[160];
+/*
+** Implements OpenSSL's proprietary key derivation function (EVP_BytesToKey with MD5).
+** This is NOT PBKDF2.
+** It derives a key and optionally an IV from a password and a salt.
+** The salt must be 8 bytes. The derived key is 8 bytes, and the IV is 8 bytes.
+*/
 
-/* Password based key derivation function - PBKDF2 */
-
-int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass)
+int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass)
 {
 	t_hash	*md5;
-	char	*bufptr;
-	int		bufsize;
+	char	buf[160] = {0};
+	size_t	pass_len;
+	size_t	buf_len;
+	size_t	digest_len;
 
 	if (NULL == salt) {
 		RAND_LOG(ERROR, "salt is required");
@@ -35,19 +40,16 @@ int	rand_pbkdf2(unsigned char *key, unsigned char *salt, unsigned char *vect, co
 		return (SSL_ERR);
 	}
 
-	bufptr = __buf;
-	ft_memcpy(bufptr, pass, ft_strlen(pass));
-	bufsize += ft_strlen(pass);
-	ft_memcpy(bufptr + bufsize, salt, 8);
-	bufsize += 8;
+	pass_len = ft_strlen(pass);
+	ft_memcpy(buf, pass, pass_len);
+	ft_memcpy(buf + pass_len, salt, 8);
+	buf_len = pass_len + 8;
 
 	md5 = hash_md5_init();
-	hash_md5_update(md5, bufptr, FLOOR(bufsize, MD5_BLOCK_SIZE));
+	digest_len = FLOOR(buf_len, MD5_BLOCK_SIZE);
+	hash_md5_update(md5, (unsigned char *)buf, digest_len);
+	hash_md5_final(md5, (unsigned char *)buf + digest_len, buf_len % MD5_BLOCK_SIZE);
 
-	bufptr += FLOOR(bufsize, MD5_BLOCK_SIZE);
-	hash_md5_final(md5, bufptr, (bufsize % MD5_BLOCK_SIZE));
-
-	ft_bzero(__buf, sizeof(__buf));
 	ft_memcpy(key, md5->hash, 8);
 
 	if (NULL != vect) {

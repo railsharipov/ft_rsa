@@ -67,7 +67,7 @@ static int	__vectors(uint32_t vflag, const char *pass)
 			}
 			__is_salted = 1;
 		}
-		if (SSL_OK != rand_pbkdf2(__key, __salt, NULL, pass)) {
+		if (SSL_OK != rand_openssl_kdf(__key, __salt, NULL, pass)) {
 			DES_LOG(ERROR, UNSPECIFIED_ERROR);
 			return (SSL_ERR);
 		}

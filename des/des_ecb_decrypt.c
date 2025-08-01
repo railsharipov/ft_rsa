@@ -96,7 +96,7 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 			ft_memcpy(__salt, ciph + 8, 8);
 			__is_salted = 1;
 		}
-		if (SSL_OK != rand_pbkdf2(__key, __salt, NULL, pass)) {
+		if (SSL_OK != rand_openssl_kdf(__key, __salt, NULL, pass)) {
 			DES_LOG(ERROR, UNSPECIFIED_ERROR);
 			return (SSL_ERR);
 		}

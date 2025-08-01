@@ -96,7 +96,7 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 			ft_memcpy(__salt, ciph + 8, 8);
 			__is_salted = 1;
 		}
-		if (SSL_OK != rand_pbkdf2(__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL) : (__vect), pass)) {
+		if (SSL_OK != rand_openssl_kdf(__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL) : (__vect), pass)) {
 			DES_LOG(ERROR, "key derivation error");
 			return (SSL_ERR);
 		}

@@ -61,6 +61,7 @@ typedef enum	e_pf_len
 int		    ft_printf(const char *format, ...);
 int		    ft_fprintf(int fd, const char *format, ...);
 int		    ft_sprintf(char **buf, const char *format, ...);
+int		    ft_snprintf(char *buf, size_t size, const char *format, ...);
 int		    ft_vprintf(const char *format, va_list arg);
 int		    ft_vfprintf(int fd, const char *format, va_list arg);
 int		    ft_vsprintf(char **buf, const char *format, va_list arg);
@@ -74,6 +75,7 @@ int			ft_memcmp(const void *s1, const void *s2, size_t n);
 void		*ft_memdup(void *src, size_t srcsize);
 
 ssize_t	    ft_atoi(const char *str);
+size_t		ft_atoi_u(const char *str);
 char		*ft_itoa(intmax_t n);
 char		*ft_itoa_base(intmax_t value, int base);
 

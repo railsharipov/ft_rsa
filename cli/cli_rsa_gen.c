@@ -17,7 +17,7 @@ static t_iodes		__out;
 static int			__modsize;
 static t_node		*__asn_pkey;
 static t_der		*__der_pkey;
-static t_pem		*__pem_pkey;
+static t_ostring		*__pem_pkey;
 
 static int	__bnum_set_rand(const char *, const t_task *);
 static int	__init_io(const char *, const t_task *);

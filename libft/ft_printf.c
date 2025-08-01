@@ -169,6 +169,42 @@ int ft_sprintf(char **buf, const char *format, ...)
 	return (num);
 }
 
+int ft_snprintf(char *buf, size_t size, const char *format, ...)
+{
+	int num;
+	va_list arg;
+	t_pf *data;
+	char *tmp_buf;
+
+	va_start(arg, format);
+
+	if (NULL == buf || size < 1) {
+		return (-1);
+	}
+	*buf = NULL;
+	data = __l_arg_new(-1);
+	if (NULL == data) {
+		return (-1);
+	}
+	tmp_buf = NULL;
+	data->buf = &tmp_buf;
+
+	if (format) {
+		__parse(data, format, &arg);
+	}
+	va_end(arg);
+
+	ft_strncpy(buf, tmp_buf, size-1);
+	num = (int)ft_strlen(buf);
+
+	if (tmp_buf) {
+		free(tmp_buf);
+	}
+	free(data);
+
+	return (num);
+}
+
 int ft_vsprintf(char **buf, const char *format, va_list arg)
 {
 	int num;

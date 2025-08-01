@@ -29,7 +29,7 @@ static int	__setup_task(const char **);
 static int	__run_task(void);
 static int	__get_input(t_iodes *, char **, size_t *);
 static int	__write_output(char *, size_t);
-static int	__decode_key(t_pem *, t_node **);
+static int	__decode_key(t_ostring *, t_node **);
 static int	__init_io(const char *, const t_task *);
 static int	__set_op(const char *, const t_task *);
 static int	__set_type(const char *, const t_task *);
@@ -133,13 +133,13 @@ static int	__run_task(void)
 {
 	t_ostring	input;
 	t_ostring	output;
-	t_pem		key;
+	t_ostring		key;
 	t_node		*asn_key;
 	int			ret;
 
 	ft_bzero(&input, sizeof(t_ostring));
 	ft_bzero(&output, sizeof(t_ostring));
-	ft_bzero(&key, sizeof(t_pem));
+	ft_bzero(&key, sizeof(t_ostring));
 	asn_key = NULL;
 	ret = SSL_OK;
 
@@ -203,7 +203,7 @@ static int	__write_output(char *output, size_t outsize)
 	return (SSL_OK);
 }
 
-static int	__decode_key(t_pem *key, t_node **asn_key)
+static int	__decode_key(t_ostring *key, t_node **asn_key)
 {
 	t_der	*der_key;
 	int		ret;
