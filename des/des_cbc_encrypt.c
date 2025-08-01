@@ -26,7 +26,7 @@ static uint64_t	__permut_key;
 static uint64_t	__ksched[16];
 
 static int	__vectors(uint32_t vflag, const char *pass);
-static void	__encrypt(const unsigned char *mes, size_t messize, char **ciph, size_t *ciphsize);
+static void	__encrypt(const unsigned char *mes, size_t messize, unsigned char **ciph, size_t *ciphsize);
 
 int des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph, const char *pass)
 {
@@ -46,7 +46,7 @@ int des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph, const char *pas
 	des_permute_key(&__permut_key, __key);
 	des_encrypt_schedule(__ksched, &__permut_key);
 
-	__encrypt((unsigned char *)(mes->content), mes->size, &ciph->content, &ciph->size);
+	__encrypt(mes->content, mes->size, &ciph->content, &ciph->size);
 
 	return (SSL_OK);
 }
@@ -82,14 +82,14 @@ static int	__vectors(uint32_t vflag, const char *pass)
 	return (SSL_OK);
 }
 
-static void	__encrypt(const unsigned char *mes, size_t messize, char **ciph, size_t *ciphsize)
+static void	__encrypt(const unsigned char *mes, size_t messize, unsigned char **ciph, size_t *ciphsize)
 {
 	size_t	ix;
 	unsigned char	padsize;
 	unsigned char	vectbuf[8];
 	unsigned char	**ciph_ptr;
 
-	ciph_ptr = (unsigned char **)ciph;
+	ciph_ptr = ciph;
 	ft_memcpy(vectbuf, __vect, 8);
 	padsize = 8 - (messize % 8);
 	*ciphsize = messize + padsize + (16 * __is_salted);

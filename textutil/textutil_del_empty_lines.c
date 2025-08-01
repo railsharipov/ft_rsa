@@ -11,7 +11,6 @@
 // CR = carriage return character
 
 static const int LF = 0xA;
-static const int CR = 0xD;
 
 // Delete empty lines in character array
 

@@ -1,11 +1,9 @@
 #include <libft/list.h>
-#include <libft/tuple.h>
 #include <json.h>
 #include <bnum.h>
 
 static void __delete_array(void *content);
 static void __delete_object(void *content);
-static void __delete_key_value(void *content);
 static void __delete_string(void *content);
 static void __delete_number(void *content);
 static void __delete_boolean(void *content);

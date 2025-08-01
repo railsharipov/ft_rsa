@@ -56,7 +56,6 @@ static int	__log(const char *func_name, const char *file_name, int line_number, 
 	char	*full_mes;
 	char	*debug_info;
 	char	*level_prefix;
-	char    *mes_prefix;
 	char	*mes;
 	int		colored, debug_info_thres;
 	int		ret;

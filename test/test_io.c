@@ -63,8 +63,8 @@ static int	__test_io_init(void)
 	TEST_ASSERT(iodes.fd == STDOUT_FILENO);
 	TEST_ASSERT(iodes.mode == IO_MODE_FILDES);
 
-	osbuf.content = "some_content";
-	osbuf.size = ft_strlen(osbuf.content);
+	osbuf.content = (unsigned char *)"some_content";
+	osbuf.size = ft_strlen((char *)osbuf.content);
 
 	io_osbuf(&iodes, IO_READ|IO_OSBUF, &osbuf);
 
@@ -89,7 +89,7 @@ static int	__test_io_read(void)
 	ssize_t		test_rbytes;
 	int			test_fd;
 
-	osbuf.content = (char *)__lorem;
+	osbuf.content = (unsigned char *)__lorem;
 	osbuf.size = __lorem_size;
 
 	io_osbuf(&iodes, IO_READ|IO_OSBUF, &osbuf);
@@ -127,7 +127,7 @@ static int	__test_io_write(void)
 	TEST_ASSERT(wbytes == __lorem_size);
 	TEST_ASSERT(osbuf.size == __lorem_size);
 	TEST_ASSERT(osbuf.content != NULL);
-	TEST_ASSERT(ft_strncmp(__lorem, osbuf.content, osbuf.size) == 0);
+	TEST_ASSERT(ft_strncmp(__lorem, (char *)osbuf.content, osbuf.size) == 0);
 
 	SSL_FREE(osbuf.content);
 	osbuf.size = 0;

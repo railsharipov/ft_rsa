@@ -4,7 +4,6 @@
 t_num	*bnum_from_dec(const char *dec)
 {
 	t_num	*num;
-	char	*decptr;
 	size_t	decsize;
 	size_t	idx;
 	int		sign;

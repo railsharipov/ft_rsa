@@ -8,18 +8,12 @@
 
 # define DER_LOG(LEVEL, MES, ...)	der_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-typedef struct		s_der
-{
-	unsigned char	*content;
-	size_t			size;
-}					t_der;
-
 struct s_node;
 struct s_iodes;
 
-t_der	*der_init(void);
-void	der_del(t_der *);
-void	der_clear(t_der *);
+t_ostring	*der_init(void);
+void	der_del(t_ostring *);
+void	der_clear(t_ostring *);
 
 int	der_encode(struct s_node *tree, struct s_iodes *iodes);
 int der_decode(struct s_node **tree, struct s_iodes *iodes);

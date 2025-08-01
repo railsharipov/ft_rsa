@@ -39,7 +39,7 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 			}
 			else if (format[fpos] == 's') {
 				fpos++;
-				if ((nbytes = __parse_string(octets, olen, opos, &token)) == 0) {
+				if ((nbytes = __parse_string(octets, olen, opos, (char **)&token)) == 0) {
 					break;
 				}
 				opos += nbytes;
@@ -51,7 +51,7 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 			}
 			else if (format[fpos] == 'd') {
 				fpos++;
-				if ((nbytes = __parse_number(octets, olen, opos, &token)) == 0) {
+				if ((nbytes = __parse_number(octets, olen, opos, (ssize_t *)&token)) == 0) {
 					break;
 				}
 				opos += nbytes;
@@ -64,7 +64,7 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 			}
 			else if (format[fpos] == 'u') {
 				fpos++;
-				if ((nbytes = __parse_number_u(octets, olen, opos, &token)) == 0) {
+				if ((nbytes = __parse_number_u(octets, olen, opos, (size_t *)&token)) == 0) {
 					break;
 				}
 				opos += nbytes;
@@ -88,7 +88,7 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 				fpos++;
 				if (format[fpos] == 'd') {
 					fpos++;
-					if ((nbytes = __parse_number(octets, olen, opos, &token)) == 0) {
+					if ((nbytes = __parse_number(octets, olen, opos, (ssize_t *)&token)) == 0) {
 						break;
 					}
 					arg = va_arg(ap, ssize_t *);
@@ -100,7 +100,7 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 				}
 				else if (format[fpos] == 'u') {
 					fpos++;
-					if ((nbytes = __parse_number_u(octets, olen, opos, &token)) == 0) {
+					if ((nbytes = __parse_number_u(octets, olen, opos, (size_t *)&token)) == 0) {
 						break;
 					}
 					arg = va_arg(ap, size_t *);
@@ -151,7 +151,7 @@ static int __parse_number(const char *octets, int olen, int opos, ssize_t *res)
     int start = opos;
     int end;
 
-    while (start < olen && ft_isspace(octets[start])) {
+    while (start < olen && ft_iseolws(octets[start])) {
         start++;
     }
     end = start;
@@ -175,7 +175,7 @@ static int __parse_number_u(const char *octets, int olen, int opos, size_t *res)
     int start = opos;
     int end;
 
-    while (start < olen && ft_isspace(octets[start])) {
+    while (start < olen && ft_iseolws(octets[start])) {
         start++;
     }
     end = start;

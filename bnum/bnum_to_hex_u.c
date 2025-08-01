@@ -9,7 +9,7 @@ char	*bnum_to_hex_u(const t_num *num)
 {
 	char		*hexrev, *hptr, *hex, *hexresult;
 	size_t		hexsize;
-	int			idx, offset;
+	int			offset;
 	t_num		copy;
 
 	if (NULL == num) {

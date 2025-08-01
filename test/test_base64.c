@@ -47,7 +47,7 @@ static int	__test_base64_setup(void)
 
 static int	__test_base64_encode(void)
 {
-	char	*output;
+	unsigned char	*output;
 	size_t	outsize;
 	int		ret_val;
 
@@ -63,7 +63,7 @@ static int	__test_base64_encode(void)
 
 static int	__test_base64_decode(void)
 {
-	char	*output;
+	unsigned char	*output;
 	size_t	outsize;
 	int		ret_val;
 
@@ -81,7 +81,6 @@ static int	__test_base64_check(void)
 {
 	const char	inval_chars[] = "#$%^&@";
 	t_ostring	inval_b64;
-	int			ret_val;
 
 	inval_b64.size = __base64.size + sizeof(inval_chars);
 	SSL_ALLOC(inval_b64.content, inval_b64.size);

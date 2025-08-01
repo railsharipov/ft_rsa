@@ -13,7 +13,7 @@ static const char	UB64[128] = {
 	41,	42,	43,	44,	45,	46,	47,	48,	49,	50,	51,	0,	0,	0,	0,	0
 };
 
-int base64_check(const char *b64enc, size_t size)
+int base64_check(const unsigned char *b64enc, size_t size)
 {
 	int ix;
 
@@ -23,7 +23,7 @@ int base64_check(const char *b64enc, size_t size)
 
 	ix = 0;
 	while (ix < size) {
-		if (UB64[b64enc[ix++]] == 0) {
+		if (UB64[(int)b64enc[ix++]] == 0) {
 			return (SSL_ERR);
 		}
 	}

@@ -436,7 +436,6 @@ static int __test_ft_strjoin(void)
 	size_t total_len = __slen1 + __slen2;
 	char *test_str = NULL;
 	char ref_str[total_len + 1];
-	char *temp_str;
 
 	strcpy(ref_str, __s1);
 	strcat(ref_str, __s2);
@@ -692,7 +691,6 @@ static int __test_ft_memcpy(void)
 	size_t total_len = __slen1 + __slen2;
 	char test_str[total_len];
 	char ref_str[total_len];
-	char *temp_str;
 
 	memcpy(ref_str, __s1, __slen1);
 	memcpy(ref_str + __slen1, __s2, __slen2);
@@ -898,7 +896,7 @@ static int __test_ft_printf(void)
 {
 	char *test_str = NULL;
 	char *ref_str = NULL;
-	void *ptr;
+	void *ptr = NULL;
 	int	test_num;
 	int	ref_num;
 
@@ -1237,7 +1235,6 @@ static int __test_ft_list(void)
 	char **words;
 	int	nwords;
 	int idx;
-	int ret;
 
 	// get words, assume all words are unique (required for some tests)
 	words = ft_strsplit(__s2, ' ');
@@ -1598,7 +1595,6 @@ static int __test_ft_htbl(void)
 	t_htbl *htbl;
 	t_node *node;
 	void *content;
-	char *key;
 	char **words;
 	char **test_content;
 	int test_num;
@@ -1768,7 +1764,6 @@ static int __test_ft_htbl_conversion(void)
 {
 	char *key;
 	t_node *node;
-	t_node *iter;
 	t_node *lst;
 	t_stack *stack;
 	t_queue *queue;
@@ -1874,7 +1869,6 @@ static int __test_ft_ntree_dfs_depth_func(t_node *node, const void *farg)
 	int cur_depth;
 	int	expected_depth;
 	int	nparts;
-	int	ret;
 
 	if (NULL == node) {
 		return (-1);
@@ -1909,7 +1903,6 @@ static int __test_ft_ntree_dfs_depth_func(t_node *node, const void *farg)
 static int __test_ft_ntree_dfs_order_func(t_node *node, const void *farg)
 {
 	char ***words;
-	int	ret;
 
 	if (NULL == node) {
 		return (-1);

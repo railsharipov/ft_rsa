@@ -21,13 +21,12 @@ static int	__is_salted;
 static unsigned char	*__salt;
 static unsigned char	*__key;
 static unsigned char	*__vect;
-static unsigned char	__temp[8];
 
 static uint64_t	__permut_key;
 static uint64_t	__ksched[16];
 
 static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag, const char *pass);
-static int	__decrypt(const unsigned char *ciph, size_t ciphsize, char **mes, size_t *messize);
+static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize);
 static int	__remove_pad(unsigned char **mes, size_t *messize);
 
 int des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass)
@@ -108,7 +107,7 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 	return (SSL_OK);
 }
 
-static int	__decrypt(const unsigned char *ciph, size_t ciphsize, char **mes, size_t *messize)
+static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize)
 {
 	size_t	ix;
 	unsigned char	vectbuf[8];

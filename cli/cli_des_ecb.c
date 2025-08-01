@@ -14,7 +14,6 @@ static t_htbl	*__des_htable;
 static uint32_t	__gflag;
 static t_iodes	__in;
 static t_iodes	__out;
-static int		(*__f_op)(void);
 
 static const char	*__pass;
 
@@ -125,7 +124,7 @@ static int __run_task(void)
 	ret = SSL_OK;
 	__des = des_hexinit(__keyhex, __salthex, NULL);
 
-	if (SSL_OK != __get_input(&input.content, &input.size)) {
+	if (SSL_OK != __get_input((char **)&input.content, &input.size)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -150,7 +149,6 @@ static int	__get_input(char **input, size_t *insize)
 {
 	char	buf[IO_BUFSIZE];
 	ssize_t	rbytes;
-	size_t	tbytes;
 
 	*input = NULL;
 	*insize = 0;
@@ -269,7 +267,7 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != base64_encode((char *)(ciph->content), ciph->size, &b64.content, &b64.size)) {
+	if (SSL_OK != base64_encode(ciph->content, ciph->size, &b64.content, &b64.size)) {
 		ret = (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
 	}
 
@@ -289,7 +287,7 @@ static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 {
 	t_ostring	cipher;
 
-	if (SSL_OK != base64_decode((char *)(b64->content), b64->size, &cipher.content, &cipher.size)) {
+	if (SSL_OK != base64_decode(b64->content, b64->size, &cipher.content, &cipher.size)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

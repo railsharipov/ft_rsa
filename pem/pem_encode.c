@@ -62,11 +62,11 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *label, c
 			PEM_LOG(ERROR, "rand useed failed");
 			goto label_exit;
 		}
-		if (SSL_OK != rand_openssl_kdf(pem->key, pem->iv, NULL, pass)) {
+		if (SSL_OK != rand_openssl_kdf((unsigned char *)pem->key, (unsigned char *)pem->iv, NULL, pass)) {
 			PEM_LOG(ERROR, "rand pbkdf2 failed");
 			goto label_exit;
 		}
-		des = des_init(pem->key, NULL, pem->iv);
+		des = des_init((unsigned char *)pem->key, NULL, (unsigned char *)pem->iv);
 
 		if (SSL_OK != des_cbc_encrypt(des, data, &cipher, pass)) {
 			PEM_LOG(ERROR, "des cbc encrypt failed");
@@ -102,17 +102,17 @@ label_exit:
 
 static int	__base64_encode(t_ostring *content, t_ostring *pemenc)
 {
-	char	*b64;
+	unsigned char	*b64;
 	size_t	b64size;
 
 	b64 = NULL;
 	b64size = 0;
 
-	if (SSL_OK != base64_encode((char *)(content->content), content->size, &b64, &b64size)) {
+	if (SSL_OK != base64_encode(content->content, content->size, &b64, &b64size)) {
 		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	textutil_insert_delim(&b64, &b64size, '\n', 64);
+	textutil_insert_delim((char **)&b64, &b64size, '\n', 64);
 	ft_ostr_append(pemenc, b64, b64size);
 	SSL_FREE(b64);
 

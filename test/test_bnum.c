@@ -103,10 +103,6 @@ int	test_bnum(void)
 
 static int	__test_bnum_setup(void)
 {
-	t_num		n1;
-	t_num		n2;
-	uint64_t	digit;
-
 	bnum_init(&__zero_num);
 	bnum_set_dig_u(&__zero_num, 0);
 
@@ -268,7 +264,6 @@ static int __test_bnum_from_dec(void)
 
 static int __test_bnum_abs(void)
 {
-	char	*hex;
 	t_num	test_num, res_num;
 
 	bnum_init(&test_num);

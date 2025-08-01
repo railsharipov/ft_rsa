@@ -25,7 +25,7 @@ static uint64_t	__permut_key;
 static uint64_t	__ksched[16];
 
 static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag, const char *pass);
-static int	__decrypt(const unsigned char *ciph, size_t ciphsize, char **mes, size_t *messize);
+static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize);
 static int	__remove_pad(unsigned char **mes, size_t *messize);
 
 int des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass)
@@ -104,12 +104,12 @@ static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag,
 	return (SSL_OK);
 }
 
-static int	__decrypt(const unsigned char *ciph, size_t ciphsize, char **mes, size_t *messize)
+static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize)
 {
 	size_t	ix;
 	unsigned char **mes_ptr;
 
-	mes_ptr = (unsigned char **)mes;
+	mes_ptr = mes;
 	*messize = ciphsize - (__is_salted*16);
 	SSL_ALLOC(*mes_ptr, *messize);
 

@@ -4,7 +4,7 @@ void	bnum_mul_comba_lo(const t_num *a, const t_num *b, t_num *res, int ndig)
 {
 	uint64_t	*temp;
 	uint128_t	val;
-	int 		idx, z;
+	int 		z;
 
 	val = 0;
 	ndig = BNUM_MIN(ndig, a->len + b->len);

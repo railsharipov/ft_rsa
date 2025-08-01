@@ -42,8 +42,6 @@ void *ft_htbl_create(int size)
 
 void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 {
-	t_node	*node;
-
 	if (NULL == htbl) {
 		return ;
 	}
@@ -52,8 +50,6 @@ void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 
 void	ft_htbl_add_with_f_del(t_htbl *htbl, void *content, const char *key, FUNC_CONTENT_DEL f_del)
 {
-	t_node	*node;
-
 	if (NULL == htbl) {
 		return ;
 	}

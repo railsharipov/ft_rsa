@@ -28,8 +28,6 @@ int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 	IO_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "NULL");
 	
 	t_io_param	*param;
-	char		*input;
-	int 		insize;
 
 	if (NULL == iodes) {
 		IO_LOG(ERROR, INVALID_INPUT_ERROR);

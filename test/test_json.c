@@ -9,7 +9,6 @@
 static int	__test_json_setup(void);
 static void	__test_json_cleanup(void);
 
-static int	__test_json_query(void);
 static int	__test_json_parse_simple_string(void);
 static int	__test_json_parse_simple_number(void);
 static int	__test_json_parse_simple_boolean(void);
@@ -140,14 +139,12 @@ static int	__test_json_parse_simple_number(void)
 {
 	t_node	*node;
 	char	*json_s;
-	size_t	json_slen;
 	t_num	*ref_num;
 	int		ret;
 
 	node = NULL;
 
 	json_s = ft_ostr_to_cstr(&__simple_number_json, 0, __simple_number_json.size);
-	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
@@ -172,14 +169,12 @@ static int	__test_json_parse_simple_boolean(void)
 {
 	t_node	*node;
 	char	*json_s;
-	size_t	json_slen;
 	int		ret;
 
 	// Test false boolean
 	node = NULL;
 
 	json_s = ft_ostr_to_cstr(&__simple_false_json, 0, __simple_false_json.size);
-	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
@@ -194,7 +189,6 @@ static int	__test_json_parse_simple_boolean(void)
 	node = NULL;
 
 	json_s = ft_ostr_to_cstr(&__simple_true_json, 0, __simple_true_json.size);
-	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
@@ -212,11 +206,9 @@ static int	__test_json_parse_simple_null(void)
 {
 	t_node	*node;
 	char	*json_s;
-	size_t	json_slen;
 	int		ret;
 
 	json_s = ft_ostr_to_cstr(&__simple_null_json, 0, __simple_null_json.size);
-	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &node);
 	TEST_ASSERT(SSL_OK == ret);
@@ -235,16 +227,12 @@ static int	__test_json_parse_simple_null(void)
 static int	__test_json_parse_complex_object(void)
 {
 	t_node	*root_node, *node;
-	t_htbl	*htbl;
-	t_node	*array_node, *array_item;
 	char	*json_s;
-	size_t	json_slen;
 	int		ret;
 
 	root_node = NULL;
 
 	json_s = ft_ostr_to_cstr(&__complex_object_json, 0, __complex_object_json.size);
-	json_slen = ft_strlen(json_s);
 
 	ret = json_parse(json_s, &root_node);
 	TEST_ASSERT(SSL_OK == ret);
@@ -366,7 +354,6 @@ static int	__test_json_query_complex_object(void)
 {
 	t_node	*json, *result;
 	char	*json_s;
-	int		ret;
 
 	json = NULL;
 	result = NULL;
@@ -408,7 +395,6 @@ static int	__test_json_clone_complex_object(void)
 	t_node	*json, *cloned_json;
 	t_node	*node, *cloned_node;
 	char	*json_s;
-	int		ret;
 
 	json = NULL;
 	cloned_json = NULL;
@@ -589,7 +575,6 @@ static int	__test_json_map(void)
 	t_node	*json, *mapped_json;
 	t_node	*node, *mapped_node;
 	char	*json_s;
-	int		ret;
 
 	mapped_json = NULL;
 

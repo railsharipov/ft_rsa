@@ -136,7 +136,6 @@ static int	__parse_value(const char *s, t_node *node)
 static int	__parse_null(const char *s, t_node *node)
 {
 	size_t	old_pos;
-	int 	status;
 
 	old_pos = __pos;
 	__skip_ws(s);
@@ -160,7 +159,6 @@ static int	__parse_null(const char *s, t_node *node)
 static int	__parse_boolean(const char *s, t_node *node)
 {
 	size_t	old_pos;
-	int		status;
 
 	old_pos = __pos;
 	__skip_ws(s);
@@ -194,7 +192,6 @@ static int	__parse_number(const char *s, t_node *node)
 	size_t		exponent_start, exponent_end;
 	int 		is_neg_mantissa, is_neg_exponent;
 	int 		is_float, is_exponent;
-	int 		status;
 	char		*mantissa_str, *exponent_str;
 	t_num		*mantissa, *number;
 	uint64_t	exponent;
@@ -272,6 +269,7 @@ static int	__parse_number(const char *s, t_node *node)
 	}
 
 	if (is_float || is_neg_exponent) {
+		JSON_LOG(TRACE, "float: start=%zu, end=%zu, fraction_start=%zu, fraction_end=%zu, exponent_start=%zu, exponent_end=%zu", mantissa_start, mantissa_end, fraction_start, fraction_end, exponent_start, exponent_end);
 		JSON_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
 		return (JSON_BAD_FORMAT);
 	}
@@ -307,7 +305,6 @@ static int	__parse_string(const char *s, t_node *node)
 {
 	size_t 	old_pos;
 	size_t 	str_start, str_end;
-	int 	status;
 
 	old_pos = __pos;
 	__skip_ws(s);

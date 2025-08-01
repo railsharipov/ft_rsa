@@ -24,7 +24,6 @@ static int  __f_logger(const char *mes) {
 int cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
 	va_list	va_arg;
 	char	*prefixed_fmt;
-	char	*level_prefix;
 	int		ret;
 
 	if (level > __logger.log_level) {
@@ -44,7 +43,6 @@ int cli_logger_log(const char *func_name, const char *file_name, int line_number
 
 int cli_logger_print_file(const char *file_name) {
 	char	buf[256];
-	char	*message;
 	ssize_t	rbytes;
 	int		fd;
 

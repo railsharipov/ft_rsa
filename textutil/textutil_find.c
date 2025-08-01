@@ -8,7 +8,7 @@ int textutil_find(const char *octets, int olen, const char *pattern, int patlen)
 	unsigned int pathash, winhash;
 	unsigned char *oct, *pat;
 	int mod;
-	int ix, iy;
+	int ix;
 
 	if (NULL == pattern || NULL == octets) {
 		return (-1);

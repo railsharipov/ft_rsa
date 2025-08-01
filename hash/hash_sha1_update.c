@@ -95,7 +95,7 @@ static void	__update_hash(void)
 	var[4] = hash[4];
 }
 
-void	hash_sha1_update(t_hash *sha1, const char *buf, size_t bufsize)
+void	hash_sha1_update(t_hash *sha1, const unsigned char *buf, size_t bufsize)
 {
 	if ((NULL == sha1) || (NULL == buf)) {
 		return ;

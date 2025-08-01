@@ -16,8 +16,8 @@ static uint32_t		__gflag;
 static t_iodes		__out;
 static int			__modsize;
 static t_node		*__asn_pkey;
-static t_der		*__der_pkey;
-static t_ostring		*__pem_pkey;
+static t_ostring		*__der_pkey;
+static t_ostring	__pem_pkey;
 
 static int	__bnum_set_rand(const char *, const t_task *);
 static int	__init_io(const char *, const t_task *);
@@ -57,14 +57,14 @@ static void	__clear(void)
 	ft_htbl_del(__rsa_htable);
 	asn_tree_del(__asn_pkey);
 	der_del(__der_pkey);
-	pem_del(__pem_pkey);
+	ft_ostr_clear(&__pem_pkey);
 }
 
 static int	__write_output(void)
 {
-	ft_printf("%@e is %d (%#x)\n", RSA_EXPPUB, RSA_EXPPUB);
+	CLI_LOG(INFO, "%@e is %d (%#x)", RSA_EXPPUB, RSA_EXPPUB);
 
-	if (io_write(&__out, __pem_pkey->content, __pem_pkey->size) < 0) {
+	if (io_write(&__out, (char *)__pem_pkey.content, __pem_pkey.size) < 0) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -74,7 +74,13 @@ static int	__write_output(void)
 
 static int __run_task(void)
 {
+	t_pem	pem;
+
 	CLI_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
+
+	pem_init(&pem);
+	pem.proc = PEM_PROC_TYPE_ENCRYPTED;
+	pem.cipher = PEM_CIPHER_DES_CBC;
 
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
@@ -84,7 +90,7 @@ static int __run_task(void)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != pem_encode((t_ostring *)__der_pkey, &__pem_pkey, "PRIVATE KEY", NULL)) {
+	if (SSL_OK != pem_encode(&pem, (t_ostring *)__der_pkey, &__pem_pkey, "PRIVATE KEY", NULL)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -145,6 +151,7 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 	}
 	__frand = NULL;
 	__modsize = 512;
+	ft_ostr_init(&__pem_pkey);
 
 	if (SSL_OK == (ret = __get_task(opt))) {
 		ret = __run_task();

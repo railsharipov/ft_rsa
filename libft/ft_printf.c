@@ -181,7 +181,6 @@ int ft_snprintf(char *buf, size_t size, const char *format, ...)
 	if (NULL == buf || size < 1) {
 		return (-1);
 	}
-	*buf = NULL;
 	data = __l_arg_new(-1);
 	if (NULL == data) {
 		return (-1);
@@ -457,11 +456,9 @@ static void	__oper(t_pf *data, char *s, size_t *i, char op)
 
 static void	__format_di(t_pf *data, char len, va_list *arg)
 {
-	char		type;
 	intmax_t	val;
 
 	val = 0;
-	type = data->type;
 
 	if (!(data->flag & PF_PREC)) {
 		data->prec = 1;
@@ -488,11 +485,9 @@ static void	__format_di(t_pf *data, char len, va_list *arg)
 
 static void	__format_oux(t_pf *data, char len, va_list *arg)
 {
-	char		type;
 	uintmax_t	val;
 
 	val = 0;
-	type = data->type;
 
 	if (!len) {
 		val = (unsigned int)va_arg(*arg, unsigned int);

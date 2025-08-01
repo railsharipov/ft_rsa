@@ -16,9 +16,9 @@
 static const int	END_BYTE = 1 << 7;
 static const int	LEN_SIZE = 8;
 
-void	hash_md5_final(t_hash *md5, const char *buf, size_t bufsize)
+void	hash_md5_final(t_hash *md5, const unsigned char *buf, size_t bufsize)
 {
-	char 		*pbuf;
+	unsigned char	*pbuf;
 	int			pbsize;
 	uint64_t	msize_nbits;
 	unsigned char		msize_octets[8];
@@ -39,7 +39,7 @@ void	hash_md5_final(t_hash *md5, const char *buf, size_t bufsize)
 
 	SSL_ALLOC(pbuf, pbsize);
 	ft_memcpy(pbuf, buf, bufsize);
-	pbuf[bufsize] = (char)END_BYTE;
+	pbuf[bufsize] = (unsigned char)END_BYTE;
 
 	ft_memcpy(pbuf + pbsize-LEN_SIZE, msize_octets, LEN_SIZE);
 	hash_md5_update(md5, pbuf, pbsize);

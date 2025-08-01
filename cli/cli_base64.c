@@ -27,7 +27,7 @@ static t_htbl		*__b64_htable;
 static uint32_t		__gflag;
 static t_iodes		__in;
 static t_iodes		__out;
-static int			(*__f_b64)(const char *, size_t, char **, size_t *);
+static int			(*__f_b64)(const unsigned char *, size_t, unsigned char **, size_t *);
 
 static const t_task	T[] = {
 	/*	KEY	PTR	TFLAG	GFLAG	OFLAG	VAL	*/
@@ -119,7 +119,7 @@ static int	__run_task(void)
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != __f_b64(input, insize, &output, &outsize)) {
+	if (SSL_OK != __f_b64((unsigned char *)input, insize, (unsigned char **)&output, &outsize)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -136,7 +136,6 @@ static int	__get_input(char **input, size_t *insize)
 {
 	char	buf[IO_BUFSIZE];
 	int		rbytes;
-	size_t	tbytes;
 
 	*input = NULL;
 	*insize = 0;

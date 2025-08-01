@@ -28,7 +28,7 @@ static const unsigned char	UB64[128] = {
 	41,	42,	43,	44,	45,	46,	47,	48,	49,	50,	51,	0,	0,	0,	0,	0
 };
 
-int	base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize)
+int	base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize)
 {
 	unsigned char	*omes;
 	unsigned char	*oenc;
@@ -44,10 +44,10 @@ int	base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize)
 		return (SSL_ERR);
 	}
 
-	oenc = (unsigned char *)(enc);
+	oenc = (unsigned char *)enc;
 	*messize = CEIL(encsize, B64_BLOCK_SIZE)/B64_BLOCK_SIZE * MES_BLOCK_SIZE;
 	SSL_ALLOC(*mes, *messize);
-	omes = (unsigned char *)(*mes);
+	omes = *mes;
 
 	while (encsize >= B64_BLOCK_SIZE) {
 		*omes++ = ( UB64[oenc[0]]<<2 )|( UB64[oenc[1]]>>4 );

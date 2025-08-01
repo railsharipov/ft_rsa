@@ -16,11 +16,11 @@
 # include <string.h>
 # include <libft/common.h>
 
-typedef	struct	s_ostring
+typedef	struct		s_ostring
 {
-	char		*content;
-	size_t		size;
-}				t_ostring;
+	unsigned char	*content;
+	size_t			size;
+}					t_ostring;
 
 t_ostring	*ft_ostr_create(void);
 void 		ft_ostr_init(t_ostring *ostring);

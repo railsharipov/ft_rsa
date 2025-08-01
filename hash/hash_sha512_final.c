@@ -48,9 +48,9 @@ static void __swap_bytes_64(t_sha512_word *arr, size_t size)
 	}
 }
 
-void	hash_sha512_final(t_hash *sha512, const char *buf, size_t bufsize)
+void	hash_sha512_final(t_hash *sha512, const unsigned char *buf, size_t bufsize)
 {
-	char 		*pbuf;
+	unsigned char	*pbuf;
 	int			pbsize;
 	uint128_t	msize_nbits;
 	unsigned char		msize_octets[LEN_SIZE];
@@ -71,7 +71,7 @@ void	hash_sha512_final(t_hash *sha512, const char *buf, size_t bufsize)
 
 	SSL_ALLOC(pbuf, pbsize);
 	ft_memcpy(pbuf, buf, bufsize);
-	pbuf[bufsize] = (char)END_BYTE;
+	pbuf[bufsize] = (unsigned char)END_BYTE;
 
 	ft_memcpy(pbuf + pbsize-LEN_SIZE, msize_octets, LEN_SIZE);
 	hash_sha512_update(sha512, pbuf, pbsize);

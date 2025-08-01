@@ -75,7 +75,7 @@ static void	__test_asn_cleanup(void)
 
 static int	__test_asn_tree_create_subjectPublicKeyInfo(void)
 {
-	t_node	*asn_tree, *asn_node_list, *asn_node;
+	t_node	*asn_tree, *asn_node;
 	t_iasn	*asn_item;
 	t_node 	*schema_json;
 	char 	*schema_json_str;
@@ -278,7 +278,7 @@ static int __test_asn_tree_query_subjectPublicKeyInfo(void)
 
 static int __test_asn_tree_create_privateKeyInfo(void)
 {
-	t_node	*asn_tree, *asn_node_list, *asn_node;
+	t_node	*asn_tree, *asn_node;
 	t_iasn	*asn_item;
 	t_node 	*schema_json;
 	char 	*schema_json_str;

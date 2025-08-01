@@ -143,11 +143,11 @@ static int	__run_task(void)
 	asn_key = NULL;
 	ret = SSL_OK;
 
-	if (SSL_OK != __get_input(&__inkey, &(key.content), &(key.size))) {
+	if (SSL_OK != __get_input(&__inkey, (char **)&(key.content), &(key.size))) {
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 	}
 
-	else if (SSL_OK != __get_input(&__in, &(input.content), &(input.size)))
+	else if (SSL_OK != __get_input(&__in, (char **)&(input.content), &(input.size)))
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_OK != __decode_key(&key, &asn_key))
@@ -156,7 +156,7 @@ static int	__run_task(void)
 	else if (SSL_OK != __f_op(&input, &output, asn_key))
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 
-	else if (SSL_OK != __write_output(output.content, output.size))
+	else if (SSL_OK != __write_output((char *)output.content, output.size))
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	asn_tree_del(asn_key);
@@ -171,7 +171,6 @@ static int	__get_input(t_iodes *iodes, char **input, size_t *insize)
 {
 	char	buf[IO_BUFSIZE];
 	ssize_t	rbytes;
-	size_t	tbytes;
 
 	*input = NULL;
 	*insize = 0;
@@ -205,19 +204,23 @@ static int	__write_output(char *output, size_t outsize)
 
 static int	__decode_key(t_ostring *key, t_node **asn_key)
 {
-	t_der	*der_key;
+	t_pem	pem;
+	t_ostring	der_key;
 	int		ret;
 
 	ret = SSL_OK;
 
-	if (SSL_OK != pem_decode(key, __in_type, (t_ostring **)&der_key, NULL)) {
+	pem_init(&pem);
+	ft_ostr_init(&der_key);
+
+	if (SSL_OK != pem_decode(&pem, key, &der_key, __in_type, NULL)) {
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 	}
-	else if (SSL_OK != asn_tree_der_decode(der_key, __in_map, asn_key)) {
+	else if (SSL_OK != asn_tree_der_decode(&der_key, __in_map, asn_key)) {
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 	}
 
-	der_del(der_key);
+	ft_ostr_clear(&der_key);
 
 	return (ret);
 }

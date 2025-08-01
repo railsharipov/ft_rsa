@@ -27,7 +27,6 @@ void test_logger_set_level(uint8_t level) {
 int test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
 	va_list	va_arg;
 	char	*prefixed_fmt;
-	char	*level_prefix;
 	int		ret;
 
 	if (level > __logger.log_level) {

@@ -147,7 +147,7 @@ static int	__run_task(void)
 	ret = SSL_OK;
 	outkey = NULL;
 
-	if (SSL_OK != __get_input(&(__inkey.content), &(__inkey.size))) {
+	if (SSL_OK != __get_input((char **)&(__inkey.content), &(__inkey.size))) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -175,7 +175,7 @@ static int	__run_task(void)
 	asn_tree_del(asn_key);
 
 	if (SSL_OK == ret) {
-		ret = __write_output(outkey->content, outkey->size);
+		ret = __write_output((char *)outkey->content, outkey->size);
 	}
 	ft_ostr_del(outkey);
 
@@ -186,7 +186,6 @@ static int	__get_input(char **input, size_t *insize)
 {
 	char	buf[IO_BUFSIZE];
 	ssize_t	rbytes;
-	size_t	tbytes;
 
 	*input = NULL;
 	*insize = 0;
@@ -270,9 +269,7 @@ static int	__get_pass(const char *opt, const t_task *task)
 
 static void	__key_info(t_node *asn_key)
 {
-	t_htbl	*key_items;
 	t_iasn	*asn_item;
-	char	*snum;
 
 	if (SSL_FLAG(RSA_TEXT, __gflag)) {
 		asn_print(asn_key);
@@ -313,46 +310,53 @@ static int	__key_type(t_node **asn_key)
 
 static int	__decode_key(t_node **asn_key)
 {
-	t_der	*der_key;
+	t_pem	pem;
+	t_ostring	*der_key;
 	int		ret;
 
 	ret = SSL_OK;
 
+	pem_init(&pem);
+	
 	if (RSA_PEM == __inform) {
-		ret = pem_decode(&__inkey, __in_type, (t_ostring **)&der_key, __passin);
+		der_key = ft_ostr_create();
+		ret = pem_decode(&pem, &__inkey, der_key, __in_type, __passin);
 	} else {
-		der_key = (t_der *)ft_ostr_dup((t_ostring *)&__inkey);
+		der_key = ft_ostr_dup(&__inkey);
 	}
 	if (SSL_OK == ret) {
 		ret = asn_tree_der_decode(der_key, __in_map, asn_key);
 	}
-	der_del(der_key);
+	ft_ostr_del(der_key);
 
 	return (ret);
 }
 
 static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 {
-	t_der	*der_key;
+	t_pem	pem;
+	t_ostring	*der_key;
 	int		ret;
 
 	ret = SSL_OK;
 
+	pem_init(&pem);
+	
 	if (SSL_OK != asn_tree_der_encode(asn_key, &der_key)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (RSA_PEM == __outform) {
+		*outkey = ft_ostr_create();
 		if (SSL_FLAG(RSA_ENCRYPT, __gflag)) {
-			ret = pem_encode((t_ostring *)der_key, (t_ostring **)outkey, __out_type, __passout);
+			ret = pem_encode(&pem, der_key, *outkey, __out_type, __passout);
 		} else {
-			ret = pem_encode((t_ostring *)der_key, (t_ostring **)outkey, __out_type, NULL);
+			ret = pem_encode(&pem, der_key, *outkey, __out_type, NULL);
 		}
 	} else {
-		SSL_ALLOC(*outkey, sizeof(t_ostring));
-		*outkey = ft_ostr_dup((t_ostring *)der_key);
+		*outkey = ft_ostr_dup(der_key);
 	}
-	der_del(der_key);
+	ft_ostr_del(der_key);
 
 	return (ret);
 }

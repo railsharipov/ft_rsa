@@ -1,13 +1,13 @@
 #include <common.h>
 #include <der.h>
 
-t_der *der_init(void)
+t_ostring *der_init(void)
 {
-    t_der *der;
+    t_ostring *der;
 
     DER_LOG(TRACE, "initializing DER structure");
 
-    SSL_ALLOC(der, sizeof(t_der));
+    SSL_ALLOC(der, sizeof(t_ostring));
     der->content = NULL;
     der->size = 0;
 
@@ -16,7 +16,7 @@ t_der *der_init(void)
     return (der);
 }
 
-void  der_clear(t_der *der)
+void  der_clear(t_ostring *der)
 {
 	if (NULL == der) {
 		return ;
@@ -31,7 +31,7 @@ void  der_clear(t_der *der)
 	DER_LOG(TRACE, "DER structure cleared");
 }
 
-void  der_del(t_der *der)
+void  der_del(t_ostring *der)
 {
 	if (NULL == der) {
 		return ;

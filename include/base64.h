@@ -19,8 +19,8 @@ enum	e_base64_flag
 
 int		base64_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-int		base64_encode(const char *mes, size_t messize, char **enc, size_t *encsize);
-int		base64_decode(const char *enc, size_t encsize, char **mes, size_t *messize);
-int		base64_check(const char *b64enc, size_t size);
+int		base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc, size_t *encsize);
+int		base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize);
+int		base64_check(const unsigned char *b64enc, size_t size);
 
 #endif

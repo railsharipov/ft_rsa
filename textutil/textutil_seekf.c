@@ -10,7 +10,7 @@ int textutil_seekf(const char *octets, int olen, char *format, ...)
 	int		match;
 
 	va_start(ap, format);
-	patlen = ft_vsprintf(*pattern, format, ap);
+	patlen = ft_vsprintf(&pattern, format, ap);
 	va_end(ap);
 	
 	match = 0;

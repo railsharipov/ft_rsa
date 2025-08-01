@@ -4,7 +4,7 @@ void	bnum_sqr_comba(const t_num *a, t_num *res)
 {
 	uint64_t	*temp;
 	uint128_t	val, carry;
-	int 		idx, ndig, z;
+	int 		ndig, z;
 
 	carry = 0;
 	ndig = 2 * a->len;

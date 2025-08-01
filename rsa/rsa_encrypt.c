@@ -38,7 +38,7 @@ static int	__eme_pkcs1_v1_5_ps(
 
 // Concatenate PS ostring, message and three intermediate octets
 static int	__eme_pkcs1_v1_5_concat(
-	unsigned char **octets, size_t *osize, const char *mes, size_t messize)
+	unsigned char **octets, size_t *osize, const unsigned char *mes, size_t messize)
 {
 	const unsigned char	EME_OCTET_0X00 = 0x00;
 	const unsigned char	EME_OCTET_0X02 = 0x02;
@@ -75,8 +75,7 @@ static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 }
 
 // RSA encryption scheme
-static int  __encrypt(
-	const char *mes, size_t messize, char **ciph, size_t *ciphsize)
+static int  __encrypt(const unsigned char *mes, size_t messize, unsigned char **ciph, size_t *ciphsize)
 {
 	unsigned char	*octets;
 	size_t			osize;
@@ -107,7 +106,7 @@ static int  __encrypt(
 	else if (SSL_OK != __encrypt_prim(&mes_rep, &ciph_rep))
 		res = SSL_ERR;
 
-	else if (SSL_OK != rsa_i2os(&ciph_rep, (unsigned char **)ciph, modsize))
+	else if (SSL_OK != rsa_i2os(&ciph_rep, ciph, modsize))
 		res = SSL_ERR;
 
 	bnum_clear_multi(&mes_rep, &ciph_rep, NULL);
@@ -125,8 +124,6 @@ static int  __encrypt(
 
 int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key)
 {
-	int	keysize;
-
 	if ((NULL == mes) || (NULL == mes->content) || (NULL == ciph) || (NULL == asn_key)) {
 		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);

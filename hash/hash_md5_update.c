@@ -96,7 +96,7 @@ static void	__update_hash(void)
 	var[3] = hash[3];
 }
 
-void	hash_md5_update(t_hash *md5, const char *buf, size_t bufsize)
+void	hash_md5_update(t_hash *md5, const unsigned char *buf, size_t bufsize)
 {
 	if ((NULL == md5) || (NULL == buf)) {
 		return ;

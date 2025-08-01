@@ -9,7 +9,7 @@ char *__to_hex_string(const t_num *num)
 	char *hexrev, *hptr, *hex;
 	uint64_t digit;
 	size_t hexsize;
-	int idx, idy, offset;
+	int idx, idy;
 
 	if (NULL == num) {
 		return (NULL);
@@ -57,7 +57,6 @@ static int	__get_sign(const t_num *num) {
 
 void	bnum_print(const char *prefix, const t_num *num)
 {
-	FUNC_LOGGER	logger;
 	char	*hex;
 	int		bits;
 	char	sign;
@@ -70,8 +69,8 @@ void	bnum_print(const char *prefix, const t_num *num)
 	hex = __to_hex_string(num);
 	sign = __get_sign(num);
 
+	bits = bnum_lmbit(num);
 	if (prefix) {
-		bits = bnum_lmbit(num);
 		BNUM_LOG(INFO, "%s: [len=%d, bits=%d, sign=(%c)] %s ", prefix, num->len, bits, sign, hex);
 	} else {
 		BNUM_LOG(INFO, "[len=%d, bits=%d, sign=(%c)] %s", num->len, bits, sign, hex);

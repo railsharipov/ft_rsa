@@ -49,7 +49,7 @@ static void	__last_block(unsigned char *omes, size_t messize, unsigned char *oen
 
 }
 
-int	base64_encode(const char *mes, size_t messize, char **enc, size_t *encsize)
+int	base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc, size_t *encsize)
 {
 	unsigned char	*omes;
 	unsigned char	*oenc;
@@ -58,10 +58,10 @@ int	base64_encode(const char *mes, size_t messize, char **enc, size_t *encsize)
 		B64_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-	omes = (unsigned char *)(mes);
+	omes = (unsigned char *)mes;
 	*encsize = CEIL(messize, MES_BLOCK_SIZE)/MES_BLOCK_SIZE * B64_BLOCK_SIZE;
 	SSL_ALLOC(*enc, *encsize);
-	oenc = (unsigned char *)(*enc);
+	oenc = *enc;
 
 	while (messize >= MES_BLOCK_SIZE) {
 		*oenc++ = B64[( ( omes[0]>>2 )&0x3F )];

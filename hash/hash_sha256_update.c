@@ -99,7 +99,7 @@ static void	__update_hash(void)
 	var[7] = hash[7];
 }
 
-void	hash_sha256_update(t_hash *sha256, const char *buf, size_t bufsize)
+void	hash_sha256_update(t_hash *sha256, const unsigned char *buf, size_t bufsize)
 {
 	if ((NULL == sha256) || (NULL == buf)) {
 		return ;

@@ -13,8 +13,7 @@
 #include <common.h>
 #include <hash.h>
 
-void	hash_sha512_256_update(
-	t_hash *sha512_256, const char *buf, size_t bufsize)
+void	hash_sha512_256_update(t_hash *sha512_256, const unsigned char *buf, size_t bufsize)
 {
 	hash_sha512_update(sha512_256, buf, bufsize);
 }

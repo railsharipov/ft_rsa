@@ -19,7 +19,6 @@ typedef enum e_pem_cipher {
 typedef struct s_pem {
     t_pem_proc proc;
     t_pem_cipher cipher;
-    uint8_t encrypted;
     char salt[8];
     char iv[8];
     char key[8];

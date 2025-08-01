@@ -17,7 +17,6 @@ static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in);
 static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in);
 
 static int	__decode_construct(t_node **nodes, t_ostring *encoded);
-static int	__decode_primitive(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 static int	__decode_ostring(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 static int	__decode_bitstring(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 static int	__decode_bool(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
@@ -191,6 +190,7 @@ static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in)
 	}
 
 	*len = 0;
+	tbytes = 0;
 
 	if ((rbytes = io_read(in, (char *)&octet, 1)) < 0) {
 		DER_LOG(ERROR, "read length error: bad read");
@@ -236,6 +236,8 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 	ssize_t	rbytes, tbytes;
 	size_t	len;
 	uint8_t	lenform;
+
+	tbytes = 0;
 
 	if ((rbytes = __read_len(&len, &lenform, in)) <= 0) {
 		DER_LOG(ERROR, "read content octets error: bad read");
@@ -288,7 +290,7 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 	else {
 		ft_ostr_init_with_size(osbuf, len);
 
-		if ((rbytes = io_read(in, osbuf->content, len)) < 0) {
+		if ((rbytes = io_read(in, (char *)osbuf->content, len)) < 0) {
 			DER_LOG(ERROR, "read definite length content error: bad read");
 			goto label_error;
 		}
@@ -421,7 +423,7 @@ static int	__decode_sequence(uint8_t tag, t_ostring *decoded, t_ostring *encoded
 		return (SSL_ERR);
 	}
 
-	decoded->content = (char *)nodes;
+	decoded->content = (unsigned char *)nodes;
 	decoded->size = ft_lst_size(nodes);
 
 	DER_LOG(TRACE, "sequence decoded successfully, child nodes: %zu", decoded->size);
@@ -456,7 +458,7 @@ static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 	num = bnum_create();
 	bnum_from_bytes_u(num, (char *)encoded->content, encoded->size);
-	decoded->content = (char *)num;
+	decoded->content = (unsigned char *)num;
 	decoded->size = 0;
 
 	DER_LOG(TRACE, "integer decoded successfully");
@@ -539,7 +541,7 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		DER_LOG(ERROR, "unknown asn object id");
 		return (SSL_ERR);
 	}
-	decoded->content = obj_name;
+	decoded->content = (unsigned char *)obj_name;
 	decoded->size = ft_strlen(obj_name);
 
 	DER_LOG(TRACE, "object identifier decoded successfully: %s", obj_name);

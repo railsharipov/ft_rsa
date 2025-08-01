@@ -78,9 +78,7 @@ static int	__decrypt_prim(t_num *ciph_rep, t_num *mes_rep)
 	return (SSL_OK);
 }
 
-// RSA decryption scheme
-static int	__decrypt(
-	const char *ciph, size_t ciphsize, char **mes, size_t *messize)
+static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize)
 {
 	unsigned char	*octets;
 	int				osize;
@@ -111,7 +109,7 @@ static int	__decrypt(
 		res = SSL_ERR;
 
 	if (SSL_OK == res) {
-		*mes = (char *)octets;
+		*mes = octets;
 		*messize = osize;
 	}
 
@@ -128,8 +126,6 @@ static int	__decrypt(
 
 int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key)
 {
-	int	keysize;
-
 	if ((NULL == ciph) || (NULL == ciph->content) || (NULL == mes) || (NULL == asn_key)) {
 		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
@@ -144,8 +140,7 @@ int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key)
 		RSA_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}
-	if (SSL_OK != __decrypt(
-		ciph->content, ciph->size, &(mes->content), &(mes->size)))
+	if (SSL_OK != __decrypt(ciph->content, ciph->size, &(mes->content), &(mes->size)))
 	{
 		RSA_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);

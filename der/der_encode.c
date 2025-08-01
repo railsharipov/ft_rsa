@@ -9,9 +9,6 @@
 #include <libft/bytes.h>
 
 static int	__encode(t_node *node, t_iodes *out);
-static int	__encode_primitive(t_node *node, t_iodes *out);
-static int	__encode_construct(t_node *node, t_iodes *out);
-static int	__encode_item(t_iasn *item, t_iodes *out);
 
 static int	__encode_ostring(uint8_t tag, t_ostring *encoded, t_ostring *data);
 static int	__encode_bitstring(uint8_t tag, t_ostring *encoded, t_ostring *data);
@@ -125,7 +122,7 @@ static int	__encode(t_node *node, t_iodes *out)
 		return (SSL_ERR);
 	}
 
-	wbytes = __write_content_octets(encoded.content, encoded.size, out);
+	wbytes = __write_content_octets((char *)encoded.content, encoded.size, out);
 	ft_ostr_clear(&encoded);
 
 	if (wbytes < 0) {

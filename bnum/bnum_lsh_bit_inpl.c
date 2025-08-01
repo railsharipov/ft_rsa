@@ -17,8 +17,8 @@ void	bnum_lsh_bit_inpl(t_num *num, int bits)
 	bnum_lsh_dig_inpl(num, shifts);
 	bit_shifts = bits % BNUM_DIGIT_BIT;
 
+	carry = 0;
 	if (bit_shifts) {
-		carry = 0;
 		for (i = shifts; i < num->len; i++) {
 			val = (num->val[i] << bit_shifts) | carry;
 			carry = num->val[i] >> (BNUM_DIGIT_BIT - bit_shifts);

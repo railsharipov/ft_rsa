@@ -11,7 +11,7 @@ int textutil_findf(const char *octets, int olen, char *format, ...)
 	int		idx;
 
 	va_start(ap, format);
-	patlen = ft_vsprintf(*pattern, format, ap);
+	patlen = ft_vsprintf(&pattern, format, ap);
 	va_end(ap);
 
 	idx = textutil_find(octets, olen, pattern, patlen);

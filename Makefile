@@ -43,10 +43,10 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_PREFIX)/$*.d
 
 all: $(NAME)
 
-debug: override CC = gcc -Og -g -std=c11 -Wall -Wextra
+debug: override CC = gcc -Og -g -std=c11 -Wall -Werror -Wfatal-errors
 debug: $(NAME)
 
-sanitize: override CC = gcc -Og -g -std=c11 -fsanitize=address -fno-omit-frame-pointer
+sanitize: override CC = gcc -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer
 sanitize: override LDFLAGS = -fsanitize=address
 sanitize: $(NAME)
 

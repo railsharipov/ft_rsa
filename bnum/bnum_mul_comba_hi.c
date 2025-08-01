@@ -4,7 +4,7 @@ void	bnum_mul_comba_hi(const t_num *a, const t_num *b, t_num *res, int dig)
 {
 	uint64_t	*temp;
 	uint128_t	val;
-	int 		ndig, idx, z;
+	int 		ndig, z;
 
 	val = 0;
 	ndig = a->len + b->len;

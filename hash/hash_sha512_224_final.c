@@ -13,8 +13,7 @@
 #include <common.h>
 #include <hash.h>
 
-void	hash_sha512_224_final(
-	t_hash *sha512_224, const char *buf, size_t bufsize)
+void	hash_sha512_224_final(t_hash *sha512_224, const unsigned char *buf, size_t bufsize)
 {
 	hash_sha512_final(sha512_224, buf, bufsize);
 }

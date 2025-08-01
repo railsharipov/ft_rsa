@@ -99,7 +99,6 @@ static int	__test_der_decode_privateKeyInfo(void)
 {
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
-	char 	*num_str;
 	t_num	*num;
 	t_iodes	iodes;
 	int		ret;
@@ -199,7 +198,6 @@ static int	__test_der_decode_subjectPublicKeyInfo(void)
 {
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
-	char 	*num_str;
 	t_num	*num;
 	t_iodes	iodes;
 	int		ret;
@@ -268,7 +266,7 @@ static int	__test_der_decode_subjectPublicKeyInfo(void)
 	TEST_ASSERT(((uint8_t *)asn_item->content)[0] == 0);
 
 	// skip unused bits byte
-	temp_ostring.content = ((char *)asn_item->content + 1);
+	temp_ostring.content = ((unsigned char *)asn_item->content + 1);
 	temp_ostring.size = asn_item->size - 1;
 
 	if (SSL_OK != io_osbuf(&iodes, IO_READ, &temp_ostring)) {
@@ -419,7 +417,7 @@ static int	__test_der_encode_subjectPublicKeyInfo(void)
 	TEST_ASSERT(asn_item->size > 0);
 
 	// save original encapsulated subjectPublicKey DER (including unused bits byte)
-	ref_encoded_subjectPublicKey.content = (char *)asn_item->content + 1;
+	ref_encoded_subjectPublicKey.content = (unsigned char *)asn_item->content + 1;
 	ref_encoded_subjectPublicKey.size = asn_item->size - 1;
 
 	// decode original encapsulated subjectPublicKey DER

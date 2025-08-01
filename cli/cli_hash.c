@@ -25,8 +25,8 @@
 static const struct {
 	char	*name;
 	t_hash	*(*func_init)(void);
-	void	(*func_update)(t_hash *, const char *, size_t);
-	void	(*func_final)(t_hash *, const char *, size_t);
+	void	(*func_update)(t_hash *, const unsigned char *, size_t);
+	void	(*func_final)(t_hash *, const unsigned char *, size_t);
 } FUNC[] = {
 	{	"md5",			FUNC_HASH(md5)			},
 	{	"sha1",			FUNC_HASH(sha1)			},
@@ -58,8 +58,8 @@ static const t_task FILE_TASK =
 
 static t_htbl	*hash_htable;
 static t_hash	*(*func_hash_init)(void);
-static void		(*func_hash_update)(t_hash *, const char *, size_t);
-static void		(*func_hash_final)(t_hash *, const char *, size_t);
+static void		(*func_hash_update)(t_hash *, const unsigned char *, size_t);
+static void		(*func_hash_final)(t_hash *, const unsigned char *, size_t);
 
 static int	__init_hash_func_by_name(const char *name)
 {
@@ -114,7 +114,7 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 
 static int	__run_task(uint32_t tflag, uint32_t __gflag)
 {
-	char	*buf;
+	unsigned char	*buf;
 	int		bufsize;
 	int		rbytes;
 
@@ -123,7 +123,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 
 	__hash = func_hash_init();
 
-	while ((rbytes = io_read(&__in, buf, bufsize)) == bufsize) {
+	while ((rbytes = io_read(&__in, (char *)buf, bufsize)) == bufsize) {
 		if (SSL_FLAG(HASH_P, tflag)) {
 			write(1, buf, bufsize);
 		}
