@@ -14,32 +14,32 @@ static const int LF = 0xA;
 
 // Delete empty lines in character array
 
-void textutil_del_empty_lines(const char *arr, int asize, char **p, int *psize)
+int textutil_del_empty_lines(const char *octets, size_t olen, char **p, size_t *psize)
 {
-  	int   ix;
-  	char  *rptr;
+  	size_t   ix, len;
   	char  *res;
 
-	if (NULL == arr || NULL == p) {
-		return ;
+	if (NULL == octets || NULL == p) {
+		return (SSL_ERR);
 	}
-	LIBFT_ALLOC(res, asize);
-	rptr = res;
+	LIBFT_ALLOC(res, olen);
+	len = 0;
+	ix = 0;
 
-	for (ix = 0; (ix < asize) && (ft_iseol(arr[ix]));) {
-		ix++;
-	}
-	while (ix < asize) {
-		while ((ix < asize) && (!ft_iseol(arr[ix]))) {
-			*rptr++ = arr[ix++];
+	while (ix < olen) {
+		if (ft_iseol(octets[ix])) {
+			res[len++] = LF;
+			while ((ix < olen) && (ft_iseol(octets[ix]))) {
+				ix++;
+			}
 		}
-		while ((ix < asize) && (ft_iseol(arr[ix]))) {
-			ix++;
-		}
-		if (ix < asize) {
-			*rptr++ = LF;
+		else {
+			res[len++] = octets[ix++];
 		}
 	}
+
 	*p = res;
-	*psize = (int)(rptr - (res));
+	*psize = len;
+
+	return (SSL_OK);
 }

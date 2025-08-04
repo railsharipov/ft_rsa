@@ -3,12 +3,12 @@
 #include <libft/std.h>
 
 // Find ostring 'pattern' in ostring 'octets'
-int textutil_find(const char *octets, int olen, const char *pattern, int patlen)
+int textutil_find(const char *octets, size_t olen, const char *pattern, size_t patlen)
 {
 	unsigned int pathash, winhash;
 	unsigned char *oct, *pat;
 	int mod;
-	int ix;
+	size_t ix;
 
 	if (NULL == pattern || NULL == octets) {
 		return (-1);

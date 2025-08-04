@@ -3,20 +3,24 @@
 #include <libft/std.h>
 #include <libft/list.h>
 
-static int __parse_string(const char *octets, int olen, int opos, char **res);
-static int __parse_number(const char *octets, int olen, int opos, ssize_t *res);
-static int __parse_number_u(const char *octets, int olen, int opos, size_t *res);
+static size_t __parse_string(const char *octets, size_t olen, size_t opos, char **res);
+static size_t __parse_number(const char *octets, size_t olen, size_t opos, ssize_t *res);
+static size_t __parse_number_u(const char *octets, size_t olen, size_t opos, size_t *res);
+static size_t __parse_charset(const char *format, size_t fpos, char *charset);
+static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char **res, const char *charset);
 
-int textutil_sscanf(const char *octets, int olen, char *format, ...)
+int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 {
 	va_list	ap;
-	int		fpos = 0;
-	int		opos = 0;
-	int		nbytes;
-	void	*arg, *token;
+	size_t	fpos = 0;
+	size_t	opos = 0;
+	size_t	nbytes;
+	void	*arg;
 	int		items_matched = 0;
 
 	va_start(ap, format);
+
+	TEXTUTIL_LOG(TRACE, "Scanning using format string: '%s'", format);
 	
 	while (format[fpos] != '\0' && opos < olen) {
 		if (ft_iseolws(format[fpos])) {
@@ -30,99 +34,145 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 		}
 
 		if (format[fpos] == '%') {
-			token = NULL;
+			TEXTUTIL_LOG(TRACE, "Parsing format token");
 			arg = NULL;
 			fpos++;
 
 			if (format[fpos] == '%') {
-				// valid but do nothing 
+				TEXTUTIL_LOG(TRACE, "Found double %% token");
+				if (octets[opos] == '%') {
+					fpos++;
+					opos++;
+				} else {
+					break;
+				}
 			}
 			else if (format[fpos] == 's') {
+				char	*str;
+				TEXTUTIL_LOG(TRACE, "Found %%s token");
 				fpos++;
-				if ((nbytes = __parse_string(octets, olen, opos, (char **)&token)) == 0) {
+				if ((nbytes = __parse_string(octets, olen, opos, &str)) == 0) {
 					break;
 				}
 				opos += nbytes;
 				arg = va_arg(ap, char **);
+				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
-					*(char **)arg = token;
+					*(char **)arg = str;
+					TEXTUTIL_LOG(TRACE, "String: v='%s'", *(char **)arg);
 				}
 				items_matched++;
 			}
 			else if (format[fpos] == 'd') {
+				ssize_t	num;
+				TEXTUTIL_LOG(TRACE, "Found %%d token");
 				fpos++;
-				if ((nbytes = __parse_number(octets, olen, opos, (ssize_t *)&token)) == 0) {
+				if ((nbytes = __parse_number(octets, olen, opos, &num)) == 0) {
 					break;
 				}
 				opos += nbytes;
 				arg = va_arg(ap, int *);
+				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
-					*(int *)arg = *(ssize_t *)token;
+					*(int *)arg = (int)num;
+					TEXTUTIL_LOG(TRACE, "Number: v=%d", *(int *)arg);
 				}
-				SSL_FREE(token);
 				items_matched++;
 			}
 			else if (format[fpos] == 'u') {
+				size_t	num;
+				TEXTUTIL_LOG(TRACE, "Found %%u token");
 				fpos++;
-				if ((nbytes = __parse_number_u(octets, olen, opos, (size_t *)&token)) == 0) {
+				if ((nbytes = __parse_number_u(octets, olen, opos, &num)) == 0) {
 					break;
 				}
 				opos += nbytes;
 				arg = va_arg(ap, unsigned int *);
+				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
-					*(unsigned int *)arg = *(size_t *)token;
+					*(unsigned int *)arg = (unsigned int)num;
+					TEXTUTIL_LOG(TRACE, "Number: v=%u", *(unsigned int *)arg);
 				}
-				SSL_FREE(token);
 				items_matched++;
 			}
 			else if (format[fpos] == 'c') {
+				TEXTUTIL_LOG(TRACE, "Found %%c token");
 				fpos++;
 				arg = va_arg(ap, char *);
+				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(char *)arg = octets[opos];
+					TEXTUTIL_LOG(TRACE, "Char: v=%c", *(char *)arg);
 				}
 				opos++;
 				items_matched++;
 			}
 			else if (format[fpos] == 'z') {
+				ssize_t	num;
+				TEXTUTIL_LOG(TRACE, "Found %%z token");
 				fpos++;
 				if (format[fpos] == 'd') {
+					TEXTUTIL_LOG(TRACE, "Found %%zd token");
 					fpos++;
-					if ((nbytes = __parse_number(octets, olen, opos, (ssize_t *)&token)) == 0) {
+					if ((nbytes = __parse_number(octets, olen, opos, &num)) == 0) {
 						break;
 					}
 					arg = va_arg(ap, ssize_t *);
+					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
-						*(ssize_t *)arg = *(ssize_t *)token;
+						*(ssize_t *)arg = (ssize_t)num;
+						TEXTUTIL_LOG(TRACE, "Number: v=%zd", *(ssize_t *)arg);
 					}
-					SSL_FREE(token);
 					items_matched++;
 				}
 				else if (format[fpos] == 'u') {
+					size_t	num;
+					TEXTUTIL_LOG(TRACE, "Found %%zu token");
 					fpos++;
-					if ((nbytes = __parse_number_u(octets, olen, opos, (size_t *)&token)) == 0) {
+					if ((nbytes = __parse_number_u(octets, olen, opos, &num)) == 0) {
 						break;
 					}
 					arg = va_arg(ap, size_t *);
+					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
-						*(size_t *)arg = *(size_t *)token;
+						*(size_t *)arg = num;
+						TEXTUTIL_LOG(TRACE, "Number: v=%zu", *(size_t *)arg);
 					}
-					SSL_FREE(token);
 					items_matched++;
 				}
 			}
+			else if (format[fpos] == '[') {
+				char	*str;
+				char	charset[256] = {0};
+				TEXTUTIL_LOG(TRACE, "Found charset '%%[...]' token");
+				if ((nbytes = __parse_charset(format, fpos, charset)) == 0) {
+					TEXTUTIL_LOG(ERROR, "Failed to parse charset '%%[...]' from format string: '%s'", format);
+					break;
+				}
+				fpos += nbytes;
+				if ((nbytes = __parse_scanset(octets, olen, opos, &str, charset)) == 0) {
+					TEXTUTIL_LOG(ERROR, "Failed to parse scanset '%%[...]' from input string: '%s'", octets);
+					break;
+				}
+				opos += nbytes;
+				arg = va_arg(ap, char **);
+				if (arg != NULL) {
+					*(char **)arg = str;
+					TEXTUTIL_LOG(TRACE, "String: v='%s'", *(char **)arg);
+				}
+				items_matched++;
+			}
 			else {
-				TEXTUTIL_LOG(ERROR, "Invalid specifier: %c", format[fpos]);
+				TEXTUTIL_LOG(ERROR, "Invalid specifier: '%%%c'", format[fpos]);
 				break;
 			}
-			SSL_FREE(token);
 		}
-
-		if (format[fpos] == octets[opos]) {
+		else if (format[fpos] == octets[opos]) {
 			fpos++;
 			opos++;
 		}
 		else {
+			TEXTUTIL_LOG(TRACE, "Mismatch: format='%c', octets='%c'", format[fpos], octets[opos]);
 			break;
 		}
 	}
@@ -131,10 +181,10 @@ int textutil_sscanf(const char *octets, int olen, char *format, ...)
 	return (items_matched);
 }
 
-int __parse_string(const char *octets, int olen, int opos, char **res)
+size_t __parse_string(const char *octets, size_t olen, size_t opos, char **res)
 {
-	int	start = opos;
-	int	end;
+	size_t	start = opos;
+	size_t	end;
 
 	*res = NULL;
 	end = start;
@@ -146,15 +196,10 @@ int __parse_string(const char *octets, int olen, int opos, char **res)
 	return (end - start);
 }
 
-static int __parse_number(const char *octets, int olen, int opos, ssize_t *res)
+static size_t __parse_number(const char *octets, size_t olen, size_t opos, ssize_t *res)
 {
-    int start = opos;
-    int end;
-
-    while (start < olen && ft_iseolws(octets[start])) {
-        start++;
-    }
-    end = start;
+    size_t start = opos;
+    size_t end = start;
 
     if (end < olen && (octets[end] == '+' || octets[end] == '-')) {
         end++;
@@ -165,15 +210,15 @@ static int __parse_number(const char *octets, int olen, int opos, ssize_t *res)
     while (end < olen && ft_isdigit(octets[end])) {
         end++;
     }
-    *res = ft_atoi(&octets[start]);
+    *res = ft_atoi(octets + start);
 
     return (end - opos);
 }
 
-static int __parse_number_u(const char *octets, int olen, int opos, size_t *res)
+static size_t __parse_number_u(const char *octets, size_t olen, size_t opos, size_t *res)
 {
-    int start = opos;
-    int end;
+    size_t start = opos;
+    size_t end;
 
     while (start < olen && ft_iseolws(octets[start])) {
         start++;
@@ -186,7 +231,55 @@ static int __parse_number_u(const char *octets, int olen, int opos, size_t *res)
     while (end < olen && ft_isdigit(octets[end])) {
         end++;
     }
-    *res = ft_atoi_u(&octets[start]);
+    *res = ft_atoi_u(octets + start);
 
     return (end - opos);
+}
+
+static size_t __parse_charset(const char *format, size_t fpos, char *charset)
+{
+	size_t	start = fpos;
+	int		negate = 0;
+
+	fpos++;
+	if (format[fpos] == '^') {
+		negate = 1;
+	}
+	if (format[fpos] == '[') {
+		charset['['] = 1;
+		fpos++;
+	}
+	while (format[fpos] != '\0' && format[fpos] != ']') {
+		charset[(int)format[fpos]] = 1;
+		fpos++;
+	}
+	if (format[fpos] == ']') {
+		fpos++;
+	} else {
+		TEXTUTIL_LOG(ERROR, "Unterminated charset '%%[...]' in format string: '%s' at pos %zu, char: '%c'", format, fpos, format[fpos]);
+		return (0);
+	}
+	if (negate) {
+		for (size_t i = 0; i < 256; i++) {
+			charset[i] = ~charset[i] & 0x1;
+		}
+	}
+	return (fpos - start);
+}
+
+static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char **res, const char *charset)
+{
+	size_t	start = opos;
+	size_t	end = start;
+
+	*res = NULL;
+	while (opos + end < olen && charset[(int)octets[opos + end]]) {
+		end++;
+	}
+	if (end == start) {
+		return (0);
+	}
+	*res = ft_strndup(octets + start, end - start);
+
+	return (end - start);
 }

@@ -20,21 +20,22 @@
 
 typedef int	(*FUNC_TEST)(void);
 
-enum	e_test_modules
-{
-	BNUM_MODULE = 0,
-	BASE64_MODULE,
-	DER_MODULE,
-	IO_MODULE,
-	LIBFT_MODULE,
-	JSON_MODULE,
-	NUMBER_OF_TEST_MODULES
-};
+// enum	e_test_modules
+// {
+// 	BNUM_MODULE = 0,
+// 	BASE64_MODULE,
+// 	DER_MODULE,
+// 	IO_MODULE,
+// 	LIBFT_MODULE,
+// 	JSON_MODULE,
+// 	TEXTUTIL_MODULE,
+// 	NUMBER_OF_TEST_MODULES
+// };
 
-extern const FUNC_TEST	TESTS[];
-extern const int		NUM_TESTS;
-extern const char		*TEST_DESC_ARR[];
-extern const size_t		TEST_DESC_ARR_SIZE;
+// extern const FUNC_TEST	TESTS[];
+// extern const int		NUM_TESTS;
+// extern const char		*TEST_DESC_ARR[];
+// extern const size_t		TEST_DESC_ARR_SIZE;
 
 int		test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 void	test_logger_set_level(uint8_t level);
@@ -52,5 +53,6 @@ int		test_der(void);
 int		test_bnum(void);
 int		test_json(void);
 int		test_asn(void);
+int		test_textutil(void);
 
 #endif

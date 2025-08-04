@@ -7,26 +7,28 @@
 // HT = horizontal tab
 // SP = space
 
-void textutil_del_blank(const char *arr, int asize, char **p, int *psize)
+int textutil_del_blank(const char *octets, size_t olen, char **p, size_t *psize)
 {
-	int   ix;
-	char  *rptr;
+	size_t   ix, len;
 	char  *res;
 
-	if (NULL == arr || NULL == p) {
-		return ;
+	if (NULL == octets || NULL == p) {
+		return (SSL_ERR);
 	}
-	LIBFT_ALLOC(res, asize);
-  	rptr = res;
+	LIBFT_ALLOC(res, olen);
+	len = 0;
+	ix = 0;
 
-	for (ix = 0; ix < asize;) {
-		while ((ix < asize) && (!ft_isblank(arr[ix]))) {
-			*rptr++ = arr[ix++];
+	while (ix < olen) {
+		if (!ft_isblank(octets[ix])) {
+			res[len++] = octets[ix++];
 		}
-		while ((ix < asize) && (ft_isblank(arr[ix]))) {
+		else {
 			ix++;
 		}
 	}
 	*p = res;
-	*psize = (int)(rptr - (res));
+	*psize = len;
+
+	return (SSL_OK);
 }

@@ -102,19 +102,26 @@ label_exit:
 
 static int	__base64_encode(t_ostring *content, t_ostring *pemenc)
 {
-	unsigned char	*b64;
-	size_t	b64size;
+	t_ostring	b64, b64_with_delim;
+	int			ret;
 
-	b64 = NULL;
-	b64size = 0;
+	ft_ostr_init(&b64);
+	ft_ostr_init(&b64_with_delim);
+	ret = SSL_ERR;
 
-	if (SSL_OK != base64_encode(content->content, content->size, &b64, &b64size)) {
+	if (SSL_OK != base64_encode(content->content, content->size, &b64.content, &b64.size)) {
 		PEM_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	textutil_insert_delim((char **)&b64, &b64size, '\n', 64);
-	ft_ostr_append(pemenc, b64, b64size);
-	SSL_FREE(b64);
+	if (SSL_OK != textutil_insert_delim((char *)b64.content, b64.size, (char **)&b64_with_delim.content, &b64_with_delim.size, '\n', 64)) {
+		PEM_LOG(ERROR, "base64 format failed");
+		ret = SSL_ERR;
+	} else {
+		ft_ostr_append(pemenc, b64_with_delim.content, b64_with_delim.size);
+		ret = SSL_OK;
+	}
+	ft_ostr_clear(&b64);
+	ft_ostr_clear(&b64_with_delim);
 
-	return (SSL_OK);
+	return (ret);
 }

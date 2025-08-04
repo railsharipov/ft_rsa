@@ -2,30 +2,27 @@
 #include <libft/string.h>
 #include <libft/alloc.h>
 
-void	textutil_insert_delim(char **arr, size_t *asize, int delim, int step)
+int	textutil_insert_delim(char *octets, size_t olen, char **p, size_t *psize, int delim, int step)
 {
-	char	*rptr;
 	char	*res;
-	int		rsize;
-	int		ix;
-	int		iy;
+	size_t	ix, iy;
 
-	if (NULL == arr || NULL == *arr || NULL == asize || *asize == 0 || step <= 0) {
-		return ;
+	if (NULL == octets || NULL == p || olen == 0 || psize == NULL || step <= 0) {
+		return (SSL_ERR);
 	}
-	rsize = *asize + (*asize / step) + (int)(*asize % step != 0);
-	LIBFT_ALLOC(res, rsize);
-	rptr = res;
 
-	for (ix = 0; ix < *asize;) {
-		iy = 0;
-		while ((ix < *asize) && (iy < step)) {
-			*rptr++ = (*arr)[ix++];
-			iy++;
+	LIBFT_ALLOC(res, olen * 2 + 1);
+
+	for (ix = 0, iy = 0; ix < olen; ix++) {
+		if (ix != 0 && ix % (size_t)step == 0) {
+			res[iy++] = delim;
 		}
-		*rptr++ = delim;
+		res[iy++] = octets[ix];
 	}
-	LIBFT_FREE(*arr);
-	*arr = res;
-	*asize = rsize;
+	res[iy] = '\0';
+
+	*p = res;
+	*psize = iy;
+
+	return (SSL_OK);
 }

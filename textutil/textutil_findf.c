@@ -3,11 +3,11 @@
 #include <libft/std.h>
 
 // Find ostring 'pattern' in ostring 'octets'
-int textutil_findf(const char *octets, int olen, char *format, ...)
+int textutil_findf(const char *octets, size_t olen, char *format, ...)
 {
 	va_list	ap;
 	char	*pattern;
-	int		patlen;
+	size_t	patlen;
 	int		idx;
 
 	va_start(ap, format);
