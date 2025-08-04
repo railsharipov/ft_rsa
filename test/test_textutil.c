@@ -362,5 +362,43 @@ static int	__test_textutil_sscanf(void)
 	TEST_ASSERT(ft_streq(s4, "Test-string-214-#R@#$R(&)"));
 	TEST_ASSERT(i4 == 10);
 
+	char	str5[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmnopqrstuvwxyz";
+	char	*s5;
+	int		i5;
+	matches = textutil_sscanf(str5, ft_strlen(str5), "%[^:]: %d %[a-z]", NULL, &i5, &s5);
+	TEST_ASSERT(matches == 3);
+	TEST_ASSERT(s5 != NULL);
+	TEST_ASSERT(ft_streq(s5, "abcdefghijklmnopqrstuvwxyz"));
+	TEST_ASSERT(i5 == 10);
+
+	char	str6[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
+	char	*s6;
+	int		i6;
+	matches = textutil_sscanf(str6, ft_strlen(str6), "%[^:]: %d %[[a-z-]", NULL, &i6, &s6);
+	TEST_ASSERT(matches == 3);
+	TEST_ASSERT(s6 != NULL);
+	TEST_ASSERT(ft_streq(s6, "abcdefghijklmno"));
+	TEST_ASSERT(i6 == 10);
+	
+	char	str7[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
+	char	*s7;
+	int		i7;
+	matches = textutil_sscanf(str7, ft_strlen(str7), "%[^:]: %d %[[a-z0-9A-Z-]", NULL, &i7, &s7);
+	TEST_ASSERT(matches == 3);
+	TEST_ASSERT(s7 != NULL);
+	TEST_ASSERT(ft_streq(s7, "abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz"));
+	TEST_ASSERT(i7 == 10);
+	
+	char	str8[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
+	char	*s8, *s9, *s10;
+	int		i8;
+	matches = textutil_sscanf(str8, ft_strlen(str8), "%[^:]: %d %[a-z-]%[-0-9A-Z]%[[a-z]", NULL, &i8, &s8, &s9, &s10);
+	TEST_ASSERT(matches == 5);
+	TEST_ASSERT(s8 != NULL);
+	TEST_ASSERT(ft_streq(s8, "abcdefghijklmno"));
+	TEST_ASSERT(ft_streq(s9, "0034045-HEDRGD"));
+	TEST_ASSERT(ft_streq(s10, "[pqrstuvwxyz"));
+	TEST_ASSERT(i8 == 10);
+
 	TEST_PASS();
 }

@@ -52,6 +52,7 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 				TEXTUTIL_LOG(TRACE, "Found %%s token");
 				fpos++;
 				if ((nbytes = __parse_string(octets, olen, opos, &str)) == 0) {
+					TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", octets);
 					break;
 				}
 				opos += nbytes;
@@ -60,6 +61,8 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 				if (arg != NULL) {
 					*(char **)arg = str;
 					TEXTUTIL_LOG(TRACE, "String: v='%s'", *(char **)arg);
+				} else {
+					SSL_FREE(str);
 				}
 				items_matched++;
 			}
@@ -68,6 +71,7 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 				TEXTUTIL_LOG(TRACE, "Found %%d token");
 				fpos++;
 				if ((nbytes = __parse_number(octets, olen, opos, &num)) == 0) {
+					TEXTUTIL_LOG(TRACE, "No match for %%d in input string: '%s'", octets);
 					break;
 				}
 				opos += nbytes;
@@ -84,6 +88,7 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 				TEXTUTIL_LOG(TRACE, "Found %%u token");
 				fpos++;
 				if ((nbytes = __parse_number_u(octets, olen, opos, &num)) == 0) {
+					TEXTUTIL_LOG(TRACE, "No match for %%u in input string: '%s'", octets);
 					break;
 				}
 				opos += nbytes;
@@ -115,6 +120,7 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 					TEXTUTIL_LOG(TRACE, "Found %%zd token");
 					fpos++;
 					if ((nbytes = __parse_number(octets, olen, opos, &num)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for %%zd in input string: '%s'", octets);
 						break;
 					}
 					arg = va_arg(ap, ssize_t *);
@@ -130,6 +136,7 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 					TEXTUTIL_LOG(TRACE, "Found %%zu token");
 					fpos++;
 					if ((nbytes = __parse_number_u(octets, olen, opos, &num)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for %%zu in input string: '%s'", octets);
 						break;
 					}
 					arg = va_arg(ap, size_t *);
@@ -151,14 +158,16 @@ int textutil_sscanf(const char *octets, size_t olen, char *format, ...)
 				}
 				fpos += nbytes;
 				if ((nbytes = __parse_scanset(octets, olen, opos, &str, charset)) == 0) {
-					TEXTUTIL_LOG(ERROR, "Failed to parse scanset '%%[...]' from input string: '%s'", octets);
+					TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", octets);
 					break;
 				}
 				opos += nbytes;
 				arg = va_arg(ap, char **);
 				if (arg != NULL) {
 					*(char **)arg = str;
-					TEXTUTIL_LOG(TRACE, "String: v='%s'", *(char **)arg);
+					TEXTUTIL_LOG(TRACE, "Scanset: v='%s'", *(char **)arg);
+				} else {
+					SSL_FREE(str);
 				}
 				items_matched++;
 			}
@@ -243,15 +252,26 @@ static size_t __parse_charset(const char *format, size_t fpos, char *charset)
 
 	fpos++;
 	if (format[fpos] == '^') {
+		TEXTUTIL_LOG(TRACE, "Found negation in charset");
 		negate = 1;
+		fpos++;
 	}
 	if (format[fpos] == '[') {
+		TEXTUTIL_LOG(TRACE, "Found opening bracket in charset");
 		charset['['] = 1;
 		fpos++;
 	}
 	while (format[fpos] != '\0' && format[fpos] != ']') {
-		charset[(int)format[fpos]] = 1;
-		fpos++;
+		if (format[fpos+1] == '-' && format[fpos+2] != '\0' && format[fpos+2] != ']') {
+			TEXTUTIL_LOG(TRACE, "Found range in charset: '%c-%c'", format[fpos], format[fpos+2]);
+			for (char c = format[fpos]; c <= format[fpos+2]; c++) {
+				charset[(int)c] = 1;
+			}
+			fpos += 3;
+		} else {
+			charset[(int)format[fpos]] = 1;
+			fpos++;
+		}
 	}
 	if (format[fpos] == ']') {
 		fpos++;
@@ -273,10 +293,15 @@ static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char
 	size_t	end = start;
 
 	*res = NULL;
-	while (opos + end < olen && charset[(int)octets[opos + end]]) {
+	while (end < olen) {
+		if (!charset[(int)octets[end]]) {
+			TEXTUTIL_LOG(TRACE, "No match for scanset at pos %zu, char: '%c'", end, octets[end]);
+			break;
+		}
 		end++;
 	}
 	if (end == start) {
+		TEXTUTIL_LOG(TRACE, "No matching characters for scanset");
 		return (0);
 	}
 	*res = ft_strndup(octets + start, end - start);
