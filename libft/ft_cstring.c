@@ -533,6 +533,11 @@ int	ft_streq(const char *a, const char *b)
 	return (ft_strcmp(a, b) == 0 ? 1 : 0);
 }
 
+int	ft_strneq(const char *a, const char *b, size_t n)
+{
+	return (ft_strncmp(a, b, n) == 0 ? 1 : 0);
+}
+
 int	ft_tolower(int c)
 {
 	if (c >= 65 && c <= 90) {

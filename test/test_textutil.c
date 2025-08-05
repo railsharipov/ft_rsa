@@ -13,6 +13,7 @@ static int	__test_textutil_del_eol(void);
 static int	__test_textutil_del_empty_lines(void);
 static int	__test_textutil_insert_delim(void);
 static int	__test_textutil_sscanf(void);
+static int	__test_textutil_sbscanf(void);
 
 static const char	*__lorem = "Cernantur iis sunt, voluptate export nulla \
 arbitror noster. Se nescius exercitation. Malis nescius o consectetur \
@@ -39,6 +40,7 @@ int	test_textutil(void)
 		| __test_textutil_del_empty_lines()
 		| __test_textutil_insert_delim()
 		| __test_textutil_sscanf()
+		| __test_textutil_sbscanf()
 	);
 }
 
@@ -400,5 +402,32 @@ static int	__test_textutil_sscanf(void)
 	TEST_ASSERT(ft_streq(s10, "[pqrstuvwxyz"));
 	TEST_ASSERT(i8 == 10);
 
+	TEST_PASS();
+}
+
+static int	__test_textutil_sbscanf(void)
+{
+	int		matches;
+	
+	char	buf1[1024] = {0};
+	char	*str1 = "Cernantur";
+	size_t	len1 = ft_strlen(str1);
+	TEST_ASSERT(len1 < sizeof(buf1));
+
+	matches = textutil_sbscanf(str1, len1, "%s", buf1, sizeof(buf1));
+	TEST_ASSERT(matches == 1);
+	TEST_ASSERT(ft_strneq(buf1, str1, len1));
+	TEST_ASSERT(buf1[len1] == '\0');
+	
+	char	buf2[8] = {0};
+	char	*str2 = "Cernantur iis sunt";
+	size_t	len2 = ft_strlen(str2);
+	TEST_ASSERT(len2 >= sizeof(buf2));
+
+	matches = textutil_sbscanf(str2, len2, "%s", buf2, sizeof(buf2));
+	TEST_ASSERT(matches == 1);
+	TEST_ASSERT(ft_strneq(buf2, str2, sizeof(buf2) - 1));
+	TEST_ASSERT(buf2[sizeof(buf2) - 1] == '\0');
+	
 	TEST_PASS();
 }

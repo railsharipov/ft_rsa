@@ -2,7 +2,7 @@
 #include <libft/string.h>
 #include <libft/std.h>
 
-int textutil_seekf(const char *octets, size_t olen, char *format, ...)
+int textutil_seekf(const char *octets, size_t olen, const char *format, ...)
 {
 	va_list	ap;
 	char	*pattern;
