@@ -343,30 +343,29 @@ char	*ft_strcpy(char *dst, const char *src)
 	return (dst);
 }
 
-char	*ft_strndup(const char *s, size_t n)
+char	*ft_strndup(const char *s, size_t len)
 {
 	char	*sdup;
-	size_t	len;
-	size_t	slen;
 	size_t	idx;
 
 	if (NULL == s) {
 		return (NULL);
 	}
-	slen = ft_strlen(s);
-	len = MIN(n, slen);
 
 	LIBFT_ALLOC(sdup, len + 1);
-
 	if (NULL == sdup) {
 		return (NULL);
 	}
+
 	idx = 0;
-	while (idx < len) {
+	while (idx < len && s[idx]) {
 		sdup[idx] = s[idx];
 		idx++;
 	}
-	sdup[len] = 0;
+	while (idx < len) {
+		sdup[idx] = 0;
+		idx++;
+	}
 
 	return (sdup);
 }
@@ -492,22 +491,20 @@ char	*ft_strsub(char const *s, unsigned int start, size_t len)
 char	*ft_strncpy(char *dst, const char *src, size_t len)
 {
 	size_t	i;
-	size_t	slen;
 
 	if (NULL == dst || NULL == src) {
 		return (dst);
 	}
 
-	slen = ft_strlen(src);
-	len = MIN(slen, len);
-
 	i = 0;
-	while (i < len) {
+	while (i < len && src[i]) {
 		dst[i] = src[i];
 		i++;
 	}
-	dst[i] = 0;
-
+	while (i < len) {
+		dst[i] = 0;
+		i++;
+	}
 	return (dst);
 }
 

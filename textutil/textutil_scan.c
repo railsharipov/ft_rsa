@@ -9,7 +9,7 @@ enum e_scanf_mode
 	SCANF_MODE_BUFFERED,
 };
 
-static int __scanf(const char *octets, size_t olen, const char *format, va_list ap, enum e_scanf_mode mode);
+static int __sscanf(const char *octets, size_t olen, const char *format, va_list ap, enum e_scanf_mode mode);
 static size_t __parse_string(const char *octets, size_t olen, size_t opos, char **res);
 static size_t __parse_string_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size);
 static size_t __parse_number(const char *octets, size_t olen, size_t opos, ssize_t *res);
@@ -17,13 +17,13 @@ static size_t __parse_number_u(const char *octets, size_t olen, size_t opos, siz
 static size_t __parse_charset(const char *format, size_t fpos, char *charset);
 static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char **res, const char *charset);
 
-int textutil_sbscanf(const char *octets, size_t olen, const char *format, ...)
+int textutil_bnscanf(const char *octets, size_t olen, const char *format, ...)
 {
 	va_list	ap;
 	int		matches;
 
 	va_start(ap, format);
-	matches = __scanf(octets, olen, format, ap, SCANF_MODE_BUFFERED);
+	matches = __sscanf(octets, olen, format, ap, SCANF_MODE_BUFFERED);
 	va_end(ap);
 
 	return (matches);
@@ -35,13 +35,13 @@ int textutil_sscanf(const char *octets, size_t olen, const char *format, ...)
 	int		matches;
 
 	va_start(ap, format);
-	matches = __scanf(octets, olen, format, ap, SCANF_MODE_DEFAULT);
+	matches = __sscanf(octets, olen, format, ap, SCANF_MODE_DEFAULT);
 	va_end(ap);
 
 	return (matches);
 }
 
-static int __scanf(const char *octets, size_t olen, const char *format, va_list ap, enum e_scanf_mode mode)
+static int __sscanf(const char *octets, size_t olen, const char *format, va_list ap, enum e_scanf_mode mode)
 {
 	size_t	fpos = 0;
 	size_t	opos = 0;
@@ -242,13 +242,13 @@ static int __scanf(const char *octets, size_t olen, const char *format, va_list 
 static size_t __parse_string(const char *octets, size_t olen, size_t opos, char **res)
 {
 	size_t	start = opos;
-	size_t	end;
+	size_t	end = start;
 
 	*res = NULL;
-	end = start;
-	while (opos + end < olen && octets[opos + end] != ' ' && octets[opos + end] != '\0') {
+	while (end < olen && octets[end] && !ft_iseolws(octets[end])) {
 		end++;
 	}
+	TEXTUTIL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, end - start);
 	*res = ft_strndup(octets + start, end - start);
 
 	return (end - start);
@@ -257,14 +257,14 @@ static size_t __parse_string(const char *octets, size_t olen, size_t opos, char 
 static size_t __parse_string_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size)
 {
 	size_t	start = opos;
-	size_t	end;
+	size_t	end = start;
 	size_t	len;
 
-	end = start;
-	while (opos + end < olen && octets[opos + end] != ' ' && octets[opos + end] != '\0') {
+	while (end < olen && octets[end] && !ft_iseolws(octets[end])) {
 		end++;
 	}
 	len = MIN(end - start, buf_size - 1);
+	TEXTUTIL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, len);
 	ft_memcpy(buf, octets + start, len);
 	buf[len] = '\0';
 

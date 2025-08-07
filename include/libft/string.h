@@ -16,22 +16,28 @@
 # include <string.h>
 # include <libft/common.h>
 
-typedef	struct		s_ostring
+# define OSTRING_INIT_CAPACITY 16
+
+typedef	struct s_ostring
 {
 	unsigned char	*content;
-	size_t			size;
-}					t_ostring;
+	size_t	size;
+	size_t	capacity;
+} t_ostring;
 
-t_ostring	*ft_ostr_create(void);
+// Octet string functions
+t_ostring	*ft_ostr_create(const char *init_str);
 void 		ft_ostr_init(t_ostring *ostring);
-void 		ft_ostr_init_with_size(t_ostring *ostring, size_t size);
-t_ostring	*ft_ostr_dup(t_ostring *ostring);
-void		ft_ostr_del(t_ostring *ostring);
 void		ft_ostr_clear(t_ostring *ostring);
+void		ft_ostr_del(t_ostring *ostring);
+t_ostring	*ft_ostr_dup(const t_ostring *ostring);
+void		ft_ostr_append_cstr(t_ostring *ostring, const char *cstr);
+void		ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr);
 void		ft_ostr_append(t_ostring *ostring, void *content, size_t size);
 void		ft_ostr_prepend(t_ostring *ostring, void *content, size_t size);
-char		*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len);
+char		*ft_ostr_to_cstr(const t_ostring *ostr, size_t offset, size_t len);
 
+// C-string functions
 void		ft_strdel(char *s);
 size_t		ft_strlen(const char *s);
 char		*ft_strdup(const char *s);
@@ -59,6 +65,8 @@ int			ft_str_isdigit(const char *s);
 int			ft_str_isascii(const char *s);
 int			ft_str_isprint(const char *s);
 int			ft_str_ishex(const char *s);
+
+// Character functions
 int			ft_isalpha(int c);
 int			ft_isdigit(int c);
 int			ft_isalnum(int c);
@@ -71,6 +79,8 @@ int			ft_isblank(int c);
 int			ft_ishex(int c);
 int			ft_toupper(int c);
 int			ft_tolower(int c);
+
+// Get rid of these functions
 void		ft_putstr(char const *s);
 void		ft_putstr_fd(int fd, char const *s);
 

@@ -19,6 +19,7 @@ typedef enum e_pem_cipher {
 typedef struct s_pem {
     t_pem_proc proc;
     t_pem_cipher cipher;
+    char *label;
     char salt[8];
     char iv[8];
     char key[8];
@@ -26,8 +27,11 @@ typedef struct s_pem {
 
 int		pem_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
+t_pem	*pem_create(const char *label, t_pem_proc proc, t_pem_cipher cipher);
 void    pem_init(t_pem *pem);
-int		pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *label, const char *pass);
-int		pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *label, const char *pass);
+void    pem_del(t_pem *pem);
+void    pem_clear(t_pem *pem);
+int		pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass);
+int		pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass);
 
 #endif

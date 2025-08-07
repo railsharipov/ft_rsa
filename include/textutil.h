@@ -23,6 +23,6 @@ int		textutil_insert_delim(char *octets, size_t olen, char **p, size_t *psize, i
 int		textutil_seek(const char *octets, size_t olen, const char *pattern, size_t patlen);
 int		textutil_seekf(const char *octets, size_t olen, const char *format, ...);
 int		textutil_sscanf(const char *octets, size_t olen, const char *format, ...);
-int		textutil_sbscanf(const char *octets, size_t olen, const char *format, ...);
+int		textutil_bnscanf(const char *octets, size_t olen, const char *format, ...);
 
 #endif

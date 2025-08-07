@@ -16,8 +16,11 @@ static uint32_t		__gflag;
 static t_iodes		__out;
 static int			__modsize;
 static t_node		*__asn_pkey;
-static t_ostring		*__der_pkey;
+static t_ostring	*__der_pkey;
 static t_ostring	__pem_pkey;
+
+static const char	*__privkey_label = "PRIVATE KEY";
+// static const char	*__encrypted_privkey_label = "ENCRYPTED PRIVATE KEY";
 
 static int	__bnum_set_rand(const char *, const t_task *);
 static int	__init_io(const char *, const t_task *);
@@ -74,14 +77,11 @@ static int	__write_output(void)
 
 static int __run_task(void)
 {
-	t_pem	pem;
+	t_pem	*pem;
+	int		ret;
 
 	CLI_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
-
-	pem_init(&pem);
-	pem.proc = PEM_PROC_TYPE_ENCRYPTED;
-	pem.cipher = PEM_CIPHER_DES_CBC;
-
+	
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
@@ -90,7 +90,12 @@ static int __run_task(void)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != pem_encode(&pem, (t_ostring *)__der_pkey, &__pem_pkey, "PRIVATE KEY", NULL)) {
+
+	pem = pem_create(__privkey_label, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
+	ret = pem_encode(pem, __der_pkey, &__pem_pkey, NULL);
+	pem_del(pem);
+
+	if (SSL_OK != ret) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

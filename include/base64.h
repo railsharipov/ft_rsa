@@ -10,7 +10,7 @@
 # define B64_C(X)	((((X)>>(6))&(0x3c))|(((X)>>(22))&(0x3)))
 # define B64_D(X)	(((X)>>(16))&(0x3f))
 
-# define B64_LOG(LEVEL, MES, ...)	base64_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, "base64: ", MES __VA_OPT__(,) __VA_ARGS__)
+# define B64_LOG(LEVEL, MES, ...)	base64_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_base64_flag
 {

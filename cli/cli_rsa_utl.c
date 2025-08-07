@@ -213,13 +213,18 @@ static int	__decode_key(t_ostring *key, t_node **asn_key)
 	pem_init(&pem);
 	ft_ostr_init(&der_key);
 
-	if (SSL_OK != pem_decode(&pem, key, &der_key, __in_type, NULL)) {
+	if (SSL_OK != pem_decode(&pem, key, &der_key, NULL)) {
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+	}
+	else if (!ft_streq(__in_type, pem.label)) {
+		CLI_LOG(ERROR, "invalid pem label");
+		ret = SSL_ERR;
 	}
 	else if (SSL_OK != asn_tree_der_decode(&der_key, __in_map, asn_key)) {
 		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 	}
 
+	pem_clear(&pem);
 	ft_ostr_clear(&der_key);
 
 	return (ret);

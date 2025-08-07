@@ -7,26 +7,25 @@
 
 int	textutil_del_eol(const char *octets, size_t olen, char **p, size_t *psize)
 {
-	char	*rptr;
 	char	*res;
-	size_t	ix;
+	size_t	ix, len;
 
 	if (NULL == octets || NULL == p) {
 		return (SSL_ERR);
 	}
-	LIBFT_ALLOC(res, olen);
-	rptr = res;
+	SSL_ALLOC(res, olen);
 
+	len = 0;
 	for (ix = 0; ix < olen;) {
 		while ((ix < olen) && (!ft_iseol(octets[ix]))) {
-			*rptr++ = octets[ix++];
+			res[len++] = octets[ix++];
 		}
 		while ((ix < olen) && (ft_iseol(octets[ix]))) {
 			ix++;
 		}
 	}
 	*p = res;
-	*psize = (size_t)(rptr - res);
+	*psize = len;
 
 	return (SSL_OK);
 }

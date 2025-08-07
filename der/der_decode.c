@@ -9,6 +9,7 @@
 #include <libft/htable.h>
 #include <libft/2darray.h>
 #include <libft/bytes.h>
+#include <libft/string.h>
 #include <unistd.h>
 
 static int		__decode(t_node **node, t_iodes *in);
@@ -288,7 +289,7 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 		DER_LOG(TRACE, "indefinite length content read, total bytes: %zd", tbytes);
 	}
 	else {
-		ft_ostr_init_with_size(osbuf, len);
+		ft_ostr_append(osbuf, NULL, len);
 
 		if ((rbytes = io_read(in, (char *)osbuf->content, len)) < 0) {
 			DER_LOG(ERROR, "read definite length content error: bad read");
@@ -352,7 +353,7 @@ static int	__decode_ostring(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	ft_ostr_append(decoded, encoded->content, encoded->size);
+	ft_ostr_append_ostr(decoded, encoded);
 	DER_LOG(TRACE, "octet string decoded successfully");
 	return (SSL_OK);
 }
@@ -383,7 +384,7 @@ static int	__decode_bitstring(uint8_t tag, t_ostring *decoded, t_ostring *encode
 		return (SSL_OK);
 	}
 
-	ft_ostr_append(decoded, encoded->content, encoded->size);
+	ft_ostr_append_ostr(decoded, encoded);
 	DER_LOG(TRACE, "primitive bit string decoded successfully");
 	return (SSL_OK);
 }
@@ -402,7 +403,7 @@ static int	__decode_bool(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	ft_ostr_append(decoded, encoded->content, encoded->size);
+	ft_ostr_append_ostr(decoded, encoded);
 	DER_LOG(TRACE, "boolean decoded successfully");
 	return (SSL_OK);
 }
@@ -440,7 +441,7 @@ static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	ft_ostr_append(decoded, encoded->content, encoded->size);
+	ft_ostr_append_ostr(decoded, encoded);
 	DER_LOG(TRACE, "null decoded successfully");
 	return (SSL_OK);
 }

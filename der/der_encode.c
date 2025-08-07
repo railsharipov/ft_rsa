@@ -268,7 +268,7 @@ static int	__encode_ostring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
-	ft_ostr_append(encoded, data->content, data->size);
+	ft_ostr_append_ostr(encoded, data);
 
 	DER_LOG(TRACE, "octet string encoded successfully");
 	return (SSL_OK);
@@ -292,7 +292,7 @@ static int	__encode_bitstring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		DER_LOG(ERROR, "invalid bitstring: bad first content octet");
 		return (SSL_ERR);
 	}
-	ft_ostr_append(encoded, data->content, data->size);
+	ft_ostr_append_ostr(encoded, data);
 
 	DER_LOG(TRACE, "bit string encoded successfully");
 	return (SSL_OK);
@@ -310,7 +310,7 @@ static int	__encode_bool(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		DER_LOG(ERROR, "invalid boolean type: bad content size");
 		return (SSL_ERR);
 	}
-	ft_ostr_append(encoded, data->content, data->size);
+	ft_ostr_append_ostr(encoded, data);
 
 	DER_LOG(TRACE, "boolean encoded successfully");
 	return (SSL_OK);
@@ -364,7 +364,7 @@ static int	__encode_null(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		DER_LOG(ERROR, "invalid null type: bad content size");
 		return (SSL_ERR);
 	}
-	ft_ostr_append(encoded, data->content, data->size);
+	ft_ostr_append_ostr(encoded, data);
 
 	DER_LOG(TRACE, "null encoded successfully");
 	return (SSL_OK);
@@ -398,10 +398,10 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	// if a positive integer's most significant bit of its first byte is 1, it must be prefixed with a 0x00 byte
 	if (size > 0 && (((uint8_t *)buf)[0] & 0x80)) {
 		byte = 0x00;
-		ft_ostr_append(encoded, &byte, sizeof(byte));
+		ft_ostr_append(encoded, (char *)&byte, sizeof(byte));
 	}
 
-	ft_ostr_append(encoded, buf, size);
+	ft_ostr_append(encoded, (char *)buf, size);
 	SSL_FREE(buf);
 
 	DER_LOG(TRACE, "integer encoded successfully");

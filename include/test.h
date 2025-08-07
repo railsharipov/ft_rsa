@@ -50,6 +50,7 @@ int		test_libft(void);
 int		test_io(void);
 int		test_base64(void);
 int		test_der(void);
+int		test_pem(void);
 int		test_bnum(void);
 int		test_json(void);
 int		test_asn(void);

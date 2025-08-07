@@ -14,8 +14,8 @@ static int	__test_der_decode_subjectPublicKeyInfo(void);
 static int	__test_der_encode_privateKeyInfo(void);
 static int	__test_der_encode_subjectPublicKeyInfo(void);
 
-static const char	*__privateKeyInfo_der_file_path = "test/testfiles/der/test-privateKeyInfo.der";
-static const char	*__subjectPublicKeyInfo_der_file_path = "test/testfiles/der/test-subjectPublicKeyInfo.der";
+static const char	*__privateKeyInfo_der_file_path = "test/testfiles/keys/test-privateKeyInfo.der";
+static const char	*__subjectPublicKeyInfo_der_file_path = "test/testfiles/keys/test-subjectPublicKeyInfo.der";
 
 static const char	*__modulus = "0090c698de843004925c02940780296d103900047942d8c784309b6f37935b9327de6d45c06fb6257daa65b9fbbb2895afa54677b750bba37ad56ea5fd78a5439b5a7452e139cdedfc65ba52bbd9dbe8d9cd0a0c27e2a6bed45e81b3efb25512fb85dec6e7c0c789c58536aa747b006bfb3b5ab24dd237b689dc91786de2d0fd97f798abb51a433989c24414722aef236835beb0db8de65c2d6665e8fb3024f35a95cbc5490d56183af8c0ad16ffbd4212f55eb730ea3fbffcdad593c7acfe4430d825747ca1c860d248495c1d8a675bb1bd3f4089f125730ba2a41026e92c8b7da92a1f8026f46a688019c98d7ba64aa91aaa84e20317064f9f07e1cc5e5fb993";
 static const char	*__publicExponent = "10001";

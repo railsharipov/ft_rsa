@@ -2,13 +2,13 @@
 #include <libft/alloc.h>
 #include <libft/std.h>
 
-t_ostring	*ft_ostr_create(void)
+t_ostring	*ft_ostr_create(const char *cstr)
 {
 	t_ostring	*ostring;
 
 	LIBFT_ALLOC(ostring, sizeof(t_ostring));
-	ostring->content = NULL;
-	ostring->size = 0;
+	ft_ostr_init(ostring);
+	ft_ostr_append_cstr(ostring, cstr);
 
 	return (ostring);
 }
@@ -33,21 +33,6 @@ void 	ft_ostr_init_with_size(t_ostring *ostring, size_t size)
 	ostring->size = size;
 }
 
-t_ostring	*ft_ostr_dup(t_ostring *src)
-{
-	t_ostring	*dup;
-
-	if (NULL == src) {
-		return (NULL);
-	}
-
-	LIBFT_ALLOC(dup, sizeof(t_ostring));
-	dup->content = ft_memdup(src->content, src->size);
-	dup->size = src->size;
-
-	return (dup);
-}
-
 void	ft_ostr_del(t_ostring *ostring)
 {
 	if (NULL == ostring) {
@@ -69,6 +54,34 @@ void	ft_ostr_clear(t_ostring *ostring)
 	ostring->size = 0;
 }
 
+t_ostring	*ft_ostr_dup(const t_ostring *ostring)
+{
+	t_ostring	*dup;
+
+	LIBFT_ALLOC(dup, sizeof(t_ostring));
+	ft_ostr_init(dup);
+	dup->content = ft_memdup(ostring->content, ostring->size);
+	dup->size = ostring->size;
+
+	return (dup);
+}
+
+void 	ft_ostr_append_cstr(t_ostring *ostring, const char *cstr)
+{
+	if (NULL == ostring) {
+		return ;
+	}
+	ft_ostr_append(ostring, (void *)cstr, ft_strlen(cstr));
+}
+
+void 	ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr)
+{
+	if (NULL == ostring || NULL == ostr) {
+		return ;
+	}
+	ft_ostr_append(ostring, (void *)ostr->content, ostr->size);
+}
+
 void	ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 {
 	if (NULL == ostring) {
@@ -76,7 +89,9 @@ void	ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 	}
 
 	LIBFT_REALLOC(ostring->content, ostring->size, ostring->size + size);
-	ft_memcpy(ostring->content + ostring->size, content, size);
+	if (NULL != content) {
+		ft_memcpy(ostring->content + ostring->size, content, size);
+	}
 	ostring->size += size;
 }
 
@@ -92,7 +107,7 @@ void	ft_ostr_prepend(t_ostring *ostring, void *content, size_t size)
 	ostring->size += size;
 }
 
-char 	*ft_ostr_to_cstr(t_ostring *ostring, size_t idx, size_t len)
+char 	*ft_ostr_to_cstr(const t_ostring *ostring, size_t idx, size_t len)
 {
 	char	*str;
 

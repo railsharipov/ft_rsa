@@ -10,9 +10,9 @@ static int __f_logger(const char *mes);
 
 static t_logger __logger = {
     .f_logger = __f_logger,
-    .log_level = LIBFT_LOG_LEVEL_TRACE,
+    .log_level = LIBFT_LOG_LEVEL_INFO,
     .is_ansi_colored = 1,
-	.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
+	.debug_info_thres = LIBFT_LOG_LEVEL_WARN,
 };
 
 static int  __f_logger(const char *mes) {

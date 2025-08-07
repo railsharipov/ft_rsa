@@ -258,12 +258,12 @@ static int	__test_ft_strncpy(void)
 
 	TEST_ASSERT(!strcmp(test_str, ref_str));
 
+	test_str[0] = 0;
 	ft_strncpy(test_str, __s2, 0);
-
 	TEST_ASSERT(strlen(test_str) == 0);
 
 	strcpy(test_str, __s1);
-	ft_strncpy(test_str + __slen1, __s2, 2 * __slen2);
+	ft_strncpy(test_str + __slen1, __s2, __slen2);
 
 	TEST_ASSERT(strlen(test_str) == total_len);
 

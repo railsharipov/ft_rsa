@@ -12,8 +12,8 @@ static int	__test_textutil_del_eolws(void);
 static int	__test_textutil_del_eol(void);
 static int	__test_textutil_del_empty_lines(void);
 static int	__test_textutil_insert_delim(void);
-static int	__test_textutil_sscanf(void);
-static int	__test_textutil_sbscanf(void);
+static int	__test_textutil_scanf(void);
+static int	__test_textutil_bnscanf(void);
 
 static const char	*__lorem = "Cernantur iis sunt, voluptate export nulla \
 arbitror noster. Se nescius exercitation. Malis nescius o consectetur \
@@ -39,8 +39,8 @@ int	test_textutil(void)
 		| __test_textutil_del_eol()
 		| __test_textutil_del_empty_lines()
 		| __test_textutil_insert_delim()
-		| __test_textutil_sscanf()
-		| __test_textutil_sbscanf()
+		| __test_textutil_scanf()
+		| __test_textutil_bnscanf()
 	);
 }
 
@@ -318,7 +318,7 @@ static int	__test_textutil_insert_delim(void)
 	TEST_PASS();
 }
 
-static int	__test_textutil_sscanf(void)
+static int	__test_textutil_scanf(void)
 {
 	int		matches;
 	
@@ -392,20 +392,48 @@ static int	__test_textutil_sscanf(void)
 	TEST_ASSERT(i7 == 10);
 	
 	char	str8[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
-	char	*s8, *s9, *s10;
+	char	*s8, *s8_2, *s8_3;
 	int		i8;
-	matches = textutil_sscanf(str8, ft_strlen(str8), "%[^:]: %d %[a-z-]%[-0-9A-Z]%[[a-z]", NULL, &i8, &s8, &s9, &s10);
+	matches = textutil_sscanf(str8, ft_strlen(str8), "%[^:]: %d %[a-z-]%[-0-9A-Z]%[[a-z]", NULL, &i8, &s8, &s8_2, &s8_3);
 	TEST_ASSERT(matches == 5);
 	TEST_ASSERT(s8 != NULL);
 	TEST_ASSERT(ft_streq(s8, "abcdefghijklmno"));
-	TEST_ASSERT(ft_streq(s9, "0034045-HEDRGD"));
-	TEST_ASSERT(ft_streq(s10, "[pqrstuvwxyz"));
+	TEST_ASSERT(ft_streq(s8_2, "0034045-HEDRGD"));
+	TEST_ASSERT(ft_streq(s8_3, "[pqrstuvwxyz"));
 	TEST_ASSERT(i8 == 10);
+
+	char			str9[] = "Test environment 10 T 10 10";
+	char			*s9;
+	unsigned int	u9;
+	char			c9;
+	ssize_t			zd9;
+	size_t			zu9;
+
+	matches = textutil_sscanf(str9, ft_strlen(str9), "%s %u %c %zd %zu", &s9, &u9, &c9, &zd9, &zu9);
+	TEST_ASSERT(matches == 1);
+	TEST_ASSERT(s9 != NULL);
+	TEST_ASSERT(!ft_streq(s9, "Test environment"));
+
+	char			str10[] = "Test environment 10 T 10 10";
+	char			*s10;
+	unsigned int	u10;
+	char			c10;
+	ssize_t			zd10;
+	size_t			zu10;
+
+	matches = textutil_sscanf(str10, ft_strlen(str10), "%[a-zA-Z ] %u %c %zd %zu", &s10, &u10, &c10, &zd10, &zu10);
+	TEST_ASSERT(matches == 5);
+	TEST_ASSERT(s10 != NULL);
+	TEST_ASSERT(ft_streq(s10, "Test environment "));
+	TEST_ASSERT(u10 == 10);
+	TEST_ASSERT(c10 == 'T');
+	TEST_ASSERT(zd10 == 10);
+	TEST_ASSERT(zu10 == 10);
 
 	TEST_PASS();
 }
 
-static int	__test_textutil_sbscanf(void)
+static int	__test_textutil_bnscanf(void)
 {
 	int		matches;
 	
@@ -414,7 +442,7 @@ static int	__test_textutil_sbscanf(void)
 	size_t	len1 = ft_strlen(str1);
 	TEST_ASSERT(len1 < sizeof(buf1));
 
-	matches = textutil_sbscanf(str1, len1, "%s", buf1, sizeof(buf1));
+	matches = textutil_bnscanf(str1, len1, "%s", buf1, sizeof(buf1));
 	TEST_ASSERT(matches == 1);
 	TEST_ASSERT(ft_strneq(buf1, str1, len1));
 	TEST_ASSERT(buf1[len1] == '\0');
@@ -424,7 +452,7 @@ static int	__test_textutil_sbscanf(void)
 	size_t	len2 = ft_strlen(str2);
 	TEST_ASSERT(len2 >= sizeof(buf2));
 
-	matches = textutil_sbscanf(str2, len2, "%s", buf2, sizeof(buf2));
+	matches = textutil_bnscanf(str2, len2, "%s", buf2, sizeof(buf2));
 	TEST_ASSERT(matches == 1);
 	TEST_ASSERT(ft_strneq(buf2, str2, sizeof(buf2) - 1));
 	TEST_ASSERT(buf2[sizeof(buf2) - 1] == '\0');

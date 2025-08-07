@@ -1,6 +1,7 @@
 #include <common.h>
 #include <cli.h>
 #include <test.h>
+#include <pem.h>
 
 const struct {
 	const char *name;
@@ -11,6 +12,7 @@ const struct {
 	{"bnum", test_bnum},
 	{"base64", test_base64},
 	{"der", test_der},
+	{"pem", test_pem},
 	{"json", test_json},
 	{"asn", test_asn},
 	{"textutil", test_textutil}
