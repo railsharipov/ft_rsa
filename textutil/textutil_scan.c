@@ -16,11 +16,18 @@ static size_t __parse_number(const char *octets, size_t olen, size_t opos, ssize
 static size_t __parse_number_u(const char *octets, size_t olen, size_t opos, size_t *res);
 static size_t __parse_charset(const char *format, size_t fpos, char *charset);
 static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char **res, const char *charset);
+static size_t __parse_scanset_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size, const char *charset);
 
 int textutil_bnscanf(const char *octets, size_t olen, const char *format, ...)
 {
 	va_list	ap;
 	int		matches;
+
+	TEXTUTIL_LOG(TRACE, "Scanning octets: mode=buffered");
+	if (NULL == octets || olen == 0 || NULL == format) {
+		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (0);
+	}
 
 	va_start(ap, format);
 	matches = __sscanf(octets, olen, format, ap, SCANF_MODE_BUFFERED);
@@ -33,6 +40,12 @@ int textutil_sscanf(const char *octets, size_t olen, const char *format, ...)
 {
 	va_list	ap;
 	int		matches;
+
+	TEXTUTIL_LOG(TRACE, "Scanning octets: mode=default");
+	if (NULL == octets || olen == 0 || NULL == format) {
+		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (0);
+	}
 
 	va_start(ap, format);
 	matches = __sscanf(octets, olen, format, ap, SCANF_MODE_DEFAULT);
@@ -84,13 +97,15 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					fpos++;
 					buf = va_arg(ap, char *);
 					buf_size = va_arg(ap, size_t);
+					TEXTUTIL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
 					if (buf != NULL && buf_size > 0) {
 						if ((nbytes = __parse_string_b(octets, olen, opos, buf, buf_size)) == 0) {
 							TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", octets);
+							buf[0] = '\0';
 							break;
 						}
 						opos += nbytes;
-						TEXTUTIL_LOG(TRACE, "String buffer: p=%p, size=%zu", buf, buf_size);
+						TEXTUTIL_LOG(TRACE, "String match: %s", buf);
 					} else {
 						TEXTUTIL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
 						break;
@@ -108,7 +123,7 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(char **)arg = str;
-						TEXTUTIL_LOG(TRACE, "String: v='%s'", *(char **)arg);
+						TEXTUTIL_LOG(TRACE, "String match: v='%s'", *(char **)arg);
 					} else {
 						SSL_FREE(str);
 					}
@@ -128,7 +143,7 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(int *)arg = (int)num;
-					TEXTUTIL_LOG(TRACE, "Number: v=%d", *(int *)arg);
+					TEXTUTIL_LOG(TRACE, "Number match: v=%d", *(int *)arg);
 				}
 				matches++;
 			}
@@ -145,7 +160,7 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(unsigned int *)arg = (unsigned int)num;
-					TEXTUTIL_LOG(TRACE, "Number: v=%u", *(unsigned int *)arg);
+					TEXTUTIL_LOG(TRACE, "Number match: v=%u", *(unsigned int *)arg);
 				}
 				matches++;
 			}
@@ -156,7 +171,7 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(char *)arg = octets[opos];
-					TEXTUTIL_LOG(TRACE, "Char: v=%c", *(char *)arg);
+					TEXTUTIL_LOG(TRACE, "Char match: v=%c", *(char *)arg);
 				}
 				opos++;
 				matches++;
@@ -176,7 +191,7 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(ssize_t *)arg = (ssize_t)num;
-						TEXTUTIL_LOG(TRACE, "Number: v=%zd", *(ssize_t *)arg);
+						TEXTUTIL_LOG(TRACE, "Number match: v=%zd", *(ssize_t *)arg);
 					}
 					matches++;
 				}
@@ -192,13 +207,12 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(size_t *)arg = num;
-						TEXTUTIL_LOG(TRACE, "Number: v=%zu", *(size_t *)arg);
+						TEXTUTIL_LOG(TRACE, "Number match: v=%zu", *(size_t *)arg);
 					}
 					matches++;
 				}
 			}
 			else if (format[fpos] == '[') {
-				char	*str;
 				char	charset[256] = {0};
 				TEXTUTIL_LOG(TRACE, "Found charset '%%[...]' token");
 				if ((nbytes = __parse_charset(format, fpos, charset)) == 0) {
@@ -206,17 +220,38 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					break;
 				}
 				fpos += nbytes;
-				if ((nbytes = __parse_scanset(octets, olen, opos, &str, charset)) == 0) {
-					TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", octets);
-					break;
-				}
-				opos += nbytes;
-				arg = va_arg(ap, char **);
-				if (arg != NULL) {
-					*(char **)arg = str;
-					TEXTUTIL_LOG(TRACE, "Scanset: v='%s'", *(char **)arg);
+				if (mode == SCANF_MODE_BUFFERED) {
+					char	*buf;
+					size_t	buf_size;
+					buf = va_arg(ap, char *);
+					buf_size = va_arg(ap, size_t);
+					TEXTUTIL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
+					if (buf != NULL && buf_size > 0) {
+						if ((nbytes = __parse_scanset_b(octets, olen, opos, buf, buf_size, charset)) == 0) {
+							TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", octets);
+							break;
+						}
+						opos += nbytes;
+						TEXTUTIL_LOG(TRACE, "Scanset match: string: %s", buf);
+					} else {
+						TEXTUTIL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
+						break;
+					}
 				} else {
-					SSL_FREE(str);
+					char	*str;
+					if ((nbytes = __parse_scanset(octets, olen, opos, &str, charset)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", octets);
+						break;
+					}
+					opos += nbytes;
+					arg = va_arg(ap, char **);
+					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+					if (arg != NULL) {
+						*(char **)arg = str;
+						TEXTUTIL_LOG(TRACE, "Scanset match: string: v='%s'", *(char **)arg);
+					} else {
+						SSL_FREE(str);
+					}
 				}
 				matches++;
 			}
@@ -361,7 +396,7 @@ static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char
 	*res = NULL;
 	while (end < olen) {
 		if (!charset[(int)octets[end]]) {
-			TEXTUTIL_LOG(TRACE, "No match for scanset at pos %zu, char: '%c'", end, octets[end]);
+			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, octets[end]);
 			break;
 		}
 		end++;
@@ -371,6 +406,30 @@ static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char
 		return (0);
 	}
 	*res = ft_strndup(octets + start, end - start);
+
+	return (end - start);
+}
+
+static size_t __parse_scanset_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size, const char *charset)
+{
+	size_t	start = opos;
+	size_t	end = start;
+	size_t	len;
+
+	while (end < olen) {
+		if (!charset[(int)octets[end]]) {
+			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, octets[end]);
+			break;
+		}
+		end++;
+	}
+	if (end == start) {
+		TEXTUTIL_LOG(TRACE, "No matching characters for scanset");
+		return (0);
+	}
+	len = MIN(end - start, buf_size - 1);
+	ft_memcpy(buf, octets + start, len);
+	buf[len] = '\0';
 
 	return (end - start);
 }

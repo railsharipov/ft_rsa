@@ -204,26 +204,29 @@ static int	__write_output(char *output, size_t outsize)
 
 static int	__decode_key(t_ostring *key, t_node **asn_key)
 {
-	t_pem	pem;
 	t_ostring	der_key;
+	t_pem	pem;
 	int		ret;
-
-	ret = SSL_OK;
 
 	pem_init(&pem);
 	ft_ostr_init(&der_key);
+	ret = SSL_ERR;
 
 	if (SSL_OK != pem_decode(&pem, key, &der_key, NULL)) {
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		CLI_LOG(ERROR, "failed to decode pem");
+		goto label_exit;
 	}
-	else if (!ft_streq(__in_type, pem.label)) {
+	if (!ft_streq(__in_type, pem.label)) {
 		CLI_LOG(ERROR, "invalid pem label");
-		ret = SSL_ERR;
+		goto label_exit;
 	}
-	else if (SSL_OK != asn_tree_der_decode(&der_key, __in_map, asn_key)) {
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+	if (SSL_OK != der_decode(asn_key, &der_key)) {
+		CLI_LOG(ERROR, "failed to decode der");
+		goto label_exit;
 	}
+	ret = SSL_OK;
 
+label_exit:
 	pem_clear(&pem);
 	ft_ostr_clear(&der_key);
 

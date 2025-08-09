@@ -100,17 +100,11 @@ static int	__test_der_decode_privateKeyInfo(void)
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
 	t_num	*num;
-	t_iodes	iodes;
 	int		ret;
 
 	tree = NULL;
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &__privateKeyInfo_der)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-
-	ret = der_decode(&tree, &iodes);
+	ret = der_decode(&tree, &__privateKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -155,11 +149,7 @@ static int	__test_der_decode_privateKeyInfo(void)
 	temp_ostring.content = asn_item->content;
 	temp_ostring.size = asn_item->size;
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &temp_ostring)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-	ret = der_decode(&tree, &iodes);
+	ret = der_decode(&tree, &temp_ostring);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -199,17 +189,11 @@ static int	__test_der_decode_subjectPublicKeyInfo(void)
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
 	t_num	*num;
-	t_iodes	iodes;
 	int		ret;
 
 	tree = NULL;
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &__subjectPublicKeyInfo_der)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-
-	ret = der_decode(&tree, &iodes);
+	ret = der_decode(&tree, &__subjectPublicKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -269,11 +253,7 @@ static int	__test_der_decode_subjectPublicKeyInfo(void)
 	temp_ostring.content = ((unsigned char *)asn_item->content + 1);
 	temp_ostring.size = asn_item->size - 1;
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &temp_ostring)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-	ret = der_decode(&tree, &iodes);
+	ret = der_decode(&tree, &temp_ostring);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -318,18 +298,11 @@ static int	__test_der_encode_privateKeyInfo(void)
 	t_node		*privateKeyInfo_tree, *encapsulated_privateKey_tree, *privateKey_tree;
 	t_iasn		*asn_item;
 	t_ostring	ref_encoded_privateKey, encoded_privateKeyInfo, encoded_privateKey;
-	t_iodes		iodes;
 	int			ret;
 
 	// decode original privateKeyInfo DER
 	privateKeyInfo_tree = NULL;
-
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &__privateKeyInfo_der)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-
-	ret = der_decode(&privateKeyInfo_tree, &iodes);
+	ret = der_decode(&privateKeyInfo_tree, &__privateKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(privateKeyInfo_tree != NULL);
@@ -348,35 +321,22 @@ static int	__test_der_encode_privateKeyInfo(void)
 	ref_encoded_privateKey.content = asn_item->content;
 	ref_encoded_privateKey.size = asn_item->size;
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &ref_encoded_privateKey)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-	ret = der_decode(&privateKey_tree, &iodes);
+	ret = der_decode(&privateKey_tree, &ref_encoded_privateKey);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(privateKey_tree != NULL);
 
 	// encode privateKey DER, compare with original encapsulated privateKey DER
 	ft_ostr_init(&encoded_privateKey);
-	
-	if (SSL_OK != io_osbuf(&iodes, IO_WRITE, &encoded_privateKey)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-	ret = der_encode(privateKey_tree, &iodes);
+
+	ret = der_encode(privateKey_tree, &encoded_privateKey);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(encoded_privateKey.size == ref_encoded_privateKey.size);
 	TEST_ASSERT(ft_memcmp(encoded_privateKey.content, ref_encoded_privateKey.content, encoded_privateKey.size) == 0);
 
 	// encode privateKeyInfo DER, compare with original privateKeyInfo DER
 	ft_ostr_init(&encoded_privateKeyInfo);
-	
-	if (SSL_OK != io_osbuf(&iodes, IO_WRITE, &encoded_privateKeyInfo)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
 
-	ret = der_encode(privateKeyInfo_tree, &iodes);
+	ret = der_encode(privateKeyInfo_tree, &encoded_privateKeyInfo);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(encoded_privateKeyInfo.size == __privateKeyInfo_der.size);
 	TEST_ASSERT(ft_memcmp(encoded_privateKeyInfo.content, __privateKeyInfo_der.content, encoded_privateKeyInfo.size) == 0);
@@ -389,18 +349,12 @@ static int	__test_der_encode_subjectPublicKeyInfo(void)
 	t_node		*subjectPublicKeyInfo_tree, *encapsulated_subjectPublicKey_tree, *subjectPublicKey_tree;
 	t_ostring	ref_encoded_subjectPublicKey, encoded_subjectPublicKeyInfo, encoded_subjectPublicKey;
 	t_iasn		*asn_item;
-	t_iodes		iodes;
 	int			ret;
 
 	// decode subjectPublicKeyInfo DER, encode it back and compare with original DER
 	subjectPublicKeyInfo_tree = NULL;
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &__subjectPublicKeyInfo_der)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-
-	ret = der_decode(&subjectPublicKeyInfo_tree, &iodes);
+	ret = der_decode(&subjectPublicKeyInfo_tree, &__subjectPublicKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(subjectPublicKeyInfo_tree != NULL);
@@ -421,23 +375,14 @@ static int	__test_der_encode_subjectPublicKeyInfo(void)
 	ref_encoded_subjectPublicKey.size = asn_item->size - 1;
 
 	// decode original encapsulated subjectPublicKey DER
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, &ref_encoded_subjectPublicKey)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-
-	ret = der_decode(&subjectPublicKey_tree, &iodes);
+	ret = der_decode(&subjectPublicKey_tree, &ref_encoded_subjectPublicKey);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(subjectPublicKey_tree != NULL);
 
 	// encode subjectPublicKey DER, compare with original encapsulated subjectPublicKey DER
 	ft_ostr_init(&encoded_subjectPublicKey);
 
-	if (SSL_OK != io_osbuf(&iodes, IO_WRITE, &encoded_subjectPublicKey)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-	ret = der_encode(subjectPublicKey_tree, &iodes);
+	ret = der_encode(subjectPublicKey_tree, &encoded_subjectPublicKey);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(encoded_subjectPublicKey.size == ref_encoded_subjectPublicKey.size);
 	TEST_ASSERT(ft_memcmp(encoded_subjectPublicKey.content, ref_encoded_subjectPublicKey.content, encoded_subjectPublicKey.size) == 0);
@@ -445,11 +390,7 @@ static int	__test_der_encode_subjectPublicKeyInfo(void)
 	// encode subjectPublicKeyInfo DER, compare with original subjectPublicKeyInfo DER
 	ft_ostr_init(&encoded_subjectPublicKeyInfo);
 
-	if (SSL_OK != io_osbuf(&iodes, IO_WRITE, &encoded_subjectPublicKeyInfo)) {
-		TEST_LOG(ERROR, "failed to set io buffer");
-		return (SSL_ERR);
-	}
-	ret = der_encode(subjectPublicKeyInfo_tree, &iodes);
+	ret = der_encode(subjectPublicKeyInfo_tree, &encoded_subjectPublicKeyInfo);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(encoded_subjectPublicKeyInfo.size == __subjectPublicKeyInfo_der.size);
 	TEST_ASSERT(ft_memcmp(encoded_subjectPublicKeyInfo.content, __subjectPublicKeyInfo_der.content, encoded_subjectPublicKeyInfo.size) == 0);

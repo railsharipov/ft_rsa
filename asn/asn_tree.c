@@ -74,7 +74,6 @@ t_node	*asn_tree_create(t_node *json_schema)
 		ASN_LOG(ERROR, "invalid json schema: expected type key");
 		goto label_error;
 	}
-
 	ASN_LOG(TRACE, "setting asn item type to '%s'", (char *)type->content);
 
 	if (SSL_OK != asn_item_set_type(asn_item, (char *)type->content)) {

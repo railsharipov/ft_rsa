@@ -13,34 +13,35 @@
 #include <common.h>
 #include <hash.h>
 
-static const int	END_BYTE = 1 << 7;
-static const int	LEN_SIZE = 8;
-
 void	hash_md5_final(t_hash *md5, const unsigned char *buf, size_t bufsize)
 {
-	unsigned char	*pbuf;
-	int			pbsize;
-	uint64_t	msize_nbits;
-	unsigned char		msize_octets[8];
+	uint64_t		total_bits;
+	uint32_t		rem_len;
+	uint32_t		pad_len;
+	unsigned char	pbuf[MD5_BLOCK_SIZE * 2];
 
 	if ((NULL == md5) || (NULL == buf)) {
 		return ;
 	}
 
 	*(uint64_t *)(md5->msize) += bufsize;
-	msize_nbits = *(uint64_t *)(md5->msize) * CHAR_BIT;
-	ft_memcpy(msize_octets, &msize_nbits, LEN_SIZE);
+	total_bits = *(uint64_t *)(md5->msize) * 8;
+	rem_len = bufsize % MD5_BLOCK_SIZE;
 
-	pbsize = CEIL(bufsize, MD5_BLOCK_SIZE);
+	hash_md5_update(md5, buf, bufsize - rem_len);
+	buf += bufsize - rem_len;
 
-	if (pbsize-bufsize <= LEN_SIZE) {
-		pbsize += MD5_BLOCK_SIZE;
+	ft_memcpy(pbuf, buf, rem_len);
+	pbuf[rem_len] = 0x80;
+	pad_len = rem_len + 1;
+
+	if (pad_len > MD5_BLOCK_SIZE - 8) {
+		ft_bzero(pbuf + pad_len, MD5_BLOCK_SIZE - pad_len);
+		hash_md5_update(md5, pbuf, MD5_BLOCK_SIZE);
+		pad_len = 0;
 	}
 
-	SSL_ALLOC(pbuf, pbsize);
-	ft_memcpy(pbuf, buf, bufsize);
-	pbuf[bufsize] = (unsigned char)END_BYTE;
-
-	ft_memcpy(pbuf + pbsize-LEN_SIZE, msize_octets, LEN_SIZE);
-	hash_md5_update(md5, pbuf, pbsize);
+	ft_bzero(pbuf + pad_len, MD5_BLOCK_SIZE - 8 - pad_len);
+	ft_memcpy(pbuf + MD5_BLOCK_SIZE - 8, &total_bits, sizeof(total_bits));
+	hash_md5_update(md5, pbuf, MD5_BLOCK_SIZE);
 }

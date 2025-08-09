@@ -66,6 +66,23 @@ t_ostring	*ft_ostr_dup(const t_ostring *ostring)
 	return (dup);
 }
 
+void 	ft_ostr_appendf(t_ostring *ostring, const char *fmt, ...)
+{
+	char	*cstr;
+	va_list	ap;
+
+	if (NULL == ostring) {
+		return ;
+	}
+	cstr = NULL;
+	va_start(ap, fmt);
+	ft_vsprintf(&cstr, fmt, ap);
+	va_end(ap);
+
+	ft_ostr_append_cstr(ostring, cstr);
+	LIBFT_FREE(cstr);
+}
+
 void 	ft_ostr_append_cstr(t_ostring *ostring, const char *cstr)
 {
 	if (NULL == ostring) {

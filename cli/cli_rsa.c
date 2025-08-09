@@ -329,7 +329,11 @@ static int	__decode_key(t_node **asn_key)
 	} else {
 		der_key = ft_ostr_dup(&__inkey);
 	}
-	ret = asn_tree_der_decode(der_key, __in_map, asn_key);
+	if (SSL_OK != der_decode(asn_key, der_key)) {
+		CLI_LOG(ERROR, "failed to decode der");
+		goto label_exit;
+	}
+	ret = SSL_OK;
 
 label_exit:
 	ft_ostr_del(der_key);
@@ -340,39 +344,45 @@ label_exit:
 
 static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 {
-	t_ostring	*der_key;
+	t_ostring	der_key, pem_key;
 	t_pem	*pem;
 	int		ret;
 
 	ret = SSL_ERR;
-	
-	if (SSL_OK != asn_tree_der_encode(asn_key, &der_key)) {
+	ft_ostr_init(&der_key);
+	ft_ostr_init(&pem_key);
+
+	if (SSL_OK != der_encode(asn_key, &der_key)) {
 		CLI_LOG(ERROR, "failed to DER encode key");
-		return (SSL_ERR);
+		goto label_exit;
 	}
 	if (RSA_PEM == __outform) {
-		*outkey = ft_ostr_create(NULL);
 		if (SSL_FLAG(RSA_ENCRYPT, __gflag)) {
 			pem = pem_create(__out_type, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
-			if (SSL_OK != pem_encode(pem, der_key, *outkey, __passout)) {
+			if (SSL_OK != pem_encode(pem, &der_key, &pem_key, __passout)) {
 				CLI_LOG(ERROR, "failed to PEM encode key");
-				ret = SSL_ERR;
+				goto label_exit;
 			}
 			pem_del(pem);
 		} else {
 			pem = pem_create(__out_type, PEM_PROC_TYPE_NONE, PEM_CIPHER_NONE);
-			if (SSL_OK != pem_encode(pem, der_key, *outkey, NULL)) {
+			if (SSL_OK != pem_encode(pem, &der_key, &pem_key, NULL)) {
 				CLI_LOG(ERROR, "failed to PEM encode key");
-				ret = SSL_ERR;
+				goto label_exit;
 			}
 			pem_del(pem);
 		}
+		*outkey = ft_ostr_dup(&pem_key);
 	}
 	else {
-		*outkey = ft_ostr_dup(der_key);
+		*outkey = ft_ostr_dup(&der_key);
 	}
 
-	ft_ostr_del(der_key);
+	ret = SSL_OK;
+
+label_exit:
+	ft_ostr_clear(&der_key);
+	ft_ostr_clear(&pem_key);
 
 	return (ret);
 }

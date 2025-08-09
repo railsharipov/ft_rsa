@@ -21,11 +21,13 @@
 typedef __uint128_t	uint128_t;
 
 char		*ft_bytes_to_hex(const void *bytes, size_t size);
+char		*ft_bytes_to_hex_upper(const void *bytes, size_t size);
 void		ft_bytes_reverse_bits(void *bytes, size_t size);
 uint64_t	ft_bytes_to_uint(void *bytes, size_t size);
 void		ft_bytes_lshift(void *bytes, size_t size, int shift);
 void		ft_bytes_rshift(void *bytes, size_t size, int shift);
-void		ft_bytes_dump_hex(void *bytes, size_t size, int cols, int del);
+char		*ft_bytes_dumps_hex(void *bytes, size_t size, int cols, int del);
+void		ft_bytes_dumpb_hex(void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize);
 void		ft_bytes_write_hex(int fd, void *bytes, size_t size);
 void		ft_bytes_print_bits(void *, size_t);
 void		ft_bytes_xor(void *res, void *bytes1, void *bytes2, size_t size);

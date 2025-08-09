@@ -21,7 +21,8 @@ void	asn_node_clear(t_node *asn_node)
 		return;
 	}
 	if (NULL != asn_node->content) {
-		asn_item_clear(asn_node->content);
+		asn_item_del(asn_node->content);
+		asn_node->content = NULL;
 	}
 	asn_node->type = JSON_TYPE_BYTES;
 	asn_node->f_del_content = (void (*)(void *))asn_item_del;

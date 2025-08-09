@@ -28,11 +28,35 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
 typedef int	(*FUNC_DER_DECODE)(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
-int	der_decode(t_node **tree, t_iodes *in)
+int	der_decode(t_node **tree, t_ostring *encoded)
+{
+	t_iodes	iodes;
+
+	DER_LOG(TRACE, "starting DER decode octet string");
+
+	if (NULL == tree || NULL == encoded) {
+		DER_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+
+	if (SSL_OK != io_osbuf(&iodes, IO_READ, encoded)) {
+		DER_LOG(ERROR, "failed to init io");
+		return (SSL_ERR);
+	}
+	if (SSL_OK != der_decode_stream(tree, &iodes)) {
+		DER_LOG(ERROR, "failed to decode octet string");
+		return (SSL_ERR);
+	}
+	DER_LOG(TRACE, "DER decode octet string completed successfully");
+
+	return (SSL_OK);
+}
+
+int	der_decode_stream(t_node **tree, t_iodes *in)
 {
 	t_node	*node;
 
-	DER_LOG(TRACE, "starting DER decode");
+	DER_LOG(TRACE, "starting DER decode stream");
 
 	if (NULL == tree || NULL == in) {
 		DER_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -45,7 +69,7 @@ int	der_decode(t_node **tree, t_iodes *in)
 	}
 
 	*tree = node;
-	DER_LOG(TRACE, "DER decode completed successfully");
+	DER_LOG(TRACE, "DER decode stream completed successfully");
 
 	return (SSL_OK);
 }
@@ -159,22 +183,23 @@ static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in)
 
 	DER_LOG(TRACE, "read tag number: %u, tag: %u", *tagnum, *tag);
 
-	if (ASN_TAGNUM_COMPLEX == *tagnum) {
-		*tagnum = 0;
+    if (ASN_TAGNUM_COMPLEX == *tagnum) {
+        *tagnum = 0;
 
-		while ((rbytes = io_read(in, (char *)&octet, 1)) > 0) {
-			*tagnum <<= 7;
-			*tagnum |= (uint32_t)octet & 0x7F;
+        do {
+            rbytes = io_read(in, (char *)&octet, 1);
+            if (rbytes <= 0) {
+                DER_LOG(ERROR, "read complex tag error: bad read");
+                return (-1);
+            }
+            tbytes += rbytes;
 
-			tbytes += rbytes;
-		}
+            *tagnum <<= 7;
+            *tagnum |= (uint32_t)octet & 0x7F;
+        } while (octet & 0x80);
 
-		if ((rbytes < 0) || !(octet & 0x80)) {
-			DER_LOG(ERROR, "read complex tag error: bad read");
-			return (-1);
-		}
-		DER_LOG(TRACE, "complex tag number: %u", *tagnum);
-	}
+        DER_LOG(TRACE, "complex tag number: %u", *tagnum);
+    }
 
 	return (tbytes);
 }
@@ -248,7 +273,7 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 
 	DER_LOG(TRACE, "reading content octets, length: %zu", len);
 
-	if (ASN_LEN_LONG == lenform && len == 0) {
+    if (ASN_LEN_LONG == lenform && len == 0) {
 		t_iodes	out;
 		char	octet;
 		int		null_count;
@@ -262,30 +287,25 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 		rbytes = 0;
 		tbytes = 0;
 
-		while (null_count < 2) {
-			rbytes = io_read(in, &octet, 1);
+        // Read until End-of-Contents (0x00 0x00), but avoid busy-waiting
+        while (null_count < 2) {
+            rbytes = io_read(in, &octet, 1);
+            if (rbytes <= 0) {
+                DER_LOG(ERROR, "read indefinite length content error: bad read");
+                goto label_error;
+            }
+            tbytes += 1;
 
-			if (rbytes == 1) {
-				tbytes += 1;
+            if (io_write(&out, &octet, 1) != 1) {
+                goto label_error;
+            }
 
-				if (io_write(&out, &octet, 1) != 1) {
-					goto label_error;
-				}
-
-				if (octet == 0) {
-					null_count += 1;
-				} else {
-					null_count = 0;
-				}
-			}
-			else if (rbytes == 0) {
-				usleep(100);
-			}
-			else {
-				DER_LOG(ERROR, "read indefinite length content error: bad read");
-				goto label_error;
-			}
-		}
+            if (octet == 0) {
+                null_count += 1;
+            } else {
+                null_count = 0;
+            }
+        }
 		DER_LOG(TRACE, "indefinite length content read, total bytes: %zd", tbytes);
 	}
 	else {
@@ -536,16 +556,17 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 	DER_LOG(TRACE, "object identifier: %s", obj_id);
 
 	obj_name = asn_oid_tree_get_name(obj_id);
-	SSL_FREE(obj_id);
-
 	if (NULL == obj_name) {
-		DER_LOG(ERROR, "unknown asn object id");
-		return (SSL_ERR);
+		DER_LOG(WARN, "unknown asn object id: %s", obj_id);
+	} else {
+		DER_LOG(TRACE, "object identifier matches: %s", obj_name);
 	}
-	decoded->content = (unsigned char *)obj_name;
-	decoded->size = ft_strlen(obj_name);
+	SSL_FREE(obj_name);
 
-	DER_LOG(TRACE, "object identifier decoded successfully: %s", obj_name);
+	decoded->content = (unsigned char *)obj_id;
+	decoded->size = ft_strlen(obj_id);
+
+	DER_LOG(TRACE, "object identifier decoded successfully: %s", obj_id);
 
 	return (SSL_OK);
 }

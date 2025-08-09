@@ -86,7 +86,7 @@ static int __run_task(void)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != asn_tree_der_encode(__asn_pkey, &__der_pkey))	{
+	if (SSL_OK != der_encode(__asn_pkey, __der_pkey))	{
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

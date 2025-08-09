@@ -15,7 +15,7 @@
 // [ ... BASE64 ENCODING ... ]
 // -----END X-----
 //
-// OpenSSL's `enc` command uses a proprietary password-based encryption format.
+// Old versions of OpenSSL's `enc` command uses a proprietary password-based encryption format.
 // The "IV" from the DEK-Info header is used as the salt for a key derivation
 // function (KDF). The KDF then generates the actual cipher key and IV.
 
@@ -24,10 +24,11 @@ static const char *__CIPHER_NAME_DES_CBC = "DES-CBC";
 int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 {
 	t_ostring	b64enc_lines, b64enc, b64dec;
-	char		vecthex[16], cipher_name[128], proc_type[128];
+	char		salthex[128], cipher_name[128], proc_type[128];
 	int			pos, matches, idx, ret;
 	t_des		*des;
 
+	PEM_LOG(TRACE, "decoding pem: content: %p, size: %d", enc->content, enc->size);
 	ret = SSL_ERR;
 
 	if (NULL == pem || NULL == enc || NULL == data) {
@@ -39,23 +40,30 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	ft_ostr_init(&b64dec);
 
 	pos = 0;
-	matches = textutil_sscanf((char *)enc->content + pos, enc->size - pos, "-----BEGIN %[^-]-----", &pem->label);
+
+	PEM_LOG(TRACE, "scanning pem label begin: pos: %d", pos);
+	matches = textutil_sscanf((char *)enc->content + pos, enc->size - pos, "-----BEGIN %[^-]-----\n", &pem->label);
 	if (matches != 1) {
 		PEM_LOG(ERROR, "bad encapsulation label");
 		goto label_exit;
 	}
-	
-	pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "-----BEGIN %s-----", pem->label);
-	
+	pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "-----BEGIN %s-----\n", pem->label);
+
+	PEM_LOG(TRACE, "scanning proc type header: pos: %d", pos);
 	matches = textutil_bnscanf((char *)enc->content + pos, enc->size - pos, "Proc-Type: %s\n", proc_type, sizeof(proc_type));
+
 	if (matches == 1 && ft_streq(proc_type, "4,ENCRYPTED")) {
 		pem->proc = PEM_PROC_TYPE_ENCRYPTED;
+		pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "Proc-Type: %s\n", proc_type);
 	} else {
 		pem->proc = PEM_PROC_TYPE_NONE;
 	}
+    PEM_LOG(TRACE, "proc type: %#x", pem->proc);
 	
 	if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
-		matches = textutil_bnscanf((char *)enc->content + pos, enc->size - pos, "DEK-Info: %s,%s\n", cipher_name, sizeof(cipher_name), vecthex, sizeof(vecthex));
+		PEM_LOG(TRACE, "scanning encryption header: pos: %d", pos);
+
+        matches = textutil_bnscanf((char *)enc->content + pos, enc->size - pos, "DEK-Info: %[^,],%[a-zA-Z0-9]\n", cipher_name, sizeof(cipher_name), salthex, sizeof(salthex));
 		if (matches != 2) {
 			PEM_LOG(ERROR, "bad encryption header");
 			goto label_exit;
@@ -66,48 +74,64 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 			PEM_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);
 			goto label_exit;
 		} else {
-			pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "DEK-Info: DES-CBC,%s\n", vecthex);
+			pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "DEK-Info: DES-CBC,%s\n", salthex);
 		}
-		ft_hex_to_bytes(pem->iv, vecthex, 16);
+        ft_hex_to_bytes(pem->salt, salthex, 16);
+        /* For PEM Proc-Type encryption, the DEK-Info value is the cipher IV and
+         * is also used as the salt for EVP_BytesToKey. The actual cipher IV used
+         * must be the header IV, not a derived IV. */
+        ft_memcpy(pem->iv, pem->salt, 8);
+
+		PEM_LOG(TRACE, "encryption: type=%#x, cipher=%s, iv=%s", pem->cipher, cipher_name, salthex);
 	}
 	pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "\n");
 	
+	PEM_LOG(TRACE, "searching pem label end: pos: %d", pos);
 	idx = textutil_findf((char *)enc->content, enc->size, "%s%s%s", "-----END ", pem->label, "-----");
 	if (idx < 0) {
 		PEM_LOG(ERROR, "bad encapsulation end");
 		goto label_exit;
 	}
 	ft_ostr_append(&b64enc_lines, (char *)enc->content + pos, idx - pos);
+	PEM_LOG(TRACE, "copied base64 encoding: content: %p, size: %d", b64enc_lines.content, b64enc_lines.size);
 
+	PEM_LOG(TRACE, "deleting whitespace from base64 encoding");
 	if (SSL_OK != textutil_del_eol((char *)b64enc_lines.content, b64enc_lines.size, (char **)&b64enc.content, &b64enc.size)) {
 		PEM_LOG(ERROR, "bad base64 format");
 		goto label_exit;
 	}
-
+	PEM_LOG(TRACE, "decoding base64 encoding: content: %p, size: %d", b64enc.content, b64enc.size);
 	if (SSL_OK != base64_decode(b64enc.content, b64enc.size, &b64dec.content, &b64dec.size)) {
 		PEM_LOG(ERROR, "bad base64 encoding");
 		goto label_exit;
 	}
+	PEM_LOG(TRACE, "decoded base64 encoding: content: %p, size: %d", b64dec.content, b64dec.size);
+
 	ft_ostr_clear(&b64enc);
 
-	if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
-		if (SSL_OK != rand_openssl_kdf((unsigned char *)pem->key, (unsigned char *)pem->iv, (unsigned char *)pem->salt, pass)) {
+    if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
+		PEM_LOG(TRACE, "encrypted pem: generating key from password");
+        /* Derive only the key using the header IV as the salt. Use the header IV
+         * itself for the DES CBC initialization vector. */
+        if (SSL_OK != rand_openssl_kdf((unsigned char *)pem->key, (unsigned char *)pem->salt, NULL, pass)) {
 			PEM_LOG(ERROR, "bad key derivation");
 			goto label_exit;
 		}
-	
-		des = des_init((unsigned char *)pem->key, NULL, (unsigned char *)pem->salt);
-	
-		if (SSL_OK != des_cbc_decrypt(des, &b64dec, data, pass)) {
+        des = des_init((unsigned char *)pem->key, (unsigned char *)pem->salt, (unsigned char *)pem->iv);
+
+		PEM_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
+		if (SSL_OK != des_cbc_decrypt(des, &b64dec, data)) {
 			PEM_LOG(ERROR, "bad des cbc decrypt");
 			goto label_exit;
 		}
 	}
 	else {
+		PEM_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);
 		ft_ostr_append_ostr(data, &b64dec);
 	}
 
 	ret = SSL_OK;
+	PEM_LOG(TRACE, "pem decode complete: content: %p, size: %d", data->content, data->size);
 
 label_exit:
 	if (ret != SSL_OK) {

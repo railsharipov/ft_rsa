@@ -3,8 +3,13 @@
 #include <des.h>
 #include <base64.h>
 #include <cli.h>
+#include <rand.h>
 #include <libft/htable.h>
 #include <libft/bytes.h>
+
+static unsigned char	__key[8];
+static unsigned char	__salt[8];
+static unsigned char	__vect[8];
 
 static char	*__keyhex;
 static char	*__salthex;
@@ -123,12 +128,37 @@ static int __run_task(void)
 	t_ostring	output;
 
 	ret = SSL_OK;
-	__des = des_hexinit(__keyhex, __salthex, __vecthex);
+
+	if (__pass && !__keyhex) {
+		if (!__salthex) {
+			rand_useed((uint64_t *)__salt, 8);
+		}
+	} else {
+		ft_hex_to_bytes(__key, __keyhex, 16);
+		ft_hex_to_bytes(__salt, __salthex, 16);
+		ft_hex_to_bytes(__vect, __vecthex, 2);
+	}
 
 	if (SSL_OK != __get_input(&input.content, &input.size)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
+	
+	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
+		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
+			CLI_LOG(ERROR, "invalid salted format");
+			return SSL_ERR;
+		}
+		ft_memcpy(__salt, input.content + 8, 8);
+		input.content += 16;
+		input.size -= 16;
+	}
+
+	if (__pass) {
+		rand_openssl_kdf(__key, __salt, __vect, __pass);
+	}
+
+	__des = des_init(__key, __salt, __vect);
 
 	if (SSL_FLAG(DES_D, __gflag)) {
 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
@@ -163,6 +193,7 @@ static int	__get_vector(const char *opt, const t_task *task)
 		__keyhex = (char *)opt;
 	} else if (DES_S == task->tflag) {
 		__salthex = (char *)opt;
+		ft_hex_to_bytes(__salt, __salthex, 16);
 	} else if (DES_V == task->tflag) {
 		__vecthex = (char *)opt;
 	} else {
@@ -245,17 +276,31 @@ static int	__write_output(const char *output, size_t outsize)
 
 static void	__dump_vectors(void)
 {
-	ft_printf("salt=");
-	ft_bytes_dump_hex(__des->salt, 8, 0, 0);
-	ft_printf("key=");
-	ft_bytes_dump_hex(__des->key, 8, 0, 0);
-	ft_printf("iv=");
-	ft_bytes_dump_hex(__des->vect, 8, 0, 0);
+	char	hex[128];
+
+	ft_bytes_dumpb_hex(__des->salt, 8, 0, 0, hex, sizeof(hex));
+	ft_printf("salt=%s\n", hex);
+
+	ft_bytes_dumpb_hex(__des->key, 8, 0, 0, hex, sizeof(hex));
+	ft_printf("key=%s\n", hex);
+
+	ft_bytes_dumpb_hex(__des->vect, 8, 0, 0, hex, sizeof(hex));
+	ft_printf("iv=%s\n", hex);
 }
 
 static int	__enc(t_ostring *mes, t_ostring *ciph)
 {
-	return (des_cbc_encrypt(__des, mes, ciph, __pass));
+	t_ostring temp;
+
+	if (__pass && !__keyhex) {
+		temp.size = mes->size + 16;
+		SSL_ALLOC(temp.content, temp.size);
+		ft_memcpy(temp.content, "Salted__", 8);
+		ft_memcpy(temp.content + 8, __salt, 8);
+		ft_memcpy(temp.content + 16, mes->content, mes->size);
+		return (des_cbc_encrypt(__des, &temp, ciph));
+	}
+	return (des_cbc_encrypt(__des, mes, ciph));
 }
 
 static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
@@ -265,7 +310,7 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 
 	ret = SSL_OK;
 
-	if (SSL_OK != des_cbc_encrypt(__des, mes, ciph, __pass)) {
+	if (SSL_OK != __enc(mes, ciph)) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -282,7 +327,7 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 
 static int	__dec(t_ostring *ciph, t_ostring *mes)
 {
-	return (des_cbc_decrypt(__des, ciph, mes, __pass));
+	return (des_cbc_decrypt(__des, ciph, mes));
 }
 
 static int	__dec_b64(t_ostring *b64, t_ostring *mes)
@@ -293,7 +338,7 @@ static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != des_cbc_decrypt(__des, &cipher, mes, __pass)) {
+	if (SSL_OK != des_cbc_decrypt(__des, &cipher, mes)) {
 		SSL_FREE(cipher.content);
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);

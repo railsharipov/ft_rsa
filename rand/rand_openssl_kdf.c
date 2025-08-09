@@ -28,8 +28,6 @@ int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vec
 	t_hash	*md5;
 	char	buf[160] = {0};
 	size_t	pass_len;
-	size_t	buf_len;
-	size_t	digest_len;
 
 	if (NULL == salt) {
 		RAND_LOG(ERROR, "salt is required");
@@ -43,12 +41,9 @@ int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vec
 	pass_len = ft_strlen(pass);
 	ft_memcpy(buf, pass, pass_len);
 	ft_memcpy(buf + pass_len, salt, 8);
-	buf_len = pass_len + 8;
 
 	md5 = hash_md5_init();
-	digest_len = FLOOR(buf_len, MD5_BLOCK_SIZE);
-	hash_md5_update(md5, (unsigned char *)buf, digest_len);
-	hash_md5_final(md5, (unsigned char *)buf + digest_len, buf_len % MD5_BLOCK_SIZE);
+	hash_md5_final(md5, (unsigned char *)buf, pass_len + 8);
 
 	ft_memcpy(key, md5->hash, 8);
 

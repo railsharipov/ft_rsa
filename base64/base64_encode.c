@@ -59,7 +59,7 @@ int	base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc,
 		return (SSL_ERR);
 	}
 	omes = (unsigned char *)mes;
-	*encsize = CEIL(messize, MES_BLOCK_SIZE)/MES_BLOCK_SIZE * B64_BLOCK_SIZE;
+	*encsize = CEIL_TO_MULTIPLE(messize, MES_BLOCK_SIZE)/MES_BLOCK_SIZE * B64_BLOCK_SIZE;
 	SSL_ALLOC(*enc, *encsize);
 	oenc = *enc;
 

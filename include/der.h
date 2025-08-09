@@ -15,8 +15,10 @@ t_ostring	*der_init(void);
 void	der_del(t_ostring *);
 void	der_clear(t_ostring *);
 
-int	der_encode(struct s_node *tree, struct s_iodes *iodes);
-int der_decode(struct s_node **tree, struct s_iodes *iodes);
+int	der_encode(struct s_node *tree, t_ostring *encoded);
+int	der_encode_stream(struct s_node *tree, struct s_iodes *out);
+int der_decode(struct s_node **tree, t_ostring *encoded);
+int der_decode_stream(struct s_node **tree, struct s_iodes *in);
 
 int	der_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 

@@ -33,7 +33,7 @@ void *ft_htbl_create(int size)
 
 	LIBFT_ALLOC(htbl, sizeof(t_htbl));
 
-	htbl->size = MAX(LIBFT_HT_SIZE, CEIL(size, LIBFT_HT_SIZE));
+	htbl->size = MAX(LIBFT_HT_SIZE, CEIL_TO_MULTIPLE(size, LIBFT_HT_SIZE));
 
 	LIBFT_ALLOC(htbl->arr, htbl->size * sizeof(void *));
 
@@ -154,7 +154,7 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 		return;
 	}
 
-	new_htbl.size = MAX(LIBFT_HT_SIZE, CEIL(size, LIBFT_HT_SIZE));
+	new_htbl.size = MAX(LIBFT_HT_SIZE, CEIL_TO_MULTIPLE(size, LIBFT_HT_SIZE));
 
 	if (new_htbl.size <= htbl->size) {
 		return;

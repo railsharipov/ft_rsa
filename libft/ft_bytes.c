@@ -156,30 +156,54 @@ void	ft_bytes_write_hex(int fd, void *ptr, size_t size)
 	}
 }
 
-void	ft_bytes_dump_hex(void *ptr, size_t size, int cols, int del)
+char	*ft_bytes_dumps_hex(void *bytes, size_t size, int cols, int del)
 {
 	unsigned char	*octets;
-	size_t		ix;
+	char	hex[size*4];
+	size_t	hexlen, ix;
 
-	if (NULL != ptr) {
-		octets = (unsigned char *)(ptr);
+	if (NULL == bytes || size == 0) {
+		return (NULL);
+	}
 
-		ix = 0;
-		while (ix < size) {
-			if (del != 0) {
-				ft_printf("%.2x%c", octets[ix++], del);
-			}
-			else
-				ft_printf("%.2x", octets[ix++]);
+	octets = (unsigned char *)(bytes);
+	hexlen = 0;
+	ix = 0;
+	while (ix < size && hexlen < sizeof(hex)) {
+		if (del != 0) {
+			hexlen += ft_snprintf(hex+hexlen, sizeof(hex)-hexlen, "%.2x%c", octets[ix++], del);
+		}
+		else {
+			hexlen += ft_snprintf(hex+hexlen, sizeof(hex)-hexlen, "%.2x", octets[ix++]);
+		}
 
-			if (cols != 0) {
-				if ((ix < size) && (ix % cols == 0)) {
-					ft_printf("\n");
-				}
+		if (cols != 0) {
+			if ((ix < size) && (ix % cols == 0)) {
+				hexlen += ft_snprintf(hex+hexlen, sizeof(hex)-hexlen, "\n");
 			}
 		}
 	}
-	ft_printf("\n");
+	hex[sizeof(hex)-1] = '\0';
+
+	return (ft_strdup(hex));
+}
+
+void	ft_bytes_dumpb_hex(void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize)
+{
+	char	*hex;
+
+	if (NULL == buf || bufsize == 0) {
+		return ;
+	}
+	if (NULL == bytes || size == 0) {
+		buf[0] = '\0';
+		return ;
+	}
+
+	hex = ft_bytes_dumps_hex(bytes, size, cols, del);
+	ft_strncpy(buf, hex, bufsize-1);
+	buf[bufsize-1] = '\0';
+	LIBFT_FREE(hex);
 }
 
 void	ft_bytes_print_bits(void *ptr, size_t size)
@@ -230,6 +254,23 @@ void	ft_bytes_reverse_bits(void *ptr, size_t size)
 		p[i] = num;
 		i++;
 	}
+}
+
+char	*ft_bytes_to_hex_upper(const void *bin, size_t binsize)
+{
+	char	*hex;
+	size_t	ix;
+
+	hex = ft_bytes_to_hex(bin, binsize);
+
+	if (hex != NULL) {
+		ix = 0;
+		while (hex[ix] != '\0') {
+			hex[ix] = ft_toupper(hex[ix]);
+			ix++;
+		}
+	}
+	return (hex);
 }
 
 char	*ft_bytes_to_hex(const void *bin, size_t binsize)

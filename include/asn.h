@@ -73,8 +73,6 @@ void			asn_tree_del(struct s_node *);
 void			*asn_tree_get(t_node *, const char *);
 t_htbl			*asn_tree_items(struct s_node *);
 void			asn_tree_items_del(t_htbl *);
-int 			asn_tree_der_encode(struct s_node *, t_ostring **);
-int				asn_tree_der_decode(t_ostring *, const char *, struct s_node **);
 
 t_node			*asn_node_create(t_iasn *asn_item);
 void			asn_node_clear(t_node *asn_node);

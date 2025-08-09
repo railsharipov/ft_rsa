@@ -55,7 +55,7 @@ void	hash_sha1_final(t_hash *sha1, const unsigned char *buf, size_t bufsize)
 	msize_nbits = *(uint64_t *)(sha1->msize) * CHAR_BIT;
 	__len_octets(msize_nbits, msize_octets);
 
-	pbsize = CEIL(bufsize, SHA1_BLOCK_SIZE);
+	pbsize = CEIL_TO_MULTIPLE(bufsize, SHA1_BLOCK_SIZE);
 
 	if (pbsize-bufsize <= LEN_SIZE) {
 		pbsize += SHA1_BLOCK_SIZE;

@@ -16,35 +16,29 @@
 #include <des.h>
 #include <libft/bytes.h>
 
-static int	__is_salted;
-
-static unsigned char	*__salt;
 static unsigned char	*__key;
 static unsigned char	*__vect;
 
 static uint64_t	__permut_key;
 static uint64_t	__ksched[16];
 
-static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag, const char *pass);
 static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize);
 static int	__remove_pad(unsigned char **mes, size_t *messize);
 
-int des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass)
+int des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
 {
 	if ((NULL == des) || (NULL == ciph) || (NULL == mes)) {
 		DES_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-
-	mes->content = NULL;
-	__salt = des->salt;
-	__key = des->key;
-	__vect = des->vect;
-
-	if (SSL_OK != __vectors((unsigned char *)(ciph->content), ciph->size, des->vflag, pass)) {
-		DES_LOG(ERROR, "invalid des encryption");
+	if (ciph->size % DES_MES_BLOCK_SIZE != 0) {
+		DES_LOG(ERROR, "bad cipher size");
 		return (SSL_ERR);
 	}
+
+	mes->content = NULL;
+	__key = des->key;
+	__vect = des->vect;
 
 	des_permute_key(&__permut_key, __key);
 	des_decrypt_schedule(__ksched, &__permut_key);
@@ -78,35 +72,6 @@ static int	__remove_pad(unsigned char **mes, size_t *messize)
 	return (SSL_OK);
 }
 
-static int	__vectors(const unsigned char *ciph, size_t ciphsize, uint32_t vflag, const char *pass)
-{
-	__is_salted = 0;
-
-	if (!SSL_FLAG(DES_K, vflag)) {
-		if (!SSL_FLAG(DES_S, vflag)) {
-			if (ciphsize < 16) {
-				DES_LOG(ERROR, UNSPECIFIED_ERROR);
-				return (SSL_ERR);
-			}
-			if (ft_strncmp((char *)ciph, "Salted__", 8)) {
-				DES_LOG(ERROR, UNSPECIFIED_ERROR);
-				return (SSL_ERR);
-			}
-			ft_memcpy(__salt, ciph + 8, 8);
-			__is_salted = 1;
-		}
-		if (SSL_OK != rand_openssl_kdf(__key, __salt, (SSL_FLAG(DES_V, vflag)) ? (NULL) : (__vect), pass)) {
-			DES_LOG(ERROR, "key derivation error");
-			return (SSL_ERR);
-		}
-	}
-	if (!SSL_FLAG(DES_V, vflag)) {
-		DES_LOG(ERROR, UNSPECIFIED_ERROR);
-		return (SSL_ERR);
-	}
-	return (SSL_OK);
-}
-
 static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize)
 {
 	size_t	ix;
@@ -116,13 +81,8 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char *
 
 	mes_ptr = (unsigned char **)mes;
 	ft_memcpy(vectbuf, __vect, 8);
-	*messize = ciphsize - (__is_salted*16);
+	*messize = ciphsize;
 	SSL_ALLOC(*mes_ptr, *messize);
-
-	if (__is_salted) {
-		ciph += 16;
-		ciphsize -= 16;
-	}
 
 	ix = 0;
 	while (ix < ciphsize) {
@@ -134,9 +94,9 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char *
 	while (ix < *messize) {
 		*(uint64_t *)(temp) = *(uint64_t *)(*mes_ptr + ix);
 
-		des_permute_block_init((uint64_t *)*mes_ptr + ix);
-		des_permute_block((uint64_t *)*mes_ptr + ix, __ksched);
-		des_permute_block_final((uint64_t *)*mes_ptr + ix);
+		des_permute_block_init((uint64_t *)(*mes_ptr + ix));
+		des_permute_block((uint64_t *)(*mes_ptr + ix), __ksched);
+		des_permute_block_final((uint64_t *)(*mes_ptr + ix));
 
 		*(uint64_t *)(*mes_ptr + ix) = ft_uint_bswap64(*(uint64_t *)(*mes_ptr + ix));
 		*(uint64_t *)(*mes_ptr + ix) ^= *(uint64_t *)(vectbuf);

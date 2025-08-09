@@ -25,12 +25,37 @@ static ssize_t	__write_len(size_t len, t_iodes *out);
 
 typedef int	(*FUNC_DER_ENCODE)(uint8_t tag, t_ostring *encoded, t_ostring *data);
 
-int	der_encode(t_node *tree, t_iodes *out)
+int	der_encode(t_node *tree, t_ostring *encoded)
 {
+	t_iodes	iodes;
+	
+	DER_LOG(TRACE, "starting DER encode octet string");
+	
+	if (NULL == tree || NULL == encoded) {
+		ASN_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 
+	ft_ostr_init(encoded);
+
+	if (SSL_OK != io_osbuf(&iodes, IO_WRITE, encoded)) {
+		DER_LOG(ERROR, "failed to init io");
+		return (SSL_ERR);
+	}
+	if (SSL_OK != der_encode_stream(tree, &iodes)) {
+		DER_LOG(ERROR, "DER encode octet string failed");
+		return (SSL_ERR);
+	}
+	DER_LOG(TRACE, "DER encode octet string completed successfully");
+
+	return (SSL_OK);
+}
+
+int	der_encode_stream(t_node *tree, t_iodes *out)
+{
 	int		ret;
 
-	DER_LOG(TRACE, "starting DER encode");
+	DER_LOG(TRACE, "starting DER encode stream");
 
 	if (NULL == tree || NULL == out) {
 		ASN_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -39,11 +64,11 @@ int	der_encode(t_node *tree, t_iodes *out)
 	ret = __encode(tree, out);
 
 	if (SSL_OK != ret) {
-		DER_LOG(ERROR, "DER encode failed");
+		DER_LOG(ERROR, "DER encode stream failed");
 		return (SSL_ERR);
 	}
 
-	DER_LOG(TRACE, "DER encode completed successfully");
+	DER_LOG(TRACE, "DER encode stream completed successfully");
 
 	return (SSL_OK);
 }
@@ -168,7 +193,8 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)
 		int idx;
 
 		tagnum_nbits = ft_uint_lmbit(tagnum, 8 * sizeof(tagnum));
-		tagnum_nbytes = CEIL(tagnum_nbits, 7) / 7;
+        // Number of 7-bit base-128 continuation octets required
+        tagnum_nbytes = CEIL_TO_MULTIPLE(tagnum_nbits, 7) / 7;
 
 		// Additional octet for tag flags
 		buf_size = 1 + tagnum_nbytes;
@@ -212,7 +238,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 
 	DER_LOG(TRACE, "writing length: %zu", len);
 
-	if (len >= 0x7F) {
+	if (len > 127) {
 		// Long length form
 		uint8_t *buf;
 		int buf_size;
@@ -221,7 +247,9 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 		int idx;
 
 		len_nbits = ft_uint_lmbit(len, 8 * sizeof(len));
-		len_nbytes = CEIL(len_nbits, 8) / 8;
+        // Number of bytes needed to represent "len" in big-endian
+        len_nbytes = CEIL_TO_MULTIPLE(len_nbits, 8) / 8;
+		DER_LOG(TRACE, "number of length bytes: %d", len_nbytes);
 
 		// Additional octet for length flags
 		buf_size = 1 + len_nbytes;
@@ -240,7 +268,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 		}
 		buf[0] = ASN_LEN_LONG | len_nbytes;
 
-		wbytes = io_write(out, (char *)buf, buf_size);
+		wbytes = io_write(out, (char *)buf, (size_t)buf_size);
 		SSL_FREE(buf);
 		DER_LOG(TRACE, "long length form written, bytes: %zd", wbytes);
 	}
@@ -410,7 +438,7 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 
 static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
-	char			obj_name[data->size + 1];
+	char			*obj_name;
 	char			*obj_id_string;
 	char			**sub_id_strings;
 	int				num_sub_id_strings;
@@ -434,21 +462,21 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		DER_LOG(ERROR, "invalid oid type: bad content size");
 		return (SSL_ERR);
 	}
-
-	ft_memcpy(obj_name, data->content, data->size);
-	obj_name[data->size] = 0;
-
-	DER_LOG(TRACE, "object name: %s", obj_name);
-
-	if (NULL == (obj_id_string = asn_oid_tree_get_oid(obj_name))) {
-		DER_LOG(ERROR, "invalid asn object id");
-		return (SSL_ERR);
-	}
-
+	obj_id_string = ft_ostr_to_cstr(data, 0, data->size);
 	DER_LOG(TRACE, "object identifier: %s", obj_id_string);
+
+	obj_name = asn_oid_tree_get_name(obj_id_string);
+	if (NULL == obj_name) {
+		DER_LOG(WARN, "invalid or unknown asn object id: %s", obj_id_string);
+	} else {
+		DER_LOG(TRACE, "object identifier matches: %s", obj_name);
+	}
+	SSL_FREE(obj_name);
 
 	// Split the OID string into sub-identifiers
 	sub_id_strings = ft_strsplit(obj_id_string, '.');
+	SSL_FREE(obj_id_string);
+
 	num_sub_id_strings = ft_2darray_len_null_terminated((void **)sub_id_strings);
 
 	if (num_sub_id_strings < 2 || NULL == sub_id_strings) {

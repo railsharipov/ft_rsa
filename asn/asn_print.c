@@ -17,6 +17,7 @@ static void	__print_space(int cnt)
 
 static void	__print_int_content(t_iasn *item, int space)
 {
+	char	hex[128];
 	char	*octets;
 	size_t	osize;
 	size_t	idx;
@@ -26,7 +27,8 @@ static void	__print_int_content(t_iasn *item, int space)
 	idx = 0;
 	while (idx < osize) {
 		__print_space(space);
-		ft_bytes_dump_hex(octets+idx, MIN(15, osize-idx), 0, ':');
+		ft_bytes_dumpb_hex(octets+idx, MIN(15, osize-idx), 0, ':', hex, sizeof(hex));
+		ft_printf("%s\n", hex);
 		idx += 15;
 	}
 	SSL_FREE(octets);
@@ -34,12 +36,14 @@ static void	__print_int_content(t_iasn *item, int space)
 
 static void	__print_content(t_iasn *item, int space)
 {
+	char	hex[128];
 	int	idx;
 
 	idx = 0;
 	while (idx < item->size) {
 		__print_space(space);
-		ft_bytes_dump_hex(item->content+idx, MIN(15, item->size-idx), 0, ':');
+		ft_bytes_dumpb_hex(item->content+idx, MIN(15, item->size-idx), 0, ':', hex, sizeof(hex));
+		ft_printf("%s\n", hex);
 		idx += 15;
 	}
 }

@@ -45,7 +45,7 @@ int	base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes,
 	}
 
 	oenc = (unsigned char *)enc;
-	*messize = CEIL(encsize, B64_BLOCK_SIZE)/B64_BLOCK_SIZE * MES_BLOCK_SIZE;
+	*messize = CEIL_TO_MULTIPLE(encsize, B64_BLOCK_SIZE)/B64_BLOCK_SIZE * MES_BLOCK_SIZE;
 	SSL_ALLOC(*mes, *messize);
 	omes = *mes;
 

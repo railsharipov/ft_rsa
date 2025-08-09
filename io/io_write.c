@@ -1,5 +1,6 @@
 #include <string.h>
 #include <io.h>
+#include <common.h>
 
 ssize_t	io_write(t_iodes *iodes, const char *buf, size_t nbytes)
 {

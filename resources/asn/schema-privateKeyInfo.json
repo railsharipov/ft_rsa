@@ -4,7 +4,8 @@
   "data": [
     {
       "description": "version",
-      "type": "int"
+      "type": "int",
+      "data": 0
     },
     {
       "description": "algorithm",

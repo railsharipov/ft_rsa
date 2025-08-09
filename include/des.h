@@ -36,10 +36,10 @@ int		des_logger_log(const char *func_name, const char *file_name, int line_numbe
 
 t_des	*des_init(const unsigned char *key, const unsigned char *salt, const unsigned char *vect);
 t_des	*des_hexinit(const char *key, const char *salt, const char *vect);
-int		des_ecb_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph, const char *pass);
-int		des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass);
-int		des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph, const char *pass);
-int		des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes, const char *pass);
+int		des_ecb_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph);
+int		des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes);
+int		des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph);
+int		des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes);
 
 /* Low level functions */
 void	des_encrypt_schedule(uint64_t *permut_key, uint64_t *ksched);

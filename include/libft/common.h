@@ -38,7 +38,7 @@
 # define FLOOR(X,Y)				((X)-((X)%(Y)))
 
 /* Round X up to a multiple of Y */
-# define CEIL(X,Y)				(((X)%(Y)==0)?(X):((X)+((Y)-((X)%(Y)))))
+# define CEIL_TO_MULTIPLE(X,Y)				(((X)%(Y)==0)?(X):((X)+((Y)-((X)%(Y)))))
 
 # define MAX(A,B)				((A)>(B)?(A):(B))
 # define MIN(A,B)				((A)<(B)?(A):(B))
