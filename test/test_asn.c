@@ -16,16 +16,16 @@ static int	__test_asn_tree_query_subjectPublicKeyInfo(void);
 static int	__test_asn_tree_create_privateKeyInfo(void);
 static int	__test_asn_tree_query_privateKeyInfo(void);
 
-static const char *__schema_subjectPublicKeyInfo_path = "resources/asn/schema-subjectPublicKeyInfo.json";
-static const char *__schema_rsaPublicKey_path = "resources/asn/schema-rsaPublicKey.json";
+static const char *__schema_pkcs8_subjectPublicKeyInfo_path = "resources/asn/schema-pkcs8-subjectPublicKeyInfo.json";
+static const char *__schema_pkcs1_rsaPublicKey_path = "resources/asn/schema-pkcs1-rsaPublicKey.json";
 
-static const char *__schema_privateKeyInfo_path = "resources/asn/schema-privateKeyInfo.json";
-static const char *__schema_rsaPrivateKey_path = "resources/asn/schema-rsaPrivateKey.json";
+static const char *__schema_pkcs8_privateKeyInfo_path = "resources/asn/schema-pkcs8-privateKeyInfo.json";
+static const char *__schema_pkcs1_rsaPrivateKey_path = "resources/asn/schema-pkcs1-rsaPrivateKey.json";
 
 static t_ostring	__schema_subjectPublicKeyInfo_json;
 static t_ostring	__schema_rsaPublicKey_json;
-static t_ostring	__schema_privateKeyInfo_json;
-static t_ostring	__schema_rsaPrivateKey_json;
+static t_ostring	__schema_pkcs8_privateKeyInfo_json;
+static t_ostring	__schema_pkcs1_rsaPrivateKey_json;
 
 int	test_asn(void)
 {
@@ -48,19 +48,19 @@ int	test_asn(void)
 
 static int	__test_asn_setup(void)
 {
-	if (SSL_OK != test_get_file_content(__schema_subjectPublicKeyInfo_path, &__schema_subjectPublicKeyInfo_json)) {
+	if (SSL_OK != test_get_file_content(__schema_pkcs8_subjectPublicKeyInfo_path, &__schema_subjectPublicKeyInfo_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__schema_rsaPublicKey_path, &__schema_rsaPublicKey_json)) {
+	if (SSL_OK != test_get_file_content(__schema_pkcs1_rsaPublicKey_path, &__schema_rsaPublicKey_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__schema_privateKeyInfo_path, &__schema_privateKeyInfo_json)) {
+	if (SSL_OK != test_get_file_content(__schema_pkcs8_privateKeyInfo_path, &__schema_pkcs8_privateKeyInfo_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__schema_rsaPrivateKey_path, &__schema_rsaPrivateKey_json)) {
+	if (SSL_OK != test_get_file_content(__schema_pkcs1_rsaPrivateKey_path, &__schema_pkcs1_rsaPrivateKey_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
@@ -285,7 +285,7 @@ static int __test_asn_tree_create_privateKeyInfo(void)
 	int 	ret;
 
 	// privateKeyInfo
-	schema_json_str = ft_ostr_to_cstr(&__schema_privateKeyInfo_json, 0, __schema_privateKeyInfo_json.size);
+	schema_json_str = ft_ostr_to_cstr(&__schema_pkcs8_privateKeyInfo_json, 0, __schema_pkcs8_privateKeyInfo_json.size);
 	ret = json_parse(schema_json_str, &schema_json);
 	TEST_ASSERT(ret == SSL_OK);
 
@@ -346,7 +346,7 @@ static int __test_asn_tree_create_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->encapsulates == SSL_TRUE);
 
 	// rsaPrivateKey
-	schema_json_str = ft_ostr_to_cstr(&__schema_rsaPrivateKey_json, 0, __schema_rsaPrivateKey_json.size);
+	schema_json_str = ft_ostr_to_cstr(&__schema_pkcs1_rsaPrivateKey_json, 0, __schema_pkcs1_rsaPrivateKey_json.size);
 	ret = json_parse(schema_json_str, &schema_json);
 	TEST_ASSERT(ret == SSL_OK);
 
@@ -385,7 +385,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	int 		ret;
 
 	// privateKeyInfo
-	schema_json_str = ft_ostr_to_cstr(&__schema_privateKeyInfo_json, 0, __schema_privateKeyInfo_json.size);
+	schema_json_str = ft_ostr_to_cstr(&__schema_pkcs8_privateKeyInfo_json, 0, __schema_pkcs8_privateKeyInfo_json.size);
 	ret = json_parse(schema_json_str, &schema_json);
 	TEST_ASSERT(ret == SSL_OK);
 
@@ -460,7 +460,7 @@ static int __test_asn_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn_item->encapsulates == SSL_TRUE);
 
 	// rsaPrivateKey
-	schema_json_str = ft_ostr_to_cstr(&__schema_rsaPrivateKey_json, 0, __schema_rsaPrivateKey_json.size);
+	schema_json_str = ft_ostr_to_cstr(&__schema_pkcs1_rsaPrivateKey_json, 0, __schema_pkcs1_rsaPrivateKey_json.size);
 	ret = json_parse(schema_json_str, &schema_json);
 	TEST_ASSERT(ret == SSL_OK);
 

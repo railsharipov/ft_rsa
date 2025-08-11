@@ -9,13 +9,15 @@
 static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);
 
-static int	__test_der_decode_privateKeyInfo(void);
-static int	__test_der_decode_subjectPublicKeyInfo(void);
-static int	__test_der_encode_privateKeyInfo(void);
-static int	__test_der_encode_subjectPublicKeyInfo(void);
+static int	__test_der_decode_pkcs8_privateKeyInfo(void);
+static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void);
+static int	__test_der_encode_pkcs8_privateKeyInfo(void);
+static int	__test_der_encode_pkcs8_subjectPublicKeyInfo(void);
+static int	__test_der_decode_pkcs1_privateKey(void);
 
-static const char	*__privateKeyInfo_der_file_path = "test/testfiles/keys/test-privateKeyInfo.der";
-static const char	*__subjectPublicKeyInfo_der_file_path = "test/testfiles/keys/test-subjectPublicKeyInfo.der";
+static const char	*__pkcs8_privateKeyInfo_der_file_path = "test/files/keys/pkcs8-privateKeyInfo.der";
+static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "test/files/keys/pkcs8-subjectPublicKeyInfo.der";
+static const char	*__pkcs1_privateKey_der_file_path = "test/files/keys/pkcs1-privateKey.der";
 
 static const char	*__modulus = "0090c698de843004925c02940780296d103900047942d8c784309b6f37935b9327de6d45c06fb6257daa65b9fbbb2895afa54677b750bba37ad56ea5fd78a5439b5a7452e139cdedfc65ba52bbd9dbe8d9cd0a0c27e2a6bed45e81b3efb25512fb85dec6e7c0c789c58536aa747b006bfb3b5ab24dd237b689dc91786de2d0fd97f798abb51a433989c24414722aef236835beb0db8de65c2d6665e8fb3024f35a95cbc5490d56183af8c0ad16ffbd4212f55eb730ea3fbffcdad593c7acfe4430d825747ca1c860d248495c1d8a675bb1bd3f4089f125730ba2a41026e92c8b7da92a1f8026f46a688019c98d7ba64aa91aaa84e20317064f9f07e1cc5e5fb993";
 static const char	*__publicExponent = "10001";
@@ -38,8 +40,9 @@ static t_num	*exponent1_num;
 static t_num	*exponent2_num;
 static t_num	*coefficient_num;
 
-static t_ostring	__privateKeyInfo_der;
-static t_ostring	__subjectPublicKeyInfo_der;
+static t_ostring	__pkcs8_privateKeyInfo_der;
+static t_ostring	__pkcs8_subjectPublicKeyInfo_der;
+static t_ostring	__pkcs1_privateKey_der;
 
 int	test_der(void)
 {
@@ -50,22 +53,27 @@ int	test_der(void)
 
 	__test_der_cleanup();
 
-	return (__test_der_decode_privateKeyInfo()
-		| __test_der_decode_subjectPublicKeyInfo()
-		| __test_der_encode_privateKeyInfo()
-		| __test_der_encode_subjectPublicKeyInfo());
+    return (__test_der_decode_pkcs1_privateKey()
+        | __test_der_decode_pkcs8_privateKeyInfo()
+        | __test_der_decode_pkcs8_subjectPublicKeyInfo()
+        | __test_der_encode_pkcs8_privateKeyInfo()
+        | __test_der_encode_pkcs8_subjectPublicKeyInfo());
 }
 
 static int	__test_der_setup(void)
 {
-	if (SSL_OK != test_get_file_content(__privateKeyInfo_der_file_path, &__privateKeyInfo_der)) {
-		TEST_LOG(ERROR, "failed to get file content");
+    if (SSL_OK != test_get_file_content(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__subjectPublicKeyInfo_der_file_path, &__subjectPublicKeyInfo_der)) {
-		TEST_LOG(ERROR, "failed to get file content");
+    if (SSL_OK != test_get_file_content(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
+    if (SSL_OK != test_get_file_content(__pkcs1_privateKey_der_file_path, &__pkcs1_privateKey_der)) {
+        TEST_LOG(ERROR, FILE_READ_ERROR);
+        return (SSL_ERR);
+    }
 
 	version_num = bnum_from_hex_u("0");
 	modulus_num = bnum_from_hex_u(__modulus);
@@ -95,7 +103,45 @@ static void	__test_der_cleanup(void)
 	return ;
 }
 
-static int	__test_der_decode_privateKeyInfo(void)
+static int	__test_der_decode_pkcs1_privateKey(void)
+{
+    t_node *tree, *asn_node;
+    t_iasn *asn_item;
+    t_num *num;
+    int ret;
+
+    tree = NULL;
+
+    ret = der_decode(&tree, &__pkcs1_privateKey_der);
+
+    TEST_ASSERT(SSL_OK == ret);
+    TEST_ASSERT(tree != NULL);
+
+    // RSAPrivateKey sequence
+    asn_item = tree->content;
+    TEST_ASSERT(asn_item != NULL);
+    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
+    TEST_ASSERT(asn_item->content != NULL);
+    TEST_ASSERT(asn_item->size == 9);
+
+    for (size_t i = 0; i < 9; i++) {
+        char *query;
+        ft_sprintf(&query, "[%zu]", i);
+        ret = asn_tree_query(query, tree, &asn_node);
+        TEST_ASSERT(SSL_OK == ret);
+        asn_item = asn_node->content;
+        TEST_ASSERT(asn_item != NULL);
+        TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn_item->tag));
+        TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
+        TEST_ASSERT(asn_item->content != NULL);
+        num = (t_num *)asn_item->content;
+        TEST_ASSERT(bnum_cmp(num, private_key_items[i]) == 0);
+    }
+
+    TEST_PASS();
+}
+
+static int	__test_der_decode_pkcs8_privateKeyInfo(void)
 {
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
@@ -104,7 +150,7 @@ static int	__test_der_decode_privateKeyInfo(void)
 
 	tree = NULL;
 
-	ret = der_decode(&tree, &__privateKeyInfo_der);
+    ret = der_decode(&tree, &__pkcs8_privateKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -149,7 +195,7 @@ static int	__test_der_decode_privateKeyInfo(void)
 	temp_ostring.content = asn_item->content;
 	temp_ostring.size = asn_item->size;
 
-	ret = der_decode(&tree, &temp_ostring);
+    ret = der_decode(&tree, &temp_ostring);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -181,10 +227,10 @@ static int	__test_der_decode_privateKeyInfo(void)
 		TEST_ASSERT(bnum_cmp(num, private_key_items[i]) == 0);
 	}
 
-	TEST_PASS();
+    TEST_PASS();
 }
 
-static int	__test_der_decode_subjectPublicKeyInfo(void)
+static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void)
 {
 	t_node	*tree, *asn_node;
 	t_iasn	*asn_item;
@@ -193,7 +239,7 @@ static int	__test_der_decode_subjectPublicKeyInfo(void)
 
 	tree = NULL;
 
-	ret = der_decode(&tree, &__subjectPublicKeyInfo_der);
+    ret = der_decode(&tree, &__pkcs8_subjectPublicKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
@@ -290,10 +336,10 @@ static int	__test_der_decode_subjectPublicKeyInfo(void)
 	num = (t_num *)asn_item->content;
 	TEST_ASSERT(bnum_cmp(num, publicExponent_num) == 0);
 
-	TEST_PASS();
+    TEST_PASS();
 }
 
-static int	__test_der_encode_privateKeyInfo(void)
+static int	__test_der_encode_pkcs8_privateKeyInfo(void)
 {
 	t_node		*privateKeyInfo_tree, *encapsulated_privateKey_tree, *privateKey_tree;
 	t_iasn		*asn_item;
@@ -302,7 +348,7 @@ static int	__test_der_encode_privateKeyInfo(void)
 
 	// decode original privateKeyInfo DER
 	privateKeyInfo_tree = NULL;
-	ret = der_decode(&privateKeyInfo_tree, &__privateKeyInfo_der);
+    ret = der_decode(&privateKeyInfo_tree, &__pkcs8_privateKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(privateKeyInfo_tree != NULL);
@@ -338,13 +384,13 @@ static int	__test_der_encode_privateKeyInfo(void)
 
 	ret = der_encode(privateKeyInfo_tree, &encoded_privateKeyInfo);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(encoded_privateKeyInfo.size == __privateKeyInfo_der.size);
-	TEST_ASSERT(ft_memcmp(encoded_privateKeyInfo.content, __privateKeyInfo_der.content, encoded_privateKeyInfo.size) == 0);
+    TEST_ASSERT(encoded_privateKeyInfo.size == __pkcs8_privateKeyInfo_der.size);
+    TEST_ASSERT(ft_memcmp(encoded_privateKeyInfo.content, __pkcs8_privateKeyInfo_der.content, encoded_privateKeyInfo.size) == 0);
 
-	TEST_PASS();
+    TEST_PASS();
 }
 
-static int	__test_der_encode_subjectPublicKeyInfo(void)
+static int	__test_der_encode_pkcs8_subjectPublicKeyInfo(void)
 {
 	t_node		*subjectPublicKeyInfo_tree, *encapsulated_subjectPublicKey_tree, *subjectPublicKey_tree;
 	t_ostring	ref_encoded_subjectPublicKey, encoded_subjectPublicKeyInfo, encoded_subjectPublicKey;
@@ -354,7 +400,7 @@ static int	__test_der_encode_subjectPublicKeyInfo(void)
 	// decode subjectPublicKeyInfo DER, encode it back and compare with original DER
 	subjectPublicKeyInfo_tree = NULL;
 
-	ret = der_decode(&subjectPublicKeyInfo_tree, &__subjectPublicKeyInfo_der);
+    ret = der_decode(&subjectPublicKeyInfo_tree, &__pkcs8_subjectPublicKeyInfo_der);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(subjectPublicKeyInfo_tree != NULL);
@@ -392,8 +438,8 @@ static int	__test_der_encode_subjectPublicKeyInfo(void)
 
 	ret = der_encode(subjectPublicKeyInfo_tree, &encoded_subjectPublicKeyInfo);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(encoded_subjectPublicKeyInfo.size == __subjectPublicKeyInfo_der.size);
-	TEST_ASSERT(ft_memcmp(encoded_subjectPublicKeyInfo.content, __subjectPublicKeyInfo_der.content, encoded_subjectPublicKeyInfo.size) == 0);
+    TEST_ASSERT(encoded_subjectPublicKeyInfo.size == __pkcs8_subjectPublicKeyInfo_der.size);
+    TEST_ASSERT(ft_memcmp(encoded_subjectPublicKeyInfo.content, __pkcs8_subjectPublicKeyInfo_der.content, encoded_subjectPublicKeyInfo.size) == 0);
 
-	TEST_PASS();
+    TEST_PASS();
 }

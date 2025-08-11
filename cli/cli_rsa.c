@@ -358,14 +358,14 @@ static int	__encode_key(t_node *asn_key, t_ostring **outkey)
 	}
 	if (RSA_PEM == __outform) {
 		if (SSL_FLAG(RSA_ENCRYPT, __gflag)) {
-			pem = pem_create(__out_type, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
+			pem = pem_create(__out_type, NULL, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
 			if (SSL_OK != pem_encode(pem, &der_key, &pem_key, __passout)) {
 				CLI_LOG(ERROR, "failed to PEM encode key");
 				goto label_exit;
 			}
 			pem_del(pem);
 		} else {
-			pem = pem_create(__out_type, PEM_PROC_TYPE_NONE, PEM_CIPHER_NONE);
+			pem = pem_create(__out_type, NULL, PEM_PROC_TYPE_NONE, PEM_CIPHER_NONE);
 			if (SSL_OK != pem_encode(pem, &der_key, &pem_key, NULL)) {
 				CLI_LOG(ERROR, "failed to PEM encode key");
 				goto label_exit;

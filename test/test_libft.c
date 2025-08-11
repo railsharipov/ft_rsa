@@ -1147,7 +1147,7 @@ static int __test_get_next_line(void)
 {
 	int fd;
 	FILE *ref_stream;
-	const char *file = "test/testfiles/lines.txt";
+	const char *file = "test/files/lines.txt";
 	char *line = NULL;
 	char *ref_line = NULL;
 	ssize_t rbytes;

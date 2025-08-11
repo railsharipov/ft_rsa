@@ -23,6 +23,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	t_ostring	pemenc, cipher, b64flat, b64formatted;
 	t_des		*des;
 	char		buf[1024], *salthex;
+	uint8_t		key[8], iv[8], salt[8];
 	int			ret;
 
 	PEM_LOG(TRACE, "encoding pem: content: %p, size: %d", data->content, data->size);
@@ -53,7 +54,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 		}
 	}
 	else {
-		PEM_LOG(TRACE, "encrypted pem");
+		PEM_LOG(TRACE, "encrypted pem: legacy format");
 		if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
 			PEM_LOG(TRACE, "encrypted pem: writing proc type header");
 			ft_strcpy(buf, "Proc-Type: 4,ENCRYPTED\n");
@@ -64,25 +65,30 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 		}
 		
 		if (pem->cipher == PEM_CIPHER_DES_CBC) {
-			PEM_LOG(TRACE, "generating random salt for des cipher");
-			if ((SSL_OK != rand_useed((uint64_t *)pem->salt, 8))) {
-				PEM_LOG(ERROR, "rand useed failed");
-				goto label_exit;
+			if (pem->has_salt == 0) {
+				PEM_LOG(TRACE, "no salt provided: generating random salt for des cipher");
+				if ((SSL_OK != rand_useed((uint64_t *)salt, 8))) {
+					PEM_LOG(ERROR, "rand useed failed");
+					goto label_exit;
+				}
+			} else {
+				PEM_LOG(TRACE, "using provided salt for des cipher");
+				ft_memcpy(salt, pem->salt, 8);
 			}
 			PEM_LOG(TRACE, "generating key and iv from password for des cipher");
-			if (SSL_OK != rand_openssl_kdf((unsigned char *)pem->key, (unsigned char *)pem->salt, (unsigned char *)pem->iv, pass)) {
+			if (SSL_OK != rand_openssl_kdf(key, salt, iv, pass)) {
 				PEM_LOG(ERROR, "rand pbkdf2 failed");
 				goto label_exit;
 			}
 			PEM_LOG(TRACE, "converting des salt to hex");
-			salthex = ft_bytes_to_hex_upper(pem->salt, 8);
+			salthex = ft_bytes_to_hex_upper(salt, 8);
 
 			PEM_LOG(TRACE, "writing dek info header: salt: %s", salthex);
 			ft_ostr_appendf(&pemenc, "DEK-Info: DES-CBC,%s\n\n", salthex);
 			SSL_FREE(salthex);
 	
-			PEM_LOG(TRACE, "initializing des cipher: key: %p, iv: %p", pem->key, pem->iv);
-			des = des_init((unsigned char *)pem->key, (unsigned char *)pem->salt, (unsigned char *)pem->iv);
+			PEM_LOG(TRACE, "initializing des cipher: key: %p, iv: %p", key, iv);
+			des = des_init(key, salt, iv);
 	
 			PEM_LOG(TRACE, "encrypting data: content: %p, size: %d", data->content, data->size);
 			if (SSL_OK != des_cbc_encrypt(des, data, &cipher)) {

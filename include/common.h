@@ -23,6 +23,8 @@
 # define SSL_FLAG(FLAG, FLAGS)			((int)(((FLAGS)&(FLAG))==(FLAG)))
 
 # define INVALID_INPUT_ERROR	"invalid input"
+# define FILE_READ_ERROR		"failed to read file"
+# define FILE_WRITE_ERROR		"failed to write file"
 # define UNSPECIFIED_ERROR		"unspecified error"
 # define UNEXPECTED_ERROR		"unexpected error"
 # define NOT_IMPLEMENTED_ERROR	"not implemented"

@@ -25,6 +25,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 {
 	t_ostring	b64enc_lines, b64enc, b64dec;
 	char		salthex[128], cipher_name[128], proc_type[128];
+	uint8_t		key[8], iv[8], salt[8];
 	int			pos, matches, idx, ret;
 	t_des		*des;
 
@@ -38,6 +39,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	ft_ostr_init(&b64enc_lines);
 	ft_ostr_init(&b64enc);
 	ft_ostr_init(&b64dec);
+	ft_ostr_init(data);
 
 	pos = 0;
 
@@ -76,11 +78,11 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		} else {
 			pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "DEK-Info: DES-CBC,%s\n", salthex);
 		}
-        ft_hex_to_bytes(pem->salt, salthex, 16);
+        ft_hex_to_bytes(salt, salthex, 16);
         /* For PEM Proc-Type encryption, the DEK-Info value is the cipher IV and
          * is also used as the salt for EVP_BytesToKey. The actual cipher IV used
          * must be the header IV, not a derived IV. */
-        ft_memcpy(pem->iv, pem->salt, 8);
+        ft_memcpy(iv, salt, 8);
 
 		PEM_LOG(TRACE, "encryption: type=%#x, cipher=%s, iv=%s", pem->cipher, cipher_name, salthex);
 	}
@@ -107,17 +109,15 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	}
 	PEM_LOG(TRACE, "decoded base64 encoding: content: %p, size: %d", b64dec.content, b64dec.size);
 
-	ft_ostr_clear(&b64enc);
-
     if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
 		PEM_LOG(TRACE, "encrypted pem: generating key from password");
         /* Derive only the key using the header IV as the salt. Use the header IV
          * itself for the DES CBC initialization vector. */
-        if (SSL_OK != rand_openssl_kdf((unsigned char *)pem->key, (unsigned char *)pem->salt, NULL, pass)) {
+        if (SSL_OK != rand_openssl_kdf(key, salt, NULL, pass)) {
 			PEM_LOG(ERROR, "bad key derivation");
 			goto label_exit;
 		}
-        des = des_init((unsigned char *)pem->key, (unsigned char *)pem->salt, (unsigned char *)pem->iv);
+        des = des_init(key, salt, iv);
 
 		PEM_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
 		if (SSL_OK != des_cbc_decrypt(des, &b64dec, data)) {
@@ -138,6 +138,7 @@ label_exit:
 		pem_clear(pem);
 	}
 	ft_ostr_clear(&b64dec);
+	ft_ostr_clear(&b64enc_lines);
 	ft_ostr_clear(&b64enc);
 
 	return (ret);

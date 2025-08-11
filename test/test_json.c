@@ -18,14 +18,14 @@ static int	__test_json_query_complex_object(void);
 static int	__test_json_clone_complex_object(void);
 static int	__test_json_map(void);
 
-static const char	*__simple_null_json_file_path = "test/testfiles/json/simple-null.json";
-static const char	*__simple_false_json_file_path = "test/testfiles/json/simple-false.json";
-static const char	*__simple_true_json_file_path = "test/testfiles/json/simple-true.json";
-static const char	*__simple_number_json_file_path = "test/testfiles/json/simple-number.json";
-static const char	*__simple_string_json_file_path = "test/testfiles/json/simple-string.json";
-static const char	*__complex_object_json_file_path = "test/testfiles/json/complex-object.json";
-static const char	*__complex_object_no_ws_json_file_path = "test/testfiles/json/complex-object-no-ws.json";
-static const char	*__complex_array_json_file_path = "test/testfiles/json/complex-array.json";
+static const char	*__simple_null_json_file_path = "test/files/json/simple-null.json";
+static const char	*__simple_false_json_file_path = "test/files/json/simple-false.json";
+static const char	*__simple_true_json_file_path = "test/files/json/simple-true.json";
+static const char	*__simple_number_json_file_path = "test/files/json/simple-number.json";
+static const char	*__simple_string_json_file_path = "test/files/json/simple-string.json";
+static const char	*__complex_object_json_file_path = "test/files/json/complex-object.json";
+static const char	*__complex_object_no_ws_json_file_path = "test/files/json/complex-object-no-ws.json";
+static const char	*__complex_array_json_file_path = "test/files/json/complex-array.json";
 
 static t_ostring	__simple_null_json;
 static t_ostring	__simple_false_json;

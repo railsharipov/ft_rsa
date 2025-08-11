@@ -91,7 +91,7 @@ static int __run_task(void)
 		return (SSL_ERR);
 	}
 
-	pem = pem_create(__privkey_label, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
+	pem = pem_create(__privkey_label, NULL, PEM_PROC_TYPE_NONE, PEM_CIPHER_NONE);
 	ret = pem_encode(pem, __der_pkey, &__pem_pkey, NULL);
 	pem_del(pem);
 
