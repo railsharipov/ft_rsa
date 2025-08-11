@@ -4,7 +4,7 @@
 #include <test.h>
 #include <io.h>
 
-int	test_get_file_content(const char *testfile_path, t_ostring *ostring)
+int	test_read_file(const char *testfile_path, t_ostring *ostring)
 {
 	int 	fd;
 	ssize_t	nbytes;

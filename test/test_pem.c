@@ -64,31 +64,31 @@ int	test_pem(void)
 
 static int	__test_pem_setup(void)
 {
-    if (SSL_OK != test_get_file_content(__pkcs8_privateKeyInfo_pem_file_path, &__pkcs8_privateKeyInfo_pem)) {
+    if (SSL_OK != test_read_file(__pkcs8_privateKeyInfo_pem_file_path, &__pkcs8_privateKeyInfo_pem)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
+    if (SSL_OK != test_read_file(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs8_encryptedPrivateKeyInfo_pem_file_path, &__pkcs8_encryptedPrivateKeyInfo_pem)) {
+    if (SSL_OK != test_read_file(__pkcs8_encryptedPrivateKeyInfo_pem_file_path, &__pkcs8_encryptedPrivateKeyInfo_pem)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs8_subjectPublicKeyInfo_pem_file_path, &__pkcs8_subjectPublicKeyInfo_pem)) {
+    if (SSL_OK != test_read_file(__pkcs8_subjectPublicKeyInfo_pem_file_path, &__pkcs8_subjectPublicKeyInfo_pem)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
+    if (SSL_OK != test_read_file(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__pkcs8_privateKeyInfo_schema_json_file_path, &__privateKeyInfo_schema_json_ostr)) {
+	if (SSL_OK != test_read_file(__pkcs8_privateKeyInfo_schema_json_file_path, &__privateKeyInfo_schema_json_ostr)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs1_encrypted_rsaPrivateKey_pem_file_path, &__pkcs1_encrypted_rsaPrivateKey_pem)) {
+    if (SSL_OK != test_read_file(__pkcs1_encrypted_rsaPrivateKey_pem_file_path, &__pkcs1_encrypted_rsaPrivateKey_pem)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}

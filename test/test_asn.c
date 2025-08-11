@@ -48,19 +48,19 @@ int	test_asn(void)
 
 static int	__test_asn_setup(void)
 {
-	if (SSL_OK != test_get_file_content(__schema_pkcs8_subjectPublicKeyInfo_path, &__schema_subjectPublicKeyInfo_json)) {
+	if (SSL_OK != test_read_file(__schema_pkcs8_subjectPublicKeyInfo_path, &__schema_subjectPublicKeyInfo_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__schema_pkcs1_rsaPublicKey_path, &__schema_rsaPublicKey_json)) {
+	if (SSL_OK != test_read_file(__schema_pkcs1_rsaPublicKey_path, &__schema_rsaPublicKey_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__schema_pkcs8_privateKeyInfo_path, &__schema_pkcs8_privateKeyInfo_json)) {
+	if (SSL_OK != test_read_file(__schema_pkcs8_privateKeyInfo_path, &__schema_pkcs8_privateKeyInfo_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__schema_pkcs1_rsaPrivateKey_path, &__schema_pkcs1_rsaPrivateKey_json)) {
+	if (SSL_OK != test_read_file(__schema_pkcs1_rsaPrivateKey_path, &__schema_pkcs1_rsaPrivateKey_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

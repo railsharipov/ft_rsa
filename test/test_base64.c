@@ -29,11 +29,11 @@ int	test_base64(void)
 
 static int	__test_base64_setup(void)
 {
-	if (SSL_OK != test_get_file_content(__binary_file_path, &__binary)) {
+	if (SSL_OK != test_read_file(__binary_file_path, &__binary)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__base64_file_path, &__base64)) {
+	if (SSL_OK != test_read_file(__base64_file_path, &__base64)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

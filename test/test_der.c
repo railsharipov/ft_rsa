@@ -62,15 +62,15 @@ int	test_der(void)
 
 static int	__test_der_setup(void)
 {
-    if (SSL_OK != test_get_file_content(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
+    if (SSL_OK != test_read_file(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
+    if (SSL_OK != test_read_file(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_get_file_content(__pkcs1_privateKey_der_file_path, &__pkcs1_privateKey_der)) {
+    if (SSL_OK != test_read_file(__pkcs1_privateKey_der_file_path, &__pkcs1_privateKey_der)) {
         TEST_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }

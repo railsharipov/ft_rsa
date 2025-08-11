@@ -61,35 +61,35 @@ int	test_json(void)
 
 static int	__test_json_setup(void)
 {
-	if (SSL_OK != test_get_file_content(__simple_null_json_file_path, &__simple_null_json)) {
+	if (SSL_OK != test_read_file(__simple_null_json_file_path, &__simple_null_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__simple_false_json_file_path, &__simple_false_json)) {
+	if (SSL_OK != test_read_file(__simple_false_json_file_path, &__simple_false_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__simple_true_json_file_path, &__simple_true_json)) {
+	if (SSL_OK != test_read_file(__simple_true_json_file_path, &__simple_true_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__simple_number_json_file_path, &__simple_number_json)) {
+	if (SSL_OK != test_read_file(__simple_number_json_file_path, &__simple_number_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__simple_string_json_file_path, &__simple_string_json)) {
+	if (SSL_OK != test_read_file(__simple_string_json_file_path, &__simple_string_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__complex_object_json_file_path, &__complex_object_json)) {
+	if (SSL_OK != test_read_file(__complex_object_json_file_path, &__complex_object_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__complex_array_json_file_path, &__complex_array_json)) {
+	if (SSL_OK != test_read_file(__complex_array_json_file_path, &__complex_array_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_get_file_content(__complex_object_no_ws_json_file_path, &__complex_object_no_ws_json)) {
+	if (SSL_OK != test_read_file(__complex_object_no_ws_json_file_path, &__complex_object_no_ws_json)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
