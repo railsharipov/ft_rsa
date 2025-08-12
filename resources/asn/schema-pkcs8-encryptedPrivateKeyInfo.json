@@ -29,7 +29,8 @@
     },
     {
       "description": "encryptedData",
-      "type": "ostring"
+      "type": "ostring",
+      "encapsulates": true
     }
   ]
 }

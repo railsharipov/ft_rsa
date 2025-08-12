@@ -10,14 +10,18 @@ static int	__test_der_setup(void);
 static void	__test_der_cleanup(void);
 
 static int	__test_der_decode_pkcs8_privateKeyInfo(void);
-static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void);
 static int	__test_der_encode_pkcs8_privateKeyInfo(void);
+static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void);
 static int	__test_der_encode_pkcs8_subjectPublicKeyInfo(void);
-static int	__test_der_decode_pkcs1_privateKey(void);
+static int	__test_der_decode_pkcs1_rsaPrivateKey(void);
+static int	__test_der_encode_pkcs1_rsaPrivateKey(void);
+static int	__test_der_decode_pkcs1_rsaPublicKey(void);
+static int	__test_der_encode_pkcs1_rsaPublicKey(void);
 
 static const char	*__pkcs8_privateKeyInfo_der_file_path = "test/files/keys/pkcs8-privateKeyInfo.der";
 static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "test/files/keys/pkcs8-subjectPublicKeyInfo.der";
-static const char	*__pkcs1_privateKey_der_file_path = "test/files/keys/pkcs1-privateKey.der";
+static const char	*__pkcs1_rsaPrivateKey_der_file_path = "test/files/keys/pkcs1-rsaPrivateKey.der";
+static const char	*__pkcs1_rsaPublicKey_der_file_path = "test/files/keys/pkcs1-rsaPublicKey.der";
 
 static const char	*__modulus = "0090c698de843004925c02940780296d103900047942d8c784309b6f37935b9327de6d45c06fb6257daa65b9fbbb2895afa54677b750bba37ad56ea5fd78a5439b5a7452e139cdedfc65ba52bbd9dbe8d9cd0a0c27e2a6bed45e81b3efb25512fb85dec6e7c0c789c58536aa747b006bfb3b5ab24dd237b689dc91786de2d0fd97f798abb51a433989c24414722aef236835beb0db8de65c2d6665e8fb3024f35a95cbc5490d56183af8c0ad16ffbd4212f55eb730ea3fbffcdad593c7acfe4430d825747ca1c860d248495c1d8a675bb1bd3f4089f125730ba2a41026e92c8b7da92a1f8026f46a688019c98d7ba64aa91aaa84e20317064f9f07e1cc5e5fb993";
 static const char	*__publicExponent = "10001";
@@ -42,7 +46,8 @@ static t_num	*coefficient_num;
 
 static t_ostring	__pkcs8_privateKeyInfo_der;
 static t_ostring	__pkcs8_subjectPublicKeyInfo_der;
-static t_ostring	__pkcs1_privateKey_der;
+static t_ostring	__pkcs1_rsaPrivateKey_der;
+static t_ostring	__pkcs1_rsaPublicKey_der;
 
 int	test_der(void)
 {
@@ -53,10 +58,13 @@ int	test_der(void)
 
 	__test_der_cleanup();
 
-    return (__test_der_decode_pkcs1_privateKey()
+    return (__test_der_decode_pkcs1_rsaPrivateKey()
+        | __test_der_encode_pkcs1_rsaPrivateKey()
+        | __test_der_decode_pkcs1_rsaPublicKey()
+        | __test_der_encode_pkcs1_rsaPublicKey()
         | __test_der_decode_pkcs8_privateKeyInfo()
-        | __test_der_decode_pkcs8_subjectPublicKeyInfo()
         | __test_der_encode_pkcs8_privateKeyInfo()
+        | __test_der_decode_pkcs8_subjectPublicKeyInfo()
         | __test_der_encode_pkcs8_subjectPublicKeyInfo());
 }
 
@@ -70,7 +78,11 @@ static int	__test_der_setup(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-    if (SSL_OK != test_read_file(__pkcs1_privateKey_der_file_path, &__pkcs1_privateKey_der)) {
+    if (SSL_OK != test_read_file(__pkcs1_rsaPrivateKey_der_file_path, &__pkcs1_rsaPrivateKey_der)) {
+        TEST_LOG(ERROR, FILE_READ_ERROR);
+        return (SSL_ERR);
+    }
+    if (SSL_OK != test_read_file(__pkcs1_rsaPublicKey_der_file_path, &__pkcs1_rsaPublicKey_der)) {
         TEST_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }
@@ -103,7 +115,7 @@ static void	__test_der_cleanup(void)
 	return ;
 }
 
-static int	__test_der_decode_pkcs1_privateKey(void)
+static int	__test_der_decode_pkcs1_rsaPrivateKey(void)
 {
     t_node *tree, *asn_node;
     t_iasn *asn_item;
@@ -112,7 +124,7 @@ static int	__test_der_decode_pkcs1_privateKey(void)
 
     tree = NULL;
 
-    ret = der_decode(&tree, &__pkcs1_privateKey_der);
+    ret = der_decode(&tree, &__pkcs1_rsaPrivateKey_der);
 
     TEST_ASSERT(SSL_OK == ret);
     TEST_ASSERT(tree != NULL);
@@ -137,6 +149,83 @@ static int	__test_der_decode_pkcs1_privateKey(void)
         num = (t_num *)asn_item->content;
         TEST_ASSERT(bnum_cmp(num, private_key_items[i]) == 0);
     }
+
+    TEST_PASS();
+}
+
+static int	__test_der_encode_pkcs1_rsaPrivateKey(void)
+{
+    t_node *tree;
+    t_ostring encoded;
+    int ret;
+
+    tree = NULL;
+    ret = der_decode(&tree, &__pkcs1_rsaPrivateKey_der);
+    TEST_ASSERT(SSL_OK == ret);
+    TEST_ASSERT(tree != NULL);
+
+    ft_ostr_init(&encoded);
+    ret = der_encode(tree, &encoded);
+    TEST_ASSERT(SSL_OK == ret);
+    TEST_ASSERT(encoded.size == __pkcs1_rsaPrivateKey_der.size);
+    TEST_ASSERT(ft_memcmp(encoded.content, __pkcs1_rsaPrivateKey_der.content, encoded.size) == 0);
+
+    TEST_PASS();
+}
+
+static int	__test_der_decode_pkcs1_rsaPublicKey(void)
+{
+    t_node *tree, *asn_node;
+    t_iasn *asn_item;
+    t_num *num;
+    int ret;
+
+    tree = NULL;
+    ret = der_decode(&tree, &__pkcs1_rsaPublicKey_der);
+    TEST_ASSERT(SSL_OK == ret);
+    TEST_ASSERT(tree != NULL);
+
+    // RSAPublicKey ::= SEQUENCE { modulus INTEGER, publicExponent INTEGER }
+    asn_item = tree->content;
+    TEST_ASSERT(asn_item != NULL);
+    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
+    TEST_ASSERT(asn_item->size == 2);
+
+    // modulus
+    ret = asn_tree_query("[0]", tree, &asn_node);
+    TEST_ASSERT(SSL_OK == ret);
+    asn_item = asn_node->content;
+    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
+    num = (t_num *)asn_item->content;
+    TEST_ASSERT(bnum_cmp(num, modulus_num) == 0);
+
+    // publicExponent
+    ret = asn_tree_query("[1]", tree, &asn_node);
+    TEST_ASSERT(SSL_OK == ret);
+    asn_item = asn_node->content;
+    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
+    num = (t_num *)asn_item->content;
+    TEST_ASSERT(bnum_cmp(num, publicExponent_num) == 0);
+
+    TEST_PASS();
+}
+
+static int	__test_der_encode_pkcs1_rsaPublicKey(void)
+{
+    t_node *tree;
+    t_ostring encoded;
+    int ret;
+
+    tree = NULL;
+    ret = der_decode(&tree, &__pkcs1_rsaPublicKey_der);
+    TEST_ASSERT(SSL_OK == ret);
+    TEST_ASSERT(tree != NULL);
+
+    ft_ostr_init(&encoded);
+    ret = der_encode(tree, &encoded);
+    TEST_ASSERT(SSL_OK == ret);
+    TEST_ASSERT(encoded.size == __pkcs1_rsaPublicKey_der.size);
+    TEST_ASSERT(ft_memcmp(encoded.content, __pkcs1_rsaPublicKey_der.content, encoded.size) == 0);
 
     TEST_PASS();
 }
