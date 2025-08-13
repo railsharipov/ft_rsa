@@ -1,81 +1,38 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   sha512.c                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/09 10:59:42 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/01 10:51:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <hash.h>
 #include <libft/bytes.h>
 
-static const int	END_BYTE = 1 << 7;
-static const int	LEN_SIZE = 16;
+static void	__swap_bytes_64(t_sha512_word *arr, size_t size);
 
-static void	__len_octets(uint128_t msize_nbits, unsigned char *octets)
+void	hash_sha512_final(t_hash *ctx)
 {
-	octets[0] = (msize_nbits >> 120) & 0xFF;
-	octets[1] = (msize_nbits >> 112) & 0xFF;
-	octets[2] = (msize_nbits >> 104) & 0xFF;
-	octets[3] = (msize_nbits >> 96) & 0xFF;
-	octets[4] = (msize_nbits >> 88) & 0xFF;
-	octets[5] = (msize_nbits >> 80) & 0xFF;
-	octets[6] = (msize_nbits >> 72) & 0xFF;
-	octets[7] = (msize_nbits >> 64) & 0xFF;
-	octets[8] = (msize_nbits >> 56) & 0xFF;
-	octets[9] = (msize_nbits >> 48) & 0xFF;
-	octets[10] = (msize_nbits >> 40) & 0xFF;
-	octets[11] = (msize_nbits >> 32) & 0xFF;
-	octets[12] = (msize_nbits >> 24) & 0xFF;
-	octets[13] = (msize_nbits >> 16) & 0xFF;
-	octets[14] = (msize_nbits >> 8) & 0xFF;
-	octets[15] = (msize_nbits) & 0xFF;
+	uint128_t	msize_nbits;
+	uint8_t		pad[SHA512_BLOCK_SIZE];
+	size_t		pad_len;
+
+	if (NULL == ctx) {
+		return ;
+	}
+	msize_nbits = ft_uint_bswap128(*(uint128_t *)ctx->messize * 8);
+	pad_len = (ctx->bufsize < 112)
+		? (112 - ctx->bufsize)
+		: (SHA512_BLOCK_SIZE + 112 - ctx->bufsize);
+	ft_bzero(pad, pad_len);
+	pad[0] = 0x80;
+	hash_sha512_update(ctx, pad, pad_len);
+	hash_sha512_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+# if BYTE_ORDER == LITTLE_ENDIAN
+	__swap_bytes_64((t_sha512_word *)ctx->hash, 8);
+# endif
 }
 
 static void __swap_bytes_64(t_sha512_word *arr, size_t size)
 {
-	int ix;
+	size_t ix;
 
 	ix = 0;
 	while (ix < size) {
 		arr[ix] = ft_uint_bswap64(arr[ix]);
 		ix++;
 	}
-}
-
-void	hash_sha512_final(t_hash *sha512, const unsigned char *buf, size_t bufsize)
-{
-	unsigned char	*pbuf;
-	int			pbsize;
-	uint128_t	msize_nbits;
-	unsigned char		msize_octets[LEN_SIZE];
-
-	if ((NULL == sha512) || (NULL == buf)) {
-		return ;
-	}
-
-	*(uint128_t *)(sha512->msize) += bufsize;
-	msize_nbits = *(uint128_t *)(sha512->msize) * CHAR_BIT;
-	__len_octets(msize_nbits, msize_octets);
-
-	pbsize = CEIL_TO_MULTIPLE(bufsize, SHA512_BLOCK_SIZE);
-
-	if (pbsize-bufsize <= LEN_SIZE) {
-		pbsize += SHA512_BLOCK_SIZE;
-	}
-
-	SSL_ALLOC(pbuf, pbsize);
-	ft_memcpy(pbuf, buf, bufsize);
-	pbuf[bufsize] = (unsigned char)END_BYTE;
-
-	ft_memcpy(pbuf + pbsize-LEN_SIZE, msize_octets, LEN_SIZE);
-	hash_sha512_update(sha512, pbuf, pbsize);
-# if BYTE_ORDER == LITTLE_ENDIAN
-	__swap_bytes_64(sha512->hash, SHA512_HASH_LEN);
-# endif
 }

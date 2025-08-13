@@ -1,47 +1,19 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   md5.c                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/09 10:59:42 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/01 10:51:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <hash.h>
 
-void	hash_md5_final(t_hash *md5, const unsigned char *buf, size_t bufsize)
+void	hash_md5_final(t_hash *ctx)
 {
-	uint64_t		total_bits;
-	uint32_t		rem_len;
-	uint32_t		pad_len;
-	unsigned char	pbuf[MD5_BLOCK_SIZE * 2];
+	uint64_t	msize_nbits;
+	uint8_t		pad[MD5_BLOCK_SIZE];
+	size_t		pad_len;
 
-	if ((NULL == md5) || (NULL == buf)) {
+	if (NULL == ctx) {
 		return ;
 	}
-
-	*(uint64_t *)(md5->msize) += bufsize;
-	total_bits = *(uint64_t *)(md5->msize) * 8;
-	rem_len = bufsize % MD5_BLOCK_SIZE;
-
-	hash_md5_update(md5, buf, bufsize - rem_len);
-	buf += bufsize - rem_len;
-
-	ft_memcpy(pbuf, buf, rem_len);
-	pbuf[rem_len] = 0x80;
-	pad_len = rem_len + 1;
-
-	if (pad_len > MD5_BLOCK_SIZE - 8) {
-		ft_bzero(pbuf + pad_len, MD5_BLOCK_SIZE - pad_len);
-		hash_md5_update(md5, pbuf, MD5_BLOCK_SIZE);
-		pad_len = 0;
-	}
-
-	ft_bzero(pbuf + pad_len, MD5_BLOCK_SIZE - 8 - pad_len);
-	ft_memcpy(pbuf + MD5_BLOCK_SIZE - 8, &total_bits, sizeof(total_bits));
-	hash_md5_update(md5, pbuf, MD5_BLOCK_SIZE);
+	msize_nbits = *(uint64_t *)ctx->messize * 8;
+	pad_len = (ctx->bufsize < 56) ? (56 - ctx->bufsize) : (MD5_BLOCK_SIZE + 56 - ctx->bufsize);
+	ft_bzero(pad, pad_len);
+	pad[0] = 0x80;
+	hash_md5_update(ctx, pad, pad_len);
+	hash_md5_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
 }

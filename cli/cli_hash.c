@@ -24,9 +24,9 @@
 
 static const struct {
 	char	*name;
-	t_hash	*(*func_init)(void);
+	void	(*func_init)(t_hash *);
 	void	(*func_update)(t_hash *, const unsigned char *, size_t);
-	void	(*func_final)(t_hash *, const unsigned char *, size_t);
+	void	(*func_final)(t_hash *);
 } FUNC[] = {
 	{	"md5",			FUNC_HASH(md5)			},
 	{	"sha1",			FUNC_HASH(sha1)			},
@@ -40,7 +40,7 @@ static const struct {
 
 static char		*__algo;
 static uint32_t	__gflag;
-static t_hash	*__hash;
+static t_hash	__hash;
 static t_iodes	__in;
 
 static const char	*__sarg;
@@ -57,9 +57,9 @@ static const t_task FILE_TASK =
 	{	NULL,	NULL,	IO_FILE,	NONE,		IO_READ|IO_FILE,	0	};
 
 static t_htbl	*hash_htable;
-static t_hash	*(*func_hash_init)(void);
+static void		(*func_hash_init)(t_hash *);
 static void		(*func_hash_update)(t_hash *, const unsigned char *, size_t);
-static void		(*func_hash_final)(t_hash *, const unsigned char *, size_t);
+static void		(*func_hash_final)(t_hash *);
 
 static int	__init_hash_func_by_name(const char *name)
 {
@@ -92,7 +92,7 @@ static void	__out_hash(const char *sarg, uint32_t tflag, uint32_t __gflag)
 	char	*sformat;
 
 	sformat = NULL;
-	hexhash = ft_bytes_to_hex(__hash->hash, __hash->size);
+	hexhash = ft_bytes_to_hex(__hash.hash, __hash.hashsize);
 
 	if (!SSL_FLAG(HASH_Q, __gflag) && !SSL_FLAG(HASH_P, tflag)) {
 		if (SSL_FLAG(HASH_S, tflag)) {
@@ -121,25 +121,23 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 	bufsize = FLOOR(IO_BUFSIZE, 128);
 	SSL_ALLOC(buf, bufsize);
 
-	__hash = func_hash_init();
+	func_hash_init(&__hash);
 
 	while ((rbytes = io_read(&__in, (char *)buf, bufsize)) == bufsize) {
 		if (SSL_FLAG(HASH_P, tflag)) {
 			write(1, buf, bufsize);
 		}
-		func_hash_update(__hash, buf, bufsize);
+		func_hash_update(&__hash, buf, bufsize);
 	}
 
 	if (rbytes < 0) {
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-
 	if (SSL_FLAG(HASH_P, tflag)) {
 		write(1, buf, rbytes);
 	}
-
-	func_hash_final(__hash, buf, rbytes);
+	func_hash_final(&__hash);
 	__out_hash(__sarg, tflag, __gflag);
 
 	return (SSL_OK);
@@ -152,11 +150,9 @@ static int	__next_task(const char **opt)
 	if (NULL == *opt) {
 		return (SSL_OK);
 	}
-
 	if (NULL == (task = ft_htbl_get(hash_htable, *opt))) {
 		task = (t_task *)&FILE_TASK;
 	}
-
 	__gflag |= task->gflag;
 	opt += task->val;
 

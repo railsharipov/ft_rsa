@@ -17,22 +17,22 @@ typedef uint64_t	t_sha512_word;
 # define HASH_LOG(LEVEL, MES, ...)	hash_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MD5_BLOCK_SIZE			64
-# define MD5_HASH_LEN			4
-
 # define SHA1_BLOCK_SIZE		64
-# define SHA1_HASH_LEN			5
-
-# define SHA224_HASH_LEN		7
-
+# define SHA224_BLOCK_SIZE		64
 # define SHA256_BLOCK_SIZE		64
-# define SHA256_HASH_LEN		8
-
-# define SHA512_224_HASH_LEN	4
-# define SHA512_256_HASH_LEN	4
-# define SHA384_HASH_LEN		6
-
+# define SHA384_BLOCK_SIZE		128
+# define SHA512_224_BLOCK_SIZE	128
+# define SHA512_256_BLOCK_SIZE	128
 # define SHA512_BLOCK_SIZE		128
-# define SHA512_HASH_LEN		8
+
+# define MD5_HASH_SIZE			4 * sizeof(t_md5_word)
+# define SHA1_HASH_SIZE			5 * sizeof(t_sha1_word)
+# define SHA224_HASH_SIZE		7 * sizeof(t_sha224_word)
+# define SHA256_HASH_SIZE		8 * sizeof(t_sha256_word)
+# define SHA384_HASH_SIZE		6 * sizeof(t_sha384_word)
+# define SHA512_224_HASH_SIZE	4 * sizeof(t_sha512_224_word)
+# define SHA512_256_HASH_SIZE	4 * sizeof(t_sha512_256_word)
+# define SHA512_HASH_SIZE		8 * sizeof(t_sha512_word)
 
 # define CH(X,Y,Z)		(((X)&(Y))^((~X)&(Z)))
 # define MAJ(X,Y,Z)		(((X)&(Y))^((X)&(Z))^((Y)&(Z)))
@@ -66,44 +66,47 @@ enum  e_hash_flag
 
 typedef struct	s_hash
 {
-	void		*var;
-	void		*msize;
-	void		*hash;
-	int			size;
+	uint8_t		messize[16];
+	uint8_t		blocksize;
+	uint8_t		hashsize;
+	uint8_t		var[128];
+	uint8_t		hash[128];
+	uint8_t		buf[128];
+	uint8_t		bufsize;
 }				t_hash;
 
 int		hash_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-t_hash	*hash_md5_init(void);
+void	hash_md5_init(t_hash *md5);
 void	hash_md5_update(t_hash *md5, const unsigned char *buf, size_t bufsize);
-void	hash_md5_final(t_hash *md5, const unsigned char *buf, size_t bufsize);
+void	hash_md5_final(t_hash *md5);
 
-t_hash	*hash_sha1_init(void);
+void	hash_sha1_init(t_hash *sha1);
 void	hash_sha1_update(t_hash *sha1, const unsigned char *buf, size_t bufsize);
-void	hash_sha1_final(t_hash *sha1, const unsigned char *buf, size_t bufsize);
+void	hash_sha1_final(t_hash *sha1);
 
-t_hash	*hash_sha256_init(void);
+void	hash_sha256_init(t_hash *sha256);
 void	hash_sha256_update(t_hash *sha256, const unsigned char *buf, size_t bufsize);
-void	hash_sha256_final(t_hash *sha256, const unsigned char *buf, size_t bufsize);
+void	hash_sha256_final(t_hash *sha256);
 
-t_hash	*hash_sha224_init(void);
+void	hash_sha224_init(t_hash *sha224);
 void	hash_sha224_update(t_hash *sha224, const unsigned char *buf, size_t bufsize);
-void	hash_sha224_final(t_hash *sha224, const unsigned char *buf, size_t bufsize);
+void	hash_sha224_final(t_hash *sha224);
 
-t_hash	*hash_sha512_init(void);
+void	hash_sha512_init(t_hash *sha512);
 void	hash_sha512_update(t_hash *sha512, const unsigned char *buf, size_t bufsize);
-void	hash_sha512_final(t_hash *sha512, const unsigned char *buf, size_t bufsize);
+void	hash_sha512_final(t_hash *sha512);
 
-t_hash	*hash_sha384_init(void);
+void	hash_sha384_init(t_hash *sha384);
 void	hash_sha384_update(t_hash *sha384, const unsigned char *buf, size_t bufsize);
-void	hash_sha384_final(t_hash *sha384, const unsigned char *buf, size_t bufsize);
+void	hash_sha384_final(t_hash *sha384);
 
-t_hash	*hash_sha512_256_init(void);
+void	hash_sha512_256_init(t_hash *sha512_256);
 void	hash_sha512_256_update(t_hash *sha512_256, const unsigned char *buf, size_t bufsize);
-void	hash_sha512_256_final(t_hash *sha512_256, const unsigned char *buf, size_t bufsize);
+void	hash_sha512_256_final(t_hash *sha512_256);
 
-t_hash	*hash_sha512_224_init(void);
+void	hash_sha512_224_init(t_hash *sha512_224);
 void	hash_sha512_224_update(t_hash *sha512_224, const unsigned char *buf, size_t bufsize);
-void	hash_sha512_224_final(t_hash *sha512_224, const unsigned char *buf, size_t bufsize);
+void	hash_sha512_224_final(t_hash *sha512_224);
 
 #endif

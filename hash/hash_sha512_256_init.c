@@ -8,22 +8,11 @@ static const t_sha512_256_word	HASH_INIT_VECT[] = {
 	0x2b0199fc2c85b8aa, 0x0eb72ddc81c52ca2
 };
 
-static t_sha512_256_word		var[SHA512_HASH_LEN];
-static t_sha512_256_word		hash[SHA512_HASH_LEN];
-static uint128_t				msize;
-
-static t_hash	sha512_256 = {
-	.var = &var,
-	.hash = &hash,
-	.size = SHA512_256_HASH_LEN * sizeof(t_sha512_256_word),
-	.msize = &msize
-};
-
-t_hash	*hash_sha512_256_init(void)
+void	hash_sha512_256_init(t_hash *ctx)
 {
-	ft_memcpy(sha512_256.var, HASH_INIT_VECT, sizeof(hash));
-	ft_memcpy(sha512_256.hash, HASH_INIT_VECT, sizeof(hash));
-	msize = 0;
-
-	return (&sha512_256);
+	ft_bzero(ctx, sizeof(t_hash));
+	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ft_memcpy(ctx->hash, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ctx->blocksize = SHA512_BLOCK_SIZE;
+	ctx->hashsize = SHA512_256_HASH_SIZE;
 }

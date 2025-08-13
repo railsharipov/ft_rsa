@@ -1,23 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   sha1.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/09 10:59:42 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/01 10:51:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <hash.h>
 #include <libft/bytes.h>
 
 static t_sha1_word		sched[80];
-static t_sha1_word		*word;
-static t_sha1_word		*var;
-static t_sha1_word		*hash;
 
 static const t_sha1_word	K[] = {
 	[0 ... 19] = 0x5a827999,
@@ -26,7 +11,50 @@ static const t_sha1_word	K[] = {
 	[60 ... 79] = 0xca62c1d6
 };
 
-static void	__update_sched(void)
+static void	__update_sched(t_sha1_word *word);
+static void	__rotate(t_sha1_word *var, t_sha1_word *t1, t_sha1_word *t2, t_sha1_word ix);
+static void	__rotate_hash(t_sha1_word *var, t_sha1_word *word);
+static void	__update_hash(t_sha1_word *var, t_sha1_word *hash);
+
+void	hash_sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+{
+	t_sha1_word	*word;
+	size_t		offset;
+	size_t		to_fill;
+
+	if (NULL == ctx || (NULL == mes && messize > 0)) {
+		return ;
+	}
+	*(uint64_t *)ctx->messize += messize;
+	offset = 0;
+	to_fill = SHA1_BLOCK_SIZE - ctx->bufsize;
+
+	if (ctx->bufsize > 0) {
+		if (messize >= to_fill) {
+			ft_memcpy(ctx->buf + ctx->bufsize, mes, to_fill);
+			word = (t_sha1_word *)ctx->buf;
+			__rotate_hash((t_sha1_word *)ctx->var, word);
+			__update_hash((t_sha1_word *)ctx->var, (t_sha1_word *)ctx->hash);
+			offset += to_fill;
+			ctx->bufsize = 0;
+		}
+		else {
+			ft_memcpy(ctx->buf + ctx->bufsize, mes, messize);
+			ctx->bufsize += messize;
+			return ;
+		}
+	}
+	while (messize - offset >= SHA1_BLOCK_SIZE) {
+		word = (t_sha1_word *)(mes + offset);
+		__rotate_hash((t_sha1_word *)ctx->var, word);
+		__update_hash((t_sha1_word *)ctx->var, (t_sha1_word *)ctx->hash);
+		offset += SHA1_BLOCK_SIZE;
+	}
+	ft_memcpy(ctx->buf, mes + offset, messize - offset);
+	ctx->bufsize = messize - offset;
+}
+
+static void	__update_sched(t_sha1_word *word)
 {
 	int	i;
 
@@ -45,7 +73,7 @@ static void	__update_sched(void)
 	}
 }
 
-static void	__rotate(t_sha1_word *t1, t_sha1_word *t2, t_sha1_word ix)
+static void	__rotate(t_sha1_word *var, t_sha1_word *t1, t_sha1_word *t2, t_sha1_word ix)
 {
 	*t2 = LROT(var[0], 5) + *t1 + var[4] + K[ix] + sched[ix];
 
@@ -56,32 +84,33 @@ static void	__rotate(t_sha1_word *t1, t_sha1_word *t2, t_sha1_word ix)
 	var[0] = *t2;
 }
 
-static void	__rotate_hash(void)
+static void	__rotate_hash(t_sha1_word *var, t_sha1_word *word)
 {
 	t_sha1_word	t1;
 	t_sha1_word	t2;
 	t_sha1_word	ix;
 
+	__update_sched(word);
 	ix = 0;
 	while (ix < 20) {
 		t1 = CH(var[1], var[2], var[3]);
-		__rotate(&t1, &t2, ix++);
+		__rotate(var, &t1, &t2, ix++);
 	}
 	while (ix < 40) {
 		t1 = H0(var[1], var[2], var[3]);
-		__rotate(&t1, &t2, ix++);
+		__rotate(var, &t1, &t2, ix++);
 	}
 	while (ix < 60) {
 		t1 = MAJ(var[1], var[2], var[3]);
-		__rotate(&t1, &t2, ix++);
+		__rotate(var, &t1, &t2, ix++);
 	}
 	while (ix < 80) {
 		t1 = H0(var[1], var[2], var[3]);
-		__rotate(&t1, &t2, ix++);
+		__rotate(var, &t1, &t2, ix++);
 	}
 }
 
-static void	__update_hash(void)
+static void	__update_hash(t_sha1_word *var, t_sha1_word *hash)
 {
 	hash[0] = var[0] + hash[0];
 	hash[1] = var[1] + hash[1];
@@ -93,24 +122,4 @@ static void	__update_hash(void)
 	var[2] = hash[2];
 	var[3] = hash[3];
 	var[4] = hash[4];
-}
-
-void	hash_sha1_update(t_hash *sha1, const unsigned char *buf, size_t bufsize)
-{
-	if ((NULL == sha1) || (NULL == buf)) {
-		return ;
-	}
-
-	var = sha1->var;
-	hash = sha1->hash;
-	*(uint64_t *)sha1->msize += FLOOR(bufsize, SHA1_BLOCK_SIZE);
-
-	while (bufsize >= SHA1_BLOCK_SIZE) {
-		word = (t_sha1_word *)(buf);
-		__update_sched();
-		__rotate_hash();
-		__update_hash();
-		buf += SHA1_BLOCK_SIZE;
-		bufsize -= SHA1_BLOCK_SIZE;
-	}
 }

@@ -1,23 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   sha512.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/09 10:59:42 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/01 10:51:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <hash.h>
 #include <libft/bytes.h>
 
-static t_sha512_word		sched[80];
-static t_sha512_word		*word;
-static t_sha512_word		*var;
-static t_sha512_word		*hash;
+static t_sha512_word	sched[80];
 
 static const t_sha512_word	K[] = {
 	0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f,
@@ -49,7 +34,50 @@ static const t_sha512_word	K[] = {
 	0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 };
 
-static void	__update_sched(void)
+static void	__update_sched(t_sha512_word *word);
+static void	__rotate(t_sha512_word *var, t_sha512_word ix);
+static void	__rotate_hash(t_sha512_word *var, t_sha512_word *word);
+static void	__update_hash(t_sha512_word *var, t_sha512_word *hash);
+
+void	hash_sha512_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+{
+	t_sha512_word	*word;
+	size_t			offset;
+	size_t			to_fill;
+
+	if (NULL == ctx || (NULL == mes && messize > 0)) {
+		return ;
+	}
+	*(uint128_t *)ctx->messize += messize;
+	offset = 0;
+	to_fill = SHA512_BLOCK_SIZE - ctx->bufsize;
+
+	if (ctx->bufsize > 0) {
+		if (messize >= to_fill) {
+			ft_memcpy(ctx->buf + ctx->bufsize, mes, to_fill);
+			word = (t_sha512_word *)ctx->buf;
+			__rotate_hash((t_sha512_word *)ctx->var, word);
+			__update_hash((t_sha512_word *)ctx->var, (t_sha512_word *)ctx->hash);
+			offset += to_fill;
+			ctx->bufsize = 0;
+		}
+		else {
+			ft_memcpy(ctx->buf + ctx->bufsize, mes, messize);
+			ctx->bufsize += messize;
+			return ;
+		}
+	}
+	while (messize - offset >= SHA512_BLOCK_SIZE) {
+		word = (t_sha512_word *)(mes + offset);
+		__rotate_hash((t_sha512_word *)ctx->var, word);
+		__update_hash((t_sha512_word *)ctx->var, (t_sha512_word *)ctx->hash);
+		offset += SHA512_BLOCK_SIZE;
+	}
+	ft_memcpy(ctx->buf, mes + offset, messize - offset);
+	ctx->bufsize = messize - offset;
+}
+
+static void	__update_sched(t_sha512_word *word)
 {
 	int	i;
 
@@ -68,29 +96,35 @@ static void	__update_sched(void)
 	}
 }
 
-static void	__rotate_hash(void)
+static void	__rotate(t_sha512_word *var, t_sha512_word ix)
 {
 	t_sha512_word	t1;
 	t_sha512_word	t2;
+
+	t1 = var[7] + E3(var[4]) + CH(var[4], var[5], var[6]) + K[ix] + sched[ix];
+	t2 = E2(var[0]) + MAJ(var[0], var[1], var[2]);
+	var[7] = var[6];
+	var[6] = var[5];
+	var[5] = var[4];
+	var[4] = var[3] + t1;
+	var[3] = var[2];
+	var[2] = var[1];
+	var[1] = var[0];
+	var[0] = t1 + t2;
+}
+
+static void	__rotate_hash(t_sha512_word *var, t_sha512_word *word)
+{
 	t_sha512_word	ix;
 
+	__update_sched(word);
 	ix = 0;
 	while (ix < 80) {
-		t1 = var[7] + E3(var[4]) + CH(var[4],var[5],var[6]) + K[ix] + sched[ix];
-		t2 = E2(var[0]) + MAJ(var[0],var[1],var[2]);
-		var[7] = var[6];
-		var[6] = var[5];
-		var[5] = var[4];
-		var[4] = var[3] + t1;
-		var[3] = var[2];
-		var[2] = var[1];
-		var[1] = var[0];
-		var[0] = t1 + t2;
-		ix++;
+		__rotate(var, ix++);
 	}
 }
 
-static void	__update_hash(void)
+static void	__update_hash(t_sha512_word *var, t_sha512_word *hash)
 {
 	hash[0] = var[0] + hash[0];
 	hash[1] = var[1] + hash[1];
@@ -108,24 +142,4 @@ static void	__update_hash(void)
 	var[5] = hash[5];
 	var[6] = hash[6];
 	var[7] = hash[7];
-}
-
-void	hash_sha512_update(t_hash *sha512, const unsigned char *buf, size_t bufsize)
-{
-	if ((NULL == sha512) || (NULL == buf)) {
-		return ;
-	}
-
-	var = sha512->var;
-	hash = sha512->hash;
-	*(uint128_t *)sha512->msize += FLOOR(bufsize, SHA512_BLOCK_SIZE);
-
-	while (bufsize >= SHA512_BLOCK_SIZE) {
-		word = (t_sha512_word *)(buf);
-		__update_sched();
-		__rotate_hash();
-		__update_hash();
-		buf += SHA512_BLOCK_SIZE;
-		bufsize -= SHA512_BLOCK_SIZE;
-	}
 }

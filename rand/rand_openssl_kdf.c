@@ -25,7 +25,7 @@
 
 int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass)
 {
-	t_hash	*md5;
+	t_hash	md5;
 	char	buf[160] = {0};
 	size_t	pass_len;
 
@@ -42,15 +42,16 @@ int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vec
 	ft_memcpy(buf, pass, pass_len);
 	ft_memcpy(buf + pass_len, salt, 8);
 
-	md5 = hash_md5_init();
-	hash_md5_final(md5, (unsigned char *)buf, pass_len + 8);
+	hash_md5_init(&md5);
+	hash_md5_update(&md5, (unsigned char *)buf, pass_len + 8);
+	hash_md5_final(&md5);
 
-	ft_memcpy(key, md5->hash, 8);
+	ft_memcpy(key, md5.hash, 8);
 
 	if (NULL != vect) {
-		ft_memcpy(vect, md5->hash + 8, 8);
+		ft_memcpy(vect, md5.hash + 8, 8);
 	}
-	ft_bzero(md5->hash, md5->size);
+	ft_bzero(md5.hash, md5.hashsize);
 
 	return (SSL_OK);
 }

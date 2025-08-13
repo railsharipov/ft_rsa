@@ -1,19 +1,7 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   sha512.c                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/09 10:59:42 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/01 10:51:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <hash.h>
 
-void	hash_sha512_256_final(t_hash *sha512_256, const unsigned char *buf, size_t bufsize)
+void	hash_sha512_256_final(t_hash *ctx)
 {
-	hash_sha512_final(sha512_256, buf, bufsize);
+	hash_sha512_final(ctx);
 }

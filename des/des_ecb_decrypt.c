@@ -50,11 +50,11 @@ static int	__remove_pad(unsigned char **mes, size_t *messize)
 	unsigned char	ix;
 
 	if (*messize == 0) {
-		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		DES_LOG(ERROR, "bad message size");
 		return (SSL_ERR);
 	}
 	if ((padsize = (*mes)[*messize-1]) > 8) {
-		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		DES_LOG(ERROR, "bad pad size");
 		return (SSL_ERR);
 	}
 
@@ -62,7 +62,7 @@ static int	__remove_pad(unsigned char **mes, size_t *messize)
 	while (ix++ < padsize) {
 		*messize -= 1;
 		if ((*mes)[*messize] != padsize) {
-			DES_LOG(ERROR, UNSPECIFIED_ERROR);
+			DES_LOG(ERROR, "bad pad byte");
 			return (SSL_ERR);
 		}
 	}
@@ -93,7 +93,7 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char *
 		ix += 8;
 	}
 	if (SSL_OK != __remove_pad(mes_ptr, messize)) {
-		DES_LOG(ERROR, UNSPECIFIED_ERROR);
+		DES_LOG(ERROR, "bad pad");
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

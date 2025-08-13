@@ -6,22 +6,11 @@ static const t_sha224_word	HASH_INIT_VECT[] = {
 	0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4
 };
 
-static t_sha224_word		var[SHA256_HASH_LEN];
-static t_sha224_word		hash[SHA256_HASH_LEN];
-static uint64_t				msize;
-
-static t_hash	sha224 = {
-	.var = &var,
-	.hash = &hash,
-	.size = SHA224_HASH_LEN * sizeof(t_sha224_word),
-	.msize= &msize
-};
-
-t_hash	*hash_sha224_init(void)
+void	hash_sha224_init(t_hash *ctx)
 {
-	ft_memcpy(sha224.var, HASH_INIT_VECT, sizeof(hash));
-	ft_memcpy(sha224.hash, HASH_INIT_VECT, sizeof(hash));
-	msize = 0;
-
-	return (&sha224);
+	ft_bzero(ctx, sizeof(t_hash));
+	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ft_memcpy(ctx->hash, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ctx->blocksize = SHA224_BLOCK_SIZE;
+	ctx->hashsize = SHA224_HASH_SIZE;
 }

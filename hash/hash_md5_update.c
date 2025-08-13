@@ -1,21 +1,5 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   md5.c                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/09 10:59:42 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/01 10:51:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <hash.h>
-
-static t_md5_word		*word;
-static t_md5_word		*var;
-static t_md5_word		*hash;
 
 static const t_md5_word	SCHED[] = {
 	0x07, 0x0c, 0x11, 0x16, 0x07, 0x0c, 0x11, 0x16,
@@ -47,16 +31,58 @@ static const t_md5_word	K[] = {
 	0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
 };
 
-static void	__rotate(t_md5_word *t1, t_md5_word *t2, t_md5_word *i)
+static void	__rotate(t_md5_word *var, t_md5_word *t1, t_md5_word *t2, t_md5_word *i, t_md5_word *word);
+static void	__rotate_hash(t_md5_word *var, t_md5_word *word);
+static void	__update_hash(t_md5_word *var, t_md5_word *hash, t_md5_word *word);
+
+void	hash_md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+{
+	t_md5_word	*word;
+	size_t		offset;
+	size_t		to_fill;
+
+	if (NULL == ctx || (NULL == mes && messize > 0)) {
+		return ;
+	}
+	*(uint64_t *)ctx->messize += messize;
+	offset = 0;
+	to_fill = MD5_BLOCK_SIZE - ctx->bufsize;
+
+	if (ctx->bufsize > 0) {
+		if (messize >= to_fill) {
+			ft_memcpy(ctx->buf + ctx->bufsize, mes, to_fill);
+			word = (t_md5_word *)ctx->buf;
+			__rotate_hash((t_md5_word *)ctx->var, word);
+			__update_hash((t_md5_word *)ctx->var, (t_md5_word *)ctx->hash, word);
+			offset += to_fill;
+			ctx->bufsize = 0;
+		}
+		else {
+			ft_memcpy(ctx->buf + ctx->bufsize, mes, messize);
+			ctx->bufsize += messize;
+			return ;
+		}
+	}
+	while (messize - offset >= MD5_BLOCK_SIZE) {
+		word = (t_md5_word *)(mes + offset);
+		__rotate_hash((t_md5_word *)ctx->var, word);
+		__update_hash((t_md5_word *)ctx->var, (t_md5_word *)ctx->hash, word);
+		offset += MD5_BLOCK_SIZE;
+	}
+	ft_memcpy(ctx->buf, mes + offset, messize - offset);
+	ctx->bufsize = messize - offset;
+}
+
+static void	__rotate(t_md5_word *var, t_md5_word *t1, t_md5_word *t2, t_md5_word *i, t_md5_word *word)
 {
 	*t1 = *t1 + var[0] + K[*i] + word[*t2];
-	var[0] = var[3];
+	var[0] = var[3];	
 	var[3] = var[2];
 	var[2] = var[1];
 	var[1] = var[1] + LROT(*t1, SCHED[*i]);
 }
 
-static void	__rotate_hash(void)
+static void	__rotate_hash(t_md5_word *var, t_md5_word *word)
 {
 	t_md5_word	t1;
 	t_md5_word	t2;
@@ -65,26 +91,26 @@ static void	__rotate_hash(void)
 	for (ix = 0; ix < 16; ix++) {
 		t1 = F0(var[1], var[2], var[3]);
 		t2 = ix;
-		__rotate(&t1, &t2, &ix);
+		__rotate(var, &t1, &t2, &ix, word);
 	}
 	for (; ix < 32; ix++) {
 		t1 = G0(var[1], var[2], var[3]);
 		t2 = (5 * ix + 1) % 16;
-		__rotate(&t1, &t2, &ix);
+		__rotate(var, &t1, &t2, &ix, word);
 	}
 	for (; ix < 48; ix++) {
 		t1 = H0(var[1], var[2], var[3]);
 		t2 = (3 * ix + 5) % 16;
-		__rotate(&t1, &t2, &ix);
+		__rotate(var, &t1, &t2, &ix, word);
 	}
 	for (; ix < 64; ix++) {
 		t1 = I0(var[1], var[2], var[3]);
 		t2 = (7 * ix) % 16;
-		__rotate(&t1, &t2, &ix);
+		__rotate(var, &t1, &t2, &ix, word);
 	}
 }
 
-static void	__update_hash(void)
+static void	__update_hash(t_md5_word *var, t_md5_word *hash, t_md5_word *word)
 {
 	hash[0] = var[0] + hash[0];
 	hash[1] = var[1] + hash[1];
@@ -94,23 +120,4 @@ static void	__update_hash(void)
 	var[1] = hash[1];
 	var[2] = hash[2];
 	var[3] = hash[3];
-}
-
-void	hash_md5_update(t_hash *md5, const unsigned char *buf, size_t bufsize)
-{
-	if ((NULL == md5) || (NULL == buf)) {
-		return ;
-	}
-
-	var = md5->var;
-	hash = md5->hash;
-	*(uint64_t *)md5->msize += FLOOR(bufsize, MD5_BLOCK_SIZE);
-
-	while (bufsize >= MD5_BLOCK_SIZE) {
-		word = (t_md5_word *)(buf);
-		__rotate_hash();
-		__update_hash();
-		buf += MD5_BLOCK_SIZE;
-		bufsize -= MD5_BLOCK_SIZE;
-	}
 }
