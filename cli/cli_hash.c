@@ -125,11 +125,11 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 
 	func_hash_init(&__hash);
 
-	while ((rbytes = io_read(&__in, (char *)buf, bufsize)) == bufsize) {
+	while ((rbytes = io_read(&__in, (char *)buf, bufsize)) > 0) {
 		if (SSL_FLAG(HASH_P, tflag)) {
 			write(1, buf, bufsize);
 		}
-		func_hash_update(&__hash, buf, bufsize);
+		func_hash_update(&__hash, buf, rbytes);
 	}
 	if (rbytes < 0) {
 		CLI_LOG(ERROR, "io read error");
@@ -155,9 +155,9 @@ static int	__next_task(const char **opt)
 	if (NULL == (task = ft_htbl_get(hash_htable, *opt))) {
 		task = (t_task *)&FILE_TASK;
 	}
-	__sarg = *opt;
 	__gflag |= task->gflag;
 	opt += task->val;
+	__sarg = *opt;
 
 	if (NONE != task->tflag && SSL_FLAG(IO_FILE, task->oflag)) {
 		if (NULL == *opt) {

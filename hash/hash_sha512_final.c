@@ -2,26 +2,36 @@
 #include <hash.h>
 #include <libft/bytes.h>
 
-static void	__swap_bytes_64(t_sha512_word *arr, size_t size);
+static void __swap_bytes_64(t_sha512_word *arr, size_t size);
 
 void	hash_sha512_final(t_hash *ctx)
 {
+	uint8_t		pbuf[SHA512_BLOCK_SIZE * 2];
+	size_t		pbsize, offset;
 	uint128_t	msize_nbits;
-	uint8_t		pad[SHA512_BLOCK_SIZE];
-	size_t		pad_len;
 
 	if (NULL == ctx) {
 		return ;
 	}
-	pad_len = (ctx->bufsize < 112) ? (112 - ctx->bufsize) : (SHA512_BLOCK_SIZE + 112 - ctx->bufsize);
-	msize_nbits = ft_uint_bswap128(*(uint128_t *)ctx->messize * 8);
-	ft_bzero(pad, pad_len);
-	pad[0] = 0x80;
-	hash_sha512_update(ctx, pad, pad_len);
-	hash_sha512_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+	msize_nbits = ft_uint_bswap128((*(uint128_t *)ctx->messize) * 8);
+
+	pbsize = (ctx->bufsize < 112) ? SHA512_BLOCK_SIZE : 2 * SHA512_BLOCK_SIZE;
+	offset = 0;
+
+	ft_memcpy(pbuf + offset, ctx->buf, ctx->bufsize);
+	offset += ctx->bufsize;
+	ctx->bufsize = 0;
+
+	pbuf[offset] = 0x80;
+	offset++;
+
+	ft_bzero(pbuf + offset, pbsize - offset - sizeof(msize_nbits));
+	ft_memcpy(pbuf + pbsize - sizeof(msize_nbits), &msize_nbits, sizeof(msize_nbits));
+
+	hash_sha512_update(ctx, pbuf, pbsize);
 
 # if BYTE_ORDER == LITTLE_ENDIAN
-	__swap_bytes_64((t_sha512_word *)ctx->hash, SHA512_HASH_LEN);
+	__swap_bytes_64((t_sha512_word *)ctx->hash, 8);
 # endif
 }
 
