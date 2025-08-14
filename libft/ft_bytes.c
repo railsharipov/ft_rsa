@@ -284,7 +284,6 @@ char	*ft_bytes_to_hex(const void *bin, size_t binsize)
 	if (NULL == bin || binsize == 0) {
 		return (NULL);
 	}
-
 	hexsize = 2*binsize;
 	LIBFT_ALLOC(hex, hexsize+1);
 	hptr = hex;
@@ -295,14 +294,6 @@ char	*ft_bytes_to_hex(const void *bin, size_t binsize)
 		*hptr++ = A[bptr[ix]&0xF];
 	}
 	*hptr = 0;
-
-	ix = 0;
-	while (hex[ix] == '0' && ix < hexsize-1)
-		ix++;
-
-	hptr = hex;
-	hex = ft_strdup(hptr + ix);
-	LIBFT_FREE(hptr);
 
 	return (hex);
 }

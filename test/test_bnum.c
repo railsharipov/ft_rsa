@@ -566,7 +566,7 @@ static int	__test_bnum_from_bytes_u(void)
 
 static int	__test_bnum_to_bytes_u(void)
 {
-	const char	*hex = "179672f4b9ce4ff1ce809d56dbdc138ec5c";
+	const char	*hex = "0179672f4b9ce4ff1ce809d56dbdc138ec5c";
 	char		*bin, *test_hex;
 	size_t		binsize;
 	t_num		*test_num;

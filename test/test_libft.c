@@ -1097,7 +1097,7 @@ static int __test_ft_bytes_to_hex(void)
 {
 	char *test_str;
 	char octets[] = {9, 1, 127, 3, 15, 0};
-	char *ref_str = "9017f030f00";
+	char *ref_str = "09017f030f00";
 
 	test_str = ft_bytes_to_hex(NULL, 20);
 	TEST_ASSERT(test_str == NULL);

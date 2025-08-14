@@ -13,10 +13,10 @@ const struct {
 	{"bnum", test_bnum},
 	{"json", test_json},
 	{"base64", test_base64},
+	{"hash", test_hash},
 	{"der", test_der},
 	{"pem", test_pem},
 	{"asn", test_asn},
-	{"hash", test_hash},
 };
 
 const int NUM_TESTS = sizeof(TEST_MAP) / sizeof(TEST_MAP[0]);
