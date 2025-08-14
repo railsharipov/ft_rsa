@@ -14,15 +14,14 @@ void	hash_sha256_final(t_hash *ctx)
 		return ;
 	}
 	msize_nbits = ft_uint_bswap64(*(uint64_t *)ctx->messize * 8);
-	pad_len = (ctx->bufsize < 56)
-		? (56 - ctx->bufsize)
-		: (SHA256_BLOCK_SIZE + 56 - ctx->bufsize);
+	pad_len = (ctx->bufsize < 56) ? (56 - ctx->bufsize) : (SHA256_BLOCK_SIZE + 56 - ctx->bufsize);
 	ft_bzero(pad, pad_len);
 	pad[0] = 0x80;
 	hash_sha256_update(ctx, pad, pad_len);
 	hash_sha256_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+
 # if BYTE_ORDER == LITTLE_ENDIAN
-	__swap_bytes_32((uint32_t *)ctx->hash, 8);
+	__swap_bytes_32((uint32_t *)ctx->hash, SHA256_HASH_LEN);
 # endif
 }
 

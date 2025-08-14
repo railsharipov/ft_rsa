@@ -59,6 +59,7 @@ char		*ft_strjoin(char const *s1, char const *s2);
 char		*ft_strjoin_multi(int n, ...);
 char		**ft_strsplit(char const *s, char c);
 char		*ft_strup(char *s);
+char		*ft_strnup(char *s, size_t n);
 char		*ft_strlow(char *s);
 int			ft_str_isalpha(const char *s);
 int			ft_str_isalnum(const char *s);

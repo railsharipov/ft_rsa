@@ -35,6 +35,19 @@ static void	__rotate(t_md5_word *var, t_md5_word *t1, t_md5_word *t2, t_md5_word
 static void	__rotate_hash(t_md5_word *var, t_md5_word *word);
 static void	__update_hash(t_md5_word *var, t_md5_word *hash, t_md5_word *word);
 
+void	hash_md5_update_stream(t_hash *ctx, t_iodes *iodes)
+{
+	char	buf[1024 * MD5_BLOCK_SIZE];
+	size_t	rbytes;
+
+	if (NULL == ctx || NULL == iodes) {
+		return ;
+	}
+	while ((rbytes = io_read(iodes, buf, sizeof(buf))) > 0) {
+		hash_md5_update(ctx, (uint8_t *)buf, rbytes);
+	}
+}
+
 void	hash_md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
 	t_md5_word	*word;

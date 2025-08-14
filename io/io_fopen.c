@@ -25,7 +25,7 @@ static t_io_param	*__get_param(uint32_t);
 
 int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 {
-	IO_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "NULL");
+	IO_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "");
 	
 	t_io_param	*param;
 
@@ -45,7 +45,7 @@ int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 
 	if (SSL_FLAG(IO_FILE, flags)) {
 		if (NULL == filename) {
-			IO_LOG(ERROR, "IO_FILE flag set but filename is not");
+			IO_LOG(ERROR, "filename is not specified");
 			return (-1);
 		}
 

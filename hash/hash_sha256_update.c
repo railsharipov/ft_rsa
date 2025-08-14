@@ -28,6 +28,19 @@ static void	__rotate(t_sha256_word *var, t_sha256_word ix);
 static void	__rotate_hash(t_sha256_word *var, t_sha256_word *word);
 static void	__update_hash(t_sha256_word *var, t_sha256_word *hash);
 
+void	hash_sha256_update_stream(t_hash *ctx, t_iodes *iodes)
+{
+	char	buf[1024 * SHA256_BLOCK_SIZE];
+	size_t	rbytes;
+
+	if (NULL == ctx || NULL == iodes) {
+		return ;
+	}
+	while ((rbytes = io_read(iodes, buf, sizeof(buf))) > 0) {
+		hash_sha256_update(ctx, (uint8_t *)buf, rbytes);
+	}
+}
+
 void	hash_sha256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
 	t_sha256_word	*word;

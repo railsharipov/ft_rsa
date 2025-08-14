@@ -801,7 +801,7 @@ static void	__print_s(t_pf *data, char *src, size_t i)
 
 		if (data->type == 'q') {
 			// 'q' means uppercase format
-			temp = ft_strup(s + i);
+			temp = ft_strnup(s + i, data->size);
 			ft_strcpy(s + i, temp);
 			free(temp);
 		}

@@ -25,7 +25,7 @@ int	io_osbuf(t_iodes *iodes, uint32_t flags, t_ostring *osbuf)
 
 	if (SSL_FLAG(IO_READ, flags)) {
 		if (NULL == osbuf->content) {
-			IO_LOG(ERROR, "IO_READ flag set but buffer is not");
+			IO_LOG(ERROR, "buffer is not specified");
 			return (SSL_ERR);
 		}
 		IO_LOG(TRACE, "osbuf content=%p, size=%zu", osbuf->content, osbuf->size);

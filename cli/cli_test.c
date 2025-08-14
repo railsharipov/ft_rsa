@@ -8,14 +8,15 @@ const struct {
 	FUNC_TEST f_test;
 } TEST_MAP[] = {
 	{"libft", test_libft},
+	{"textutil", test_textutil},
 	{"io", test_io},
 	{"bnum", test_bnum},
+	{"json", test_json},
 	{"base64", test_base64},
 	{"der", test_der},
 	{"pem", test_pem},
-	{"json", test_json},
 	{"asn", test_asn},
-	{"textutil", test_textutil}
+	{"hash", test_hash},
 };
 
 const int NUM_TESTS = sizeof(TEST_MAP) / sizeof(TEST_MAP[0]);

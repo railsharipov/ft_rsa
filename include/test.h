@@ -47,6 +47,7 @@ int		test_result(int res, int verbose);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 
 int		test_libft(void);
+int		test_textutil(void);
 int		test_io(void);
 int		test_base64(void);
 int		test_der(void);
@@ -54,6 +55,6 @@ int		test_pem(void);
 int		test_bnum(void);
 int		test_json(void);
 int		test_asn(void);
-int		test_textutil(void);
+int		test_hash(void);
 
 #endif

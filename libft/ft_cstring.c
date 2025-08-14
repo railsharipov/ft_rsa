@@ -421,6 +421,27 @@ char *ft_strup(char *s)
 	return (s_up);
 }
 
+char *ft_strnup(char *s, size_t n)
+{
+	char *s_up;
+	size_t idx;
+
+	if (NULL == s) {
+		return (NULL);
+	}
+	s_up = ft_strndup(s, n);
+
+	idx = 0;
+	while (idx < n && s_up[idx] != '\0') {
+		if (s_up[idx] >= 'a' && s_up[idx] <= 'z') {
+			s_up[idx] = s_up[idx] - 32;
+		}
+		idx++;
+	}
+
+	return (s_up);
+}
+
 char	*ft_strrev(const char *s)
 {
 	char	*srev;
