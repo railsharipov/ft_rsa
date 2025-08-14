@@ -27,7 +27,6 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	char		salthex[128], cipher_name[128], proc_type[128];
 	uint8_t		key[8], iv[8], salt[8];
 	int			pos, matches, idx, ret;
-	t_des		*des;
 
 	PEM_LOG(TRACE, "decoding pem: content: %p, size: %d", enc->content, enc->size);
 	ret = SSL_ERR;
@@ -117,10 +116,9 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 			PEM_LOG(ERROR, "bad key derivation");
 			goto label_exit;
 		}
-        des = des_init(key, salt, iv);
 
 		PEM_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
-		if (SSL_OK != des_cbc_decrypt(des, &b64dec, data)) {
+		if (SSL_OK != des_cbc_decrypt(key, iv, &b64dec, data)) {
 			PEM_LOG(ERROR, "bad des cbc decrypt");
 			goto label_exit;
 		}

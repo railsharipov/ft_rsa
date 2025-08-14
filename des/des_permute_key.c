@@ -21,7 +21,7 @@ static const unsigned char	PKA[56] = {
 	14, 6,  61, 53, 45, 37, 29, 21, 13, 5,  28, 20, 12, 4
 };
 
-void	des_permute_key(uint64_t *permut_key, unsigned char *key)
+void	des_permute_key(uint64_t *pkey, const uint8_t key[8])
 {
 	uint64_t	t_key;
 	uint64_t	t_pkey;
@@ -36,5 +36,5 @@ void	des_permute_key(uint64_t *permut_key, unsigned char *key)
 		t_pkey |= (t_key >> (64 - PKA[ix])) & 1;
 		ix++;
 	}
-	*permut_key = t_pkey;
+	*pkey = t_pkey;
 }

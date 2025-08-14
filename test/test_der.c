@@ -51,21 +51,25 @@ static t_ostring	__pkcs1_rsaPublicKey_der;
 
 int	test_der(void)
 {
+	int ret;
+
 	if (SSL_OK != __test_der_setup()) {
 		TEST_LOG(ERROR, "failed to setup test");
 		TEST_FAIL();
 	}
 
+	ret = __test_der_decode_pkcs1_rsaPrivateKey()
+	| __test_der_encode_pkcs1_rsaPrivateKey()
+	| __test_der_decode_pkcs1_rsaPublicKey()
+	| __test_der_encode_pkcs1_rsaPublicKey()
+	| __test_der_decode_pkcs8_privateKeyInfo()
+	| __test_der_encode_pkcs8_privateKeyInfo()
+	| __test_der_decode_pkcs8_subjectPublicKeyInfo()
+	| __test_der_encode_pkcs8_subjectPublicKeyInfo();
+
 	__test_der_cleanup();
 
-    return (__test_der_decode_pkcs1_rsaPrivateKey()
-        | __test_der_encode_pkcs1_rsaPrivateKey()
-        | __test_der_decode_pkcs1_rsaPublicKey()
-        | __test_der_encode_pkcs1_rsaPublicKey()
-        | __test_der_decode_pkcs8_privateKeyInfo()
-        | __test_der_encode_pkcs8_privateKeyInfo()
-        | __test_der_decode_pkcs8_subjectPublicKeyInfo()
-        | __test_der_encode_pkcs8_subjectPublicKeyInfo());
+	return (ret);
 }
 
 static int	__test_der_setup(void)

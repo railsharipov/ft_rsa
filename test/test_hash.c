@@ -127,9 +127,6 @@ static int	__test_hash_sha224(void)
 	io_fclose(&iodes);
 
 	TEST_ASSERT(sha224.hashsize == SHA224_HASH_SIZE);
-
-	printf("sha224: %s\n", ft_bytes_to_hex(sha224.hash, SHA224_HASH_SIZE));
-	printf("small_text_sha224_hash_hex: %s\n", __small_text_sha224_hash_hex);
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(sha224.hash, SHA224_HASH_SIZE), __small_text_sha224_hash_hex, SHA224_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {

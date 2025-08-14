@@ -15,7 +15,6 @@ static char	*__keyhex;
 static char	*__salthex;
 static char	*__vecthex;
 
-static t_des	*__des;
 static t_htbl	*__des_htable;
 static uint32_t	__gflag;
 static t_iodes	__in;
@@ -155,10 +154,11 @@ static int __run_task(void)
 	}
 
 	if (__pass) {
-		rand_openssl_kdf(__key, __salt, __vect, __pass);
+		if (SSL_OK != rand_openssl_kdf(__key, __salt, __vect, __pass)) {
+			CLI_LOG(ERROR, "kdf failed");
+			return (SSL_ERR);
+		}
 	}
-
-	__des = des_init(__key, __salt, __vect);
 
 	if (SSL_FLAG(DES_D, __gflag)) {
 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
@@ -278,13 +278,13 @@ static void	__dump_vectors(void)
 {
 	char	hex[128];
 
-	ft_bytes_dumpb_hex(__des->salt, 8, 0, 0, hex, sizeof(hex));
+	ft_bytes_dumpb_hex(__salt, 8, 0, 0, hex, sizeof(hex));
 	ft_printf("salt=%s\n", hex);
 
-	ft_bytes_dumpb_hex(__des->key, 8, 0, 0, hex, sizeof(hex));
+	ft_bytes_dumpb_hex(__key, 8, 0, 0, hex, sizeof(hex));
 	ft_printf("key=%s\n", hex);
 
-	ft_bytes_dumpb_hex(__des->vect, 8, 0, 0, hex, sizeof(hex));
+	ft_bytes_dumpb_hex(__vect, 8, 0, 0, hex, sizeof(hex));
 	ft_printf("iv=%s\n", hex);
 }
 
@@ -298,9 +298,9 @@ static int	__enc(t_ostring *mes, t_ostring *ciph)
 		ft_memcpy(temp.content, "Salted__", 8);
 		ft_memcpy(temp.content + 8, __salt, 8);
 		ft_memcpy(temp.content + 16, mes->content, mes->size);
-		return (des_cbc_encrypt(__des, &temp, ciph));
+		return (des_cbc_encrypt(__key, __vect, &temp, ciph));
 	}
-	return (des_cbc_encrypt(__des, mes, ciph));
+	return (des_cbc_encrypt(__key, __vect, mes, ciph));
 }
 
 static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
@@ -327,7 +327,7 @@ static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
 
 static int	__dec(t_ostring *ciph, t_ostring *mes)
 {
-	return (des_cbc_decrypt(__des, ciph, mes));
+	return (des_cbc_decrypt(__key, __vect, ciph, mes));
 }
 
 static int	__dec_b64(t_ostring *b64, t_ostring *mes)
@@ -338,7 +338,7 @@ static int	__dec_b64(t_ostring *b64, t_ostring *mes)
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != des_cbc_decrypt(__des, &cipher, mes)) {
+	if (SSL_OK != des_cbc_decrypt(__key, __vect, &cipher, mes)) {
 		SSL_FREE(cipher.content);
 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);

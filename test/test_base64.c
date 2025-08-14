@@ -2,8 +2,8 @@
 #include <base64.h>
 #include <test.h>
 
-static const char	*__binary_file_path = "test/files/file";
-static const char	*__base64_file_path = "test/files/base64_message.txt";
+static const char	*__binary_file_path = "test/files/base64/message.bin";
+static const char	*__base64_file_path = "test/files/base64/message.txt";
 
 static t_ostring	__binary;
 static t_ostring	__base64;

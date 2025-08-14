@@ -22,29 +22,17 @@ enum	e_des
 	DES_D = 1UL << 8
 };
 
-typedef struct  s_des
-{
-	unsigned char		*key;
-	unsigned char		*salt;
-	unsigned char		*vect;
-	uint32_t	vflag;
-}               t_des;
-
-typedef void    (*FUNC_DES)(t_des *const, char *const, ssize_t);
-
 int		des_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-t_des	*des_init(const unsigned char *key, const unsigned char *salt, const unsigned char *vect);
-t_des	*des_hexinit(const char *key, const char *salt, const char *vect);
-int		des_ecb_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph);
-int		des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes);
-int		des_cbc_encrypt(t_des *des, t_ostring *mes, t_ostring *ciph);
-int		des_cbc_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes);
+int		des_ecb_encrypt(const uint8_t key[8], t_ostring *mes, t_ostring *ciph);
+int		des_ecb_decrypt(const uint8_t key[8], t_ostring *ciph, t_ostring *mes);
+int		des_cbc_encrypt(const uint8_t key[8], const uint8_t iv[8], t_ostring *mes, t_ostring *ciph);
+int		des_cbc_decrypt(const uint8_t key[8], const uint8_t iv[8], t_ostring *ciph, t_ostring *mes);
 
 /* Low level functions */
-void	des_encrypt_schedule(uint64_t *permut_key, uint64_t *ksched);
-void	des_decrypt_schedule(uint64_t *permut_key, uint64_t *ksched);
-void	des_permute_key(uint64_t *permut_key, unsigned char *key);
+void	des_permute_key(uint64_t *pkey, const uint8_t key[8]);
+void	des_encrypt_schedule(uint64_t *ksched, uint64_t *pkey);
+void	des_decrypt_schedule(uint64_t *ksched, uint64_t *pkey);
 void	des_permute_block_init(uint64_t *block);
 void	des_permute_block(uint64_t *block, uint64_t *ksched);
 void	des_permute_block_final(uint64_t *block);

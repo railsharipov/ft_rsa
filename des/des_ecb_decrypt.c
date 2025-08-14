@@ -16,85 +16,60 @@
 #include <des.h>
 #include <libft/bytes.h>
 
-static unsigned char	*__key;
-
-static uint64_t	__permut_key;
-static uint64_t	__ksched[16];
-
-static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize);
-static int	__remove_pad(unsigned char **mes, size_t *messize);
-
-int des_ecb_decrypt(t_des *des, t_ostring *ciph, t_ostring *mes)
+int des_ecb_decrypt(const uint8_t key[8], t_ostring *ciph, t_ostring *mes)
 {
-	if ((NULL == des) || (NULL == ciph) || (NULL == mes)) {
+	uint64_t	ksched[16];
+	uint64_t	pkey;
+	uint8_t		*mesptr;
+	size_t		padsize, messize, ix;
+
+	if ((NULL == ciph) || (NULL == mes)) {
 		DES_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-	mes->content = NULL;
-
-	if (ciph->size % DES_MES_BLOCK_SIZE != 0) {
-		DES_LOG(ERROR, "invalid des encryption");
+	if (ciph->size == 0 || ciph->size % DES_MES_BLOCK_SIZE != 0) {
+		DES_LOG(ERROR, "bad cipher size");
 		return (SSL_ERR);
 	}
-	__key = des->key;
 
-	des_permute_key(&__permut_key, __key);
-	des_decrypt_schedule(__ksched, &__permut_key);
+	ft_ostr_init(mes);
 
-	return (__decrypt((unsigned char *)(ciph->content), ciph->size, &(mes->content), &(mes->size)));
-}
+	des_permute_key(&pkey, key);
+	des_decrypt_schedule(ksched, &pkey);
 
-static int	__remove_pad(unsigned char **mes, size_t *messize)
-{
-	unsigned char	padsize;
-	unsigned char	ix;
+	messize = ciph->size;
+	SSL_ALLOC(mesptr, messize);
 
-	if (*messize == 0) {
-		DES_LOG(ERROR, "bad message size");
-		return (SSL_ERR);
+	ix = 0;
+	while (ix < messize) {
+		mesptr[ix] = ciph->content[ix];
+		ix++;
 	}
-	if ((padsize = (*mes)[*messize-1]) > 8) {
+	ix = 0;
+	while (ix < messize) {
+		des_permute_block_init((uint64_t *)(mesptr + ix));
+		des_permute_block((uint64_t *)(mesptr + ix), ksched);
+		des_permute_block_final((uint64_t *)(mesptr + ix));
+
+		*(uint64_t *)(mesptr + ix) = ft_uint_bswap64(*(uint64_t *)(mesptr + ix));
+		ix += 8;
+	}
+	padsize = mesptr[messize-1];
+
+	if (padsize > 8) {
 		DES_LOG(ERROR, "bad pad size");
 		return (SSL_ERR);
 	}
-
 	ix = 0;
 	while (ix++ < padsize) {
-		*messize -= 1;
-		if ((*mes)[*messize] != padsize) {
+		messize -= 1;
+		if (mesptr[messize] != padsize) {
 			DES_LOG(ERROR, "bad pad byte");
 			return (SSL_ERR);
 		}
 	}
-	return (SSL_OK);
-}
+	mes->content = mesptr;
+	mes->size = messize;
 
-static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char **mes, size_t *messize)
-{
-	size_t	ix;
-	unsigned char **mes_ptr;
-
-	mes_ptr = mes;
-	*messize = ciphsize;
-	SSL_ALLOC(*mes_ptr, *messize);
-
-	ix = 0;
-	while (ix < ciphsize) {
-		(*mes_ptr)[ix] = *ciph++;
-		ix++;
-	}
-	ix = 0;
-	while (ix < *messize) {
-		des_permute_block_init((uint64_t *)(*mes_ptr + ix));
-		des_permute_block((uint64_t *)(*mes_ptr + ix), __ksched);
-		des_permute_block_final((uint64_t *)(*mes_ptr + ix));
-
-		*(uint64_t *)(*mes_ptr + ix) = ft_uint_bswap64(*(uint64_t *)(*mes_ptr + ix));
-		ix += 8;
-	}
-	if (SSL_OK != __remove_pad(mes_ptr, messize)) {
-		DES_LOG(ERROR, "bad pad");
-		return (SSL_ERR);
-	}
 	return (SSL_OK);
 }

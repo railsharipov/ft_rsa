@@ -21,7 +21,6 @@
 int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 {
 	t_ostring	pemenc, cipher, b64flat, b64formatted;
-	t_des		*des;
 	char		buf[1024], *salthex;
 	uint8_t		key[8], iv[8], salt[8];
 	int			ret;
@@ -87,11 +86,8 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 			ft_ostr_appendf(&pemenc, "DEK-Info: DES-CBC,%s\n\n", salthex);
 			SSL_FREE(salthex);
 	
-			PEM_LOG(TRACE, "initializing des cipher: key: %p, iv: %p", key, iv);
-			des = des_init(key, salt, iv);
-	
 			PEM_LOG(TRACE, "encrypting data: content: %p, size: %d", data->content, data->size);
-			if (SSL_OK != des_cbc_encrypt(des, data, &cipher)) {
+			if (SSL_OK != des_cbc_encrypt(key, iv, data, &cipher)) {
 				PEM_LOG(ERROR, "des cbc encrypt failed");
 				goto label_exit;
 			}
