@@ -14,6 +14,7 @@ const struct {
 	{"json", test_json},
 	{"base64", test_base64},
 	{"hash", test_hash},
+	{"des", test_des},
 	{"der", test_der},
 	{"pem", test_pem},
 	{"asn", test_asn},

@@ -51,6 +51,7 @@ int		test_textutil(void);
 int		test_io(void);
 int		test_base64(void);
 int		test_der(void);
+int		test_des(void);
 int		test_pem(void);
 int		test_bnum(void);
 int		test_json(void);

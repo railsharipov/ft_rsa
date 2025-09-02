@@ -10,6 +10,10 @@
 
 # define IO_LOG(LEVEL, MES, ...)	io_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
+# define IO_INIT_ERROR		"i/o init error"
+# define IO_READ_ERROR		"i/o read error"
+# define IO_WRITE_ERROR		"i/o write error"
+
 enum	e_io
 {
 	IO_INPUT		= 1UL << 1,

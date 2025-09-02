@@ -118,10 +118,13 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		}
 
 		PEM_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
-		if (SSL_OK != des_cbc_decrypt(key, iv, &b64dec, data)) {
-			PEM_LOG(ERROR, "bad des cbc decrypt");
-			goto label_exit;
-		}
+
+		// TODO: fix des crypt.
+
+		// if (SSL_OK != des_cbc_decrypt(key, iv, &b64dec, data)) {
+		// 	PEM_LOG(ERROR, "bad des cbc decrypt");
+		// 	goto label_exit;
+		// }
 	}
 	else {
 		PEM_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);

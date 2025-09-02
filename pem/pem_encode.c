@@ -87,10 +87,13 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 			SSL_FREE(salthex);
 	
 			PEM_LOG(TRACE, "encrypting data: content: %p, size: %d", data->content, data->size);
-			if (SSL_OK != des_cbc_encrypt(key, iv, data, &cipher)) {
-				PEM_LOG(ERROR, "des cbc encrypt failed");
-				goto label_exit;
-			}
+
+			// TODO: fix des crypt.
+			
+			// if (SSL_OK != des_cbc_encrypt(key, iv, data, &cipher)) {
+			// 	PEM_LOG(ERROR, "des cbc encrypt failed");
+			// 	goto label_exit;
+			// }
 		}
 		else {
 			PEM_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);

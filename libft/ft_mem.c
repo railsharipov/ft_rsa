@@ -66,14 +66,14 @@ void	*ft_memzcpy(void *dst, const void *src, size_t dstsize, size_t srcsize)
 	return (dst);
 }
 
-void	*ft_memset(void *buf, int c, size_t len)
+void	*ft_memset(void *buf, int byte, size_t len)
 {
 	size_t	i;
 
 	i = 0;
-	while (i < len)
-		((unsigned char *)buf)[i++] = (unsigned char)c;
-
+	while (i < len) {
+		((uint8_t *)buf)[i++] = (uint8_t)byte;
+	}
 	return (buf);
 }
 
