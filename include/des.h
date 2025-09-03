@@ -55,7 +55,7 @@ int		des_logger_log(const char *func_name, const char *file_name, int line_numbe
 
 int		des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode);
 int 	des_update(t_des *des, t_iodes *in, t_iodes *out);
-int 	des_final(t_des *des, t_iodes *in, t_iodes *out);
+int 	des_final(t_des *des, t_iodes *out);
 
 /* Low level functions */
 void	des_permute_block_ecb(t_des *des, uint64_t *block);

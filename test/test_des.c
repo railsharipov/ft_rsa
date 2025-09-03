@@ -83,8 +83,9 @@ static int	__test_des_ecb_encrypt(void)
 	t_ostring	cipher;
 	int			ret;
 
-	ft_ostr_init(&cipher);
 	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
+	ft_ostr_init(&cipher);
+	
 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __small_text_file_path)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
@@ -94,17 +95,12 @@ static int	__test_des_ecb_encrypt(void)
 		return (SSL_ERR);
 	}
 	ret = des_update(&des, &in, &out);
-	if (ret == SSL_OK) {
-		ret = des_final(&des, &in, &out);
-	}
 	io_fclose(&in);
+	TEST_ASSERT(ret == SSL_OK);
 
+	ret = des_final(&des, &out);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(cipher.size == __des_ecb_small_cipher.size);
-
-	printf("%s\n", ft_bytes_dumps_hex(cipher.content, cipher.size, 0, 0));
-	printf("%s\n", ft_bytes_dumps_hex(__des_ecb_small_cipher.content, __des_ecb_small_cipher.size, 0, 0));
-
 	TEST_ASSERT(ft_memcmp(cipher.content, __des_ecb_small_cipher.content, cipher.size) == 0);
 
 	TEST_PASS();
@@ -128,11 +124,10 @@ static int	__test_des_ecb_decrypt(void)
 		return (SSL_ERR);
 	}
 	ret = des_update(&des, &in, &out);
-	if (ret == SSL_OK) {
-		ret = des_final(&des, &in, &out);
-	}
 	io_fclose(&in);
+	TEST_ASSERT(ret == SSL_OK);
 
+	ret = des_final(&des, &out);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(mes.size == __small_text.size);
 	TEST_ASSERT(ft_memcmp(mes.content, __small_text.content, mes.size) == 0);
@@ -158,11 +153,10 @@ static int	__test_des_cbc_encrypt(void)
 		return (SSL_ERR);
 	}
 	ret = des_update(&des, &in, &out);
-	if (ret == SSL_OK) {
-		ret = des_final(&des, &in, &out);
-	}
 	io_fclose(&in);
+	TEST_ASSERT(ret == SSL_OK);
 
+	ret = des_final(&des, &out);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(cipher.size == __des_cbc_small_cipher.size);
 	TEST_ASSERT(ft_memcmp(cipher.content, __des_cbc_small_cipher.content, cipher.size) == 0);
@@ -188,11 +182,10 @@ static int	__test_des_cbc_decrypt(void)
 		return (SSL_ERR);
 	}
 	ret = des_update(&des, &in, &out);
-	if (ret == SSL_OK) {
-		ret = des_final(&des, &in, &out);
-	}
 	io_fclose(&in);
+	TEST_ASSERT(ret == SSL_OK);
 
+	ret = des_final(&des, &out);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(mes.size == __small_text.size);
 	TEST_ASSERT(ft_memcmp(mes.content, __small_text.content, mes.size) == 0);

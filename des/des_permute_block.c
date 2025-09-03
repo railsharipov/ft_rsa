@@ -104,7 +104,7 @@ void des_permute_block_cbc(t_des *des, uint64_t *block)
 
 static void	__permute_block(uint64_t *ksched, uint64_t *block)
 {
-	uint64_t	tn;
+	uint64_t	tn, tn2;
 	uint32_t	lblock, rblock;
 	uint32_t	tblock, pblock;
 	int 		ix, iy;
@@ -116,9 +116,8 @@ static void	__permute_block(uint64_t *ksched, uint64_t *block)
 		tn |= ((*block >> (64 - PMA[ 8*(ix/8)+(7-ix%8) ])) & 1);
 		ix++;
 	}
-	*block = tn;
-	lblock = *block >> 32;
-	rblock = *block & ((1UL<<32)-1);
+	lblock = tn >> 32;
+	rblock = tn & ((1UL<<32)-1);
 
 	for (ix = 0; ix < 16; ix++) {
 		pblock = 0;
@@ -129,15 +128,15 @@ static void	__permute_block(uint64_t *ksched, uint64_t *block)
 			tn |= ((uint64_t)rblock >> (32 - PBA[iy])) & 1;
 		}
 		tn = tn ^ ksched[ix];
-		rblock = 0;
+		tn2 = 0;
 	
 		for (iy = 0; iy < 8; iy++) {
-			rblock = rblock << 4;
-			rblock |= SB[ 64*iy + ((tn >> (42-6*iy)) & 0x3F) ];
+			tn2 <<= 4;
+			tn2 |= SB[ 64*iy + ((tn >> (42-6*iy)) & 0x3F) ];
 		}
 		for (iy = 0; iy < 32; iy++) {
 			pblock <<= 1;
-			pblock |= (rblock >> (32 - PBB[iy])) & 1;
+			pblock |= (tn2 >> (32 - PBB[iy])) & 1;
 		}
 		tblock = lblock;
 		lblock = rblock;
