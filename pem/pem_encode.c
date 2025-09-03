@@ -24,6 +24,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	char		buf[1024], *salthex;
 	uint8_t		key[8], iv[8], salt[8];
 	int			ret;
+	t_des		des;
 
 	PEM_LOG(TRACE, "encoding pem: content: %p, size: %d", data->content, data->size);
 
@@ -88,12 +89,14 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	
 			PEM_LOG(TRACE, "encrypting data: content: %p, size: %d", data->content, data->size);
 
-			// TODO: fix des crypt.
-			
-			// if (SSL_OK != des_cbc_encrypt(key, iv, data, &cipher)) {
-			// 	PEM_LOG(ERROR, "des cbc encrypt failed");
-			// 	goto label_exit;
-			// }
+			if (SSL_OK != des_init(&des, key, iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT)) {
+				PEM_LOG(ERROR, "des init error");
+				goto label_exit;
+			}
+			if (SSL_OK != des_process_ostr(&des, data, &cipher)) {
+				PEM_LOG(ERROR, "bad des encrypt");
+				goto label_exit;
+			}
 		}
 		else {
 			PEM_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);

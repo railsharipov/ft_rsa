@@ -27,6 +27,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	char		salthex[128], cipher_name[128], proc_type[128];
 	uint8_t		key[8], iv[8], salt[8];
 	int			pos, matches, idx, ret;
+	t_des		des;
 
 	PEM_LOG(TRACE, "decoding pem: content: %p, size: %d", enc->content, enc->size);
 	ret = SSL_ERR;
@@ -79,7 +80,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		}
         ft_hex_to_bytes(salt, salthex, 16);
         /* For PEM Proc-Type encryption, the DEK-Info value is the cipher IV and
-         * is also used as the salt for EVP_BytesToKey. The actual cipher IV used
+         * is also used as the salt for openssl's EVP_BytesToKey. The actual cipher IV used
          * must be the header IV, not a derived IV. */
         ft_memcpy(iv, salt, 8);
 
@@ -116,15 +117,16 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 			PEM_LOG(ERROR, "bad key derivation");
 			goto label_exit;
 		}
-
 		PEM_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
 
-		// TODO: fix des crypt.
-
-		// if (SSL_OK != des_cbc_decrypt(key, iv, &b64dec, data)) {
-		// 	PEM_LOG(ERROR, "bad des cbc decrypt");
-		// 	goto label_exit;
-		// }
+		if (SSL_OK != des_init(&des, key, iv, DES_CRYPT_CBC, DES_MODE_DECRYPT)) {
+			PEM_LOG(ERROR, "des init error");
+			goto label_exit;
+		}
+		if (SSL_OK != des_process_ostr(&des, &b64dec, data)) {
+			PEM_LOG(ERROR, "bad des decrypt");
+			goto label_exit;
+		}
 	}
 	else {
 		PEM_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);
