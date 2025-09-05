@@ -29,6 +29,11 @@ static void	__init_decrypt_schedule(uint64_t *kshed, const uint8_t *key);
 
 int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode)
 {
+	DES_LOG(TRACE, "init start");
+	DES_LOG(DEBUG, "init: key: %s", ft_bytes_to_hex(key, 8));
+	if (iv) {
+		DES_LOG(DEBUG, "init: iv: %s", ft_bytes_to_hex(iv, 8));
+    }
     if (NULL == des || NULL == key) {
         DES_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
@@ -66,6 +71,7 @@ int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt c
         ft_memcpy(des->vect, iv, DES_BLOCK_SIZE);
     }
 
+	DES_LOG(TRACE, "init finish");
     return (SSL_OK);
 }
 
