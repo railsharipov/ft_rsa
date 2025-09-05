@@ -16,7 +16,26 @@
 # define TEST_PASS()		do { TEST_RESULT(SSL_OK); return (SSL_OK); } while (0)
 # define TEST_FAIL()		do { TEST_RESULT(SSL_ERR); return (SSL_ERR); } while (0)
 
-# define TEST_ASSERT(EXPR)	do { if ((EXPR)) { TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR); } else { TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR); TEST_FAIL(); } } while (0)
+# define TEST_ASSERT(EXPR)										        \
+	do {														        \
+		if ((EXPR)) {											        \
+			TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR);	\
+		} else {												        \
+			TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR);	    \
+			TEST_FAIL();										        \
+		}														        \
+	} while (0)
+
+# define TEST_ASSERT_W_MSG(EXPR, FMT, ...)								\
+	do {																\
+		if ((EXPR)) {													\
+			TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR);	\
+		} else {														\
+			TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR);	    \
+			TEST_LOG(ERROR, FMT __VA_OPT__(,) __VA_ARGS__);	            \
+			TEST_FAIL();												\
+		}																\
+	} while (0)
 
 typedef int	(*FUNC_TEST)(void);
 
