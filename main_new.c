@@ -58,20 +58,15 @@ static void __print_usage(void);
 
 int	main(int ac, const char **av)
 {
-	FUNC_COM	func_comm;
-	char		*name_comm;
+	t_ap_parser	parser;
 
 	if (ac < 2) {
 		__print_usage();
 		exit(1);
 	}
-	__get_command(&func_comm, &name_comm, av[1]);
 
-	if (NULL == name_comm) {
-		__print_usage();
-		exit(1);
-	}
-	func_comm(av+2, name_comm);
+	argp_parser_init(&parser);
+	argp_new_cmd("base64", "base64 command", NULL, 0, NULL);
 
 	return (0);
 }
