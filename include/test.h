@@ -39,23 +39,6 @@
 
 typedef int	(*FUNC_TEST)(void);
 
-// enum	e_test_modules
-// {
-// 	BNUM_MODULE = 0,
-// 	BASE64_MODULE,
-// 	DER_MODULE,
-// 	IO_MODULE,
-// 	LIBFT_MODULE,
-// 	JSON_MODULE,
-// 	TEXTUTIL_MODULE,
-// 	NUMBER_OF_TEST_MODULES
-// };
-
-// extern const FUNC_TEST	TESTS[];
-// extern const int		NUM_TESTS;
-// extern const char		*TEST_DESC_ARR[];
-// extern const size_t		TEST_DESC_ARR_SIZE;
-
 int		test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 void	test_logger_set_level(uint8_t level);
 
@@ -66,6 +49,7 @@ int		test_result(int res, int verbose);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 
 int		test_libft(void);
+int		test_argp(void);
 int		test_textutil(void);
 int		test_io(void);
 int		test_base64(void);

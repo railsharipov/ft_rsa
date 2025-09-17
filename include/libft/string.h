@@ -63,7 +63,7 @@ char		*ft_strnup(char *s, size_t n);
 char		*ft_strlow(char *s);
 int			ft_str_isalpha(const char *s);
 int			ft_str_isalnum(const char *s);
-int			ft_str_isdigit(const char *s);
+int			ft_str_isnum(const char *s);
 int			ft_str_isascii(const char *s);
 int			ft_str_isprint(const char *s);
 int			ft_str_ishex(const char *s);

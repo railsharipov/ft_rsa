@@ -56,7 +56,7 @@ static int __test_ft_printf(void);
 static int __test_ft_str_isalnum(void);
 static int __test_ft_str_isalpha(void);
 static int __test_ft_str_isascii(void);
-static int __test_ft_str_isdigit(void);
+static int __test_ft_str_isnum(void);
 static int __test_ft_str_ishex(void);
 static int __test_ft_str_isprint(void);
 static int __test_ft_bytes_to_hex(void);
@@ -114,7 +114,7 @@ int test_libft(void)
 		| __test_ft_str_isalnum()
 		| __test_ft_str_isalpha()
 		| __test_ft_str_isascii()
-		| __test_ft_str_isdigit()
+		| __test_ft_str_isnum()
 		| __test_ft_str_ishex()
 		| __test_ft_str_isprint()
 		| __test_ft_bytes_to_hex()
@@ -1044,17 +1044,17 @@ static int __test_ft_str_isascii(void)
 	TEST_PASS();
 }
 
-static int __test_ft_str_isdigit(void)
+static int __test_ft_str_isnum(void)
 {
 	int res;
 
-	res = ft_str_isdigit(NULL);
+	res = ft_str_isnum(NULL);
 	TEST_ASSERT(res == 0);
 
-	res = ft_str_isdigit("abcAS2345123DFacwqer31");
+	res = ft_str_isnum("abcAS2345123DFacwqer31");
 	TEST_ASSERT(res == 0);
 
-	res = ft_str_isdigit("0123456789");
+	res = ft_str_isnum("0123456789");
 	TEST_ASSERT(res == 1);
 
 	TEST_PASS();

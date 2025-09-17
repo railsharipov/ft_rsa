@@ -489,7 +489,7 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 
 	// Validate that all sub-identifiers are digits
 	for (int i = 0; i < num_sub_id_strings; i++) {
-		if (!ft_str_isdigit(sub_id_strings[i])) {
+		if (!ft_str_isnum(sub_id_strings[i])) {
 			DER_LOG(ERROR, UNSPECIFIED_ERROR);
 			ft_2darray_del_null_terminated((void **)sub_id_strings);
 			return (SSL_ERR);

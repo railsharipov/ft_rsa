@@ -6,6 +6,7 @@
         "complex": "c",
         "error.h": "c",
         "rand.h": "c",
-        "htable.h": "c"
+        "htable.h": "c",
+        "argp.h": "c"
     }
 }

@@ -76,7 +76,7 @@ size_t		ft_strlen(const char *s)
 	return (len);
 }
 
-int	ft_str_isdigit(const char *s)
+int	ft_str_isnum(const char *s)
 {
 	if (s == NULL) {
 		return (0);
