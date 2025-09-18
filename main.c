@@ -58,9 +58,11 @@ static void __setup_args(t_args *args)
 
 	// base64 command
 	cmd = args_new_cmd("base64", "base64", cmd_base64);
-	args_cmd_add_opt(cmd, args_new_opt("-b", "set output line width to <num>", AP_ARG_TYPE_NUMBER));
-	args_cmd_add_opt(cmd, args_new_opt("-i", "read message from <file>", AP_ARG_TYPE_STRING));
-	args_cmd_add_opt(cmd, args_new_opt("-o", "output to <file>", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-b", "set output line width", AP_ARG_TYPE_NUMBER));
+	args_cmd_add_opt(cmd, args_new_opt("-i", "read message from file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-o", "output to file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-d", "base64 decode", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-e", "base64 encode", AP_ARG_TYPE_FLAG));
 	args_add_cmd(args, cmd);
 
 	// digest commands

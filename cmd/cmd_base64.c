@@ -1,0 +1,99 @@
+#include <common.h>
+#include <args.h>
+#include <cmd.h>
+#include <base64.h>
+
+static int	__get_input(t_iodes *in, t_ostring *os_in);
+static int	__write_output(t_iodes *out, t_ostring *os_out);
+
+typedef int	(*FUNC_B64)(const unsigned char *, size_t, unsigned char **, size_t *);
+
+int	cmd_base64(const t_args_cmd *cmd)
+{
+	t_iodes		in, out;
+	t_ostring	os_in, os_out;
+	FUNC_B64	f_b64;
+
+	if (NULL == cmd) {
+		CMD_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+
+	if (args_cmd_opt_is_set(cmd, "-i")) {
+		io_fopen(&in, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+	} else {
+		io_fopen(&in, IO_READ|IO_STDIN, NULL);
+	}
+
+	if (args_cmd_opt_is_set(cmd, "-o")) {
+		io_fopen(&out, IO_WRITE|IO_FILE, args_cmd_opt_get_val(cmd, "-o"));
+	} else {
+		io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
+	}
+
+	if (args_cmd_opt_is_set(cmd, "-d")) {
+		f_b64 = base64_decode;
+		in.delim = '\n';
+		out.delim = 0;
+	} else {
+		f_b64 = base64_encode;
+	}
+
+	if (args_cmd_opt_is_set(cmd, "-b")) {
+		out.lwidth = ft_atoi(args_cmd_opt_get_val(cmd, "-b"));
+		out.lwidth = MAX(0, out.lwidth);
+		out.delim = '\n';
+	}
+
+	if (SSL_OK != __get_input(&in, &os_in)) {
+		CMD_LOG(ERROR, "failed to get input");
+		return (SSL_ERR);
+	}
+
+	if (SSL_OK != f_b64(os_in.content, os_in.size, &os_out.content, &os_out.size)) {
+		CMD_LOG(ERROR, "base64 error");
+		return (SSL_ERR);
+	}
+
+	if (SSL_OK != __write_output(&out, &os_out)) {
+		CMD_LOG(ERROR, "failed to write output");
+		return (SSL_ERR);
+	}
+
+	io_fclose_multi(&in, &out, NULL);
+
+	return (SSL_OK);
+}
+
+static int	__get_input(t_iodes *in, t_ostring *os_in)
+{
+	// TODO: use streams to avoid reading too much data into memory
+	const size_t	MAX_SIZE = 1024 * 1024;
+	char	buf[IO_BUFSIZE];
+	int		rbytes;
+
+	ft_ostr_init(os_in);
+
+	while ((rbytes = io_read(in, buf, IO_BUFSIZE)) > 0) {
+		ft_ostr_append(os_in, buf, rbytes);
+		if (os_in->size >= MAX_SIZE) {
+			CMD_LOG(ERROR, "input size is too large");
+			return (SSL_ERR);
+		}
+	}
+	if (rbytes < 0) {
+		ft_ostr_clear(os_in);
+		CMD_LOG(ERROR, IO_READ_ERROR);
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
+
+static int	__write_output(t_iodes *out, t_ostring *os_out)
+{
+	if (io_write(out, (char *)os_out->content, os_out->size) < 0) {
+		CMD_LOG(ERROR, IO_WRITE_ERROR);
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}

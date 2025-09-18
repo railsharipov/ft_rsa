@@ -72,6 +72,7 @@ t_args_cmd	*args_get_cmd(const t_args *args, const char *cmd_name);
 t_args_opt	*args_cmd_get_opt(const t_args_cmd *cmd, const char *opt_name);
 int     	args_cmd_opt_is_set(const t_args_cmd *cmd, const char *opt_name);
 int     	args_cmd_opt_is_eq(const t_args_cmd *cmd, const char *opt_name, const char *opt_value);
+const char *args_cmd_opt_get_val(const t_args_cmd *cmd, const char *opt_name);
 
 char	*args_dump_cmd_helps(const t_args_cmd *cmd);
 char	*args_dump_helps(const t_args *args);
