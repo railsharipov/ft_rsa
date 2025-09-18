@@ -34,12 +34,12 @@ typedef struct	s_ap_parser
 	t_htbl		*htbl;
 }				t_ap_parser;
 
-typedef struct	s_ap_opt_def
+typedef struct	s_ap_arg
 {
-	char		*key;
+	char		*name;
 	char		*desc;
 	t_ap_type	type;
-}				t_ap_opt_def;
+}				t_ap_arg;
 
 typedef struct	s_ap_opt
 {
@@ -62,8 +62,9 @@ typedef struct	s_ap_cmd
 int		argp_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int     	argp_parser_init(t_ap_parser *parser);
-t_ap_cmd	*argp_new_cmd(const char *name, const char *desc, const t_ap_opt_def *opt_def_arr, size_t arr_size, void *func);
+t_ap_cmd	*argp_new_cmd(const char *name, const char *desc, void *func);
 int     	argp_add_cmd(t_ap_parser *parser, const t_ap_cmd *cmd);
+int     	argp_add_opt(t_ap_cmd *cmd, const t_ap_arg opt_def);
 int     	argp_parse(t_ap_parser *parser, const char **sargs);
 
 t_ap_cmd	*argp_get_cmd(t_ap_parser *parser, const char *cmd_name);

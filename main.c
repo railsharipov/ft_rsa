@@ -20,7 +20,7 @@
 
 static const struct {
 	char			*name_comm;
-	FUNC_COM		func_comm;
+	FUNC_CMD		func_cmd;
 } COMMAND[] = {
 	{	"md5",			cli_hash		},
 	{	"sha1",			cli_hash		},
@@ -40,40 +40,40 @@ static const struct {
 	{	NULL,			NULL			}
 };
 
-static void __get_command(FUNC_COM *func_comm, char **name_comm, const char *sarg);
+static void __get_command(FUNC_CMD *func_cmd, char **name_comm, const char *sarg);
 static void __print_usage(void);
 
 int	main(int ac, const char **av)
 {
-	FUNC_COM	func_comm;
+	FUNC_CMD	func_cmd;
 	char		*name_comm;
 
 	if (ac < 2) {
 		__print_usage();
 		exit(1);
 	}
-	__get_command(&func_comm, &name_comm, av[1]);
+	__get_command(&func_cmd, &name_comm, av[1]);
 
 	if (NULL == name_comm) {
 		__print_usage();
 		exit(1);
 	}
-	func_comm(av+2, name_comm);
+	func_cmd(av+2, name_comm);
 
 	return (0);
 }
 
-static void	__get_command(FUNC_COM *func_comm, char **name_comm, const char *sarg)
+static void	__get_command(FUNC_CMD *func_cmd, char **name_comm, const char *sarg)
 {
 	int	ix;
 
-	*func_comm = NULL;
+	*func_cmd = NULL;
 	*name_comm = NULL;
 
 	ix = 0;
 	while (NULL != COMMAND[ix].name_comm) {
 		if (!ft_strcmp(COMMAND[ix].name_comm, sarg)) {
-			*func_comm = COMMAND[ix].func_comm;
+			*func_cmd = COMMAND[ix].func_cmd;
 			*name_comm = COMMAND[ix].name_comm;
 			break ;
 		}

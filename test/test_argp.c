@@ -34,7 +34,7 @@ static int	__test_argp_setup(void)
 		"-i",
 		NULL
 	};
-	const t_ap_opt_def opt_def_list[] = {
+	const t_ap_arg opt_def_list[] = {
 		{"-v", AP_ARG_TYPE_STRING},
 		{"-h", AP_ARG_TYPE_NUMBER},
 		{"-i", AP_ARG_TYPE_FLAG},
