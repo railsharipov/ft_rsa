@@ -1,10 +1,10 @@
 #include <common.h>
-#include <argp.h>
+#include <args.h>
 #include <libft/htable.h>
 
-t_ap_opt	*argp_get_opt(t_ap_cmd *cmd, const char *opt_name)
+t_args_opt	*args_cmd_get_opt(const t_args_cmd *cmd, const char *opt_name)
 {
-	t_ap_opt *opt;
+	t_args_opt *opt;
 
 	if (cmd == NULL) {
 		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);

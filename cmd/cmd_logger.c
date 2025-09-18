@@ -3,9 +3,9 @@
 #include <libft/logger.h>
 #include <alloc.h>
 #include <common.h>
-#include <cli.h>
+#include <cmd.h>
 
-#define CLI_LOG_PREFIX  "command: "
+#define CMD_LOG_PREFIX  "command: "
 
 static int __f_logger(const char *mes);
 
@@ -21,7 +21,7 @@ static int  __f_logger(const char *mes) {
     return (SSL_OK);
 }
 
-int cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
+int cmd_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
 	va_list	va_arg;
 	char	*prefixed_fmt;
 	int		ret;
@@ -31,7 +31,7 @@ int cli_logger_log(const char *func_name, const char *file_name, int line_number
 	}
 	va_start(va_arg, fmt);
 
-    prefixed_fmt = ft_strjoin(CLI_LOG_PREFIX, fmt);
+    prefixed_fmt = ft_strjoin(CMD_LOG_PREFIX, fmt);
 
 	ret = ft_logger_va_log(func_name, file_name, line_number, &__logger, level, prefixed_fmt, va_arg);
 
@@ -41,7 +41,7 @@ int cli_logger_log(const char *func_name, const char *file_name, int line_number
 	return (ret);
 }
 
-int cli_logger_print_file(const char *file_name) {
+int cmd_logger_print_file(const char *file_name) {
 	char	buf[256];
 	ssize_t	rbytes;
 	int		fd;
@@ -53,7 +53,7 @@ int cli_logger_print_file(const char *file_name) {
 		close(fd);
 	}
 	if (fd < 0) {
-		CLI_LOG(ERROR, "failed to open file");
+		CMD_LOG(ERROR, "failed to open file");
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

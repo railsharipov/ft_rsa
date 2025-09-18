@@ -2,14 +2,12 @@
 #include <cli.h>
 #include <test.h>
 #include <pem.h>
-#include <argp.h>
 
 const struct {
 	const char *name;
 	FUNC_TEST f_test;
 } TEST_MAP[] = {
 	{"libft", test_libft},
-	{"argparser", test_argp},
 	{"textutil", test_textutil},
 	{"io", test_io},
 	{"bnum", test_bnum},
@@ -20,6 +18,7 @@ const struct {
 	{"der", test_der},
 	{"pem", test_pem},
 	{"asn", test_asn},
+	{"args", test_args},
 };
 
 const int NUM_TESTS = sizeof(TEST_MAP) / sizeof(TEST_MAP[0]);

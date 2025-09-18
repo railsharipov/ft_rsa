@@ -15,72 +15,127 @@
 #include <des.h>
 #include <hash.h>
 #include <rsa.h>
-#include <cli.h>
+#include <cmd.h>
+#include <args.h>
 #include <libft/string.h>
 
-static const struct {
-	char			*name_comm;
-	FUNC_CMD		func_cmd;
-} COMMAND[] = {
-	{	"md5",			cli_hash		},
-	{	"sha1",			cli_hash		},
-	{	"sha224",		cli_hash		},
-	{	"sha256",		cli_hash		},
-	{	"sha384",		cli_hash		},
-	{	"sha512",		cli_hash		},
-	{	"sha512/224",	cli_hash		},
-	{	"sha512/256",	cli_hash		},
-	{	"base64", 		cli_base64		},
-	{	"des-ecb", 		cli_des_ecb		},
-	{	"des-cbc",		cli_des_cbc		},
-	{	"genrsa",		cli_rsa_gen		},
-	{	"rsa",			cli_rsa			},
-	{	"rsautl",		cli_rsa_utl		},
-	{	"test",			cli_test		},
-	{	NULL,			NULL			}
-};
-
-static void __get_command(FUNC_CMD *func_cmd, char **name_comm, const char *sarg);
-static void __print_usage(void);
+static void __setup_args(t_args *args);
+static int __print_help(const t_args *args);
 
 int	main(int ac, const char **av)
 {
-	FUNC_CMD	func_cmd;
-	char		*name_comm;
+	t_args		args;
+	t_args_cmd	*cmd;
+	FUNC_CMD	f_cmd;
+
+	__setup_args(&args);
 
 	if (ac < 2) {
-		__print_usage();
+		__print_help(&args);
 		exit(1);
 	}
-	__get_command(&func_cmd, &name_comm, av[1]);
-
-	if (NULL == name_comm) {
-		__print_usage();
+	if (SSL_OK != args_parse(&args, av+1)) {
+		ARGP_LOG(ERROR, "error parsing arguments");
 		exit(1);
 	}
-	func_cmd(av+2, name_comm);
-
-	return (0);
+	cmd = args_get_cmd(&args, av[1]);
+	if (NULL == cmd) {
+		ARGP_LOG(ERROR, "unknown command: %s\nrun `%s --help` to get help", av[1], av[0]);
+		exit(1);
+	}
+	f_cmd = (FUNC_CMD)cmd->func;
+	if (NULL != f_cmd) {
+		return (f_cmd(cmd));
+	}
+	return (SSL_OK);
 }
 
-static void	__get_command(FUNC_CMD *func_cmd, char **name_comm, const char *sarg)
+static void __setup_args(t_args *args)
 {
-	int	ix;
+	t_args_cmd *cmd;
 
-	*func_cmd = NULL;
-	*name_comm = NULL;
+	args_init(args);
 
-	ix = 0;
-	while (NULL != COMMAND[ix].name_comm) {
-		if (!ft_strcmp(COMMAND[ix].name_comm, sarg)) {
-			*func_cmd = COMMAND[ix].func_cmd;
-			*name_comm = COMMAND[ix].name_comm;
-			break ;
-		}
-		ix++;
+	// base64 command
+	cmd = args_new_cmd("base64", "base64", cmd_base64);
+	args_cmd_add_opt(cmd, args_new_opt("-b", "set output line width to <num>", AP_ARG_TYPE_NUMBER));
+	args_cmd_add_opt(cmd, args_new_opt("-i", "read message from <file>", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-o", "output to <file>", AP_ARG_TYPE_STRING));
+	args_add_cmd(args, cmd);
+
+	// digest commands
+	const char *digest_commands[] = { "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "sha512/224", "sha512/256"};
+	for (int i = 0; i < sizeof(digest_commands) / sizeof(digest_commands[0]); i++) {
+		cmd = args_new_cmd(digest_commands[i], digest_commands[i], cmd_hash);
+		args_cmd_add_opt(cmd, args_new_opt("-r", "reverse output format", AP_ARG_TYPE_FLAG));
+		args_cmd_add_opt(cmd, args_new_opt("-q", "quiet mode", AP_ARG_TYPE_FLAG));
+		args_cmd_add_opt(cmd, args_new_opt("-s", "read from string", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-f", "read from file", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-p", "read from stdin", AP_ARG_TYPE_FLAG));
+		args_add_cmd(args, cmd);
 	}
+
+	// des commands
+	const char *des_commands[] = { "des-ecb", "des-cbc"};
+	for (int i = 0; i < sizeof(des_commands) / sizeof(des_commands[0]); i++) {
+		cmd = args_new_cmd(des_commands[i], des_commands[i], cmd_des_ecb);
+		args_cmd_add_opt(cmd, args_new_opt("-a", "base64-encode output / base64-decode input (depending on des mode)", AP_ARG_TYPE_FLAG));
+		args_cmd_add_opt(cmd, args_new_opt("-i", "read from file", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-o", "write to file", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-e", "des encryption mode", AP_ARG_TYPE_FLAG));
+		args_cmd_add_opt(cmd, args_new_opt("-d", "des decryption mode", AP_ARG_TYPE_FLAG));
+		args_cmd_add_opt(cmd, args_new_opt("-k", "hex key", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-s", "hex salt", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-p", "password", AP_ARG_TYPE_STRING));
+		args_add_cmd(args, cmd);
+	}
+
+	// genrsa command
+	cmd = args_new_cmd("genrsa", "generate RSA private keys", cmd_rsa_gen);
+	args_cmd_add_opt(cmd, args_new_opt("-rand", "set rand source as list of <files>, separated by colon", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-o", "output generated key to a <file>", AP_ARG_TYPE_STRING));
+	args_add_cmd(args, cmd);
+
+	// rsa command
+	cmd = args_new_cmd("rsa", "perform operation on RSA keys", cmd_rsa);
+	args_cmd_add_opt(cmd, args_new_opt("-in", "read input key from file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-out", "write key to file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-inform", "set format of the input key, default is PEM-encoded", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-outform", "set format of the output key, default is PEM-encoded", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-pubin", "input key is a X.509 public key", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-pubout", "output key as X.509 public key", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-check", "check RSA private key", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-passin", "set password for input key", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-passout", "set password for output key", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-des", "encrypt output key using DES-CBC (key outform shall be PEM)", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-text", "print input key components", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-noout", "do not output key", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-modulus", "print input key modulus", AP_ARG_TYPE_FLAG));
+	args_add_cmd(args, cmd);
+
+	// rsautl command
+	cmd = args_new_cmd("rsautl", "perform RSA crypt", cmd_rsa_utl);
+	args_cmd_add_opt(cmd, args_new_opt("-in", "read message form file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-out", "output to a file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-inkey", "read input key form file", AP_ARG_TYPE_STRING));
+	args_cmd_add_opt(cmd, args_new_opt("-encrypt", "RSA encryption mode", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-decrypt", "RSA decryption mode", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-pubin", "input key is a X.509 public key", AP_ARG_TYPE_FLAG));
+	args_cmd_add_opt(cmd, args_new_opt("-hexdump", "hexdump output", AP_ARG_TYPE_FLAG));
+	args_add_cmd(args, cmd);
+
+	// test command
+	cmd = args_new_cmd("test", "test", cmd_test);
+	args_cmd_add_opt(cmd, args_new_opt("-v", "verbosity level", AP_ARG_TYPE_STRING));
+	args_add_cmd(args, cmd);
+
+	// help command
+	cmd = args_new_cmd("help", "show help", __print_help);
+	args_add_cmd(args, cmd);
 }
 
-static void __print_usage(void) {
-	cli_logger_print_file("./docs/usage.txt");
+static int __print_help(const t_args *args)
+{
+	args_dump_help(args);
+	return (SSL_OK);
 }

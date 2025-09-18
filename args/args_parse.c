@@ -1,12 +1,12 @@
-#include <argp.h>
+#include <args.h>
 
-int	argp_parse(t_ap_parser *parser, const char **sargs)
+int	args_parse(t_args *args, const char **sargs)
 {
-	t_ap_cmd *cmd;
-	t_ap_opt *opt;
+	t_args_cmd *cmd;
+	t_args_opt *opt;
 	int		pos;
 
-	if (parser == NULL) {
+	if (args == NULL) {
 		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
@@ -14,9 +14,9 @@ int	argp_parse(t_ap_parser *parser, const char **sargs)
 		return (SSL_OK);
 	}
 	pos = 0;
-	cmd = ft_htbl_get(parser->htbl, sargs[pos]);
+	cmd = ft_htbl_get(args->htbl, sargs[pos]);
 	if (cmd == NULL) {
-		cmd = ft_htbl_get(parser->htbl, DEFAULT_CMD);
+		cmd = ft_htbl_get(args->htbl, DEFAULT_CMD);
 	} else {
 		pos++;
 	}

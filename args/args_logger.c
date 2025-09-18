@@ -20,7 +20,7 @@ static int  __f_logger(const char *mes) {
     return (SSL_OK);
 }
 
-int argp_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
+int args_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...) {
 	va_list	va_arg;
 	char	*prefixed_fmt;
 	int		ret;

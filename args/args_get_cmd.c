@@ -1,12 +1,12 @@
 #include <common.h>
-#include <argp.h>
+#include <args.h>
 #include <libft/htable.h>
 
-t_ap_cmd	*argp_get_cmd(t_ap_parser *parser, const char *cmd_name)
+t_args_cmd	*args_get_cmd(const t_args *args, const char *cmd_name)
 {
-	t_ap_cmd *cmd;
+	t_args_cmd *cmd;
 
-	if (parser == NULL) {
+	if (args == NULL) {
 		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (NULL);
 	}
@@ -14,7 +14,7 @@ t_ap_cmd	*argp_get_cmd(t_ap_parser *parser, const char *cmd_name)
 		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (NULL);
 	}
-	cmd = ft_htbl_get(parser->htbl, cmd_name);
+	cmd = ft_htbl_get(args->htbl, cmd_name);
 	if (cmd == NULL) {
 		ARGP_LOG(ERROR, "unknown command: %s", cmd_name);
 		return (NULL);
