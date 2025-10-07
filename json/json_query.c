@@ -31,7 +31,7 @@
 
 static size_t	__pos;
 
-static int 	__run_query(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector);
+static int 	__run_query(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector);
 static int 	__parse_selector(const char *s, t_node *query);
 static int 	__f_default_selector(t_node *node, t_node *query, t_node **ret_node);
 static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node);
@@ -44,7 +44,7 @@ int json_query(const char *s, t_node *json, t_node **ret_node)
 	return (json_query_with_f_selector(s, json, ret_node, __f_default_selector));
 }
 
-int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
+int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector)
 {
 	int ret;
 
@@ -70,7 +70,7 @@ int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, F
 	return (SSL_OK);
 }
 
-static int __run_query(const char *s, t_node *json, t_node **ret_node, FUNC_JSON_SELECTOR f_selector)
+static int __run_query(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector)
 {
 	t_node	*query;
 	t_node	*cur_node;

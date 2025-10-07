@@ -19,7 +19,7 @@
 # include <libft/alloc.h>
 # include <libft/string.h>
 
-typedef int	(*FUNC_LOGGER)(const char *mes);
+typedef int	(*t_func_log)(const char *mes);
 
 enum	e_logger_level
 {
@@ -34,7 +34,7 @@ enum	e_logger_level
 
 typedef struct	s_logger
 {
-	FUNC_LOGGER f_logger;
+	t_func_log f_logger;
 	uint8_t 	log_level;
 	uint8_t 	is_ansi_colored;
 	uint8_t 	debug_info_thres;

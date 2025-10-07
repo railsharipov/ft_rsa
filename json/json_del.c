@@ -15,7 +15,7 @@ void json_del(t_node *node)
 	(ft_node_del)(node);
 }
 
-FUNC_CONTENT_DEL json_get_f_del(enum e_json_type type)
+t_func_content_del json_get_f_del(enum e_json_type type)
 {
 	if (type == JSON_TYPE_ARRAY) {
 		return (__delete_array);

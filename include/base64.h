@@ -15,7 +15,7 @@
 # define B64_ENC_BLOCK_SIZE	4
 # define B64_MES_BLOCK_SIZE	3
 
-typedef void (*FUNC_B64_PROCESS_BLOCK)(uint8_t *, uint8_t *);
+typedef void (*t_func_b64_process_block)(uint8_t *, uint8_t *);
 
 typedef enum	e_b64_mode
 {
@@ -25,7 +25,7 @@ typedef enum	e_b64_mode
 
 typedef struct	s_b64
 {
-	FUNC_B64_PROCESS_BLOCK	f_process_block;
+	t_func_b64_process_block	f_process_block;
 	t_b64_mode	mode;
 	uint8_t		blocksize;
 	size_t		bufsize;

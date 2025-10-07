@@ -139,7 +139,7 @@ void	ft_queue_del(t_queue *queue)
 	LIBFT_FREE(queue);
 }
 
-void	ft_queue_del_with_f_del(t_queue *queue, FUNC_CONTENT_DEL f_del)
+void	ft_queue_del_with_f_del(t_queue *queue, t_func_content_del f_del)
 {
 	if (NULL == queue) {
 		return ;
@@ -177,7 +177,7 @@ void	ft_queue_del_node(t_queue *queue, t_node *node)
 	ft_node_del(cur);
 }
 
-void	ft_queue_del_node_with_f_del(t_queue *queue, t_node *node, FUNC_CONTENT_DEL f_del)
+void	ft_queue_del_node_with_f_del(t_queue *queue, t_node *node, t_func_content_del f_del)
 {
 	t_node *cur;
 	t_node *prev;

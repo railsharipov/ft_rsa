@@ -20,7 +20,7 @@ void	(ft_node_init)(t_node *node)
 	ft_bzero(node, sizeof(t_node));
 }
 
-void	ft_node_init_with_f_del(t_node *node, FUNC_CONTENT_DEL f_del)
+void	ft_node_init_with_f_del(t_node *node, t_func_content_del f_del)
 {
 	ft_bzero(node, sizeof(t_node));
 	node->f_del_content = f_del;
@@ -35,7 +35,7 @@ t_node *(ft_node_create)(void)
 	return (node);
 }
 
-t_node *ft_node_create_with_f_del(FUNC_CONTENT_DEL f_del)
+t_node *ft_node_create_with_f_del(t_func_content_del f_del)
 {
 	t_node	*node;
 
@@ -62,7 +62,7 @@ t_node	*(ft_node_new)(const char *key, void *content, size_t size)
 	return (node);
 }
 
-t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, FUNC_CONTENT_DEL f_del)
+t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, t_func_content_del f_del)
 {
 	t_node	*node;
 
@@ -90,7 +90,7 @@ void	(ft_node_del)(t_node *node)
 	}
 }
 
-void ft_node_del_with_f_del(t_node *node, FUNC_CONTENT_DEL f_del)
+void ft_node_del_with_f_del(t_node *node, t_func_content_del f_del)
 {
 	if (NULL != node) {
 		if (NULL != f_del) {

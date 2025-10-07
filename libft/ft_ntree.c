@@ -8,7 +8,7 @@
 #include <libft/2darray.h>
 
 static int	__calc_size_func(t_node *node, const void *farg);
-static void	__del_node_recur(t_node *node, FUNC_CONTENT_DEL f_del);
+static void	__del_node_recur(t_node *node, t_func_content_del f_del);
 static int	__iter_func(t_node *node, const void *ptr);
 static int	__htable_func(t_node *node, const void *farg);
 static void	__f_print_default(t_node *node, int space);
@@ -28,7 +28,7 @@ int	ft_ntree_size(t_node *node)
 	return (size);
 }
 
-void	ft_ntree_del(t_node *ntree, FUNC_CONTENT_DEL f_del)
+void	ft_ntree_del(t_node *ntree, t_func_content_del f_del)
 {
 	if (NULL == ntree) {
 		return ;
@@ -66,7 +66,7 @@ t_htbl	*ft_ntree_to_htable(t_node *node)
 	return (htbl);
 }
 
-void	ft_ntree_print(t_node *ntree, FUNC_NTREE_PRINT f_print)
+void	ft_ntree_print(t_node *ntree, t_func_ntree_print f_print)
 {
 	int	space;
 
@@ -113,7 +113,7 @@ t_node *ft_ntree_construct(const char *map)
 	return (ntree);
 }
 
-int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, FUNC_NTREE_MAP f)
+int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, t_func_ntree_map f)
 {
 	t_queue	*queue;
 	t_node	*child_node;
@@ -158,7 +158,7 @@ int	ft_ntree_bfs(t_node **res, t_node *node, const void *farg, FUNC_NTREE_MAP f)
 	return (ret);
 }
 
-int	ft_ntree_dfs(t_node **res, t_node *ntree, const void *farg, FUNC_NTREE_MAP f)
+int	ft_ntree_dfs(t_node **res, t_node *ntree, const void *farg, t_func_ntree_map f)
 {
 	t_node	*node;
 	int		ret;
@@ -183,7 +183,7 @@ int ft_ntree_dfs_cur_depth(void)
 	return (__depth);
 }
 
-static int __dfs_recur(t_node *node, const void *farg, FUNC_NTREE_MAP f, t_node **res)
+static int __dfs_recur(t_node *node, const void *farg, t_func_ntree_map f, t_node **res)
 {
 	int ret;
 
@@ -221,7 +221,7 @@ static int	__calc_size_func(t_node *node, const void *farg)
 	return (0);
 }
 
-static void	__del_node_recur(t_node *node, FUNC_CONTENT_DEL f_del)
+static void	__del_node_recur(t_node *node, t_func_content_del f_del)
 {
 	if (NULL == node) {
 		return ;

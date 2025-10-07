@@ -45,7 +45,7 @@
 ** }
 */
 
-typedef int (*FUNC_JSON_PARSE)(const char *, t_node *);
+typedef int (*t_func_json_parse)(const char *, t_node *);
 
 static size_t	__pos;
 
@@ -104,7 +104,7 @@ static void	__init_node(t_node *node)
 
 static int	__parse_value(const char *s, t_node *node)
 {
-	FUNC_JSON_PARSE f_arr[] = {
+	t_func_json_parse f_arr[] = {
 		__parse_null,
 		__parse_boolean,
 		__parse_number,

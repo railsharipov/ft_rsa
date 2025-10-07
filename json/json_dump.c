@@ -20,7 +20,7 @@ size_t	json_dumpb(t_node *node, char *buf, size_t size)
 	return (json_dumpb_with_f_dumper(node, buf, size, __f_default_dumper));
 }
 
-char	*json_dumps_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper)
+char	*json_dumps_with_f_dumper(t_node *node, t_func_json_dump f_dumper)
 {
 	t_ostring	ostring;
 	char		*s;
@@ -37,7 +37,7 @@ char	*json_dumps_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper)
 	return (s);
 }
 
-size_t	json_dumpb_with_f_dumper(t_node *node, char *buf, size_t size, FUNC_JSON_DUMPER f_dumper)
+size_t	json_dumpb_with_f_dumper(t_node *node, char *buf, size_t size, t_func_json_dump f_dumper)
 {
 	char	*s;
 	size_t	len;

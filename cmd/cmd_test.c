@@ -10,7 +10,7 @@ int	cmd_test(const t_args_cmd *cmd)
 {
 	const struct {
 		const char *name;
-		FUNC_TEST f_test;
+		t_func_test f_test;
 	} __TESTS[] = {
 		{"libft", test_libft},
 		{"textutil", test_textutil},
@@ -27,7 +27,7 @@ int	cmd_test(const t_args_cmd *cmd)
 	};
 	const int NUM_TESTS = sizeof(__TESTS) / sizeof(__TESTS[0]);
 
-	FUNC_TEST	f_test;
+	t_func_test	f_test;
 	int			ret[NUM_TESTS];
 	int			idx, num_passed;
 

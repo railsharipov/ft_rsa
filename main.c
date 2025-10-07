@@ -26,7 +26,7 @@ int	main(int ac, const char **av)
 {
 	t_args		args;
 	t_args_cmd	*cmd;
-	FUNC_CMD	f_cmd;
+	t_func_cmd	f_cmd;
 
 	__setup_args(&args);
 
@@ -43,7 +43,7 @@ int	main(int ac, const char **av)
 		ARGP_LOG(ERROR, "unknown command: %s\nrun `%s --help` to get help", av[1], av[0]);
 		exit(1);
 	}
-	f_cmd = (FUNC_CMD)cmd->func;
+	f_cmd = (t_func_cmd)cmd->func;
 	if (NULL != f_cmd) {
 		return (f_cmd(cmd));
 	}

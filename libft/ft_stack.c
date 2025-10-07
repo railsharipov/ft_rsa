@@ -105,7 +105,7 @@ void	ft_stack_del(t_stack *stack)
 	LIBFT_FREE(stack);
 }
 
-void	ft_stack_del_with_f_del(t_stack *stack, FUNC_CONTENT_DEL f_del)
+void	ft_stack_del_with_f_del(t_stack *stack, t_func_content_del f_del)
 {
 	if (NULL == stack) {
 		return ;

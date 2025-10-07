@@ -27,23 +27,23 @@ typedef struct		s_node
 	size_t			size;
 	struct s_node	*next;
 	struct s_node	*nodes;
-	void			(*f_del_content)(void *); /* FUNC_CONTENT_DEL */
+	void			(*f_del_content)(void *); /* t_func_content_del */
 }					t_node;
 
-typedef	void (*FUNC_CONTENT_DEL)(void *content);
+typedef	void (*t_func_content_del)(void *content);
 
 int 		ft_node_is_parent(t_node *);
 
 void 		ft_node_init(t_node *);
-void 		ft_node_init_with_f_del(t_node *, FUNC_CONTENT_DEL);
+void 		ft_node_init_with_f_del(t_node *, t_func_content_del);
 
 t_node		*ft_node_new(const char *, void *, size_t);
-t_node		*ft_node_new_with_f_del(const char *, void *, size_t, FUNC_CONTENT_DEL);
+t_node		*ft_node_new_with_f_del(const char *, void *, size_t, t_func_content_del);
 
 void 		ft_node_del(t_node *);
-void 		ft_node_del_with_f_del(t_node *, FUNC_CONTENT_DEL);
+void 		ft_node_del_with_f_del(t_node *, t_func_content_del);
 
 t_node		*ft_node_create(void);
-t_node		*ft_node_create_with_f_del(FUNC_CONTENT_DEL);
+t_node		*ft_node_create_with_f_del(t_func_content_del);
 
 #endif

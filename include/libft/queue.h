@@ -33,9 +33,9 @@ t_node		*ft_queue_last(t_queue *queue);
 int			ft_queue_is_empty(t_queue *queue);
 int			ft_queue_size(t_queue *queue);
 void		ft_queue_del(t_queue *queue);
-void		ft_queue_del_with_f_del(t_queue *queue, FUNC_CONTENT_DEL f_del);
+void		ft_queue_del_with_f_del(t_queue *queue, t_func_content_del f_del);
 void		ft_queue_del_node(t_queue *queue, t_node *node);
-void		ft_queue_del_node_with_f_del(t_queue *queue, t_node *node, FUNC_CONTENT_DEL f_del);
+void		ft_queue_del_node_with_f_del(t_queue *queue, t_node *node, t_func_content_del f_del);
 t_htbl		*ft_queue_to_htable(t_queue *queue);
 t_node		*ft_queue_pop_list(t_queue *queue);
 

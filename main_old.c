@@ -20,7 +20,7 @@
 
 static const struct {
 	char			*name_comm;
-	FUNC_COMM		func_comm;
+	t_func_comm		func_comm;
 } COMMAND[] = {
 	{	"md5",			cli_hash		},
 	{	"sha1",			cli_hash		},
@@ -40,12 +40,12 @@ static const struct {
 	{	NULL,			NULL			}
 };
 
-static void __get_command(FUNC_COMM *func_comm, char **name_comm, const char *sarg);
+static void __get_command(t_func_comm *func_comm, char **name_comm, const char *sarg);
 static void __print_usage(void);
 
 int	main(int ac, const char **av)
 {
-	FUNC_COMM	func_comm;
+	t_func_comm	func_comm;
 	char		*name_comm;
 
 	if (ac < 2) {
@@ -63,7 +63,7 @@ int	main(int ac, const char **av)
 	return (0);
 }
 
-static void	__get_command(FUNC_COMM *func_comm, char **name_comm, const char *sarg)
+static void	__get_command(t_func_comm *func_comm, char **name_comm, const char *sarg)
 {
 	int	ix;
 

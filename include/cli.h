@@ -22,7 +22,7 @@
 
 # define NONE	0
 
-typedef int		(*FUNC_COMM)(const char **, const char *);
+typedef int		(*t_func_comm)(const char **, const char *);
 
 typedef struct	s_task
 {

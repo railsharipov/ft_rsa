@@ -26,7 +26,7 @@ void	ft_htbl_add_rawkey(t_htbl *htbl, void *content, const void *rawkey, size_t 
 	LIBFT_FREE(cskey);
 }
 
-void	ft_htbl_add_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del)
+void	ft_htbl_add_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, t_func_content_del f_del)
 {
 	char	*cskey;
 
@@ -56,7 +56,7 @@ void	ft_htbl_assign_rawkey(t_htbl *htbl, void *content, const void *rawkey, size
 	LIBFT_FREE(cskey);
 }
 
-void	ft_htbl_assign_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, FUNC_CONTENT_DEL f_del)
+void	ft_htbl_assign_rawkey_with_f_del(t_htbl *htbl, void *content, const void *rawkey, size_t rksize, t_func_content_del f_del)
 {
 	char	*cskey;
 

@@ -13,7 +13,7 @@
 
 struct s_des;
 
-typedef	void (*FUNC_DES_PERMUTE_BLOCK)(struct s_des *des, uint64_t *block);
+typedef	void (*t_func_der_permute_block)(struct s_des *des, uint64_t *block);
 
 typedef enum	e_des_mode
 {
@@ -29,7 +29,7 @@ typedef enum	e_des_crypt
 
 typedef struct	s_des
 {
-	FUNC_DES_PERMUTE_BLOCK	f_permute_block;
+	t_func_der_permute_block	f_permute_block;
 	t_des_crypt crypt;
 	t_des_mode	mode;
 	uint64_t	ksched[DES_KSCHED_LEN];

@@ -23,7 +23,7 @@ static ssize_t	__write_content_octets(char *content, size_t size, t_iodes *out);
 static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out);
 static ssize_t	__write_len(size_t len, t_iodes *out);
 
-typedef int	(*FUNC_DER_ENCODE)(uint8_t tag, t_ostring *encoded, t_ostring *data);
+typedef int	(*t_func_der_encode)(uint8_t tag, t_ostring *encoded, t_ostring *data);
 
 int	der_encode(t_node *tree, t_ostring *encoded)
 {
@@ -75,7 +75,7 @@ int	der_encode_stream(t_node *tree, t_iodes *out)
 
 static int	__encode(t_node *node, t_iodes *out)
 {
-	FUNC_DER_ENCODE	f_encode;
+	t_func_der_encode	f_encode;
 	t_ostring		encoded, data;
 	ssize_t			wbytes;
 	t_iasn			*asn_item;

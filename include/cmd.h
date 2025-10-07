@@ -24,7 +24,7 @@
 
 struct s_args_cmd;
 
-typedef int		(*FUNC_CMD)(const struct s_args_cmd *cmd);
+typedef int		(*t_func_cmd)(const struct s_args_cmd *cmd);
 
 int     cmd_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 int		cmd_logger_print_file(const char *file_name);

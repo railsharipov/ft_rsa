@@ -19,13 +19,13 @@
 #include <libft/queue.h>
 
 static uint32_t	__calculate_hash(const char *key);
-static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, FUNC_CONTENT_DEL f_del);
-static void 	__add_node_to_htable(t_htbl *htbl, const char *key, void *content, FUNC_CONTENT_DEL f_del);
-static void 	__assign_content_to_node(t_node *node, void *content, FUNC_CONTENT_DEL f_del);
+static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, t_func_content_del f_del);
+static void 	__add_node_to_htable(t_htbl *htbl, const char *key, void *content, t_func_content_del f_del);
+static void 	__assign_content_to_node(t_node *node, void *content, t_func_content_del f_del);
 static t_node	*__get_node_from_htable(t_htbl *htbl, const char *key);
 static t_node	*__get_node_from_list(t_node *list, const char *key);
 static int		__get_htable_array_idx(t_htbl *htbl, uint32_t hash);
-static void		__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del);
+static void		__del_htable_array(t_htbl *htbl, t_func_content_del f_del);
 
 void *ft_htbl_create(int size)
 {
@@ -48,7 +48,7 @@ void	(ft_htbl_add)(t_htbl *htbl, void *content, const char *key)
 	__add_node_to_htable(htbl, key, content, NULL);
 }
 
-void	ft_htbl_add_with_f_del(t_htbl *htbl, void *content, const char *key, FUNC_CONTENT_DEL f_del)
+void	ft_htbl_add_with_f_del(t_htbl *htbl, void *content, const char *key, t_func_content_del f_del)
 {
 	if (NULL == htbl) {
 		return ;
@@ -86,7 +86,7 @@ void	(ft_htbl_assign)(t_htbl *htbl, void *content, const char *key)
 	__assign_content_to_node(node, content, NULL);
 }
 
-void	ft_htbl_assign_with_f_del(t_htbl *htbl, void *content, const char *key, FUNC_CONTENT_DEL f_del)
+void	ft_htbl_assign_with_f_del(t_htbl *htbl, void *content, const char *key, t_func_content_del f_del)
 {
 	t_node	*node;
 
@@ -123,7 +123,7 @@ void	(ft_htbl_del_key)(t_htbl *htbl, const char *key)
 	htbl->arr[idx] = list;
 }
 
-void	ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, FUNC_CONTENT_DEL f_del)
+void	ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, t_func_content_del f_del)
 {
 	t_node		*node;
 	t_node		*list;
@@ -185,7 +185,7 @@ static int	__get_htable_array_idx(t_htbl *htbl, uint32_t hash)
 	return ((int)(hash % (uint32_t)htbl->size));
 }
 
-static void	__add_node_to_htable(t_htbl *htbl, const char *key, void *content, FUNC_CONTENT_DEL f_del)
+static void	__add_node_to_htable(t_htbl *htbl, const char *key, void *content, t_func_content_del f_del)
 {
 	t_node		*list;
 	t_node		*node;
@@ -210,7 +210,7 @@ static void	__add_node_to_htable(t_htbl *htbl, const char *key, void *content, F
 	}
 }
 
-static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, FUNC_CONTENT_DEL f_del)
+static t_node	*__create_htable_node(const char *key, void *content, uint32_t hash, t_func_content_del f_del)
 {
 	t_node	*node;
 
@@ -220,7 +220,7 @@ static t_node	*__create_htable_node(const char *key, void *content, uint32_t has
 	return (node);
 }
 
-static void 	__assign_content_to_node(t_node *node, void *content, FUNC_CONTENT_DEL f_del)
+static void 	__assign_content_to_node(t_node *node, void *content, t_func_content_del f_del)
 {
 	if (node->f_del_content) {
 		node->f_del_content(node->content);
@@ -268,7 +268,7 @@ void	(ft_htbl_del)(t_htbl *htbl)
 	LIBFT_FREE(htbl);
 }
 
-void	ft_htbl_del_with_f_del(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
+void	ft_htbl_del_with_f_del(t_htbl *htbl, t_func_content_del f_del)
 {
 	if (NULL == htbl) {
 		return;
@@ -277,7 +277,7 @@ void	ft_htbl_del_with_f_del(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
 	LIBFT_FREE(htbl);
 }
 
-static void	__del_htable_array(t_htbl *htbl, FUNC_CONTENT_DEL f_del)
+static void	__del_htable_array(t_htbl *htbl, t_func_content_del f_del)
 {
 	t_node *node;
 	t_node *tmp;

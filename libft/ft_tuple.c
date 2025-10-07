@@ -13,7 +13,7 @@ t_tuple *ft_tuple_new(void *head, size_t head_size, void *tail, size_t tail_size
 	return (tuple);
 }
 
-t_tuple *ft_tuple_new_with_f_del(void *head, size_t head_size, void *tail, size_t tail_size, FUNC_CONTENT_DEL f_del)
+t_tuple *ft_tuple_new_with_f_del(void *head, size_t head_size, void *tail, size_t tail_size, t_func_content_del f_del)
 {
 	t_tuple *tuple;
 
@@ -33,7 +33,7 @@ void	ft_tuple_del(t_tuple *tuple)
 	LIBFT_FREE(tuple);
 }
 
-void 	ft_tuple_del_with_f_del(t_tuple *tuple, FUNC_CONTENT_DEL f_del)
+void 	ft_tuple_del_with_f_del(t_tuple *tuple, t_func_content_del f_del)
 {
 	if (NULL == tuple) {
 		return ;

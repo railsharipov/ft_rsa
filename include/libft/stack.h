@@ -31,7 +31,7 @@ t_node		*ft_stack_peek(t_stack *stack);
 int			ft_stack_is_empty(t_stack *stack);
 int			ft_stack_size(t_stack *stack);
 void		ft_stack_del(t_stack *stack);
-void		ft_stack_del_with_f_del(t_stack *stack, FUNC_CONTENT_DEL f_del);
+void		ft_stack_del_with_f_del(t_stack *stack, t_func_content_del f_del);
 t_htbl		*ft_stack_to_htable(t_stack *stack);
 t_node		*ft_stack_pop_list(t_stack *stack);
 

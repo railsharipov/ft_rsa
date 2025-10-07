@@ -54,7 +54,7 @@ void	ft_lst_del_first(t_node **lst)
 	ft_node_del(tmp);
 }
 
-void	ft_lst_del_first_with_f_del(t_node **lst, FUNC_CONTENT_DEL f_del)
+void	ft_lst_del_first_with_f_del(t_node **lst, t_func_content_del f_del)
 {
 	t_node	*tmp;
 
@@ -89,7 +89,7 @@ void	ft_lst_del_last(t_node **lst)
 	ft_node_del(cur);
 }
 
-void	ft_lst_del_last_with_f_del(t_node **lst, FUNC_CONTENT_DEL f_del)
+void	ft_lst_del_last_with_f_del(t_node **lst, t_func_content_del f_del)
 {
 	t_node	*cur;
 	t_node	*prev;
@@ -138,7 +138,7 @@ void	ft_lst_del_one(t_node **lst, t_node *node)
 	ft_node_del(cur);
 }
 
-void	ft_lst_del_one_with_f_del(t_node **lst, t_node *node, FUNC_CONTENT_DEL f_del)
+void	ft_lst_del_one_with_f_del(t_node **lst, t_node *node, t_func_content_del f_del)
 {
 	t_node	*cur;
 	t_node	*prev;
@@ -210,7 +210,7 @@ void	ft_lst_del(t_node *lst)
 	}
 }
 
-void	ft_lst_del_with_f_del(t_node *lst, FUNC_CONTENT_DEL f_del)
+void	ft_lst_del_with_f_del(t_node *lst, t_func_content_del f_del)
 {
 	t_node	*tmp;
 

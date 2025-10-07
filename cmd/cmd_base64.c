@@ -6,13 +6,13 @@
 static int	__get_input(t_iodes *in, t_ostring *os_in);
 static int	__write_output(t_iodes *out, t_ostring *os_out);
 
-typedef int	(*FUNC_B64)(const unsigned char *, size_t, unsigned char **, size_t *);
+typedef int	(*t_func_b64)(const unsigned char *, size_t, unsigned char **, size_t *);
 
 int	cmd_base64(const t_args_cmd *cmd)
 {
 	t_iodes		in, out;
 	t_ostring	os_in, os_out;
-	FUNC_B64	f_b64;
+	t_func_b64	f_b64;
 	int			ret;
 
 	if (NULL == cmd) {

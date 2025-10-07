@@ -37,7 +37,7 @@
 		}																\
 	} while (0)
 
-typedef int	(*FUNC_TEST)(void);
+typedef int	(*t_func_test)(void);
 
 int		test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 void	test_logger_set_level(uint8_t level);

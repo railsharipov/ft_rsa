@@ -17,10 +17,10 @@
 #include <libft/htable.h>
 #include <libft/bytes.h>
 
-# undef FUNC_HASH
-# define FUNC_HASH(S)	hash_ ## S ## _init ,\
-						hash_ ## S ## _update ,\
-						hash_ ## S ## _final
+# undef __HASH_FUNCS
+# define __HASH_FUNCS(S)	hash_ ## S ## _init ,\
+							hash_ ## S ## _update ,\
+							hash_ ## S ## _final
 
 static const struct {
 	char	*name;
@@ -28,14 +28,14 @@ static const struct {
 	void	(*func_update)(t_hash *, const unsigned char *, size_t);
 	void	(*func_final)(t_hash *);
 } FUNC[] = {
-	{	"md5",			FUNC_HASH(md5)			},
-	{	"sha1",			FUNC_HASH(sha1)			},
-	{	"sha256",		FUNC_HASH(sha256)		},
-	{	"sha224",		FUNC_HASH(sha224)		},
-	{	"sha512",		FUNC_HASH(sha512)		},
-	{	"sha384",		FUNC_HASH(sha384)		},
-	{	"sha512/256",	FUNC_HASH(sha512_256)	},
-	{	"sha512/224",	FUNC_HASH(sha512_224)	},
+	{	"md5",			__HASH_FUNCS(md5)			},
+	{	"sha1",			__HASH_FUNCS(sha1)			},
+	{	"sha256",		__HASH_FUNCS(sha256)		},
+	{	"sha224",		__HASH_FUNCS(sha224)		},
+	{	"sha512",		__HASH_FUNCS(sha512)		},
+	{	"sha384",		__HASH_FUNCS(sha384)		},
+	{	"sha512/256",	__HASH_FUNCS(sha512_256)	},
+	{	"sha512/224",	__HASH_FUNCS(sha512_224)	},
 };
 
 static char		*__algo;

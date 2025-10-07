@@ -26,7 +26,7 @@ static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
-typedef int	(*FUNC_DER_DECODE)(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
+typedef int	(*t_func_der_decode)(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
 int	der_decode(t_node **tree, t_ostring *encoded)
 {
@@ -76,7 +76,7 @@ int	der_decode_stream(t_node **tree, t_iodes *in)
 
 static int	__decode(t_node **node, t_iodes *in)
 {
-	FUNC_DER_DECODE	f_decode;
+	t_func_der_decode	f_decode;
 	t_ostring		encoded, decoded;
 	t_iasn			*asn_item;
 	ssize_t			rbytes;

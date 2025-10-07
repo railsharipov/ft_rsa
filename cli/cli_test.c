@@ -5,7 +5,7 @@
 
 const struct {
 	const char *name;
-	FUNC_TEST f_test;
+	t_func_test f_test;
 } TEST_MAP[] = {
 	{"libft", test_libft},
 	{"textutil", test_textutil},
@@ -27,7 +27,7 @@ const int NUM_TESTS = sizeof(TEST_MAP) / sizeof(TEST_MAP[0]);
 
 int	cli_test(const char **opt, const char *name)
 {
-	FUNC_TEST	f_test;
+	t_func_test	f_test;
 	int			ret[NUM_TESTS];
 	int			idx;
 	int			num_passed;
