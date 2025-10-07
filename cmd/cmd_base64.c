@@ -13,6 +13,7 @@ int	cmd_base64(const t_args_cmd *cmd)
 	t_iodes		in, out;
 	t_ostring	os_in, os_out;
 	FUNC_B64	f_b64;
+	int			ret;
 
 	if (NULL == cmd) {
 		CMD_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -20,15 +21,23 @@ int	cmd_base64(const t_args_cmd *cmd)
 	}
 
 	if (args_cmd_opt_is_set(cmd, "-i")) {
-		io_fopen(&in, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+		ret = io_fopen(&in, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
 	} else {
-		io_fopen(&in, IO_READ|IO_STDIN, NULL);
+		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
+	}
+	if (SSL_OK != ret) {
+		CMD_LOG(ERROR, IO_INIT_ERROR);
+		return (SSL_ERR);
 	}
 
 	if (args_cmd_opt_is_set(cmd, "-o")) {
-		io_fopen(&out, IO_WRITE|IO_FILE, args_cmd_opt_get_val(cmd, "-o"));
+		ret = io_fopen(&out, IO_WRITE|IO_FILE, args_cmd_opt_get_val(cmd, "-o"));
 	} else {
-		io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
+		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
+	}
+	if (SSL_OK != ret) {
+		CMD_LOG(ERROR, IO_INIT_ERROR);
+		return (SSL_ERR);
 	}
 
 	if (args_cmd_opt_is_set(cmd, "-d")) {

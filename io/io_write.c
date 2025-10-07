@@ -1,11 +1,10 @@
 #include <string.h>
 #include <io.h>
-#include <common.h>
 
 ssize_t	io_write(t_iodes *iodes, const char *buf, size_t nbytes)
 {
 	IO_LOG(TRACE, "io write with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
-	
+
 	if (NULL == iodes || NULL == buf) {
 		IO_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
@@ -18,6 +17,10 @@ ssize_t	io_write(t_iodes *iodes, const char *buf, size_t nbytes)
 	else if (iodes->mode == IO_MODE_OSBUF) {
 		IO_LOG(TRACE, "routing to io_swrite");
 		return (io_swrite(iodes, buf, nbytes));
+	}
+	else if (iodes->mode == IO_MODE_PIPE) {
+		IO_LOG(TRACE, "passing write through pipe");
+		return (io_write(iodes->pipe.iodes_in, buf, nbytes));
 	}
 	else {
 		IO_LOG(ERROR, "invalid iodes mode %#x", iodes->mode);

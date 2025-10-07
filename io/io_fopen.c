@@ -73,7 +73,6 @@ int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 
 	return (0);
 }
-
 static t_io_param	*__get_param(uint32_t flags)
 {
 	int	ix;
@@ -88,3 +87,4 @@ static t_io_param	*__get_param(uint32_t flags)
 
 	return (NULL);
 }
+

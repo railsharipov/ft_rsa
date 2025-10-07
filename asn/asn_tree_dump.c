@@ -12,7 +12,7 @@ static int 	__f_asn_node_dumper(t_node *node, t_ostring *ostring);
 
 char	*asn_tree_dump(t_node *asn_tree)
 {
-	return (json_dump_with_f_dumper(asn_tree, __f_asn_node_dumper));
+	return (json_dumps_with_f_dumper(asn_tree, __f_asn_node_dumper));
 }
 
 

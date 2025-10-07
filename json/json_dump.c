@@ -10,13 +10,6 @@ static int	__dumps_string(t_node *node, t_ostring *ostring);
 static int	__dumps_number(t_node *node, t_ostring *ostring);
 static int	__dumps_bytes(t_node *node, t_ostring *ostring);
 
-static char		__json_dump_buf[2048];
-
-char	*json_dump(t_node *node)
-{
-	return (json_dump_with_f_dumper(node, __f_default_dumper));
-}
-
 char	*json_dumps(t_node *node)
 {
 	return (json_dumps_with_f_dumper(node, __f_default_dumper));
@@ -25,13 +18,6 @@ char	*json_dumps(t_node *node)
 size_t	json_dumpb(t_node *node, char *buf, size_t size)
 {
 	return (json_dumpb_with_f_dumper(node, buf, size, __f_default_dumper));
-}
-
-char	*json_dump_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper)
-{
-	json_dumpb_with_f_dumper(node, __json_dump_buf, sizeof(__json_dump_buf), f_dumper);
-
-	return (__json_dump_buf);
 }
 
 char	*json_dumps_with_f_dumper(t_node *node, FUNC_JSON_DUMPER f_dumper)

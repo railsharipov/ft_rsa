@@ -107,7 +107,7 @@ static int __decrypt_update(t_des *des, t_iodes *in, t_iodes *out)
 		if (rbytes > 0) {
 			DES_LOG(TRACE, "processing block");
 			des->f_permute_block(des, (uint64_t *)des->buf);
-			
+
 			if (io_write(out, (char *)des->buf, DES_BLOCK_SIZE) != DES_BLOCK_SIZE) {
 				DES_LOG(ERROR, IO_WRITE_ERROR);
 				return (SSL_ERR);

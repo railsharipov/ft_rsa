@@ -4,7 +4,7 @@
 ssize_t	io_read(t_iodes *iodes, char *buf, size_t nbytes)
 {
 	IO_LOG(TRACE, "io read with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
-	
+
 	if (NULL == iodes || NULL == buf) {
 		IO_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
@@ -19,8 +19,8 @@ ssize_t	io_read(t_iodes *iodes, char *buf, size_t nbytes)
 		return (io_sread(iodes, buf, nbytes));
 	}
 	else if (iodes->mode == IO_MODE_PIPE) {
-		IO_LOG(TRACE, "routing to io_pread");
-		return (io_pread(iodes, nbytes));
+		IO_LOG(TRACE, "passing read through pipe");
+		return (io_read(iodes->pipe.iodes_out, buf, nbytes));
 	}
 	else {
 		IO_LOG(ERROR, "invalid iodes mode %#x", iodes->mode);

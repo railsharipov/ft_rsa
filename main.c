@@ -81,7 +81,7 @@ static void __setup_args(t_args *args)
 	const char *des_commands[] = { "des-ecb", "des-cbc"};
 	for (int i = 0; i < sizeof(des_commands) / sizeof(des_commands[0]); i++) {
 		cmd = args_new_cmd(des_commands[i], des_commands[i], cmd_des_ecb);
-		args_cmd_add_opt(cmd, args_new_opt("-a", "base64-encode output / base64-decode input (depending on des mode)", AP_ARG_TYPE_FLAG));
+		args_cmd_add_opt(cmd, args_new_opt("-a", "base64-encoded input/output", AP_ARG_TYPE_FLAG));
 		args_cmd_add_opt(cmd, args_new_opt("-i", "read from file", AP_ARG_TYPE_STRING));
 		args_cmd_add_opt(cmd, args_new_opt("-o", "write to file", AP_ARG_TYPE_STRING));
 		args_cmd_add_opt(cmd, args_new_opt("-e", "des encryption mode", AP_ARG_TYPE_FLAG));
@@ -89,6 +89,10 @@ static void __setup_args(t_args *args)
 		args_cmd_add_opt(cmd, args_new_opt("-k", "hex key", AP_ARG_TYPE_STRING));
 		args_cmd_add_opt(cmd, args_new_opt("-s", "hex salt", AP_ARG_TYPE_STRING));
 		args_cmd_add_opt(cmd, args_new_opt("-p", "password", AP_ARG_TYPE_STRING));
+		args_cmd_add_opt(cmd, args_new_opt("-n", "dump vectors", AP_ARG_TYPE_FLAG));
+		if (ft_strcmp(des_commands[i], "des-cbc") == 0) {
+			args_cmd_add_opt(cmd, args_new_opt("-v", "hex vector", AP_ARG_TYPE_STRING));
+		}
 		args_add_cmd(args, cmd);
 	}
 

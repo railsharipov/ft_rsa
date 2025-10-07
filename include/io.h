@@ -35,8 +35,8 @@ enum	e_io
 };
 
 struct s_iopipe {
-	struct s_iodes *iodes_1;
-	struct s_iodes *iodes_2;
+	struct s_iodes *iodes_in;
+	struct s_iodes *iodes_out;
 };
 
 struct	s_iodes
@@ -66,8 +66,7 @@ ssize_t			io_fread(t_iodes *iodes, char *buf, size_t nbytes);
 ssize_t			io_write(t_iodes *iodes, const char *buf, size_t nbytes);
 ssize_t			io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes);
 ssize_t			io_swrite(t_iodes *iodes, const char *buf, size_t nbytes);
-ssize_t			io_pread(t_iodes *iodes, size_t nbytes);
-ssize_t			io_pwrite(t_iodes *iodes, size_t nbytes);
+ssize_t			io_pump(t_iodes *iodes, size_t nbytes);
 void 			io_print_stats(const t_iodes *iodes, const char *name);
 void 			io_copy(t_iodes * const dst, t_iodes * const src);
 void			io_fclose(t_iodes * const iodes);

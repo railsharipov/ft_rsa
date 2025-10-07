@@ -12,7 +12,27 @@
 
 # define B64_LOG(LEVEL, MES, ...)	base64_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
-enum	e_base64_flag
+# define B64_ENC_BLOCK_SIZE	4
+# define B64_MES_BLOCK_SIZE	3
+
+typedef void (*FUNC_B64_PROCESS_BLOCK)(uint8_t *, uint8_t *);
+
+typedef enum	e_b64_mode
+{
+	B64_MODE_ENCODE = 0,
+	B64_MODE_DECODE,
+}				t_b64_mode;
+
+typedef struct	s_b64
+{
+	FUNC_B64_PROCESS_BLOCK	f_process_block;
+	t_b64_mode	mode;
+	uint8_t		blocksize;
+	size_t		bufsize;
+	size_t		messize;
+}				t_b64;
+
+enum	e_b64_flag
 {
 	B64_D	= 1 << 1
 };
@@ -22,5 +42,8 @@ int		base64_logger_log(const char *func_name, const char *file_name, int line_nu
 int		base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc, size_t *encsize);
 int		base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize);
 int		base64_check(const unsigned char *b64enc, size_t size);
+
+void	base64_encode_block(uint8_t *mesblock, uint8_t *encblock);
+void	base64_decode_block(uint8_t *encblock, uint8_t *mesblock);
 
 #endif

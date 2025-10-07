@@ -1,0 +1,365 @@
+// #include <common.h>
+// #include <io.h>
+// #include <des.h>
+// #include <base64.h>
+// #include <cmd.h>
+// #include <args.h>
+// #include <rand.h>
+// #include <libft/htable.h>
+// #include <libft/bytes.h>
+
+// static char	*__keyhex;
+// static char	*__salthex;
+// static char	*__vecthex;
+
+// static const char	*__pass;
+
+// static int	__setup_task(const char **);
+// static int	__run_task(void);
+// static int	__get_vector(const char *, const t_task *);
+// static int	__get_pass(const char *, const t_task *);
+// static int	__init_io(const char *, const t_task *);
+// static int	__set_op(const char *, const t_task *);
+// static int	__get_input(unsigned char **, size_t *);
+// static int	__write_output(const char *, size_t);
+// static void	__dump_vectors(void);
+// static int	__enc(t_ostring *, t_ostring *);
+// static int	__enc_b64(t_ostring *, t_ostring *);
+// static int	__dec(t_ostring *, t_ostring *);
+// static int	__dec_b64(t_ostring *, t_ostring *);
+
+// static const t_task	T[] = {
+// 	/*	KEY		PTR				TFLAG		GFLAG	OFLAG			VAL	*/
+// 	{	"-k", 	__get_vector,	DES_K,		DES_K,	NONE,				1	},
+// 	{	"-s", 	__get_vector,	DES_S,		DES_S,	NONE,				1	},
+// 	{	"-v", 	__get_vector,	DES_V,		DES_V,	NONE,				1	},
+// 	{	"-p", 	__get_pass,		DES_P,		DES_P,	NONE,				1	},
+// 	{	"-i", 	__init_io,		IO_INPUT,	NONE,	IO_READ|IO_FILE,	1	},
+// 	{	"-o", 	__init_io,		IO_OUTPUT,	NONE,	IO_WRITE|IO_FILE,	1	},
+// 	{	"-e",	__set_op,		DES_E,		NONE,	NONE,				0	},
+// 	{	"-d",	__set_op,		DES_D,		NONE,	NONE,				0	},
+// 	{	"-a",	NULL,			NONE,		DES_A,	NONE,				0	},
+// 	{	"-n",	NULL,			NONE,		DES_N,	NONE,				0	},
+// 	{	NULL,	NULL,			NONE,		NONE,	NONE,				0	}
+// };
+
+// int	cmd_des_cbc(const t_args_cmd *cmd)
+// {
+// 	t_des		des;
+// 	t_des_mode	mode;
+// 	uint8_t		key[8], salt[8], vect[8];
+// 	t_iodes		in, out;
+// 	t_ostring	os_in, os_out;
+// 	int			ret;
+
+// 	if (NULL == cmd) {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+
+// 	if (args_cmd_opt_is_set(cmd, "-i")) {
+// 		ret = io_fopen(&in, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+// 	} else {
+// 		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
+// 	}
+// 	if (SSL_OK != ret) {
+// 		CMD_LOG(ERROR, IO_INIT_ERROR);
+// 		return (SSL_ERR);
+// 	}
+
+// 	if (args_cmd_opt_is_set(cmd, "-o")) {
+// 		ret = io_fopen(&out, IO_WRITE|IO_FILE, args_cmd_opt_get_val(cmd, "-o"));
+// 	} else {
+// 		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
+// 	}
+// 	if (SSL_OK != ret) {
+// 		CMD_LOG(ERROR, IO_INIT_ERROR);
+// 		return (SSL_ERR);
+// 	}
+
+// 	if (args_cmd_opt_is_set(cmd, "-k")) {
+// 		ft_hex_to_bytes(key, args_cmd_opt_get_val(cmd, "-k"), 8);
+// 	}
+// 	if (args_cmd_opt_is_set(cmd, "-s")) {
+// 		ft_hex_to_bytes(salt, args_cmd_opt_get_val(cmd, "-s"), 8);
+// 	}
+// 	if (args_cmd_opt_is_set(cmd, "-v")) {
+// 		ft_hex_to_bytes(vect, args_cmd_opt_get_val(cmd, "-v"), 8);
+// 	}
+
+// 	if (args_cmd_opt_is_set(cmd, "-d")) {
+// 		mode = DES_MODE_DECRYPT;
+// 	} else {
+// 		mode = DES_MODE_ENCRYPT;
+// 	}
+
+// 	if (SSL_OK != des_init(&des, key, vect, DES_CRYPT_CBC, mode)) {
+// 		CMD_LOG(ERROR, "des crypt init error");
+// 		return (SSL_ERR);
+// 	}
+
+// 	if (mode == DES_MODE_DECRYPT && args_cmd_opt_is_set(cmd, "-a")) {
+// 		t_iodes 	in_b64;
+// 		t_ostring	os_in_b64;
+
+// 		if (args_cmd_opt_is_set(cmd, "-i")) {
+// 			ret = io_fopen(&in_b64, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+// 		} else {
+// 			ret = io_fopen(&in_b64, IO_READ|IO_STDIN, NULL);
+// 		}
+// 		if (SSL_OK != base64_decode(in.content, in.size, &os_in.content, &os_in.size)) {
+// 			CMD_LOG(ERROR, "base64 decode error");
+// 			return (SSL_ERR);
+// 		}
+// 		in.content = os_in.content;
+// 		in.size = os_in.size;
+// 	}
+
+// 	if (SSL_OK != des_update(&des, &in, &out)) {
+// 		CMD_LOG(ERROR, "des crypt error");
+// 		return (SSL_ERR);
+// 	}
+// 	if (SSL_OK != des_final(&des, &out)) {
+// 		CMD_LOG(ERROR, "des crypt error");
+// 		return (SSL_ERR);
+// 	}
+
+// 	io_fclose_multi(&in, &out, NULL);
+
+// 	if (SSL_OK != ret) {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	return (SSL_OK);
+// }
+
+
+
+// static int __run_task(void)
+// {
+// 	int			(*f_op)(t_ostring *, t_ostring *);
+// 	int			ret;
+// 	t_ostring	input;
+// 	t_ostring	output;
+
+// 	ret = SSL_OK;
+
+// 	if (__pass && !__keyhex) {
+// 		if (!__salthex) {
+// 			rand_useed((uint64_t *)__salt, 8);
+// 		}
+// 	} else {
+// 		ft_hex_to_bytes(__key, __keyhex, 16);
+// 		ft_hex_to_bytes(__salt, __salthex, 16);
+// 		ft_hex_to_bytes(__vect, __vecthex, 2);
+// 	}
+
+// 	if (SSL_OK != __get_input(&input.content, &input.size)) {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+	
+// 	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
+// 		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
+// 			CMD_LOG(ERROR, "invalid salted format");
+// 			return SSL_ERR;
+// 		}
+// 		ft_memcpy(__salt, input.content + 8, 8);
+// 		input.content += 16;
+// 		input.size -= 16;
+// 	}
+
+// 	if (__pass) {
+// 		if (SSL_OK != rand_openssl_kdf(__key, __salt, __vect, __pass)) {
+// 			CMD_LOG(ERROR, "kdf failed");
+// 			return (SSL_ERR);
+// 		}
+// 	}
+
+// 	if (SSL_FLAG(DES_D, __gflag)) {
+// 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
+// 	} else {
+// 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
+// 	}
+// 	if (SSL_OK == (ret = f_op(&input, &output))) {
+// 		ret = __write_output((char *)output.content, output.size);
+// 	}
+
+// 	SSL_FREE(input.content);
+// 	SSL_FREE(output.content);
+
+// 	return (ret);
+// }
+
+// static int	__init_io(const char *opt, const t_task *task)
+// {
+// 	t_iodes	*iodes;
+
+// 	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+// 	return (io_fopen(iodes, task->oflag, NULL));
+// }
+
+// static int	__get_vector(const char *opt, const t_task *task)
+// {
+// 	if (!ft_str_ishex(opt)) {
+// 		CMD_LOG(ERROR, INVALID_INPUT_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	if (DES_K == task->tflag) {
+// 		__keyhex = (char *)opt;
+// 	} else if (DES_S == task->tflag) {
+// 		__salthex = (char *)opt;
+// 		ft_hex_to_bytes(__salt, __salthex, 16);
+// 	} else if (DES_V == task->tflag) {
+// 		__vecthex = (char *)opt;
+// 	} else {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	return (SSL_OK);
+// }
+
+// static int	__get_pass(const char *opt, const t_task *task)
+// {
+// 	(void)task;
+// 	__pass = opt;
+
+// 	return (SSL_OK);
+// }
+
+// static int __set_op(const char *opt, const t_task *task)
+// {
+// 	uint32_t	remove_flag;
+
+// 	if (DES_D == task->tflag) {
+// 		remove_flag = DES_E;
+// 	} else {
+// 		remove_flag = DES_D;
+// 	}
+
+// 	// encrypt and decrypt flags are mutually exclusive
+// 	__gflag &= ~remove_flag;
+// 	__gflag |= task->tflag;
+
+// 	return (SSL_OK);
+// }
+
+// static int	__get_input(unsigned char **input, size_t *insize)
+// {
+// 	char	buf[IO_BUFSIZE];
+// 	ssize_t	rbytes;
+
+// 	*input = NULL;
+// 	*insize = 0;
+
+// 	if (SSL_FLAG(DES_A | DES_D, __gflag)) {
+// 		__in.delim = '\n';
+// 	}
+// 	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
+// 		SSL_REALLOC(*input, *insize, (*insize) + rbytes);
+// 		ft_memcpy(*input + *insize, buf, rbytes);
+// 		*insize += rbytes;
+// 	}
+// 	if (rbytes < 0) {
+// 		SSL_FREE(*input);
+// 		*insize = 0;
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	return (SSL_OK);
+// }
+
+// static int	__write_output(const char *output, size_t outsize)
+// {
+// 	if (SSL_FLAG(DES_N, __gflag)) {
+// 		__dump_vectors();
+// 	}
+// 	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
+// 		__out.delim = '\n';
+// 	}
+// 	if (io_write(&__out, output, outsize) < 0) {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
+// 		if (io_write(&__out, "\n", 1) < 0) {
+// 			CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 			return (SSL_ERR);
+// 		}
+// 	}
+// 	return (SSL_OK);
+// }
+
+// static void	__dump_vectors(void)
+// {
+// 	char	hex[128];
+
+// 	ft_bytes_dumpb_hex(__salt, 8, 0, 0, hex, sizeof(hex));
+// 	ft_printf("salt=%s\n", hex);
+
+// 	ft_bytes_dumpb_hex(__key, 8, 0, 0, hex, sizeof(hex));
+// 	ft_printf("key=%s\n", hex);
+
+// 	ft_bytes_dumpb_hex(__vect, 8, 0, 0, hex, sizeof(hex));
+// 	ft_printf("iv=%s\n", hex);
+// }
+
+// static int	__enc(t_ostring *mes, t_ostring *ciph)
+// {
+// 	t_ostring temp;
+
+// 	if (__pass && !__keyhex) {
+// 		temp.size = mes->size + 16;
+// 		SSL_ALLOC(temp.content, temp.size);
+// 		ft_memcpy(temp.content, "Salted__", 8);
+// 		ft_memcpy(temp.content + 8, __salt, 8);
+// 		ft_memcpy(temp.content + 16, mes->content, mes->size);
+// 		return (des_cbc_encrypt(__key, __vect, &temp, ciph));
+// 	}
+// 	return (des_cbc_encrypt(__key, __vect, mes, ciph));
+// }
+
+// static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
+// {
+// 	t_ostring	b64;
+// 	int			ret;
+
+// 	ret = SSL_OK;
+
+// 	if (SSL_OK != __enc(mes, ciph)) {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	if (SSL_OK != base64_encode(ciph->content, ciph->size, &b64.content, &b64.size)) {
+// 		ret = (CMD_LOG(ERROR, UNSPECIFIED_ERROR));
+// 	}
+
+// 	SSL_FREE(ciph->content);
+// 	ciph->content = b64.content;
+// 	ciph->size = b64.size;
+
+// 	return (ret);
+// }
+
+// static int	__dec(t_ostring *ciph, t_ostring *mes)
+// {
+// 	return (des_cbc_decrypt(__key, __vect, ciph, mes));
+// }
+
+// static int	__dec_b64(t_ostring *b64, t_ostring *mes)
+// {
+// 	t_ostring	cipher;
+
+// 	if (SSL_OK != base64_decode(b64->content, b64->size, &cipher.content, &cipher.size)) {
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	if (SSL_OK != des_cbc_decrypt(__key, __vect, &cipher, mes)) {
+// 		SSL_FREE(cipher.content);
+// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		return (SSL_ERR);
+// 	}
+// 	SSL_FREE(cipher.content);
+
+// 	return (SSL_OK);
+// }
