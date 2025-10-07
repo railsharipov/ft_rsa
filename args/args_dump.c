@@ -13,19 +13,12 @@ char	*args_dump_cmd_helps(const t_args_cmd *cmd)
 		return (NULL);
 	}
 	ft_ostr_init(&ostring);
-	ft_ostr_append(&ostring, "Usage: ", 7);
-	ft_ostr_append(&ostring, cmd->name, ft_strlen(cmd->name));
-	ft_ostr_append(&ostring, " [options]\n", 11);
-	ft_ostr_append(&ostring, cmd->desc, ft_strlen(cmd->desc));
-	ft_ostr_append(&ostring, "\n", 1);
+	ft_ostr_appendf(&ostring, "\t%s, %s\n", cmd->name, cmd->desc);
 
 	node = ft_htbl_node_next(cmd->opts, NULL);
 	while (node != NULL) {
 		t_args_opt *opt = (t_args_opt *)node->content;
-		ft_ostr_append(&ostring, opt->name, ft_strlen(opt->name));
-		ft_ostr_append(&ostring, " ", 1);
-		ft_ostr_append(&ostring, opt->desc, ft_strlen(opt->desc));
-		ft_ostr_append(&ostring, "\n", 1);
+		ft_ostr_appendf(&ostring, "\t\t%s, %s\n", opt->name, opt->desc);
 		node = ft_htbl_node_next(cmd->opts, node);
 	}
 
@@ -46,7 +39,12 @@ char	*args_dump_helps(const t_args *args)
 		return (NULL);
 	}
 	ft_ostr_init(&ostring);
+	ft_ostr_appendf(&ostring, "USAGE:\n\tcommand [options]\n");
+
 	node = ft_htbl_node_next(args->htbl, NULL);
+	if (node != NULL) {
+		ft_ostr_appendf(&ostring, "COMMANDS:\n");
+	}
 	while (node != NULL) {
 		t_args_cmd *cmd = (t_args_cmd *)node->content;
 		cmd_helps = args_dump_cmd_helps(cmd);

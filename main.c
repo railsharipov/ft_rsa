@@ -57,7 +57,7 @@ static void __setup_args(t_args *args)
 	args_init(args);
 
 	// base64 command
-	cmd = args_new_cmd("base64", "base64", cmd_base64);
+	cmd = args_new_cmd("base64", "Base64 encoding", cmd_base64);
 	args_cmd_add_opt(cmd, args_new_opt("-b", "set output line width", AP_ARG_TYPE_NUMBER));
 	args_cmd_add_opt(cmd, args_new_opt("-i", "read message from file", AP_ARG_TYPE_STRING));
 	args_cmd_add_opt(cmd, args_new_opt("-o", "output to file", AP_ARG_TYPE_STRING));
@@ -68,7 +68,7 @@ static void __setup_args(t_args *args)
 	// digest commands
 	const char *digest_commands[] = { "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "sha512/224", "sha512/256"};
 	for (int i = 0; i < sizeof(digest_commands) / sizeof(digest_commands[0]); i++) {
-		cmd = args_new_cmd(digest_commands[i], digest_commands[i], cmd_hash);
+		cmd = args_new_cmd(digest_commands[i], ft_strjoin(ft_strup(digest_commands[i]), " message digest"), cmd_hash);
 		args_cmd_add_opt(cmd, args_new_opt("-r", "reverse output format", AP_ARG_TYPE_FLAG));
 		args_cmd_add_opt(cmd, args_new_opt("-q", "quiet mode", AP_ARG_TYPE_FLAG));
 		args_cmd_add_opt(cmd, args_new_opt("-s", "read from string", AP_ARG_TYPE_STRING));
@@ -80,7 +80,7 @@ static void __setup_args(t_args *args)
 	// des commands
 	const char *des_commands[] = { "des-ecb", "des-cbc"};
 	for (int i = 0; i < sizeof(des_commands) / sizeof(des_commands[0]); i++) {
-		cmd = args_new_cmd(des_commands[i], des_commands[i], cmd_des_ecb);
+		cmd = args_new_cmd(des_commands[i], ft_strjoin(ft_strup(des_commands[i]), " crypt"), cmd_des_ecb);
 		args_cmd_add_opt(cmd, args_new_opt("-a", "base64-encoded input/output", AP_ARG_TYPE_FLAG));
 		args_cmd_add_opt(cmd, args_new_opt("-i", "read from file", AP_ARG_TYPE_STRING));
 		args_cmd_add_opt(cmd, args_new_opt("-o", "write to file", AP_ARG_TYPE_STRING));
@@ -97,13 +97,13 @@ static void __setup_args(t_args *args)
 	}
 
 	// genrsa command
-	cmd = args_new_cmd("genrsa", "generate RSA private keys", cmd_rsa_gen);
+	cmd = args_new_cmd("genrsa", "Generate RSA private keys", cmd_rsa_gen);
 	args_cmd_add_opt(cmd, args_new_opt("-rand", "set rand source as list of <files>, separated by colon", AP_ARG_TYPE_STRING));
 	args_cmd_add_opt(cmd, args_new_opt("-o", "output generated key to a <file>", AP_ARG_TYPE_STRING));
 	args_add_cmd(args, cmd);
 
 	// rsa command
-	cmd = args_new_cmd("rsa", "perform operation on RSA keys", cmd_rsa);
+	cmd = args_new_cmd("rsa", "RSA key procedures", cmd_rsa);
 	args_cmd_add_opt(cmd, args_new_opt("-in", "read input key from file", AP_ARG_TYPE_STRING));
 	args_cmd_add_opt(cmd, args_new_opt("-out", "write key to file", AP_ARG_TYPE_STRING));
 	args_cmd_add_opt(cmd, args_new_opt("-inform", "set format of the input key, default is PEM-encoded", AP_ARG_TYPE_STRING));
@@ -120,7 +120,7 @@ static void __setup_args(t_args *args)
 	args_add_cmd(args, cmd);
 
 	// rsautl command
-	cmd = args_new_cmd("rsautl", "perform RSA crypt", cmd_rsa_utl);
+	cmd = args_new_cmd("rsautl", "RSA crypt", cmd_rsa_utl);
 	args_cmd_add_opt(cmd, args_new_opt("-in", "read message form file", AP_ARG_TYPE_STRING));
 	args_cmd_add_opt(cmd, args_new_opt("-out", "output to a file", AP_ARG_TYPE_STRING));
 	args_cmd_add_opt(cmd, args_new_opt("-inkey", "read input key form file", AP_ARG_TYPE_STRING));
@@ -131,12 +131,12 @@ static void __setup_args(t_args *args)
 	args_add_cmd(args, cmd);
 
 	// test command
-	cmd = args_new_cmd("test", "test", cmd_test);
+	cmd = args_new_cmd("test", "Run tests", cmd_test);
 	args_cmd_add_opt(cmd, args_new_opt("-v", "verbosity level", AP_ARG_TYPE_STRING));
 	args_add_cmd(args, cmd);
 
 	// help command
-	cmd = args_new_cmd("help", "show help", __print_help);
+	cmd = args_new_cmd("help", "Show help", __print_help);
 	args_add_cmd(args, cmd);
 }
 

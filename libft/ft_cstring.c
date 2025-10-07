@@ -287,7 +287,7 @@ int	ft_str_ishex(const char *s)
 	return (1);
 }
 
-char	*ft_strlow(char *s)
+char	*ft_strlow(const char *s)
 {
 	char	*s_low;
 	size_t	idx;
@@ -398,7 +398,7 @@ int	ft_str_isalnum(const char *s)
 	return (1);
 }
 
-char *ft_strup(char *s)
+char *ft_strup(const char *s)
 {
 	char *s_up;
 	size_t idx;
@@ -421,7 +421,7 @@ char *ft_strup(char *s)
 	return (s_up);
 }
 
-char *ft_strnup(char *s, size_t n)
+char *ft_strnup(const char *s, size_t n)
 {
 	char *s_up;
 	size_t idx;
