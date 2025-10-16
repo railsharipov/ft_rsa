@@ -88,8 +88,7 @@ void	*ft_memmove(void *dst, const void *src, size_t size)
 	ix = 0;
 
 	// Check if destination address is "after" source address.
-	// If so, copy in reverse order to avoid destructive copy
-	// for overlapping strings
+	// If so, copy in reverse order
 	if (dst >= src) {
 		while (size--)
 			p1[size] = p2[size];

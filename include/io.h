@@ -50,6 +50,17 @@ struct	s_iodes
 	int				mode;
 };
 
+typedef ssize_t	(*t_func_io_read)(void *ctx, char *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
+typedef int		(*t_func_io_close)(void *ctx);
+
+typedef struct	s_iodes_v2
+{
+	void			*ctx;
+	t_func_io_read	read_f;
+	t_func_io_write	write_f;
+}				t_iodes_v2;
+
 typedef struct s_iodes	t_iodes;
 typedef struct s_iopipe	t_iopipe;
 
