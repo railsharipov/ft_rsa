@@ -16,7 +16,8 @@ int	args_parse(t_args *args, const char **sargs)
 	pos = 0;
 	cmd = ft_htbl_get(args->htbl, sargs[pos]);
 	if (cmd == NULL) {
-		cmd = ft_htbl_get(args->htbl, DEFAULT_CMD);
+		ARGP_LOG(ERROR, "unknown command: %s", sargs[pos]);
+		return (SSL_ERR);
 	} else {
 		pos++;
 	}

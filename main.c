@@ -19,28 +19,30 @@
 #include <args.h>
 #include <libft/string.h>
 
+static t_args	args;
+
 static void __setup_args(t_args *args);
-static int __print_help(const t_args *args);
+static int __cmd_help(const t_args_cmd *cmd);
 
 int	main(int ac, const char **av)
 {
-	t_args		args;
 	t_args_cmd	*cmd;
 	t_func_cmd	f_cmd;
 
 	__setup_args(&args);
 
 	if (ac < 2) {
-		__print_help(&args);
+		args_dump_help(&args);
 		exit(1);
 	}
 	if (SSL_OK != args_parse(&args, av+1)) {
 		ARGP_LOG(ERROR, "error parsing arguments");
+		args_dump_help(&args);
 		exit(1);
 	}
 	cmd = args_get_cmd(&args, av[1]);
 	if (NULL == cmd) {
-		ARGP_LOG(ERROR, "unknown command: %s\nrun `%s --help` to get help", av[1], av[0]);
+		ARGP_LOG(ERROR, UNEXPECTED_ERROR);
 		exit(1);
 	}
 	f_cmd = (t_func_cmd)cmd->func;
@@ -136,12 +138,13 @@ static void __setup_args(t_args *args)
 	args_add_cmd(args, cmd);
 
 	// help command
-	cmd = args_new_cmd("help", "Show help", __print_help);
+	cmd = args_new_cmd("help", "Show help", __cmd_help);
 	args_add_cmd(args, cmd);
 }
 
-static int __print_help(const t_args *args)
+static int __cmd_help(const t_args_cmd *cmd)
 {
-	args_dump_help(args);
+	(void)cmd;
+	args_dump_help(&args);
 	return (SSL_OK);
 }
