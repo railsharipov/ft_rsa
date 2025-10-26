@@ -8,7 +8,7 @@ static int	__write_output(t_iodes *out, t_ostring *os_out);
 
 typedef int	(*t_func_b64)(const unsigned char *, size_t, unsigned char **, size_t *);
 
-int	cmd_base64(const t_args_cmd *cmd)
+int	cmd_base64(const t_cmd *cmd)
 {
 	t_iodes		in, out;
 	t_ostring	os_in, os_out;
@@ -20,8 +20,8 @@ int	cmd_base64(const t_args_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	if (args_cmd_opt_is_set(cmd, "-i")) {
-		ret = io_fopen(&in, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+	if (ft_htbl_get(cmd->opts, "-i")) {
+		ret = io_fopen(&in, IO_READ|IO_FILE, ft_htbl_get(cmd->opts, "-i"));
 	} else {
 		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
 	}
@@ -30,8 +30,8 @@ int	cmd_base64(const t_args_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	if (args_cmd_opt_is_set(cmd, "-o")) {
-		ret = io_fopen(&out, IO_WRITE|IO_FILE, args_cmd_opt_get_val(cmd, "-o"));
+	if (ft_htbl_get(cmd->opts, "-o")) {
+		ret = io_fopen(&out, IO_WRITE|IO_FILE, ft_htbl_get(cmd->opts, "-o"));
 	} else {
 		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
 	}
@@ -40,7 +40,7 @@ int	cmd_base64(const t_args_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	if (args_cmd_opt_is_set(cmd, "-d")) {
+	if (ft_htbl_get(cmd->opts, "-d")) {
 		f_b64 = base64_decode;
 		in.delim = '\n';
 		out.delim = 0;
@@ -48,8 +48,8 @@ int	cmd_base64(const t_args_cmd *cmd)
 		f_b64 = base64_encode;
 	}
 
-	if (args_cmd_opt_is_set(cmd, "-b")) {
-		out.lwidth = ft_atoi(args_cmd_opt_get_val(cmd, "-b"));
+	if (ft_htbl_get(cmd->opts, "-b")) {
+		out.lwidth = ft_atoi(ft_htbl_get(cmd->opts, "-b"));
 		out.lwidth = MAX(0, out.lwidth);
 		out.delim = '\n';
 	}

@@ -22,60 +22,57 @@
 
 # define DEFAULT_CMD	"default"
 
-typedef enum	e_args_type
+typedef enum	e_opt_type
 {
-	AP_ARG_TYPE_FLAG = 0,
-	AP_ARG_TYPE_STRING,
-	AP_ARG_TYPE_NUMBER,
-}				t_args_type;
+	AP_OPT_TYPE_FLAG = 0,
+	AP_OPT_TYPE_STRING,
+	AP_OPT_TYPE_NUMBER,
+}				t_opt_type;
 
-typedef struct	s_args
+typedef struct	s_arg_opt
 {
-	t_htbl		*htbl;
-}				t_args;
-
-typedef struct	s_args_def
-{
-	char		*name;
-	char		*desc;
-	t_args_type	type;
-}				t_args_def;
-
-typedef struct	s_args_opt
-{
-	t_args_type	type;
+	t_opt_type	type;
 	char		*name;
 	char		*desc;
 	char		*value;
 	int			pos;
 	int			set;
-}				t_args_opt;
+}				t_arg_opt;
 
-typedef struct	s_args_cmd
+typedef struct	s_arg_cmd
 {
 	char		*name;
 	char		*desc;
 	void		*func;
+	t_htbl		*sub_cmds;
 	t_htbl		*opts;
-}				t_args_cmd;
+	t_htbl		*global_opts;
+}				t_arg_cmd;
+
+typedef struct	s_cmd
+{
+	t_arg_cmd	*arg_ref;
+	void		*func;
+	t_htbl		*opts;
+}				t_cmd;
 
 int		args_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-int     	args_init(t_args *args);
-t_args_cmd	*args_new_cmd(const char *name, const char *desc, void *func);
-t_args_opt	*args_new_opt(const char *name, const char *desc, t_args_type type);
-int     	args_add_cmd(t_args *args, const t_args_cmd *cmd);
-int     	args_cmd_add_opt(t_args_cmd *cmd, const t_args_opt *opt);
-int     	args_parse(t_args *args, const char **sargs);
+t_arg_cmd	*args_new_cmd(const char *name, const char *desc, void *func);
+t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type);
 
-t_args_cmd	*args_get_cmd(const t_args *args, const char *cmd_name);
-t_args_opt	*args_cmd_get_opt(const t_args_cmd *cmd, const char *opt_name);
-int     	args_cmd_opt_is_set(const t_args_cmd *cmd, const char *opt_name);
-int     	args_cmd_opt_is_eq(const t_args_cmd *cmd, const char *opt_name, const char *opt_value);
-const char *args_cmd_opt_get_val(const t_args_cmd *cmd, const char *opt_name);
+t_cmd		*args_parse(t_arg_cmd *cmd_arg, const char **argv, int argc);
 
-char	*args_dump_cmd_helps(const t_args_cmd *cmd);
-char	*args_dump_helps(const t_args *args);
-void	args_dump_help(const t_args *args);
+int     	args_add_cmd(t_arg_cmd *cmd_arg, const t_arg_cmd *sub_cmd);
+t_arg_cmd	*args_get_cmd(const t_arg_cmd *cmd_arg, const char *cmd_name);
+
+int     	args_add_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg);
+int     	args_add_global_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg);
+
+t_arg_cmd	*args_copy_cmd(const t_arg_cmd *cmd_arg);
+t_arg_opt	*args_copy_opt(const t_arg_opt *opt_arg);
+
+char	*args_dump_helps(const t_arg_cmd *cmd_arg);
+void	args_dump_help(const t_arg_cmd *cmd_arg);
 
 #endif

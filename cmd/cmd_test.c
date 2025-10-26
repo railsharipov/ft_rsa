@@ -6,7 +6,7 @@
 
 #define __CLI_TEST_LINE_BREAK	"----------------------------------------"
 
-int	cmd_test(const t_args_cmd *cmd)
+int	cmd_test(const t_cmd *cmd)
 {
 	const struct {
 		const char *name;
@@ -33,7 +33,7 @@ int	cmd_test(const t_args_cmd *cmd)
 
 	TEST_LOG_SET_LEVEL(ERROR);
 
-	if (args_cmd_opt_is_eq(cmd, "-v", "all")) {
+	if (ft_streq(ft_htbl_get(cmd->opts, "-v"), "all")) {
 		TEST_LOG_SET_LEVEL(DEBUG);
 	}
 	ft_bzero(ret, sizeof(ret));

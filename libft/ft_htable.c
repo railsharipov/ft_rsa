@@ -26,6 +26,7 @@ static t_node	*__get_node_from_htable(t_htbl *htbl, const char *key);
 static t_node	*__get_node_from_list(t_node *list, const char *key);
 static int		__get_htable_array_idx(t_htbl *htbl, uint32_t hash);
 static void		__del_htable_array(t_htbl *htbl, t_func_content_del f_del);
+static void		__copy_node_to_htable(t_htbl *htbl, t_node *node, t_func_content_copy f_copy);
 
 void *ft_htbl_create(int size)
 {
@@ -315,11 +316,11 @@ t_node	*ft_htbl_node_next(t_htbl *htbl, t_node *node)
 	if (NULL == htbl) {
 		return (NULL);
 	}
-	if (node && node->next != NULL) {
+	if (node != NULL && node->next != NULL) {
 		return (node->next);
 	}
 
-	if (node) {
+	if (node != NULL) {
 		idx = (int)(node->hash % (uint32_t)htbl->size) + 1;
 	} else {
 		idx = 0;
@@ -334,4 +335,69 @@ t_node	*ft_htbl_node_next(t_htbl *htbl, t_node *node)
 		idx++;
 	}
 	return (NULL);
+}
+
+void	ft_htbl_dump(t_htbl *htbl)
+{
+	t_node *node;
+	int idx;
+
+	if (NULL == htbl) {
+		ft_printf("hash table: (null)\n");
+		return ;
+	}
+	ft_printf("hash table: {size: %d, arr: %p}\n", htbl->size, htbl->arr);
+
+	if (htbl->arr != NULL && htbl->size > 0) {
+		idx = 0;
+		while (idx < htbl->size) {
+			node = htbl->arr[idx];
+			while (node != NULL) {
+				ft_printf("\tnode at idx: %d, addr: %p: {key: %s, hash: %llu}\n", idx, node, node->key, node->hash);
+				node = node->next;
+			}
+			idx++;
+		}
+	}
+}
+
+t_htbl	*ft_htbl_copy_with_f_copy(t_htbl *htbl, t_func_content_copy f_copy)
+{
+	t_htbl	*copy;
+
+	if (NULL == htbl) {
+		return (NULL);
+	}
+	copy = ft_htbl_create(htbl->size);
+	ft_htbl_merge_with_f_copy(copy, htbl, f_copy);
+	return (copy);
+}
+
+
+void	ft_htbl_merge_with_f_copy(t_htbl *htbl_to, t_htbl *htbl_from, t_func_content_copy f_copy)
+{
+	t_node	*node;
+
+	if (htbl_from == NULL || htbl_to == NULL) {
+		return;
+	}
+	if (htbl_from->size > htbl_to->size) {
+		ft_htbl_resize(htbl_to, htbl_from->size);
+	}
+	node = ft_htbl_node_next(htbl_from, NULL);
+	while (node != NULL) {
+		__copy_node_to_htable(htbl_to, node, f_copy);
+		node = ft_htbl_node_next(htbl_from, node);
+	}
+}
+
+
+static void	__copy_node_to_htable(t_htbl *htbl, t_node *node, t_func_content_copy f_copy)
+{
+	if (f_copy != NULL) {
+		__add_node_to_htable(htbl, node->key, f_copy(node->content), node->f_del_content);
+	}
+	else {
+		__add_node_to_htable(htbl, node->key, node->content, node->f_del_content);
+	}
 }

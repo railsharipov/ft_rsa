@@ -18,6 +18,9 @@
 # include <libft/common.h>
 # include <libft/vfunc.h>
 
+typedef	void (*t_func_content_del)(void *content);
+typedef	void *(*t_func_content_copy)(void *content);
+
 typedef struct		s_node
 {
 	uint64_t		hash;
@@ -27,10 +30,9 @@ typedef struct		s_node
 	size_t			size;
 	struct s_node	*next;
 	struct s_node	*nodes;
-	void			(*f_del_content)(void *); /* t_func_content_del */
+	t_func_content_del	f_del_content;
+	t_func_content_copy	f_copy_content;
 }					t_node;
-
-typedef	void (*t_func_content_del)(void *content);
 
 int 		ft_node_is_parent(t_node *);
 

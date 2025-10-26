@@ -57,8 +57,8 @@
 // 		return (SSL_ERR);
 // 	}
 
-// 	if (args_cmd_opt_is_set(cmd, "-i")) {
-// 		ret = io_fopen(&in, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+// 	if (args_is_cmd_opt_set(cmd, "-i")) {
+// 		ret = io_fopen(&in, IO_READ|IO_FILE, args_get_cmd_opt_val(cmd, "-i"));
 // 	} else {
 // 		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
 // 	}
@@ -67,8 +67,8 @@
 // 		return (SSL_ERR);
 // 	}
 
-// 	if (args_cmd_opt_is_set(cmd, "-o")) {
-// 		ret = io_fopen(&out, IO_WRITE|IO_FILE, args_cmd_opt_get_val(cmd, "-o"));
+// 	if (args_is_cmd_opt_set(cmd, "-o")) {
+// 		ret = io_fopen(&out, IO_WRITE|IO_FILE, args_get_cmd_opt_val(cmd, "-o"));
 // 	} else {
 // 		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
 // 	}
@@ -77,17 +77,17 @@
 // 		return (SSL_ERR);
 // 	}
 
-// 	if (args_cmd_opt_is_set(cmd, "-k")) {
-// 		ft_hex_to_bytes(key, args_cmd_opt_get_val(cmd, "-k"), 8);
+// 	if (args_is_cmd_opt_set(cmd, "-k")) {
+// 		ft_hex_to_bytes(key, args_get_cmd_opt_val(cmd, "-k"), 8);
 // 	}
-// 	if (args_cmd_opt_is_set(cmd, "-s")) {
-// 		ft_hex_to_bytes(salt, args_cmd_opt_get_val(cmd, "-s"), 8);
+// 	if (args_is_cmd_opt_set(cmd, "-s")) {
+// 		ft_hex_to_bytes(salt, args_get_cmd_opt_val(cmd, "-s"), 8);
 // 	}
-// 	if (args_cmd_opt_is_set(cmd, "-v")) {
-// 		ft_hex_to_bytes(vect, args_cmd_opt_get_val(cmd, "-v"), 8);
+// 	if (args_is_cmd_opt_set(cmd, "-v")) {
+// 		ft_hex_to_bytes(vect, args_get_cmd_opt_val(cmd, "-v"), 8);
 // 	}
 
-// 	if (args_cmd_opt_is_set(cmd, "-d")) {
+// 	if (args_is_cmd_opt_set(cmd, "-d")) {
 // 		mode = DES_MODE_DECRYPT;
 // 	} else {
 // 		mode = DES_MODE_ENCRYPT;
@@ -98,12 +98,12 @@
 // 		return (SSL_ERR);
 // 	}
 
-// 	if (mode == DES_MODE_DECRYPT && args_cmd_opt_is_set(cmd, "-a")) {
+// 	if (mode == DES_MODE_DECRYPT && args_is_cmd_opt_set(cmd, "-a")) {
 // 		t_iodes 	in_b64;
 // 		t_ostring	os_in_b64;
 
-// 		if (args_cmd_opt_is_set(cmd, "-i")) {
-// 			ret = io_fopen(&in_b64, IO_READ|IO_FILE, args_cmd_opt_get_val(cmd, "-i"));
+// 		if (args_is_cmd_opt_set(cmd, "-i")) {
+// 			ret = io_fopen(&in_b64, IO_READ|IO_FILE, args_get_cmd_opt_val(cmd, "-i"));
 // 		} else {
 // 			ret = io_fopen(&in_b64, IO_READ|IO_STDIN, NULL);
 // 		}
