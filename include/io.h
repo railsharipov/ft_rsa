@@ -34,35 +34,32 @@ enum	e_io
 	IO_WRITE_FILE	= IO_WRITE | IO_FILE,
 };
 
-struct s_iopipe {
+typedef struct s_iopipe {
 	struct s_iodes *iodes_in;
 	struct s_iodes *iodes_out;
-};
+} t_iopipe;
 
-struct	s_iodes
+typedef struct s_iodes
 {
-	struct s_iopipe	pipe;
+	t_iopipe		pipe;
 	t_ostring		*osbuf;
 	int				fd;
 	ssize_t			seek;
 	int				delim;
 	int				lwidth;
 	int				mode;
-};
+} t_iodes;
 
 typedef ssize_t	(*t_func_io_read)(void *ctx, char *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
 typedef int		(*t_func_io_close)(void *ctx);
 
-typedef struct	s_iodes_v2
+typedef struct		s_iodes_v2
 {
 	void			*ctx;
 	t_func_io_read	read_f;
 	t_func_io_write	write_f;
-}				t_iodes_v2;
-
-typedef struct s_iodes	t_iodes;
-typedef struct s_iopipe	t_iopipe;
+}					t_iodes_v2;
 
 int				io_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
