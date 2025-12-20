@@ -4,13 +4,13 @@
 
 typedef struct	s_io_pipe_ctx
 {
-	t_iodes_v2	io_osbuf;
+	t_io_stream	io_osbuf;
 }				t_io_pipe_ctx;
 
 static ssize_t	__io_pipe_read(void *vctx, char *buf, size_t nbytes);
 static ssize_t	__io_pipe_write(void *vctx, const char *buf, size_t nbytes);
 
-int	io_v2_pipe(t_iodes_v2 *iodes, uint32_t flags)
+int	io_v2_pipe(t_io_stream *iodes, uint32_t flags)
 {
     t_io_pipe_ctx	*ctx;
 
@@ -24,7 +24,7 @@ int	io_v2_pipe(t_iodes_v2 *iodes, uint32_t flags)
         IO_LOG(ERROR, "failed to initialize io buffer");
         return (SSL_ERR);
     }
-    ft_bzero(iodes, sizeof(t_iodes_v2));
+    ft_bzero(iodes, sizeof(t_io_stream));
     iodes->ctx = ctx;
     iodes->read_f = __io_pipe_read;
     iodes->write_f = __io_pipe_write;

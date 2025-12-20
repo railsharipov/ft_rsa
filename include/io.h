@@ -50,17 +50,6 @@ typedef struct s_iodes
 	int				mode;
 } t_iodes;
 
-typedef ssize_t	(*t_func_io_read)(void *ctx, char *buf, size_t nbytes);
-typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
-typedef int		(*t_func_io_close)(void *ctx);
-
-typedef struct		s_iodes_v2
-{
-	void			*ctx;
-	t_func_io_read	read_f;
-	t_func_io_write	write_f;
-}					t_iodes_v2;
-
 int				io_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int				io_fopen(t_iodes *, uint32_t flags, const char *filename);
@@ -79,5 +68,37 @@ void 			io_print_stats(const t_iodes *iodes, const char *name);
 void 			io_copy(t_iodes * const dst, t_iodes * const src);
 void			io_fclose(t_iodes * const iodes);
 void			io_fclose_multi(t_iodes *iodes, ...);
+
+
+
+typedef ssize_t	(*t_func_io_read)(void *ctx, char *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
+typedef void	(*t_func_io_pipe)(void *ctx);
+typedef void	(*t_func_io_close)(void *ctx);
+
+typedef struct	s_io_interface
+{
+	t_func_io_read	read;
+	t_func_io_write	write;
+	t_func_io_pipe	pipe;
+	t_func_io_close	close;
+}				t_io_interface;
+
+typedef enum	e_io_mode
+{
+	IO_MODE_READ,
+	IO_MODE_WRITE,
+	IO_MODE_PIPE,
+}				t_io_mode;
+
+typedef struct		s_io_stream
+{
+	void			*ctx;
+	t_io_interface	interface;
+	t_io_mode		mode;
+}					t_io_stream;
+
+
+int	io_stream(t_io_stream **stream, void *ctx, const t_io_interface interface, enum e_io_mode mode);
 
 #endif
