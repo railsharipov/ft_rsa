@@ -9,19 +9,19 @@ static ssize_t	__io_file_read(t_file *file, char *buf, size_t nbytes);
 static ssize_t	__io_file_write(t_file *file, const char *buf, size_t nbytes);
 static int		__io_file_close(t_file *file);
 
-int	file_reader(t_io_stream **stream, t_file *file)
+int	file_reader(t_io_v2_stream **stream, t_file *file)
 {
-	return (file_stream(stream, file, IO_MODE_READ));
+	return (file_stream(stream, file, IO_V2_MODE_READ));
 }
 
-int	file_writer(t_io_stream **stream, t_file *file)
+int	file_writer(t_io_v2_stream **stream, t_file *file)
 {
-	return (file_stream(stream, file, IO_MODE_WRITE));
+	return (file_stream(stream, file, IO_V2_MODE_WRITE));
 }
 
-int	file_stream(t_io_stream **stream, t_file *file, enum e_io_mode mode)
+int	file_stream(t_io_v2_stream **stream, t_file *file, enum e_io_v2_mode mode)
 {
-	const t_io_interface	io_interface = {
+	const t_io_v2_interface	io_interface = {
 		.read = __io_file_read,
 		.write = __io_file_write,
 		.close = __io_file_close,
@@ -37,7 +37,7 @@ int	file_stream(t_io_stream **stream, t_file *file, enum e_io_mode mode)
 		FILE_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-	SSL_ALLOC(*stream, sizeof(t_io_stream));
+	SSL_ALLOC(*stream, sizeof(t_io_v2_stream));
 
 	if (NULL == file->path) {
 		FILE_LOG(ERROR, "file path is not specified");
@@ -51,7 +51,7 @@ int	file_stream(t_io_stream **stream, t_file *file, enum e_io_mode mode)
 		return (SSL_ERR);
 	}
 
-	return (io_stream(stream, file, io_interface, mode));
+	return (io_v2_stream(stream, file, io_interface, mode));
 }
 
 static int		__io_file_close(t_file *file)

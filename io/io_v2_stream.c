@@ -2,7 +2,7 @@
 #include <libft/std.h>
 #include <libft/alloc.h>
 
-int	io_stream(t_io_stream **stream, void *ctx, const t_io_interface interface, enum e_io_mode mode)
+int	io_v2_stream(t_io_v2_stream **stream, void *ctx, const t_io_v2_interface interface, enum e_io_v2_mode mode)
 {
 	IO_LOG(TRACE, "io stream with ctx=%p, interface=%p, mode=%d", ctx, interface, mode);
 
@@ -15,15 +15,15 @@ int	io_stream(t_io_stream **stream, void *ctx, const t_io_interface interface, e
 		return (SSL_ERR);
 	}
 	switch (mode) {
-		case IO_MODE_READ:
-		case IO_MODE_WRITE:
-		case IO_MODE_PIPE:
+		case IO_V2_MODE_READ:
+		case IO_V2_MODE_WRITE:
+		case IO_V2_MODE_PIPE:
 			break;
 		default:
 			IO_LOG(ERROR, "invalid i/o mode %#x", mode);
 			return (SSL_ERR);
 	}
-	SSL_ALLOC(*stream, sizeof(t_io_stream));
+	SSL_ALLOC(*stream, sizeof(t_io_v2_stream));
 	(*stream)->ctx = ctx;
 	(*stream)->interface = interface;
 	(*stream)->mode = mode;

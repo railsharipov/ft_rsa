@@ -14,13 +14,13 @@ typedef struct s_bytes
 }				t_bytes;
 
 struct  s_io_stream;
-enum	e_io_mode;
+enum	e_io_v2_mode;
 
 int		bytes_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int		bytes_new(t_bytes **bytes, t_ostring *ostring);
 void	bytes_del(t_bytes *bytes);
-int		bytes_stream(struct s_io_stream **stream, t_bytes *bytes, enum e_io_mode mode);
+int		bytes_stream(struct s_io_stream **stream, t_bytes *bytes, enum e_io_v2_mode mode);
 int		bytes_reader(struct s_io_stream **stream, t_bytes *bytes);
 int		bytes_writer(struct s_io_stream **stream, t_bytes *bytes);
 

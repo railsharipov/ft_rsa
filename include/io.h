@@ -76,29 +76,29 @@ typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
 typedef void	(*t_func_io_pipe)(void *ctx);
 typedef void	(*t_func_io_close)(void *ctx);
 
-typedef struct	s_io_interface
+typedef struct	s_io_v2_interface
 {
 	t_func_io_read	read;
 	t_func_io_write	write;
 	t_func_io_pipe	pipe;
 	t_func_io_close	close;
-}				t_io_interface;
+}				t_io_v2_interface;
 
-typedef enum	e_io_mode
+typedef enum	e_io_v2_mode
 {
-	IO_MODE_READ,
-	IO_MODE_WRITE,
-	IO_MODE_PIPE,
-}				t_io_mode;
+	IO_V2_MODE_READ,
+	IO_V2_MODE_WRITE,
+	IO_V2_MODE_PIPE,
+}				t_io_v2_mode;
 
-typedef struct		s_io_stream
+typedef struct		s_io_v2_stream
 {
 	void			*ctx;
-	t_io_interface	interface;
-	t_io_mode		mode;
-}					t_io_stream;
+	t_io_v2_interface	interface;
+	t_io_v2_mode		mode;
+}					t_io_v2_stream;
 
 
-int	io_stream(t_io_stream **stream, void *ctx, const t_io_interface interface, enum e_io_mode mode);
+int	io_v2_stream(t_io_v2_stream **stream, void *ctx, const t_io_v2_interface interface, enum e_io_v2_mode mode);
 
 #endif

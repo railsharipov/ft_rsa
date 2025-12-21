@@ -9,19 +9,19 @@ static ssize_t	__io_bytes_write(t_bytes *bytes, const char *buf, size_t nbytes);
 static ssize_t	__read(t_bytes *bytes, char *buf, size_t nbytes);
 static ssize_t	__write(t_bytes *bytes, const char *buf, size_t nbytes);
 
-int	bytes_reader(t_io_stream **stream, t_bytes *bytes)
+int	bytes_reader(t_io_v2_stream **stream, t_bytes *bytes)
 {
-	return (bytes_stream(stream, bytes, IO_MODE_READ));
+	return (bytes_stream(stream, bytes, IO_V2_MODE_READ));
 }
 
-int	bytes_writer(t_io_stream **stream, t_bytes *bytes)
+int	bytes_writer(t_io_v2_stream **stream, t_bytes *bytes)
 {
-	return (bytes_stream(stream, bytes, IO_MODE_WRITE));
+	return (bytes_stream(stream, bytes, IO_V2_MODE_WRITE));
 }
 
-int	bytes_stream(t_io_stream **stream, t_bytes *bytes, enum e_io_mode mode)
+int	bytes_stream(t_io_v2_stream **stream, t_bytes *bytes, enum e_io_v2_mode mode)
 {
-	const t_io_interface	io_interface = {
+	const t_io_v2_interface	io_interface = {
 		.read = __io_bytes_read,
 		.write = __io_bytes_write,
 	};
@@ -36,7 +36,7 @@ int	bytes_stream(t_io_stream **stream, t_bytes *bytes, enum e_io_mode mode)
 		BYTES_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-	SSL_ALLOC(*stream, sizeof(t_io_stream));
+	SSL_ALLOC(*stream, sizeof(t_io_v2_stream));
 
 	if (NULL == bytes->ostring) {
 		BYTES_LOG(ERROR, "octet string is not specified");
@@ -44,7 +44,7 @@ int	bytes_stream(t_io_stream **stream, t_bytes *bytes, enum e_io_mode mode)
 	}
 	BYTES_LOG(TRACE, "initializing bytes stream with ostring=%p", bytes->ostring);
 
-	return (io_stream(stream, bytes, io_interface, mode));
+	return (io_v2_stream(stream, bytes, io_interface, mode));
 }
 
 static ssize_t __io_bytes_read(t_bytes *bytes, char *buf, size_t nbytes)

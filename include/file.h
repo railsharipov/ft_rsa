@@ -15,11 +15,11 @@ typedef struct s_file
 }				t_file;
 
 struct  s_io_stream;
-enum	e_io_mode;
+enum	e_io_v2_mode;
 
 int		file_new(t_file **file, const char *path);
 void	file_del(t_file *file);
-int		file_stream(struct s_io_stream **stream, t_file *file, enum e_io_mode mode);
+int		file_stream(struct s_io_stream **stream, t_file *file, enum e_io_v2_mode mode);
 int		file_reader(struct s_io_stream **stream, t_file *file);
 int		file_writer(struct s_io_stream **stream, t_file *file);
 
