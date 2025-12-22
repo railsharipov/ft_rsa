@@ -4,57 +4,139 @@
 #include <libft/std.h>
 #include <libft/buffer.h>
 
-t_buffer *ft_buffer_create(void)
+t_buffer *ft_buffer_new(size_t capacity)
 {
 	t_buffer *buffer;
 
-	SSL_ALLOC(buffer, sizeof(t_buffer));
-	SSL_ALLOC(buffer->data, BUFFER_INIT_CAPACITY);
-	buffer->capacity = BUFFER_INIT_CAPACITY;
-	buffer->size = 0;
+	if (capacity == 0) {
+		return (NULL);
+	}
+	LIBFT_ALLOC(buffer, sizeof(t_buffer));
+	LIBFT_ALLOC(buffer->arr, capacity);
+	buffer->capacity = capacity;
+	buffer->write_pos = 0;
+	buffer->read_pos = 0;
+
 	return (buffer);
 }
 
 void ft_buffer_del(t_buffer *buffer)
 {
-	SSL_FREE(buffer->data);
-	SSL_FREE(buffer);
+	LIBFT_FREE(buffer->arr);
+	LIBFT_FREE(buffer);
 }
 
-void ft_buffer_clear(t_buffer *buffer)
+size_t ft_buffer_used(t_buffer *buffer)
 {
-	buffer->size = 0;
+	return (buffer->write_pos - buffer->read_pos);
 }
 
-void ft_buffer_append(t_buffer *buffer, void *buf, size_t bufsize)
+size_t ft_buffer_available(t_buffer *buffer)
 {
-	if (buffer->size + bufsize > buffer->capacity) {
-		if (bufsize < BUFFER_INIT_CAPACITY) {
-			buffer->capacity += BUFFER_INIT_CAPACITY;
-		} else {
-			buffer->capacity += bufsize;
-		}
-		SSL_REALLOC(buffer->data, buffer->size, buffer->capacity);
-	}
-	ft_memcpy(buffer->data + buffer->size, buf, bufsize);
-	buffer->size += bufsize;
+	return (buffer->capacity - ft_buffer_used(buffer));
 }
 
-size_t ft_buffer_lshift(t_buffer *buffer, size_t bufsize)
+void ft_buffer_reset(t_buffer *buffer)
 {
-	if (buffer->size < bufsize) {
-		bufsize = buffer->size;
-	}
-	ft_memmove(buffer->data, buffer->data + bufsize, buffer->size - bufsize);
-	buffer->size -= bufsize;
-	return (bufsize);
+	buffer->read_pos = 0;
+	buffer->write_pos = 0;
 }
 
-size_t ft_buffer_lshift_copy(t_buffer *buffer, void *buf, size_t bufsize) {
-	if (buffer->size < bufsize) {
-		bufsize = buffer->size;
+void ft_buffer_left_align(t_buffer *buffer)
+{
+	size_t used;
+
+	used = ft_buffer_used(buffer);
+
+	if (buffer->read_pos > 0) {
+		ft_memmove(buffer->arr, buffer->arr + buffer->read_pos, used);
+		buffer->write_pos -= buffer->read_pos;
+		buffer->read_pos = 0;
 	}
-	ft_memcpy(buf, buffer->data, bufsize);
-	ft_buffer_lshift(buffer, bufsize);
-	return (bufsize);
+	buffer->read_pos = 0;
+}
+
+void ft_buffer_right_align(t_buffer *buffer)
+{
+	size_t available;
+	size_t used;
+
+	available = ft_buffer_available(buffer);
+	used = ft_buffer_used(buffer);
+
+	if (available > 0 && used > 0) {
+		ft_memmove(buffer->arr + available, buffer->arr + buffer->read_pos, used);
+		buffer->read_pos += available;
+		buffer->write_pos = buffer->capacity;
+	}
+}
+
+void ft_buffer_resize_and_left_align(t_buffer *buffer, size_t new_capacity)
+{
+	void 	*new_arr;
+	size_t 	used;
+
+	if (new_capacity <= buffer->capacity) {
+		return ;
+	}
+	used = ft_buffer_used(buffer);
+	LIBFT_ALLOC(new_arr, new_capacity);
+	ft_memcpy(new_arr, buffer->arr + buffer->read_pos, used);
+	LIBFT_FREE(buffer->arr);
+	buffer->arr = new_arr;
+	buffer->capacity = new_capacity;
+	buffer->read_pos = 0;
+	buffer->write_pos = used;
+}
+
+ssize_t ft_buffer_read(t_buffer *buffer, char *buf, size_t size)
+{
+	size_t	used;
+	ssize_t rbytes;
+
+	if (NULL == buffer) {
+		return (-1);
+	}
+	if (NULL == buf) {
+		return (-1);
+	}
+	if (size == 0) {
+		return (0);
+	}
+	used = ft_buffer_used(buffer);
+	rbytes = MIN(size, used);
+	ft_memcpy(buf, buffer->arr + buffer->read_pos, rbytes);
+	buffer->read_pos += rbytes;
+
+	if (buffer->read_pos >= buffer->write_pos) {
+		ft_buffer_reset(buffer);
+	}
+	return (rbytes);
+}
+
+ssize_t ft_buffer_write(t_buffer *buffer, char *buf, size_t size)
+{
+	size_t	available;
+
+	if (NULL == buffer) {
+		return (-1);
+	}
+	if (NULL == buf) {
+		return (-1);
+	}
+	if (size == 0) {
+		return (0);
+	}
+	available = ft_buffer_available(buffer);
+
+	if (size > available) {
+		ft_buffer_resize_and_left_align(buffer, buffer->capacity + size - available);
+	}
+	if (size > buffer->capacity - buffer->write_pos) {
+		ft_buffer_left_align(buffer);
+	}
+	ft_memcpy(buffer->arr + buffer->write_pos, buf, size);
+	buffer->write_pos += size;
+
+	return (size);
 }

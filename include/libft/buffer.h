@@ -3,19 +3,22 @@
 
 # include <libft/common.h>
 
-# define BUFFER_INIT_CAPACITY 1024
-
 typedef struct s_buffer {
-	void *data;
-	size_t size;
-	size_t capacity;
-} t_buffer;
+	void		*arr;
+	size_t		capacity;
+	size_t		read_pos;
+	size_t		write_pos;
+}				t_buffer;
 
-t_buffer *ft_buffer_create(void);
-void ft_buffer_del(t_buffer *buffer);
-void ft_buffer_clear(t_buffer *buffer);
-void ft_buffer_append(t_buffer *buffer, void *buf, size_t bufsize);
-size_t ft_buffer_lshift(t_buffer *buffer, size_t bufsize);
-size_t ft_buffer_lshift_copy(t_buffer *buffer, void *buf, size_t bufsize);
+t_buffer	*ft_buffer_new(size_t capacity);
+void		ft_buffer_del(t_buffer *buffer);
+size_t		ft_buffer_used(t_buffer *buffer);
+size_t		ft_buffer_available(t_buffer *buffer);
+void		ft_buffer_reset(t_buffer *buffer);
+void		ft_buffer_left_align(t_buffer *buffer);
+void		ft_buffer_right_align(t_buffer *buffer);
+void		ft_buffer_resize_and_left_align(t_buffer *buffer, size_t new_capacity);
+ssize_t 	ft_buffer_write(t_buffer *buffer, char *buf, size_t size);
+ssize_t 	ft_buffer_read(t_buffer *buffer, char *buf, size_t size);
 
 #endif
