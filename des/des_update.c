@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   des_ecb_encode.c                                   :+:      :+:    :+:   */
+/*   des_update.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -16,108 +16,115 @@
 #include <des.h>
 #include <libft/bytes.h>
 
-static int __encrypt_update(t_des *des, t_iodes *in, t_iodes *out);
-static int __decrypt_update(t_des *des, t_iodes *in, t_iodes *out);
+static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t size);
+static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t size);
 
-int des_update(t_des *des, t_iodes *in, t_iodes *out)
+ssize_t des_update(t_des *des, const char *in, char *out, size_t size)
 {
 	DES_LOG(TRACE, "update start");
 	if (NULL == des || NULL == in || NULL == out) {
 		DES_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		return (-1);
 	}
 	if (des->mode == DES_MODE_DECRYPT) {
 		DES_LOG(DEBUG, "update: decrypting cipher");
-		return (__decrypt_update(des, in, out));
+		return (__decrypt_update(des, in, out, size));
 	}
 	else {
 		DES_LOG(DEBUG, "update: encrypting plaintext");
-		return (__encrypt_update(des, in, out));
+		return (__encrypt_update(des, in, out, size));
 	}
-	DES_LOG(TRACE, "update finish");
 }
 
-static int __encrypt_update(t_des *des, t_iodes *in, t_iodes *out)
+static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t size)
 {
-	ssize_t	rbytes;
+	size_t	in_pos, out_pos;
 
 	if (NULL == des || NULL == in || NULL == out) {
 		DES_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		return (-1);
 	}
 	if (des->bufsize > DES_BLOCK_SIZE) {
 		DES_LOG(ERROR, UNEXPECTED_ERROR);
-		return (SSL_ERR);
+		return (-1);
 	}
-	// Process message blocks. Buffer may be partially filled, only read up to block size.
-	while ((rbytes = io_read(in, (char *)des->buf + des->bufsize, DES_BLOCK_SIZE - des->bufsize)) > 0) {
-		DES_LOG(TRACE, "read %ld bytes", rbytes);
-		des->messize += rbytes;
-		des->bufsize += rbytes;
+	
+	in_pos = 0;
+	out_pos = 0;
 
-		if (des->bufsize != DES_BLOCK_SIZE) {
-			break;
+	// Process message blocks. Buffer may be partially filled.
+	while (in_pos < size) {
+		// Fill buffer up to block size
+		size_t to_copy = DES_BLOCK_SIZE - des->bufsize;
+		if (to_copy > size - in_pos) {
+			to_copy = size - in_pos;
 		}
-		DES_LOG(TRACE, "processing block");
-		des->f_permute_block(des, (uint64_t *)des->buf);
-
-		if (io_write(out, (char *)des->buf, des->bufsize) != DES_BLOCK_SIZE) {
-			DES_LOG(ERROR, IO_WRITE_ERROR);
-			return (SSL_ERR);
-		}
-		des->bufsize = 0;
-	}
-	if (rbytes < 0) {
-		DES_LOG(ERROR, IO_READ_ERROR);
-		return (SSL_ERR);
-	}
-	return (SSL_OK);
-}
-
-static int __decrypt_update(t_des *des, t_iodes *in, t_iodes *out)
-{
-	uint8_t buf[8];
-	ssize_t	rbytes;
-
-	if (NULL == des || NULL == in || NULL == out) {
-		DES_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
-	if (des->bufsize > DES_BLOCK_SIZE) {
-		DES_LOG(ERROR, UNEXPECTED_ERROR);
-		return (SSL_ERR);
-	}
-	// Fill the buffer up to block size.
-	if ((rbytes = io_read(in, (char *)des->buf + des->bufsize, DES_BLOCK_SIZE - des->bufsize)) < 0) {
-		DES_LOG(ERROR, IO_READ_ERROR);
-		return (SSL_ERR);
-	}
-	DES_LOG(TRACE, "read %ld bytes", rbytes);
-	rbytes += des->bufsize;
-
-	// Process blocks with 1 block delay.
-	while (rbytes == DES_BLOCK_SIZE) {
-		// Read next block.
-		if ((rbytes = io_read(in, (char *)buf, DES_BLOCK_SIZE)) < 0) {
-			DES_LOG(ERROR, IO_READ_ERROR);
-			return (SSL_ERR);
-		}
-		DES_LOG(TRACE, "read %ld bytes", rbytes);
-		// Process previous block if there is next block.
-		if (rbytes > 0) {
+		
+		ft_memcpy(des->buf + des->bufsize, in + in_pos, to_copy);
+		des->bufsize += to_copy;
+		des->messize += to_copy;
+		in_pos += to_copy;
+		
+		// If buffer is full, process it
+		if (des->bufsize == DES_BLOCK_SIZE) {
 			DES_LOG(TRACE, "processing block");
 			des->f_permute_block(des, (uint64_t *)des->buf);
-
-			if (io_write(out, (char *)des->buf, DES_BLOCK_SIZE) != DES_BLOCK_SIZE) {
-				DES_LOG(ERROR, IO_WRITE_ERROR);
-				return (SSL_ERR);
-			}
-			des->messize += DES_BLOCK_SIZE;
-
-			// Next block becomes previous block.
-			*(uint64_t *)des->buf = *(uint64_t *)buf;
-			des->bufsize = rbytes;
+			
+			ft_memcpy(out + out_pos, des->buf, DES_BLOCK_SIZE);
+			out_pos += DES_BLOCK_SIZE;
+			des->bufsize = 0;
 		}
 	}
-	return (SSL_OK);
+	
+	DES_LOG(TRACE, "update finish: wrote %zu bytes", out_pos);
+	return (out_pos);
+}
+
+static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t size)
+{
+	size_t	in_pos, out_pos;
+
+	if (NULL == des || NULL == in || NULL == out) {
+		DES_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (-1);
+	}
+	if (des->bufsize > DES_BLOCK_SIZE) {
+		DES_LOG(ERROR, UNEXPECTED_ERROR);
+		return (-1);
+	}
+	
+	in_pos = 0;
+	out_pos = 0;
+
+	// Process blocks with 1 block delay (to handle padding in final)
+	while (in_pos < size) {
+		// Fill buffer up to block size
+		size_t to_copy = DES_BLOCK_SIZE - des->bufsize;
+		if (to_copy > size - in_pos) {
+			to_copy = size - in_pos;
+		}
+		
+		ft_memcpy(des->buf + des->bufsize, in + in_pos, to_copy);
+		des->bufsize += to_copy;
+		in_pos += to_copy;
+		
+		// If buffer is full and there's more data, process the current block
+		if (des->bufsize == DES_BLOCK_SIZE && in_pos < size) {
+			DES_LOG(TRACE, "processing block");
+			
+			// Process it
+			des->f_permute_block(des, (uint64_t *)des->buf);
+			
+			// Write to output
+			ft_memcpy(out + out_pos, des->buf, DES_BLOCK_SIZE);
+			out_pos += DES_BLOCK_SIZE;
+			des->messize += DES_BLOCK_SIZE;
+			
+			// Clear buffer for next block
+			des->bufsize = 0;
+		}
+	}
+	
+	DES_LOG(TRACE, "update finish: wrote %zu bytes", out_pos);
+	return (out_pos);
 }

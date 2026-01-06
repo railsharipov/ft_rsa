@@ -5,28 +5,21 @@
 // Remove wspace, excluding LF and CR, in character array
 // wspace = SP / HT / VT / FF
 
-int textutil_del_wspace(const char *octets, size_t olen, char **p, size_t *psize)
+ssize_t textutil_del_wspace(const char *in, char *out, size_t len)
 {
-	size_t   ix, len;
-	char  *res;
+	size_t   ix, iy;
 
-	if (NULL == octets || NULL == p) {
-		return (SSL_ERR);
+	if (NULL == in || NULL == out) {
+		return (-1);
 	}
-	LIBFT_ALLOC(res, olen);
-	len = 0;
 	ix = 0;
-
-	while (ix < olen) {
-		if (!ft_iswspace(octets[ix])) {
-			res[len++] = octets[ix++];
+	iy = 0;
+	while (ix < len) {
+		if (!ft_iswspace(in[ix])) {
+			out[iy] = in[ix];
+			iy++;
 		}
-		else {
-			ix++;
-		}
+		ix++;
 	}
-	*p = res;
-	*psize = len;
-
-	return (SSL_OK);
+	return ((ssize_t)iy);
 }

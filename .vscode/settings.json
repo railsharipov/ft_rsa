@@ -8,6 +8,8 @@
         "rand.h": "c",
         "htable.h": "c",
         "argp.h": "c",
-        "test.h": "c"
+        "test.h": "c",
+        "io.h": "c",
+        "des.h": "c"
     }
 }

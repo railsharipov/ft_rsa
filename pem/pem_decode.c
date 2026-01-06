@@ -123,10 +123,20 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 			PEM_LOG(ERROR, "des init error");
 			goto label_exit;
 		}
-		if (SSL_OK != des_process_ostr(&des, &b64dec, data)) {
+		// Allocate output buffer (at most same size as input)
+		SSL_ALLOC(data->content, b64dec.size);
+
+		ssize_t update_written = des_update(&des, (char *)b64dec.content, (char *)data->content, b64dec.size);
+		if (update_written < 0) {
 			PEM_LOG(ERROR, "bad des decrypt");
 			goto label_exit;
 		}
+		ssize_t final_written = des_final(&des, (char *)data->content + update_written, b64dec.size - update_written);
+		if (final_written < 0) {
+			PEM_LOG(ERROR, "bad des decrypt");
+			goto label_exit;
+		}
+		data->size = update_written + final_written;
 	}
 	else {
 		PEM_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);

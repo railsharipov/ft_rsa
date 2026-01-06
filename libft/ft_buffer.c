@@ -4,57 +4,88 @@
 #include <libft/std.h>
 #include <libft/buffer.h>
 
-t_buffer *ft_buffer_create(void)
+t_buffer *ft_buffer_new(size_t capacity)
 {
 	t_buffer *buffer;
 
-	SSL_ALLOC(buffer, sizeof(t_buffer));
-	SSL_ALLOC(buffer->data, BUFFER_INIT_CAPACITY);
-	buffer->capacity = BUFFER_INIT_CAPACITY;
-	buffer->size = 0;
+	LIBFT_ALLOC(buffer, sizeof(t_buffer));
+	LIBFT_ALLOC(buffer->arr, capacity);
+	buffer->capacity = capacity;
+	buffer->read_pos = 0;
+	buffer->write_pos = 0;
 	return (buffer);
+}
+
+void ft_buffer_reset(t_buffer *buffer)
+{
+	if (NULL == buffer) {
+		return ;
+	}
+	buffer->read_pos = 0;
+	buffer->write_pos = 0;
 }
 
 void ft_buffer_del(t_buffer *buffer)
 {
-	SSL_FREE(buffer->data);
-	SSL_FREE(buffer);
-}
-
-void ft_buffer_clear(t_buffer *buffer)
-{
-	buffer->size = 0;
-}
-
-void ft_buffer_append(t_buffer *buffer, void *buf, size_t bufsize)
-{
-	if (buffer->size + bufsize > buffer->capacity) {
-		if (bufsize < BUFFER_INIT_CAPACITY) {
-			buffer->capacity += BUFFER_INIT_CAPACITY;
-		} else {
-			buffer->capacity += bufsize;
-		}
-		SSL_REALLOC(buffer->data, buffer->size, buffer->capacity);
+	if (NULL == buffer) {
+		return ;
 	}
-	ft_memcpy(buffer->data + buffer->size, buf, bufsize);
-	buffer->size += bufsize;
+	LIBFT_FREE(buffer->arr);
+	LIBFT_FREE(buffer);
 }
 
-size_t ft_buffer_lshift(t_buffer *buffer, size_t bufsize)
+size_t ft_buffer_used(t_buffer *buffer)
 {
-	if (buffer->size < bufsize) {
-		bufsize = buffer->size;
+	if (NULL == buffer) {
+		return (0);
 	}
-	ft_memmove(buffer->data, buffer->data + bufsize, buffer->size - bufsize);
-	buffer->size -= bufsize;
-	return (bufsize);
+	return (buffer->write_pos - buffer->read_pos);
 }
 
-size_t ft_buffer_lshift_copy(t_buffer *buffer, void *buf, size_t bufsize) {
-	if (buffer->size < bufsize) {
-		bufsize = buffer->size;
+size_t ft_buffer_avaialble(t_buffer *buffer)
+{
+	if (NULL == buffer) {
+		return (0);
 	}
-	ft_memcpy(buf, buffer->data, bufsize);
-	ft_buffer_lshift(buffer, bufsize);
-	return (bufsize);
+	return (buffer->capacity - ft_buffer_used(buffer));
+}
+
+int ft_buffer_is_empty(t_buffer *buffer)
+{
+	if (NULL == buffer) {
+		return (1);
+	}
+	return (ft_buffer_used(buffer) == 0);
+}
+
+int ft_buffer_is_full(t_buffer *buffer)
+{
+	if (NULL == buffer) {
+		return (1);
+	}
+	return (ft_buffer_used(buffer) == buffer->capacity);
+}
+
+ssize_t ft_buffer_read(t_buffer *buffer, char *buf, size_t nbytes)
+{
+	// stub
+	return (0);
+}
+
+ssize_t ft_buffer_write(t_buffer *buffer, char *buf, size_t nbytes)
+{
+	// stub
+	return (0);
+}
+
+ssize_t ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, const char *buf, size_t nbytes), void *ctx, size_t nbytes)
+{
+	// stub
+	return (0);
+}
+
+ssize_t ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, const char *buf, size_t nbytes), void *ctx, size_t nbytes)
+{
+	// stub
+	return (0);
 }

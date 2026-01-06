@@ -5,28 +5,21 @@
 // Remove wspace in character array
 // wspace = LF / CR / SP / HT / VT / FF
 
-int	textutil_del_eolws(const char *octets, size_t olen, char **p, size_t *psize)
+ssize_t textutil_del_eolws(const char *in, char *out, size_t len)
 {
-	char	*rptr;
-	char	*res;
-	size_t	ix;
+	size_t   ix, iy;
 
-	if (NULL == octets || NULL == p) {
-		return (SSL_ERR);
+	if (NULL == in || NULL == out) {
+		return (-1);
 	}
-	LIBFT_ALLOC(res, olen);
-	rptr = res;
-
-	for (ix = 0; ix < olen;) {
-		while ((ix < olen) && (!ft_iseolws(octets[ix]))) {
-			*rptr++ = octets[ix++];
+	ix = 0;
+	iy = 0;
+	while (ix < len) {
+		if (!ft_iseolws(in[ix])) {
+			out[iy] = in[ix];
+			iy++;
 		}
-		while ((ix < olen) && (ft_iseolws(octets[ix]))) {
-			ix++;
-		}
+		ix++;
 	}
-	*p = res;
-	*psize = (size_t)(rptr - res);
-
-	return (SSL_OK);
+	return ((ssize_t)iy);
 }

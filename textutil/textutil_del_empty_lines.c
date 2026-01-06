@@ -6,7 +6,7 @@
 // Since, in linux enviroment, CR and LF are interpreted
 // as distinct EOL characters (as opposed to DOS),
 // CRLF sequence would be equivalent to a double LF.
-// This is not what we want, so all CR are ignored
+// This is not what we want, so all CR are ignored.
 // LF = line feed character
 // CR = carriage return character
 
@@ -14,32 +14,25 @@ static const int LF = 0xA;
 
 // Delete empty lines in character array
 
-int textutil_del_empty_lines(const char *octets, size_t olen, char **p, size_t *psize)
+ssize_t textutil_del_empty_lines(const char *in, char *out, size_t len)
 {
-  	size_t   ix, len;
-  	char  *res;
+  	size_t   ix, iy;
 
-	if (NULL == octets || NULL == p) {
-		return (SSL_ERR);
+	if (NULL == in || NULL == out) {
+		return (-1);
 	}
-	LIBFT_ALLOC(res, olen);
-	len = 0;
 	ix = 0;
-
-	while (ix < olen) {
-		if (ft_iseol(octets[ix])) {
-			res[len++] = LF;
-			while ((ix < olen) && (ft_iseol(octets[ix]))) {
+	iy = 0;
+	while (ix < len) {
+		if (ft_iseol(in[ix])) {
+			out[iy++] = LF;
+			while (ix < len && ft_iseol(in[ix])) {
 				ix++;
 			}
 		}
 		else {
-			res[len++] = octets[ix++];
+			out[iy++] = in[ix++];
 		}
 	}
-
-	*p = res;
-	*psize = len;
-
-	return (SSL_OK);
+	return ((ssize_t)iy);
 }

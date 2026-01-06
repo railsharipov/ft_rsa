@@ -5,6 +5,7 @@
 # include <common.h>
 # include <libft/string.h>
 # include <libft/logger.h>
+# include <libft/buffer.h>
 
 # define IO_BUFSIZE 512
 
@@ -50,34 +51,102 @@ typedef struct s_iodes
 	int				mode;
 } t_iodes;
 
-typedef ssize_t	(*t_func_io_read)(void *ctx, char *buf, size_t nbytes);
-typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
-typedef int		(*t_func_io_close)(void *ctx);
+// IO V1 API
 
-typedef struct		s_iodes_v2
-{
-	void			*ctx;
-	t_func_io_read	read_f;
-	t_func_io_write	write_f;
-}					t_iodes_v2;
+// Initialization and configuration
+int		io_fopen(t_iodes *iodes, uint32_t flags, const char *filename);
+int		io_osbuf(t_iodes *iodes, uint32_t flags, t_ostring *osbuf);
+int		io_pipe(t_iodes *iodes, uint32_t flags, t_iodes *iodes_in, t_iodes *iodes_out);
+int		io_is_init(t_iodes *iodes);
 
-int				io_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+// Read operations
+ssize_t	io_read(t_iodes *iodes, char *buf, size_t nbytes);
+ssize_t	io_fread(t_iodes *iodes, char *buf, size_t nbytes);
+ssize_t	io_sread(t_iodes *iodes, char *buf, size_t nbytes);
 
-int				io_fopen(t_iodes *, uint32_t flags, const char *filename);
-int				io_osbuf(t_iodes *, uint32_t flags, t_ostring *osbuf);
-int				io_pipe(t_iodes *, uint32_t flags, t_iodes *iodes_1, t_iodes *iodes_2);
-int				io_is_init(t_iodes *iodes);
+// Write operations
+ssize_t	io_write(t_iodes *iodes, const char *buf, size_t nbytes);
+ssize_t	io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes);
+ssize_t	io_swrite(t_iodes *iodes, const char *buf, size_t nbytes);
 
-ssize_t			io_read(t_iodes *iodes, char *buf, size_t nbytes);
-ssize_t			io_sread(t_iodes *iodes, char *buf, size_t nbytes);
-ssize_t			io_fread(t_iodes *iodes, char *buf, size_t nbytes);
-ssize_t			io_write(t_iodes *iodes, const char *buf, size_t nbytes);
-ssize_t			io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes);
-ssize_t			io_swrite(t_iodes *iodes, const char *buf, size_t nbytes);
-ssize_t			io_pump(t_iodes *iodes, size_t nbytes);
-void 			io_print_stats(const t_iodes *iodes, const char *name);
-void 			io_copy(t_iodes * const dst, t_iodes * const src);
-void			io_fclose(t_iodes * const iodes);
-void			io_fclose_multi(t_iodes *iodes, ...);
+// Pipe operations
+ssize_t	io_pump(t_iodes *iodes, size_t nbytes);
+
+// Cleanup operations
+void	io_close(t_iodes * const iodes);
+void	io_fclose(t_iodes * const iodes);
+void	io_close_multi(t_iodes *iodes, ...);
+void	io_fclose_multi(t_iodes *iodes, ...);
+
+// Utility operations
+void	io_copy(t_iodes * const dest, t_iodes * const src);
+void	io_print_stats(const t_iodes *iodes, const char *name);
+
+// Logging
+int		io_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+
+
+
+
+// IO V2 API
+
+typedef ssize_t	(*t_func_io_v2_read)(void *ctx, const char *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const char *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
+typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
+
+typedef struct s_io_v2_interface {
+	t_func_io_v2_read	read;
+	t_func_io_v2_write	write;
+	t_func_io_v2_flush	flush;
+	t_func_io_v2_close	close;
+} t_io_v2_interface;
+
+typedef enum e_io_v2_flag {
+	IO_V2_FLAG_READ		= 1UL << 1,
+	IO_V2_FLAG_WRITE	= 1UL << 2,
+	IO_V2_FLAG_FLUSH 	= 1UL << 3,
+	IO_V2_FLAG_CLOSE 	= 1UL << 4,
+} t_io_v2_flag;
+
+typedef enum e_io_v2_status {
+	IO_V2_STATUS_OK		= 0,
+	IO_V2_STATUS_ERROR	= -1,
+	IO_V2_STATUS_EOF	= -2,
+} t_io_v2_status;
+
+struct s_io_v2_pipe;
+
+typedef struct s_io_v2_stream {
+	t_io_v2_interface			interface;
+	t_io_v2_flag				flags;
+	t_io_v2_status				status;
+	void						*ctx;
+} t_io_v2_stream;
+
+typedef enum e_io_v2_pipe_type {
+	IO_V2_PIPE_TYPE_UNIDIR,
+	IO_V2_PIPE_TYPE_BIDIR,
+} t_io_v2_pipe_type;
+
+typedef struct s_io_v2_pipe {
+	t_io_v2_stream		*upstream;
+	t_io_v2_stream		*downstream;
+	t_io_v2_pipe_type	type;
+	t_io_v2_status		status;
+	t_buffer			*buffer;
+} t_io_v2_pipe;
+
+ssize_t	io_v2_read(t_io_v2_stream *stream, const char *buf, size_t nbytes);
+ssize_t	io_v2_write(t_io_v2_stream *stream, const char *buf, size_t nbytes);
+ssize_t	io_v2_flush(t_io_v2_stream *stream);
+ssize_t	io_v2_close(t_io_v2_stream *stream);
+
+int		io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity);
+int		io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);
+
+int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
+int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
+ssize_t	io_v2_pipe_close(t_io_v2_pipe *pipe);
 
 #endif
