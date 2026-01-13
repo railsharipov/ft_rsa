@@ -34,7 +34,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 
 	if (NULL == pem || NULL == enc || NULL == data) {
 		PEM_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);	
+		return (SSL_ERR);
 	}
 	ft_ostr_init(&b64enc_lines);
 	ft_ostr_init(&b64enc);
@@ -61,7 +61,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		pem->proc = PEM_PROC_TYPE_NONE;
 	}
     PEM_LOG(TRACE, "proc type: %#x", pem->proc);
-	
+
 	if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
 		PEM_LOG(TRACE, "scanning encryption header: pos: %d", pos);
 
@@ -71,7 +71,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 			goto label_exit;
 		}
 		pem->cipher = ft_streq(cipher_name, __CIPHER_NAME_DES_CBC) ? PEM_CIPHER_DES_CBC : PEM_CIPHER_NONE;
-		
+
 		if (pem->cipher != PEM_CIPHER_DES_CBC) {
 			PEM_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);
 			goto label_exit;
@@ -87,7 +87,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		PEM_LOG(TRACE, "encryption: type=%#x, cipher=%s, iv=%s", pem->cipher, cipher_name, salthex);
 	}
 	pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "\n");
-	
+
 	PEM_LOG(TRACE, "searching pem label end: pos: %d", pos);
 	idx = textutil_findf((char *)enc->content, enc->size, "%s%s%s", "-----END ", pem->label, "-----");
 	if (idx < 0) {
@@ -98,10 +98,17 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	PEM_LOG(TRACE, "copied base64 encoding: content: %p, size: %d", b64enc_lines.content, b64enc_lines.size);
 
 	PEM_LOG(TRACE, "deleting whitespace from base64 encoding");
-	if (SSL_OK != textutil_del_eol((char *)b64enc_lines.content, b64enc_lines.size, (char **)&b64enc.content, &b64enc.size)) {
+	////////////////////
+	////////////////////
+
+	// TODO: fix this, b64enc has no initialized content pointer
+	if (SSL_OK != textutil_del_eol((char *)b64enc_lines.content, (char *)b64enc.content, b64enc_lines.size)) {
 		PEM_LOG(ERROR, "bad base64 format");
 		goto label_exit;
 	}
+
+	////////////////////
+	////////////////////
 	PEM_LOG(TRACE, "decoding base64 encoding: content: %p, size: %d", b64enc.content, b64enc.size);
 	if (SSL_OK != base64_decode(b64enc.content, b64enc.size, &b64dec.content, &b64dec.size)) {
 		PEM_LOG(ERROR, "bad base64 encoding");
@@ -123,10 +130,20 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 			PEM_LOG(ERROR, "des init error");
 			goto label_exit;
 		}
-		if (SSL_OK != des_process_ostr(&des, &b64dec, data)) {
+		// Allocate output buffer (at most same size as input)
+		SSL_ALLOC(data->content, b64dec.size);
+
+		ssize_t update_written = des_update(&des, (char *)b64dec.content, (char *)data->content, b64dec.size);
+		if (update_written < 0) {
 			PEM_LOG(ERROR, "bad des decrypt");
 			goto label_exit;
 		}
+		ssize_t final_written = des_final(&des, (char *)data->content + update_written, b64dec.size - update_written);
+		if (final_written < 0) {
+			PEM_LOG(ERROR, "bad des decrypt");
+			goto label_exit;
+		}
+		data->size = update_written + final_written;
 	}
 	else {
 		PEM_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);

@@ -21,9 +21,9 @@ int			ft_buffer_is_empty(t_buffer *buffer);
 int			ft_buffer_is_full(t_buffer *buffer);
 void		ft_buffer_left_align(t_buffer *buffer);
 void		ft_buffer_right_align(t_buffer *buffer);
-ssize_t 	ft_buffer_write(t_buffer *buffer, char *buf, size_t size);
-ssize_t 	ft_buffer_read(t_buffer *buffer, char *buf, size_t size);
-ssize_t 	ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, char *buf, size_t nbytes), void *ctx, size_t nbytes);
-ssize_t 	ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, char *buf, size_t nbytes), void *ctx, size_t nbytes);
+ssize_t 	ft_buffer_write(t_buffer *buffer, const char *buf, size_t size);
+ssize_t 	ft_buffer_read(t_buffer *buffer, const char *buf, size_t size);
+ssize_t 	ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, const char *buf, size_t nbytes), void *ctx, size_t nbytes);
+ssize_t 	ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, const char *buf, size_t nbytes), void *ctx, size_t nbytes);
 
 #endif

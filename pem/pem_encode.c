@@ -34,13 +34,13 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	}
 
 	ret = SSL_ERR;
-	
+
 	ft_ostr_init(enc);
 	ft_ostr_init(&pemenc);
 	ft_ostr_init(&cipher);
 	ft_ostr_init(&b64flat);
 	ft_ostr_init(&b64formatted);
-	
+
 	PEM_LOG(TRACE, "writing pem label begin: %s", pem->label);
 	ft_snprintf(buf, sizeof(buf), "%s%s%s", "-----BEGIN ", pem->label, "-----\n");
 	ft_ostr_append(&pemenc, buf, ft_strlen(buf));
@@ -86,17 +86,28 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 			PEM_LOG(TRACE, "writing dek info header: salt: %s", salthex);
 			ft_ostr_appendf(&pemenc, "DEK-Info: DES-CBC,%s\n\n", salthex);
 			SSL_FREE(salthex);
-	
-			PEM_LOG(TRACE, "encrypting data: content: %p, size: %d", data->content, data->size);
+
+			PEM_LOG(TRACE, "encrypting data: content: %p, size: %zu", data->content, data->size);
 
 			if (SSL_OK != des_init(&des, key, iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT)) {
 				PEM_LOG(ERROR, "des init error");
 				goto label_exit;
 			}
-			if (SSL_OK != des_process_ostr(&des, data, &cipher)) {
+			// Allocate output buffer (input size + one block for padding)
+			size_t max_cipher_size = data->size + DES_BLOCK_SIZE;
+			SSL_ALLOC(cipher.content, max_cipher_size);
+
+			ssize_t update_written = des_update(&des, (char *)data->content, (char *)cipher.content, data->size);
+			if (update_written < 0) {
 				PEM_LOG(ERROR, "bad des encrypt");
 				goto label_exit;
 			}
+			ssize_t final_written = des_final(&des, (char *)cipher.content + update_written, max_cipher_size - update_written);
+			if (final_written < 0) {
+				PEM_LOG(ERROR, "bad des encrypt");
+				goto label_exit;
+			}
+			cipher.size = update_written + final_written;
 		}
 		else {
 			PEM_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);

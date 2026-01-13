@@ -54,9 +54,8 @@ enum	e_des
 int		des_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int		des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode);
-int		des_process_ostr(t_des *des, t_ostring *input, t_ostring *output);
-int 	des_update(t_des *des, t_iodes *in, t_iodes *out);
-int 	des_final(t_des *des, t_iodes *out);
+ssize_t	des_update(t_des *des, const char *in, char *out, size_t size);
+ssize_t	des_final(t_des *des, char *out, size_t size);
 
 /* Low level functions */
 void	des_permute_block_ecb(t_des *des, uint64_t *block);

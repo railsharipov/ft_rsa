@@ -92,6 +92,35 @@ void    ft_free_all(void);
 	} \
 	while (0)
 
+#  define LIBFT_MUST_ALLOC(PTR, SZ) \
+	do \
+	{ \
+		PTR = ft_malloc(#PTR, SZ); \
+		if (LIBFT_OK != global_libft_alloc_error) \
+		{ \
+			exit(1); \
+		} \
+	} \
+	while (0)
+
+#  define LIBFT_MUST_REALLOC(PTR, SZ, NSZ) \
+	do \
+	{ \
+		void	*NEWPTR; \
+		NEWPTR = ft_malloc(#PTR "_realloc_", NSZ); \
+		if (LIBFT_OK != global_libft_alloc_error) \
+		{ \
+			exit(1); \
+		} \
+		if (NULL != PTR && NULL != NEWPTR) \
+		{ \
+			ft_memcpy(NEWPTR, PTR, SZ); \
+			ft_free(#PTR, PTR); \
+		} \
+		PTR = NEWPTR; \
+	} \
+	while (0)
+
 # else
 
 #  define LIBFT_FREE(PTR) \
@@ -125,6 +154,35 @@ void    ft_free_all(void);
 	{ \
 		void	*NEWPTR; \
 		LIBFT_ALLOC(NEWPTR, NSZ); \
+		if (NULL != PTR && NULL != NEWPTR) \
+		{ \
+			ft_memcpy(NEWPTR, PTR, SZ); \
+			free(PTR); \
+		} \
+		PTR = NEWPTR; \
+	} \
+	while (0)
+
+#  define LIBFT_MUST_ALLOC(PTR, SZ) \
+	do \
+	{ \
+		PTR = malloc(SZ); \
+		if (ENOMEM == errno) \
+		{ \
+			exit(ENOMEM); \
+		} \
+		else \
+		{ \
+			ft_bzero(PTR, SZ); \
+		} \
+	} \
+	while (0)
+
+#  define LIBFT_MUST_REALLOC(PTR, SZ, NSZ) \
+	do \
+	{ \
+		void	*NEWPTR; \
+		LIBFT_MUST_ALLOC(NEWPTR, NSZ); \
 		if (NULL != PTR && NULL != NEWPTR) \
 		{ \
 			ft_memcpy(NEWPTR, PTR, SZ); \

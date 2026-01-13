@@ -2,30 +2,27 @@
 #include <libft/string.h>
 #include <libft/std.h>
 
-int textutil_nreplace(const char *octets, size_t olen, char **res, size_t *rsize, const char *pattern, size_t patlen, const char *rep, size_t replen)
+ssize_t textutil_nreplace(const char *in, size_t inlen, char **res, const char *pat, size_t patlen, const char *rep, size_t replen)
 {
-	char 	*buf;
-	size_t	idx, end, len;
+	size_t	idx, end, reslen;
 
-	if (NULL == pattern || NULL == octets || NULL == res || NULL == rsize) {
+	if (NULL == in || NULL == pat || NULL == res) {
 		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		return (-1);
 	}
-	if (patlen > olen) {
-		return (SSL_OK);
+	if (patlen > inlen) {
+		return (-1);
 	}
-	if ((idx = textutil_find(octets, olen, pattern, patlen)) < 0) {
+	if ((idx = textutil_find(in, inlen, pat, patlen)) < 0) {
 		return (SSL_OK);
 	}
 	end = idx + patlen;
-	len = olen - patlen + replen;
-	SSL_ALLOC(buf, len + 1);
-	ft_memcpy(buf, octets, idx);
-	ft_memcpy(buf + idx, rep, replen);
-	ft_memcpy(buf + idx + replen, octets + end, olen - end);
-	buf[len] = '\0';
-	*res = buf;
-	*rsize = len;
+	reslen = inlen - patlen + replen;
+	SSL_ALLOC((*res), reslen + 1);
+	ft_memcpy((*res), in, idx);
+	ft_memcpy((*res) + idx, rep, replen);
+	ft_memcpy((*res) + idx + replen, in + end, inlen - end);
+	(*res)[reslen] = '\0';
 
-	return (SSL_OK);
+	return ((ssize_t)reslen);
 }

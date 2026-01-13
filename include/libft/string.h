@@ -26,16 +26,17 @@ typedef	struct s_ostring
 } t_ostring;
 
 // Octet string functions
-t_ostring	*ft_ostr_create(const char *init_str);
+t_ostring	*ft_ostr_new(void);
+t_ostring	*ft_ostr_create_from_cstr(const char *init_str);
 void 		ft_ostr_init(t_ostring *ostring);
 void		ft_ostr_clear(t_ostring *ostring);
 void		ft_ostr_del(t_ostring *ostring);
 t_ostring	*ft_ostr_dup(const t_ostring *ostring);
-void		ft_ostr_append_cstr(t_ostring *ostring, const char *cstr);
-void		ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr);
-void		ft_ostr_append(t_ostring *ostring, void *content, size_t size);
-void		ft_ostr_appendf(t_ostring *ostring, const char *fmt, ...);
-void		ft_ostr_prepend(t_ostring *ostring, void *content, size_t size);
+t_ostring	*ft_ostr_append_cstr(t_ostring *ostring, const char *cstr);
+t_ostring	*ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr);
+t_ostring	*ft_ostr_append(t_ostring *ostring, void *content, size_t size);
+t_ostring	*ft_ostr_appendf(t_ostring *ostring, const char *fmt, ...);
+t_ostring	*ft_ostr_prepend(t_ostring *ostring, void *content, size_t size);
 char		*ft_ostr_to_cstr(const t_ostring *ostr, size_t offset, size_t len);
 
 // C-string functions

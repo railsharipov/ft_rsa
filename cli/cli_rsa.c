@@ -317,7 +317,7 @@ static int	__decode_key(t_node **asn_key)
 	pem_init(&pem);
 	
 	if (RSA_PEM == __inform) {
-		der_key = ft_ostr_create(NULL);
+		der_key = ft_ostr_new();
 		if (SSL_OK != pem_decode(&pem, &__inkey, der_key, __passin)) {
 			CLI_LOG(ERROR, "failed to decode PEM key");
 			goto label_exit;

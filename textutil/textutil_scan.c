@@ -9,68 +9,68 @@ enum e_scanf_mode
 	SCANF_MODE_BUFFERED,
 };
 
-static int __sscanf(const char *octets, size_t olen, const char *format, va_list ap, enum e_scanf_mode mode);
-static size_t __parse_string(const char *octets, size_t olen, size_t opos, char **res);
-static size_t __parse_string_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size);
-static size_t __parse_number(const char *octets, size_t olen, size_t opos, ssize_t *res);
-static size_t __parse_number_u(const char *octets, size_t olen, size_t opos, size_t *res);
+static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap, enum e_scanf_mode mode);
+static size_t __parse_string(const char *in, size_t inlen, size_t inpos, char **res);
+static size_t __parse_string_b(const char *in, size_t inlen, size_t inpos, char *buf, size_t buf_size);
+static size_t __parse_number(const char *in, size_t inlen, size_t inpos, ssize_t *res);
+static size_t __parse_number_u(const char *in, size_t inlen, size_t inpos, size_t *res);
 static size_t __parse_charset(const char *format, size_t fpos, char *charset);
-static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char **res, const char *charset);
-static size_t __parse_scanset_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size, const char *charset);
+static size_t __parse_scanset(const char *in, size_t inlen, size_t inpos, char **res, const char *charset);
+static size_t __parse_scanset_b(const char *in, size_t inlen, size_t inpos, char *buf, size_t buf_size, const char *charset);
 
-int textutil_bnscanf(const char *octets, size_t olen, const char *format, ...)
+int textutil_bnscanf(const char *in, size_t inlen, const char *format, ...)
 {
 	va_list	ap;
 	int		matches;
 
-	TEXTUTIL_LOG(TRACE, "Scanning octets: mode=buffered");
-	if (NULL == octets || olen == 0 || NULL == format) {
+	TEXTUTIL_LOG(TRACE, "Scanning in: mode=buffered");
+	if (NULL == in || inlen == 0 || NULL == format) {
 		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 
 	va_start(ap, format);
-	matches = __sscanf(octets, olen, format, ap, SCANF_MODE_BUFFERED);
+	matches = __sscanf(in, inlen, format, ap, SCANF_MODE_BUFFERED);
 	va_end(ap);
 
 	return (matches);
 }
 
-int textutil_sscanf(const char *octets, size_t olen, const char *format, ...)
+int textutil_sscanf(const char *in, size_t inlen, const char *format, ...)
 {
 	va_list	ap;
 	int		matches;
 
-	TEXTUTIL_LOG(TRACE, "Scanning octets: mode=default");
-	if (NULL == octets || olen == 0 || NULL == format) {
+	TEXTUTIL_LOG(TRACE, "Scanning in: mode=default");
+	if (NULL == in || inlen == 0 || NULL == format) {
 		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 
 	va_start(ap, format);
-	matches = __sscanf(octets, olen, format, ap, SCANF_MODE_DEFAULT);
+	matches = __sscanf(in, inlen, format, ap, SCANF_MODE_DEFAULT);
 	va_end(ap);
 
 	return (matches);
 }
 
-static int __sscanf(const char *octets, size_t olen, const char *format, va_list ap, enum e_scanf_mode mode)
+static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap, enum e_scanf_mode mode)
 {
 	size_t	fpos = 0;
-	size_t	opos = 0;
+	size_t	inpos = 0;
 	size_t	nbytes;
 	void	*arg;
 	int		matches = 0;
 
 	TEXTUTIL_LOG(TRACE, "Scanning using format string: '%s'", format);
 	
-	while (format[fpos] != '\0' && opos < olen) {
+	while (format[fpos] != '\0' && inpos < inlen) {
 		if (ft_iseolws(format[fpos])) {
 			while (ft_iseolws(format[fpos])) {
 				fpos++;
 			}
-			while (ft_iseolws(octets[opos])) {
-				opos++;
+			while (ft_iseolws(in[inpos])) {
+				inpos++;
 			}
 			continue;
 		}
@@ -82,9 +82,9 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 
 			if (format[fpos] == '%') {
 				TEXTUTIL_LOG(TRACE, "Found double %% token");
-				if (octets[opos] == '%') {
+				if (in[inpos] == '%') {
 					fpos++;
-					opos++;
+					inpos++;
 				} else {
 					break;
 				}
@@ -99,12 +99,12 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					buf_size = va_arg(ap, size_t);
 					TEXTUTIL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
 					if (buf != NULL && buf_size > 0) {
-						if ((nbytes = __parse_string_b(octets, olen, opos, buf, buf_size)) == 0) {
-							TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", octets);
+						if ((nbytes = __parse_string_b(in, inlen, inpos, buf, buf_size)) == 0) {
+							TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", in);
 							buf[0] = '\0';
 							break;
 						}
-						opos += nbytes;
+						inpos += nbytes;
 						TEXTUTIL_LOG(TRACE, "String match: %s", buf);
 					} else {
 						TEXTUTIL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
@@ -114,11 +114,11 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					char	*str;
 					TEXTUTIL_LOG(TRACE, "Found %%s token");
 					fpos++;
-					if ((nbytes = __parse_string(octets, olen, opos, &str)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", octets);
+					if ((nbytes = __parse_string(in, inlen, inpos, &str)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", in);
 						break;
 					}
-					opos += nbytes;
+					inpos += nbytes;
 					arg = va_arg(ap, char **);
 					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
@@ -134,11 +134,11 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				ssize_t	num;
 				TEXTUTIL_LOG(TRACE, "Found %%d token");
 				fpos++;
-				if ((nbytes = __parse_number(octets, olen, opos, &num)) == 0) {
-					TEXTUTIL_LOG(TRACE, "No match for %%d in input string: '%s'", octets);
+				if ((nbytes = __parse_number(in, inlen, inpos, &num)) == 0) {
+					TEXTUTIL_LOG(TRACE, "No match for %%d in input string: '%s'", in);
 					break;
 				}
-				opos += nbytes;
+				inpos += nbytes;
 				arg = va_arg(ap, int *);
 				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
@@ -151,11 +151,11 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				size_t	num;
 				TEXTUTIL_LOG(TRACE, "Found %%u token");
 				fpos++;
-				if ((nbytes = __parse_number_u(octets, olen, opos, &num)) == 0) {
-					TEXTUTIL_LOG(TRACE, "No match for %%u in input string: '%s'", octets);
+				if ((nbytes = __parse_number_u(in, inlen, inpos, &num)) == 0) {
+					TEXTUTIL_LOG(TRACE, "No match for %%u in input string: '%s'", in);
 					break;
 				}
-				opos += nbytes;
+				inpos += nbytes;
 				arg = va_arg(ap, unsigned int *);
 				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
@@ -170,10 +170,10 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				arg = va_arg(ap, char *);
 				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
-					*(char *)arg = octets[opos];
+					*(char *)arg = in[inpos];
 					TEXTUTIL_LOG(TRACE, "Char match: v=%c", *(char *)arg);
 				}
-				opos++;
+				inpos++;
 				matches++;
 			}
 			else if (format[fpos] == 'z') {
@@ -183,8 +183,8 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				if (format[fpos] == 'd') {
 					TEXTUTIL_LOG(TRACE, "Found %%zd token");
 					fpos++;
-					if ((nbytes = __parse_number(octets, olen, opos, &num)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for %%zd in input string: '%s'", octets);
+					if ((nbytes = __parse_number(in, inlen, inpos, &num)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for %%zd in input string: '%s'", in);
 						break;
 					}
 					arg = va_arg(ap, ssize_t *);
@@ -199,8 +199,8 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					size_t	num;
 					TEXTUTIL_LOG(TRACE, "Found %%zu token");
 					fpos++;
-					if ((nbytes = __parse_number_u(octets, olen, opos, &num)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for %%zu in input string: '%s'", octets);
+					if ((nbytes = __parse_number_u(in, inlen, inpos, &num)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for %%zu in input string: '%s'", in);
 						break;
 					}
 					arg = va_arg(ap, size_t *);
@@ -227,11 +227,11 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					buf_size = va_arg(ap, size_t);
 					TEXTUTIL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
 					if (buf != NULL && buf_size > 0) {
-						if ((nbytes = __parse_scanset_b(octets, olen, opos, buf, buf_size, charset)) == 0) {
-							TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", octets);
+						if ((nbytes = __parse_scanset_b(in, inlen, inpos, buf, buf_size, charset)) == 0) {
+							TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", in);
 							break;
 						}
-						opos += nbytes;
+						inpos += nbytes;
 						TEXTUTIL_LOG(TRACE, "Scanset match: string: %s", buf);
 					} else {
 						TEXTUTIL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
@@ -239,11 +239,11 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 					}
 				} else {
 					char	*str;
-					if ((nbytes = __parse_scanset(octets, olen, opos, &str, charset)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", octets);
+					if ((nbytes = __parse_scanset(in, inlen, inpos, &str, charset)) == 0) {
+						TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", in);
 						break;
 					}
-					opos += nbytes;
+					inpos += nbytes;
 					arg = va_arg(ap, char **);
 					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
@@ -260,12 +260,12 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 				break;
 			}
 		}
-		else if (format[fpos] == octets[opos]) {
+		else if (format[fpos] == in[inpos]) {
 			fpos++;
-			opos++;
+			inpos++;
 		}
 		else {
-			TEXTUTIL_LOG(TRACE, "Mismatch: format='%c', octets='%c'", format[fpos], octets[opos]);
+			TEXTUTIL_LOG(TRACE, "Mismatch: format='%c', in='%c'", format[fpos], in[inpos]);
 			break;
 		}
 	}
@@ -274,76 +274,76 @@ static int __sscanf(const char *octets, size_t olen, const char *format, va_list
 	return (matches);
 }
 
-static size_t __parse_string(const char *octets, size_t olen, size_t opos, char **res)
+static size_t __parse_string(const char *in, size_t inlen, size_t inpos, char **res)
 {
-	size_t	start = opos;
+	size_t	start = inpos;
 	size_t	end = start;
 
 	*res = NULL;
-	while (end < olen && octets[end] && !ft_iseolws(octets[end])) {
+	while (end < inlen && in[end] && !ft_iseolws(in[end])) {
 		end++;
 	}
 	TEXTUTIL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, end - start);
-	*res = ft_strndup(octets + start, end - start);
+	*res = ft_strndup(in + start, end - start);
 
 	return (end - start);
 }
 
-static size_t __parse_string_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size)
+static size_t __parse_string_b(const char *in, size_t inlen, size_t inpos, char *buf, size_t buf_size)
 {
-	size_t	start = opos;
+	size_t	start = inpos;
 	size_t	end = start;
 	size_t	len;
 
-	while (end < olen && octets[end] && !ft_iseolws(octets[end])) {
+	while (end < inlen && in[end] && !ft_iseolws(in[end])) {
 		end++;
 	}
 	len = MIN(end - start, buf_size - 1);
 	TEXTUTIL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, len);
-	ft_memcpy(buf, octets + start, len);
+	ft_memcpy(buf, in + start, len);
 	buf[len] = '\0';
 
 	return (len);
 }
 
-static size_t __parse_number(const char *octets, size_t olen, size_t opos, ssize_t *res)
+static size_t __parse_number(const char *in, size_t inlen, size_t inpos, ssize_t *res)
 {
-    size_t start = opos;
+    size_t start = inpos;
     size_t end = start;
 
-    if (end < olen && (octets[end] == '+' || octets[end] == '-')) {
+    if (end < inlen && (in[end] == '+' || in[end] == '-')) {
         end++;
     }
-    if (end == olen || !ft_isdigit(octets[end])) {
+    if (end == inlen || !ft_isdigit(in[end])) {
         return (0);
     }
-    while (end < olen && ft_isdigit(octets[end])) {
+    while (end < inlen && ft_isdigit(in[end])) {
         end++;
     }
-    *res = ft_atoi(octets + start);
+    *res = ft_atoi(in + start);
 
-    return (end - opos);
+    return (end - inpos);
 }
 
-static size_t __parse_number_u(const char *octets, size_t olen, size_t opos, size_t *res)
+static size_t __parse_number_u(const char *in, size_t inlen, size_t inpos, size_t *res)
 {
-    size_t start = opos;
+    size_t start = inpos;
     size_t end;
 
-    while (start < olen && ft_iseolws(octets[start])) {
+    while (start < inlen && ft_iseolws(in[start])) {
         start++;
     }
     end = start;
 
-    if (end == olen || !ft_isdigit(octets[end])) {
+    if (end == inlen || !ft_isdigit(in[end])) {
         return (0);
     }
-    while (end < olen && ft_isdigit(octets[end])) {
+    while (end < inlen && ft_isdigit(in[end])) {
         end++;
     }
-    *res = ft_atoi_u(octets + start);
+    *res = ft_atoi_u(in + start);
 
-    return (end - opos);
+    return (end - inpos);
 }
 
 static size_t __parse_charset(const char *format, size_t fpos, char *charset)
@@ -388,15 +388,15 @@ static size_t __parse_charset(const char *format, size_t fpos, char *charset)
 	return (fpos - start);
 }
 
-static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char **res, const char *charset)
+static size_t __parse_scanset(const char *in, size_t inlen, size_t inpos, char **res, const char *charset)
 {
-	size_t	start = opos;
+	size_t	start = inpos;
 	size_t	end = start;
 
 	*res = NULL;
-	while (end < olen) {
-		if (!charset[(int)octets[end]]) {
-			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, octets[end]);
+	while (end < inlen) {
+		if (!charset[(int)in[end]]) {
+			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, in[end]);
 			break;
 		}
 		end++;
@@ -405,20 +405,20 @@ static size_t __parse_scanset(const char *octets, size_t olen, size_t opos, char
 		TEXTUTIL_LOG(TRACE, "No matching characters for scanset");
 		return (0);
 	}
-	*res = ft_strndup(octets + start, end - start);
+	*res = ft_strndup(in + start, end - start);
 
 	return (end - start);
 }
 
-static size_t __parse_scanset_b(const char *octets, size_t olen, size_t opos, char *buf, size_t buf_size, const char *charset)
+static size_t __parse_scanset_b(const char *in, size_t inlen, size_t inpos, char *buf, size_t buf_size, const char *charset)
 {
-	size_t	start = opos;
+	size_t	start = inpos;
 	size_t	end = start;
 	size_t	len;
 
-	while (end < olen) {
-		if (!charset[(int)octets[end]]) {
-			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, octets[end]);
+	while (end < inlen) {
+		if (!charset[(int)in[end]]) {
+			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, in[end]);
 			break;
 		}
 		end++;
@@ -428,7 +428,7 @@ static size_t __parse_scanset_b(const char *octets, size_t olen, size_t opos, ch
 		return (0);
 	}
 	len = MIN(end - start, buf_size - 1);
-	ft_memcpy(buf, octets + start, len);
+	ft_memcpy(buf, in + start, len);
 	buf[len] = '\0';
 
 	return (end - start);
