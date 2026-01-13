@@ -73,32 +73,61 @@ void			io_fclose_multi(t_iodes *iodes, ...);
 
 typedef ssize_t	(*t_func_io_read)(void *ctx, char *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_write)(void *ctx, const char *buf, size_t nbytes);
-typedef void	(*t_func_io_pipe)(void *ctx);
+typedef ssize_t	(*t_func_io_flush)(void *ctx, const char *buf, size_t nbytes);
 typedef void	(*t_func_io_close)(void *ctx);
 
 typedef struct	s_io_v2_interface
 {
 	t_func_io_read	read;
 	t_func_io_write	write;
-	t_func_io_pipe	pipe;
 	t_func_io_close	close;
+	t_func_io_flush	flush;
 }				t_io_v2_interface;
 
-typedef enum	e_io_v2_mode
+typedef enum	e_io_v2_type
 {
-	IO_V2_MODE_READ,
-	IO_V2_MODE_WRITE,
-	IO_V2_MODE_PIPE,
-}				t_io_v2_mode;
+	IO_V2_TYPE_BASIC = 0,
+	IO_V2_TYPE_BUFFERED,
+	IO_V2_TYPE_PIPE,
+}				t_io_v2_type;
+
+typedef enum	e_io_v2_state
+{
+	IO_V2_STATUS_OK = 0,
+	IO_V2_STATUS_EOF,
+	IO_V2_STATUS_CLOSED,
+}				t_io_v2_status;
+
+typedef enum	e_io_v2_flag
+{
+	IO_V2_FLAG_NONE = 0UL,
+	IO_V2_FLAG_READ = 1UL << 1,
+	IO_V2_FLAG_WRITE = 1UL << 2,
+	IO_V2_FLAG_FLUSH = 1UL << 3,
+	IO_V2_FLAG_CLOSE = 1UL << 4,
+}				t_io_v2_flag;
 
 typedef struct		s_io_v2_stream
 {
-	void			*ctx;
+	void				*ctx;
 	t_io_v2_interface	interface;
-	t_io_v2_mode		mode;
+	t_io_v2_type		type;
+	t_io_v2_flag		flags;
+	t_io_v2_status		status;
 }					t_io_v2_stream;
 
+typedef struct		s_io_v2_pipe {
+	t_io_v2_stream	*in;
+	t_io_v2_stream	*out;
+	uint8_t			*buf;
+	size_t			bufsize;
+} 					t_io_v2_pipe;
 
-int	io_v2_stream(t_io_v2_stream **stream, void *ctx, const t_io_v2_interface interface, enum e_io_v2_mode mode);
+int	    io_v2_stream(t_io_v2_stream **stream, void *ctx, const t_io_v2_interface interface, t_io_v2_flag flags);
+
+ssize_t	io_v2_read(t_io_v2_stream *stream, char *buf, size_t nbytes);
+ssize_t	io_v2_write(t_io_v2_stream *stream, const char *buf, size_t nbytes);
+void	io_v2_close(t_io_v2_stream *stream);
+
 
 #endif

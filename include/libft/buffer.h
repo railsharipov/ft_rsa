@@ -14,11 +14,16 @@ t_buffer	*ft_buffer_new(size_t capacity);
 void		ft_buffer_del(t_buffer *buffer);
 size_t		ft_buffer_used(t_buffer *buffer);
 size_t		ft_buffer_available(t_buffer *buffer);
+size_t		ft_buffer_left_pad_size(t_buffer *buffer);
+size_t		ft_buffer_right_pad_size(t_buffer *buffer);
 void		ft_buffer_reset(t_buffer *buffer);
+int			ft_buffer_is_empty(t_buffer *buffer);
+int			ft_buffer_is_full(t_buffer *buffer);
 void		ft_buffer_left_align(t_buffer *buffer);
 void		ft_buffer_right_align(t_buffer *buffer);
-void		ft_buffer_resize_and_left_align(t_buffer *buffer, size_t new_capacity);
 ssize_t 	ft_buffer_write(t_buffer *buffer, char *buf, size_t size);
 ssize_t 	ft_buffer_read(t_buffer *buffer, char *buf, size_t size);
+ssize_t 	ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, char *buf, size_t nbytes), void *ctx, size_t nbytes);
+ssize_t 	ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, char *buf, size_t nbytes), void *ctx, size_t nbytes);
 
 #endif
