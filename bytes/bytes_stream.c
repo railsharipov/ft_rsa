@@ -2,15 +2,15 @@
 #include <io.h>
 
 typedef struct s_io_v2_bytes_ctx {
-    const t_ostring *ostring;
-    size_t          seek;
+    t_ostring	*ostring;
+    size_t      seek;
 } t_io_v2_bytes_ctx;
 
-static ssize_t __io_v2_bytes_read(t_io_v2_bytes_ctx *ctx, char *buf, size_t nbytes);
-static ssize_t __io_v2_bytes_write(t_io_v2_bytes_ctx *ctx, const char *buf, size_t nbytes);
-static ssize_t __io_v2_bytes_close(t_io_v2_bytes_ctx *ctx);
+static ssize_t __io_v2_bytes_read(void *vctx, char *buf, size_t nbytes);
+static ssize_t __io_v2_bytes_write(void *vctx, const char *buf, size_t nbytes);
+static ssize_t __io_v2_bytes_close(void *vctx);
 
-int bytes_reader(t_io_v2_stream **stream, const t_ostring *ostring)
+int bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
 {
     const t_io_v2_interface interface = {
         .read = __io_v2_bytes_read,
@@ -39,7 +39,7 @@ int bytes_reader(t_io_v2_stream **stream, const t_ostring *ostring)
     return (SSL_OK);
 }
 
-int bytes_writer(t_io_v2_stream **stream, const t_ostring *ostring)
+int bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
 {
     const t_io_v2_interface interface = {
         .write = __io_v2_bytes_write,
@@ -68,18 +68,21 @@ int bytes_writer(t_io_v2_stream **stream, const t_ostring *ostring)
     return (SSL_OK);
 }
 
-static ssize_t __io_v2_bytes_read(t_io_v2_bytes_ctx *ctx, char *buf, size_t nbytes)
+static ssize_t __io_v2_bytes_read(void *vctx, char *buf, size_t nbytes)
 {
+    t_io_v2_bytes_ctx *ctx;
     ssize_t rbytes;
 
-    if (NULL == ctx || NULL == buf) {
+    if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     if (nbytes == 0) {
-        IO_LOG(TRACE, "buffer size is 0");
+		IO_LOG(TRACE, "buffer size is 0");
         return (0);
     }
+	ctx = (t_io_v2_bytes_ctx *)vctx;
+
     if (ctx->seek >= ctx->ostring->size) {
         IO_LOG(TRACE, "EOF reached");
         return (IO_V2_STATUS_EOF);
@@ -91,9 +94,11 @@ static ssize_t __io_v2_bytes_read(t_io_v2_bytes_ctx *ctx, char *buf, size_t nbyt
     return (rbytes);
 }
 
-static ssize_t __io_v2_bytes_write(t_io_v2_bytes_ctx *ctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_bytes_write(void *vctx, const char *buf, size_t nbytes)
 {
-    if (NULL == ctx || NULL == buf) {
+    t_io_v2_bytes_ctx *ctx;
+
+    if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
@@ -101,7 +106,9 @@ static ssize_t __io_v2_bytes_write(t_io_v2_bytes_ctx *ctx, const char *buf, size
         IO_LOG(TRACE, "buffer size is 0");
         return (0);
     }
-    if (NULL == ft_ostr_append(ctx->ostring, buf, nbytes)) {
+    ctx = (t_io_v2_bytes_ctx *)vctx;
+
+    if (NULL == ft_ostr_append(ctx->ostring, (void *)buf, nbytes)) {
         IO_LOG(ERROR, "failed to append bytes to ostring");
         return (IO_V2_STATUS_ERROR);
     }
@@ -110,11 +117,14 @@ static ssize_t __io_v2_bytes_write(t_io_v2_bytes_ctx *ctx, const char *buf, size
     return (nbytes);
 }
 
-static ssize_t __io_v2_bytes_close(t_io_v2_bytes_ctx *ctx) {
-    if (NULL == ctx) {
+static ssize_t __io_v2_bytes_close(void *vctx) {
+    t_io_v2_bytes_ctx *ctx;
+
+    if (NULL == vctx) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
+    ctx = (t_io_v2_bytes_ctx *)vctx;
     SSL_FREE(ctx);
     IO_LOG(TRACE, "bytes stream closed");
 

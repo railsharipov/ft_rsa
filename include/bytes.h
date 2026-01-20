@@ -10,8 +10,7 @@
 
 int bytes_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-int bytes_stream(t_io_v2_stream **stream, const t_ostring *ostring, t_io_v2_flag flags);
-int bytes_reader(t_io_v2_stream **stream, const t_ostring *ostring);
-int bytes_writer(t_io_v2_stream **stream, const t_ostring *ostring);
+int bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
+int bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
 
 #endif

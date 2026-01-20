@@ -17,8 +17,6 @@ int	file_new(t_file **file, const char *path)
 
 	SSL_ALLOC(*file, sizeof(t_file));
 	(*file)->path = ft_strdup(path);
-	(*file)->fd = -1;
-	(*file)->seek = 0;
 
 	return (SSL_OK);
 }

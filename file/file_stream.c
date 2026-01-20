@@ -8,9 +8,9 @@ typedef struct s_io_v2_file_ctx {
     int             fd;
 } t_io_v2_file_ctx;
 
-static ssize_t __io_v2_file_read(t_io_v2_file_ctx *ctx, char *buf, size_t nbytes);
-static ssize_t __io_v2_file_write(t_io_v2_file_ctx *ctx, const char *buf, size_t nbytes);
-static ssize_t __io_v2_file_close(t_io_v2_file_ctx *ctx);
+static ssize_t __io_v2_file_read(void *vctx, char *buf, size_t nbytes);
+static ssize_t __io_v2_file_write(void *vctx, const char *buf, size_t nbytes);
+static ssize_t __io_v2_file_close(void *vctx);
 
 int file_reader(t_io_v2_stream **stream, const t_file *file)
 {
@@ -34,12 +34,12 @@ int file_reader(t_io_v2_stream **stream, const t_file *file)
         IO_LOG(ERROR, "failed to open file %s: %s", file->path, strerror(errno));
         return (SSL_ERR);
     }
-    SSL_ALLOC((*stream), sizeof(t_io_v2_stream));
+    SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
     ctx->file = file;
     ctx->fd = fd;
     ctx->seek = 0;
 
-    SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
+    SSL_ALLOC((*stream), sizeof(t_io_v2_stream));
     (*stream)->interface = interface;
     (*stream)->flags = IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE;
     (*stream)->status = IO_V2_STATUS_OK;
@@ -84,15 +84,18 @@ int file_writer(t_io_v2_stream **stream, const t_file *file)
     return (SSL_OK);
 }
 
-static ssize_t __io_v2_file_read(t_io_v2_file_ctx *ctx, char *buf, size_t nbytes)
+static ssize_t __io_v2_file_read(void *vctx, char *buf, size_t nbytes)
 {
+    t_io_v2_file_ctx *ctx;
     ssize_t rbytes;
     int err;
 
-    if (NULL == ctx || NULL == buf) {
+    if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
+
+    ctx = (t_io_v2_file_ctx *)vctx;
     rbytes = read(ctx->fd, buf, nbytes);
     err = errno;
 
@@ -121,15 +124,17 @@ static ssize_t __io_v2_file_read(t_io_v2_file_ctx *ctx, char *buf, size_t nbytes
     }
 }
 
-static ssize_t __io_v2_file_write(t_io_v2_file_ctx *ctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_file_write(void *vctx, const char *buf, size_t nbytes)
 {
+    t_io_v2_file_ctx *ctx;
     ssize_t wbytes;
     int err;
 
-    if (NULL == ctx || NULL == buf) {
+    if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
+    ctx = (t_io_v2_file_ctx *)vctx;
     wbytes = write(ctx->fd, buf, nbytes);
     err = errno;
 
@@ -158,14 +163,16 @@ static ssize_t __io_v2_file_write(t_io_v2_file_ctx *ctx, const char *buf, size_t
     }
 }
 
-static ssize_t __io_v2_file_close(t_io_v2_file_ctx *ctx)
+static ssize_t __io_v2_file_close(void *vctx)
 {
+    t_io_v2_file_ctx *ctx;
     int result, err;
 
-    if (NULL == ctx) {
+    if (NULL == vctx) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
+    ctx = (t_io_v2_file_ctx *)vctx;
     if (ctx->fd < 0) {
         IO_LOG(DEBUG, "fd already closed or invalid");
         return (IO_V2_STATUS_OK);
