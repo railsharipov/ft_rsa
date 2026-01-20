@@ -87,7 +87,7 @@ int		io_logger_log(const char *func_name, const char *file_name, int line_number
 
 // IO V2 API
 
-typedef ssize_t	(*t_func_io_v2_read)(void *ctx, const char *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_read)(void *ctx, char *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const char *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
 typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
@@ -134,7 +134,7 @@ typedef struct s_io_v2_pipe {
 	t_buffer			*buffer;
 } t_io_v2_pipe;
 
-ssize_t	io_v2_read(t_io_v2_stream *stream, const char *buf, size_t nbytes);
+ssize_t	io_v2_read(t_io_v2_stream *stream, char *buf, size_t nbytes);
 ssize_t	io_v2_write(t_io_v2_stream *stream, const char *buf, size_t nbytes);
 ssize_t	io_v2_flush(t_io_v2_stream *stream);
 ssize_t	io_v2_close(t_io_v2_stream *stream);

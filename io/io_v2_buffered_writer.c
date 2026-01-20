@@ -8,6 +8,7 @@ typedef struct s_io_v2_buffered_writer_ctx {
 static ssize_t  __io_v2_buffered_stream_write(void *vctx, const char *buf, size_t nbytes);
 static ssize_t  __io_v2_buffered_stream_flush(void *vctx);
 static ssize_t  __io_v2_buffered_stream_close(void *vctx);
+static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes);
 
 int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity)
 {
@@ -20,12 +21,15 @@ int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, s
 
     if (NULL == stream) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        return (SSL_ERR);
     }
     if (NULL == downstream) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        return (SSL_ERR);
     }
     if (capacity == 0) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_buffered_writer_ctx));
     ctx->downstream = downstream;
@@ -35,8 +39,17 @@ int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, s
     (*stream)->ctx = ctx;
     (*stream)->interface = interface;
     (*stream)->flags = IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE;
+    (*stream)->status = IO_V2_STATUS_OK;
 
     return (SSL_OK);
+}
+
+static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes)
+{
+	t_io_v2_stream *stream;
+
+	stream = (t_io_v2_stream *)ctx;
+	return (stream->interface.write(stream->ctx, buf, nbytes));
 }
 
 static ssize_t __io_v2_buffered_stream_write(void *vctx, const char *buf, size_t nbytes)
@@ -54,7 +67,7 @@ static ssize_t __io_v2_buffered_stream_write(void *vctx, const char *buf, size_t
 	while (tbytes < nbytes) {
 		if (ft_buffer_is_full(ctx->buffer)) {
 			IO_LOG(TRACE, "buffer is full, reading %zu bytes from buffer to stream", ft_buffer_used(ctx->buffer));
-			rbytes = ft_buffer_read_with_func(ctx->buffer, stream->interface.write, stream->ctx, ft_buffer_used(ctx->buffer));
+			rbytes = ft_buffer_read_with_func(ctx->buffer, __io_v2_write_adapter, stream, ft_buffer_used(ctx->buffer));
 			if (rbytes < 0) {
 				IO_LOG(ERROR, "failed to read from buffer to stream");
 				return (IO_V2_STATUS_ERROR);
@@ -97,7 +110,7 @@ static ssize_t __io_v2_buffered_stream_flush(void *vctx)
 
     IO_LOG(TRACE, "flushing buffered stream with downstream=%p, buffer=%p, capacity=%zu", downstream, buffer, buffer->capacity);
 
-    wbytes = ft_buffer_read_with_func(buffer, downstream->interface.write, downstream->ctx, ft_buffer_used(buffer));
+    wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, ft_buffer_used(buffer));
     if (wbytes < 0) {
         IO_LOG(ERROR, "failed to flush buffered stream");
         return (IO_V2_STATUS_ERROR);
@@ -108,12 +121,22 @@ static ssize_t __io_v2_buffered_stream_flush(void *vctx)
 static ssize_t __io_v2_buffered_stream_close(void *vctx)
 {
     t_io_v2_buffered_writer_ctx *ctx;
+    ssize_t flush_result;
 
     ctx = (t_io_v2_buffered_writer_ctx *)vctx;
 
     IO_LOG(TRACE, "closing buffered stream");
 
-    if (IO_V2_STATUS_OK != io_v2_close(ctx->downstream)) {
+    if (!ft_buffer_is_empty(ctx->buffer)) {
+        IO_LOG(TRACE, "flushing remaining %zu bytes before close", ft_buffer_used(ctx->buffer));
+        flush_result = __io_v2_buffered_stream_flush(vctx);
+        if (flush_result < 0) {
+            IO_LOG(ERROR, "failed to flush buffer before close");
+            return (IO_V2_STATUS_ERROR);
+        }
+    }
+
+    if (io_v2_close(ctx->downstream) < 0) {
         IO_LOG(ERROR, "failed to close underlying stream");
         return (IO_V2_STATUS_ERROR);
     }
@@ -123,7 +146,6 @@ static ssize_t __io_v2_buffered_stream_close(void *vctx)
         ft_buffer_del(ctx->buffer);
         ctx->buffer = NULL;
     }
-    ctx->buffer = NULL;
     SSL_FREE(ctx);
     IO_LOG(TRACE, "buffered stream closed");
 

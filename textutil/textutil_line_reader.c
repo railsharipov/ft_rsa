@@ -7,7 +7,7 @@ typedef struct s_textutil_line_reader_ctx {
 	size_t seek;
 } t_textutil_line_reader_ctx;
 
-static ssize_t __textutil_line_read(void *ctx, const char *buf, size_t nbytes);
+static ssize_t __textutil_line_read(void *ctx, char *buf, size_t nbytes);
 static ssize_t __textutil_line_close(void *ctx);
 
 int textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *buffered_upstream, size_t max_line_len)
@@ -47,11 +47,12 @@ int textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *buffered_upstr
     (*stream)->ctx = ctx;
     (*stream)->interface = interface;
     (*stream)->flags = IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE;
+    (*stream)->status = IO_V2_STATUS_OK;
 
 	return (SSL_OK);
 }
 
-static ssize_t __textutil_line_read(void *vctx, const char *buf, size_t max_nbytes)
+static ssize_t __textutil_line_read(void *vctx, char *buf, size_t max_nbytes)
 {
 	t_textutil_line_reader_ctx *ctx;
     ssize_t rbytes, tbytes;

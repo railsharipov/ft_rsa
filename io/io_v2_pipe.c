@@ -1,5 +1,8 @@
 #include <io.h>
 
+static ssize_t __io_v2_read_adapter(void *ctx, const char *buf, size_t nbytes);
+static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes);
+
 int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream, size_t capacity)
 {
     if (NULL == upstream || NULL == downstream) {
@@ -27,6 +30,22 @@ int io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stre
 {
     IO_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
     return (SSL_ERR);
+}
+
+static ssize_t __io_v2_read_adapter(void *ctx, const char *buf, size_t nbytes)
+{
+	t_io_v2_stream *stream;
+
+	stream = (t_io_v2_stream *)ctx;
+	return (stream->interface.read(stream->ctx, (char *)buf, nbytes));
+}
+
+static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes)
+{
+	t_io_v2_stream *stream;
+
+	stream = (t_io_v2_stream *)ctx;
+	return (stream->interface.write(stream->ctx, buf, nbytes));
 }
 
 ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
@@ -57,10 +76,8 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
-            IO_LOG(ERROR, "pipe is in error state");
-            return (-1);
         case IO_V2_STATUS_EOF:
-            IO_LOG(ERROR, "pipe is at EOF");
+            IO_LOG(ERROR, "pipe is in error/EOF state");
             return (-1);
         default:
             IO_LOG(ERROR, "invalid pipe status");
@@ -77,7 +94,7 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
     }
 
     IO_LOG(TRACE, "reading from upstream");
-    rbytes = ft_buffer_write_with_func(buffer, upstream->interface.read, upstream->ctx, nbytes);
+    rbytes = ft_buffer_write_with_func(buffer, __io_v2_read_adapter, upstream, nbytes);
     if (rbytes < 0) {
         IO_LOG(ERROR, "read from upstream failed");
         pipe->status = IO_V2_STATUS_ERROR;
@@ -91,7 +108,7 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
     }
 
     IO_LOG(TRACE, "writing to downstream");
-    wbytes = ft_buffer_read_with_func(buffer, downstream->interface.write, downstream->ctx, rbytes);
+    wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, rbytes);
     if (wbytes < 0) {
         IO_LOG(ERROR, "write to downstream failed");
         pipe->status = IO_V2_STATUS_ERROR;
@@ -137,16 +154,23 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
         return (-1);
     }
     IO_LOG(TRACE, "flushing %zu bytes to downstream", ft_buffer_used(pipe->buffer));
-    return (ft_buffer_read_with_func(pipe->buffer, downstream->interface.write, downstream->ctx, ft_buffer_used(pipe->buffer)));
+    return (ft_buffer_read_with_func(pipe->buffer, __io_v2_write_adapter, downstream, ft_buffer_used(pipe->buffer)));
 }
 
+/*
+ * io_v2_pipe_close: Closes and frees the pipe structure.
+ *
+ * NOTE: This function does NOT close the upstream or downstream streams.
+ * The caller is responsible for closing those streams separately if needed.
+ * The pipe does not own the streams - they may be shared or used elsewhere.
+ */
 ssize_t io_v2_pipe_close(t_io_v2_pipe *pipe)
 {
     if (NULL == pipe) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
-        return (SSL_ERR);
+        return (-1);
     }
     ft_buffer_del(pipe->buffer);
     SSL_FREE(pipe);
-    return (SSL_OK);
+    return (0);
 }

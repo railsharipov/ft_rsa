@@ -1,6 +1,6 @@
 #include <io.h>
 
-ssize_t io_v2_read(t_io_v2_stream *stream, const char *buf, size_t nbytes)
+ssize_t io_v2_read(t_io_v2_stream *stream, char *buf, size_t nbytes)
 {
     ssize_t result;
 
@@ -33,7 +33,11 @@ ssize_t io_v2_read(t_io_v2_stream *stream, const char *buf, size_t nbytes)
     result = stream->interface.read(stream->ctx, buf, nbytes);
 
     if (result < 0) {
-        stream->status = result;
+        if (result == IO_V2_STATUS_EOF) {
+            stream->status = IO_V2_STATUS_EOF;
+        } else {
+            stream->status = IO_V2_STATUS_ERROR;
+        }
         return (-1);
     }
     return (result);
@@ -69,7 +73,11 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const char *buf, size_t nbytes)
     }
     result = stream->interface.write(stream->ctx, buf, nbytes);
     if (result < 0) {
-        stream->status = result;
+        if (result == IO_V2_STATUS_EOF) {
+            stream->status = IO_V2_STATUS_EOF;
+        } else {
+            stream->status = IO_V2_STATUS_ERROR;
+        }
         return (-1);
     }
     return (result);
@@ -96,7 +104,11 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
     }
     result = stream->interface.close(stream->ctx);
     if (result < 0) {
-        stream->status = result;
+        if (result == IO_V2_STATUS_EOF) {
+            stream->status = IO_V2_STATUS_EOF;
+        } else {
+            stream->status = IO_V2_STATUS_ERROR;
+        }
         return (-1);
     }
     return (result);
@@ -138,7 +150,11 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
     do {
         result = stream->interface.flush(stream->ctx);
         if (result < 0) {
-            stream->status = result;
+            if (result == IO_V2_STATUS_EOF) {
+                stream->status = IO_V2_STATUS_EOF;
+            } else {
+                stream->status = IO_V2_STATUS_ERROR;
+            }
             return (-1);
         }
         tbytes += result;
