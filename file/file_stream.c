@@ -3,16 +3,15 @@
 #include <sys/fcntl.h>
 
 typedef struct s_io_v2_file_ctx {
-    const t_file    *file;
-    ssize_t         seek;
-    int             fd;
+    int    		fd;
+    ssize_t		seek;
 } t_io_v2_file_ctx;
 
 static ssize_t __io_v2_file_read(void *vctx, char *buf, size_t nbytes);
 static ssize_t __io_v2_file_write(void *vctx, const char *buf, size_t nbytes);
 static ssize_t __io_v2_file_close(void *vctx);
 
-int file_reader(t_io_v2_stream **stream, const t_file *file)
+int file_reader(t_io_v2_stream **stream, const char *file_path)
 {
     const t_io_v2_interface interface = {
         .read = __io_v2_file_read,
@@ -25,17 +24,16 @@ int file_reader(t_io_v2_stream **stream, const t_file *file)
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
-    if (NULL == file) {
+    if (NULL == file_path) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
-    fd = open(file->path, O_RDONLY);
+    fd = open(file_path, O_RDONLY);
     if (fd < 0) {
-        IO_LOG(ERROR, "failed to open file %s: %s", file->path, strerror(errno));
+        IO_LOG(ERROR, "failed to open file %s: %s", file_path, strerror(errno));
         return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
-    ctx->file = file;
     ctx->fd = fd;
     ctx->seek = 0;
 
@@ -48,7 +46,7 @@ int file_reader(t_io_v2_stream **stream, const t_file *file)
     return (SSL_OK);
 }
 
-int file_writer(t_io_v2_stream **stream, const t_file *file)
+int file_writer(t_io_v2_stream **stream, const char *file_path)
 {
     const t_io_v2_interface interface = {
         .write = __io_v2_file_write,
@@ -61,17 +59,16 @@ int file_writer(t_io_v2_stream **stream, const t_file *file)
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
-    if (NULL == file) {
+    if (NULL == file_path) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
-    fd = open(file->path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) {
-        IO_LOG(ERROR, "failed to open file %s: %s", file->path, strerror(errno));
+        IO_LOG(ERROR, "failed to open file %s: %s", file_path, strerror(errno));
         return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
-    ctx->file = file;
     ctx->fd = fd;
     ctx->seek = 0;
 
@@ -173,25 +170,25 @@ static ssize_t __io_v2_file_close(void *vctx)
         return (IO_V2_STATUS_ERROR);
     }
     ctx = (t_io_v2_file_ctx *)vctx;
+
     if (ctx->fd < 0) {
-        IO_LOG(DEBUG, "fd already closed or invalid");
+        IO_LOG(WARN, "invalid file descriptor");
         return (IO_V2_STATUS_OK);
     }
     IO_LOG(DEBUG, "closing fd=%d", ctx->fd);
-
     result = close(ctx->fd);
     err = errno;
 
     if (result < 0) {
         if (err == EINTR || err == EIO) {
-            IO_LOG(WARN, "close error but fd is closed: %s", strerror(errno));
+            IO_LOG(WARN, "fd %d is already closed: %s", ctx->fd, strerror(err));
             ctx->fd = -1;
             return (IO_V2_STATUS_OK);
         }
         IO_LOG(ERROR, "close error: %s", strerror(err));
         return (IO_V2_STATUS_ERROR);
     }
-
     ctx->fd = -1;
+
     return (IO_V2_STATUS_OK);
 }

@@ -14,10 +14,10 @@ typedef struct s_file {
 
 int file_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
-int file_new(t_file **file, const char *path);
-void file_del(t_file *file);
+int file_reader(t_io_v2_stream **stream, const char *file_path);
+int file_writer(t_io_v2_stream **stream, const char *file_path);
 
-int file_reader(t_io_v2_stream **stream, const t_file *file);
-int file_writer(t_io_v2_stream **stream, const t_file *file);
+int file_read_all(const char *path, t_ostring *ostring);
+int file_write_all(const char *path, t_ostring *ostring);
 
 #endif

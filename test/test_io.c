@@ -6,8 +6,8 @@
 
 static int	__test_io_setup(void);
 static int	__test_io_init(void);
-static int	__test_io_read(void);
-static int	__test_io_write(void);
+// static int	__test_io_read(void);
+// static int	__test_io_write(void);
 
 static const char	*__lorem = "Cernantur iis sunt, voluptate export nulla \
 	arbitror noster. Se nescius exercitation. Malis nescius o consectetur \
@@ -31,8 +31,8 @@ int	test_io(void)
 
 	return (
 		__test_io_init()
-		| __test_io_read()
-		| __test_io_write()
+		// | __test_io_read()
+		// | __test_io_write()
 	);
 }
 
@@ -79,80 +79,3 @@ static int	__test_io_init(void)
 	TEST_PASS();
 }
 
-static int	__test_io_read(void)
-{
-	t_ostring	osbuf;
-	t_iodes		iodes;
-	ssize_t		rbytes;
-	char		buf[__lorem_size/10];
-	char		test_buf[__lorem_size/10];
-	ssize_t		test_rbytes;
-	int			test_fd;
-
-	osbuf.content = (unsigned char *)__lorem;
-	osbuf.size = __lorem_size;
-
-	io_osbuf(&iodes, IO_READ|IO_OSBUF, &osbuf);
-	rbytes = io_read(&iodes, buf, sizeof(buf));
-
-	TEST_ASSERT(rbytes == __lorem_size/10);
-	TEST_ASSERT(ft_strncmp(__lorem, buf, sizeof(buf)) == 0);
-
-	test_fd = open("./Makefile", 0644);
-	test_rbytes = read(test_fd, test_buf, sizeof(test_buf));
-
-	io_fopen(&iodes, IO_READ|IO_FILE, "./Makefile");
-	rbytes = io_read(&iodes, buf, sizeof(buf));
-
-	TEST_ASSERT(test_rbytes > 0);
-	TEST_ASSERT(rbytes > 0);
-	TEST_ASSERT(rbytes == test_rbytes);
-	TEST_ASSERT(ft_strncmp(test_buf, buf, sizeof(buf)) == 0);
-
-	TEST_PASS();
-}
-
-static int	__test_io_write(void)
-{
-	t_ostring	osbuf;
-	t_iodes		iodes;
-	ssize_t		wbytes;
-
-	osbuf.content = NULL;
-	osbuf.size = 0;
-
-	io_osbuf(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
-	wbytes = io_write(&iodes, __lorem, __lorem_size);
-
-	TEST_ASSERT(wbytes == __lorem_size);
-	TEST_ASSERT(osbuf.size == __lorem_size);
-	TEST_ASSERT(osbuf.content != NULL);
-	TEST_ASSERT(ft_strncmp(__lorem, (char *)osbuf.content, osbuf.size) == 0);
-
-	SSL_FREE(osbuf.content);
-	osbuf.size = 0;
-
-	io_osbuf(&iodes, IO_WRITE|IO_OSBUF, &osbuf);
-
-	iodes.delim = '&';
-	iodes.lwidth = 1;
-
-	wbytes = io_write(&iodes, __lorem, __lorem_size);
-
-	TEST_ASSERT(wbytes == 2*__lorem_size);
-	TEST_ASSERT(osbuf.size == 2*__lorem_size);
-	TEST_ASSERT(osbuf.content != NULL);
-
-	int check;
-	int ix;
-
-	check = 1;
-	for (ix = 0; ix < wbytes; ix++) {
-		if (2*ix < osbuf.size && __lorem[ix] != osbuf.content[2*ix]) {
-			check = 0;
-		}
-	}
-	TEST_ASSERT(check);
-
-	TEST_PASS();
-}

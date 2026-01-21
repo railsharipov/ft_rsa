@@ -44,7 +44,6 @@ void	test_logger_set_level(uint8_t level);
 
 int		test_info(int module_id, int verbose);
 int		test_assert(int boolean, const char *expr);
-int		test_read_file(const char *testfile_path, t_ostring *ostring);
 int		test_result(int res, int verbose);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 

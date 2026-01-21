@@ -1,5 +1,6 @@
 #include <common.h>
 #include <base64.h>
+#include <file.h>
 #include <test.h>
 
 static const char	*__binary_file_path = "test/files/base64/message.bin";
@@ -29,11 +30,11 @@ int	test_base64(void)
 
 static int	__test_base64_setup(void)
 {
-	if (SSL_OK != test_read_file(__binary_file_path, &__binary)) {
+	if (SSL_OK != file_read_all(__binary_file_path, &__binary)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != test_read_file(__base64_file_path, &__base64)) {
+	if (SSL_OK != file_read_all(__base64_file_path, &__base64)) {
 		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}

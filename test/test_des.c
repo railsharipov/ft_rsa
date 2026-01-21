@@ -3,6 +3,7 @@
 #include <test.h>
 #include <rand.h>
 #include <io.h>
+#include <file.h>
 #include <libft/bytes.h>
 
 // static int	__test_des_setup(void);
@@ -55,15 +56,15 @@ int	test_des(void)
 
 // static int	__test_des_setup(void)
 // {
-// 	if (SSL_OK != test_read_file(__small_text_file_path, &__small_text)) {
+// 	if (SSL_OK != file_read_all(__small_text_file_path, &__small_text)) {
 // 		TEST_LOG(ERROR, FILE_READ_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_OK != test_read_file(__des_ecb_small_cipher_file_path, &__des_ecb_small_cipher)) {
+// 	if (SSL_OK != file_read_all(__des_ecb_small_cipher_file_path, &__des_ecb_small_cipher)) {
 // 		TEST_LOG(ERROR, FILE_READ_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_OK != test_read_file(__des_cbc_small_cipher_file_path, &__des_cbc_small_cipher)) {
+// 	if (SSL_OK != file_read_all(__des_cbc_small_cipher_file_path, &__des_cbc_small_cipher)) {
 // 		TEST_LOG(ERROR, FILE_READ_ERROR);
 // 		return (SSL_ERR);
 // 	}
