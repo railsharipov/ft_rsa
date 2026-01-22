@@ -15,9 +15,6 @@ int	main(int ac, const char **av)
 
 	// default command
 	cmd_arg = args_new_cmd(av[0], "SSL-ish command line tool", NULL);
-	args_add_global_opt(cmd_arg, args_new_opt("-h", "show help", AP_OPT_TYPE_FLAG));
-	args_add_global_opt(cmd_arg, args_new_opt("-debug", "enable debug logging", AP_OPT_TYPE_FLAG));
-	args_add_global_opt(cmd_arg, args_new_opt("-trace", "enable trace logging", AP_OPT_TYPE_FLAG));
 
 	// base64 command
 	sub_cmd_arg = args_new_cmd("base64", "Base64 encoding", cmd_base64);
@@ -97,22 +94,21 @@ int	main(int ac, const char **av)
 	sub_cmd_arg = args_new_cmd("test", "Run tests", cmd_test);
 	args_add_opt(sub_cmd_arg, args_new_opt("-v", "verbosity level", AP_OPT_TYPE_STRING));
 	args_add_cmd(cmd_arg, sub_cmd_arg);
-	
+
 	cmd = args_parse(cmd_arg, av, ac);
 	if (cmd == NULL) {
 		CMD_LOG(ERROR, INVALID_INPUT_ERROR);
 		CMD_LOG(INFO, "for help, run:\n\t%s -h\n\t%s <sub-command> -h", av[0], av[0]);
-		exit(1);
+		return (1);
 	}
-	if (ft_htbl_get(cmd->opts, "-h")) {
-		args_dump_help(cmd->arg_ref);
-		return (SSL_OK);
+	if (ft_htbl_has(cmd->opts, "-h")) {
+		args_dump_help(cmd->arg);
+		return (0);
 	}
 	f_cmd = (t_func_cmd)cmd->func;
 
-	if (f_cmd == NULL) {
-		ARGP_LOG(ERROR, "noop command");
-		return (SSL_OK);
+	if (f_cmd != NULL && SSL_OK != f_cmd(cmd)) {
+		return (1);
 	}
-	return (f_cmd(cmd));
+	return (0);
 }

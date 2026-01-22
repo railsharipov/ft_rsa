@@ -17,7 +17,6 @@ t_arg_cmd	*args_copy_cmd(const t_arg_cmd *cmd_arg)
 
 	ft_htbl_merge_with_f_copy(copy->sub_cmds, cmd_arg->sub_cmds, __func_copy_cmd);
 	ft_htbl_merge_with_f_copy(copy->opts, cmd_arg->opts, __func_copy_opt);
-	ft_htbl_merge_with_f_copy(copy->global_opts, cmd_arg->global_opts, __func_copy_opt);
 
 	return (copy);
 }
@@ -43,13 +42,6 @@ static void	*__func_copy_cmd(void *content)
 		opt = node->content;
 		opt_copy = args_copy_opt(opt);
 		args_add_opt(copy, opt_copy);
-	}
-
-	node = ft_htbl_node_next(cmd_arg->global_opts, NULL);
-	if (node != NULL) {
-		opt = node->content;
-		opt_copy = args_copy_opt(opt);
-		args_add_global_opt(copy, opt_copy);
 	}
 
 	return (copy);

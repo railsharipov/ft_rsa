@@ -23,9 +23,6 @@ t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type)
 	opt_arg->type = type;
 	opt_arg->name = ft_strdup(name);
 	opt_arg->desc = ft_strdup(desc);
-	opt_arg->value = NULL;
-	opt_arg->pos = 0;
-	opt_arg->set = 0;
 
 	return (opt_arg);
 }

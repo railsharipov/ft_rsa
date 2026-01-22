@@ -5,6 +5,7 @@
 t_arg_cmd	*args_new_cmd(const char *name, const char *desc, void *func)
 {
 	t_arg_cmd *cmd_arg;
+	t_arg_opt *help_opt_arg;
 
 	if (name == NULL) {
 		name = DEFAULT_CMD;
@@ -18,7 +19,9 @@ t_arg_cmd	*args_new_cmd(const char *name, const char *desc, void *func)
 	cmd_arg->func = func;
 	cmd_arg->sub_cmds = ft_htbl_create(LIBFT_HT_SIZE);
 	cmd_arg->opts = ft_htbl_create(LIBFT_HT_SIZE);
-	cmd_arg->global_opts = ft_htbl_create(LIBFT_HT_SIZE);
-	
+
+	help_opt_arg = args_new_opt("-h", "show help", AP_OPT_TYPE_FLAG);
+	args_add_opt(cmd_arg, help_opt_arg);
+
 	return (cmd_arg);
 }

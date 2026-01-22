@@ -34,9 +34,6 @@ typedef struct	s_arg_opt
 	t_opt_type	type;
 	char		*name;
 	char		*desc;
-	char		*value;
-	int			pos;
-	int			set;
 }				t_arg_opt;
 
 typedef struct	s_arg_cmd
@@ -46,12 +43,11 @@ typedef struct	s_arg_cmd
 	void		*func;
 	t_htbl		*sub_cmds;
 	t_htbl		*opts;
-	t_htbl		*global_opts;
 }				t_arg_cmd;
 
 typedef struct	s_cmd
 {
-	t_arg_cmd	*arg_ref;
+	t_arg_cmd	*arg;
 	void		*func;
 	t_htbl		*opts;
 }				t_cmd;
@@ -67,7 +63,6 @@ int     	args_add_cmd(t_arg_cmd *cmd_arg, const t_arg_cmd *sub_cmd);
 t_arg_cmd	*args_get_cmd(const t_arg_cmd *cmd_arg, const char *cmd_name);
 
 int     	args_add_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg);
-int     	args_add_global_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg);
 
 t_arg_cmd	*args_copy_cmd(const t_arg_cmd *cmd_arg);
 t_arg_opt	*args_copy_opt(const t_arg_opt *opt_arg);

@@ -20,6 +20,5 @@ static void	__func_del_opt(void *content)
 	t_arg_opt *opt_arg = (t_arg_opt *)content;
 	SSL_FREE(opt_arg->name);
 	SSL_FREE(opt_arg->desc);
-	SSL_FREE(opt_arg->value);
 	LIBFT_FREE(opt_arg);
 }
