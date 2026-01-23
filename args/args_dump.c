@@ -34,7 +34,18 @@ char	*args_dump_helps(const t_arg_cmd *cmd_arg)
 
 	ft_ostr_init(&ostring);
 	ft_ostr_appendf(&ostring, "USAGE:\n");
-	ft_ostr_appendf(&ostring, "%s%s [OPTIONS...] [SUB-COMMAND]\n\n", indents, cmd_arg->name);
+	ft_ostr_appendf(&ostring, "%s%s [sub-command [options...]] [options...]\n\n", indents, cmd_arg->name);
+
+	node = ft_htbl_node_next(cmd_arg->sub_cmds, NULL);
+	if (node != NULL) {
+		ft_ostr_appendf(&ostring, "SUB-COMMANDS:\n");
+		while (node != NULL) {
+			sub_cmd = (t_arg_cmd *)node->content;
+			ft_ostr_appendf(&ostring, "%s%-15s %s\n", indents, sub_cmd->name, sub_cmd->desc);
+			node = ft_htbl_node_next(cmd_arg->sub_cmds, node);
+		}
+		ft_ostr_append_cstr(&ostring, "\n");
+	}
 
 	node = ft_htbl_node_next(cmd_arg->opts, NULL);
 	if (node != NULL) {
@@ -47,14 +58,15 @@ char	*args_dump_helps(const t_arg_cmd *cmd_arg)
 		ft_ostr_append_cstr(&ostring, "\n");
 	}
 
-	node = ft_htbl_node_next(cmd_arg->sub_cmds, NULL);
+	node = ft_htbl_node_next(cmd_arg->global_opts, NULL);
 	if (node != NULL) {
-		ft_ostr_appendf(&ostring, "SUB-COMMANDS:\n");
+		ft_ostr_appendf(&ostring, "GLOBAL OPTIONS:\n");
 		while (node != NULL) {
-			sub_cmd = (t_arg_cmd *)node->content;
-			ft_ostr_appendf(&ostring, "%s%-15s %s\n", indents, sub_cmd->name, sub_cmd->desc);
-			node = ft_htbl_node_next(cmd_arg->sub_cmds, node);
+			opt = (t_arg_opt *)node->content;
+			ft_ostr_appendf(&ostring, "%s%-15s %s\n", indents, opt->name, opt->desc);
+			node = ft_htbl_node_next(cmd_arg->global_opts, node);
 		}
+		ft_ostr_append_cstr(&ostring, "\n");
 	}
 
 	helps = ft_ostr_to_cstr(&ostring, 0, ostring.size);

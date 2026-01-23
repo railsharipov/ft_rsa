@@ -26,3 +26,27 @@ t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type)
 
 	return (opt_arg);
 }
+
+void	args_del_opt(t_arg_opt *opt_arg)
+{
+	if (opt_arg == NULL) {
+		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		return;
+	}
+	SSL_FREE(opt_arg->name);
+	SSL_FREE(opt_arg->desc);
+	SSL_FREE(opt_arg);
+}
+
+t_arg_opt	*args_copy_opt(const t_arg_opt *opt_arg)
+{
+	t_arg_opt *copy;
+
+	if (opt_arg == NULL) {
+		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (NULL);
+	}
+	copy = args_new_opt(opt_arg->name, opt_arg->desc, opt_arg->type);
+
+	return (copy);
+}
