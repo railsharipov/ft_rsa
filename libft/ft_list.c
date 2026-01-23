@@ -14,16 +14,16 @@
 #include <libft/list.h>
 #include <unistd.h>
 
-void	ft_lst_append(t_node **lst, t_node *node)
+t_node	*ft_lst_append(t_node **lst, t_node *node)
 {
 	t_node	*tmp;
 
 	if (NULL == lst || NULL == node) {
-		return ;
+		return (NULL);
 	}
 	if (NULL == *lst) {
 		*lst = node;
-		return ;
+		return (node);
 	}
 	tmp = *lst;
 
@@ -31,15 +31,35 @@ void	ft_lst_append(t_node **lst, t_node *node)
 		tmp = tmp->next;
 	}
 	tmp->next = node;
+
+	return (node);
 }
 
-void	ft_lst_prepend(t_node **lst, t_node *node)
+t_node	*ft_lst_prepend(t_node **lst, t_node *node)
 {
 	if (NULL == node || NULL == lst) {
-		return ;
+		return (NULL);
 	}
 	node->next = *lst;
 	*lst = node;
+
+	return (node);
+}
+
+t_node	*ft_lst_concat(t_node *lst_a, t_node *lst_b)
+{
+	if (NULL == lst_a) {
+		return (lst_b);
+	}
+	if (NULL == lst_b) {
+		return (lst_a);
+	}
+	while (lst_a->next) {
+		lst_a = lst_a->next;
+	}
+	lst_a->next = lst_b;
+
+	return (lst_a);
 }
 
 void	ft_lst_del_first(t_node **lst)

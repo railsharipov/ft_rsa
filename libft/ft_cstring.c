@@ -548,6 +548,12 @@ int		ft_strcmp(const char *s1, const char *s2)
 
 int	ft_streq(const char *a, const char *b)
 {
+	if (a == NULL && b == NULL) {
+		return (1);
+	}
+	if (a == NULL || b == NULL) {
+		return (0);
+	}
 	return (ft_strcmp(a, b) == 0 ? 1 : 0);
 }
 

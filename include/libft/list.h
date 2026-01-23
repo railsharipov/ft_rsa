@@ -17,8 +17,9 @@
 # include <libft/node.h>
 # include <libft/htable.h>
 
-void		ft_lst_append(t_node **lst, t_node *node);
-void		ft_lst_prepend(t_node **lst, t_node *node);
+t_node		*ft_lst_append(t_node **lst, t_node *node);
+t_node		*ft_lst_prepend(t_node **lst, t_node *node);
+t_node		*ft_lst_concat(t_node *lst_a, t_node *lst_b);
 void		ft_lst_del(t_node *lst);
 void		ft_lst_del_with_f_del(t_node *lst, t_func_content_del f_del);
 void		ft_lst_del_first(t_node **lst);

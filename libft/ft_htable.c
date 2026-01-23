@@ -57,6 +57,14 @@ void	ft_htbl_add_with_f_del(t_htbl *htbl, void *content, const char *key, t_func
 	__add_node_to_htable(htbl, key, content, f_del);
 }
 
+int		ft_htbl_has(t_htbl *htbl, const char *key)
+{
+	if (NULL == htbl) {
+		return (0);
+	}
+	return (__get_node_from_htable(htbl, key) != NULL);
+}
+
 void	*ft_htbl_get(t_htbl *htbl, const char *key)
 {
 	t_node	*node;
@@ -361,6 +369,18 @@ void	ft_htbl_dump(t_htbl *htbl)
 	}
 }
 
+t_htbl	*ft_htbl_copy(t_htbl *htbl)
+{
+	t_htbl	*copy;
+
+	if (NULL == htbl) {
+		return (NULL);
+	}
+	copy = ft_htbl_create(htbl->size);
+	ft_htbl_merge(copy, htbl);
+	return (copy);
+}
+
 t_htbl	*ft_htbl_copy_with_f_copy(t_htbl *htbl, t_func_content_copy f_copy)
 {
 	t_htbl	*copy;
@@ -373,6 +393,23 @@ t_htbl	*ft_htbl_copy_with_f_copy(t_htbl *htbl, t_func_content_copy f_copy)
 	return (copy);
 }
 
+void	ft_htbl_merge(t_htbl *htbl_to, t_htbl *htbl_from)
+{
+	t_node	*node;
+
+	if (htbl_from == NULL || htbl_to == NULL) {
+		return;
+	}
+	if (htbl_from->size > htbl_to->size) {
+		ft_htbl_resize(htbl_to, htbl_from->size);
+	}
+	node = ft_htbl_node_next(htbl_from, NULL);
+
+	while (node != NULL) {
+		__copy_node_to_htable(htbl_to, node, NULL);
+		node = ft_htbl_node_next(htbl_from, node);
+	}
+}
 
 void	ft_htbl_merge_with_f_copy(t_htbl *htbl_to, t_htbl *htbl_from, t_func_content_copy f_copy)
 {

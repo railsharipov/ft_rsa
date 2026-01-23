@@ -31,6 +31,7 @@ void		*ft_htbl_create(int size);
 
 t_node		*ft_htbl_node_next(t_htbl *htbl, t_node *node);
 
+int			ft_htbl_has(t_htbl *htbl, const char *key);
 void		*ft_htbl_get(t_htbl *htbl, const char *key);
 void		*ft_htbl_get_rawkey(t_htbl *htbl, const void *rawkey, size_t rksize);
 void		ft_htbl_dump(t_htbl *htbl);
@@ -40,7 +41,10 @@ void 		ft_htbl_resize(t_htbl *htbl, int size);
 void		ft_htbl_add(t_htbl *htbl, void *content, const char *key);
 void		ft_htbl_add_with_f_del(t_htbl *htbl, void *content, const char *key, t_func_content_del f_del);
 
+t_htbl		*ft_htbl_copy(t_htbl *htbl);
 t_htbl		*ft_htbl_copy_with_f_copy(t_htbl *htbl, t_func_content_copy f_copy);
+
+void		ft_htbl_merge(t_htbl *htbl_to, t_htbl *htbl_from);
 void		ft_htbl_merge_with_f_copy(t_htbl *htbl_to, t_htbl *htbl_from, t_func_content_copy f_copy);
 
 void		ft_htbl_add_rawkey(t_htbl *htbl, void *content, const void *rawkey, size_t rksize);
