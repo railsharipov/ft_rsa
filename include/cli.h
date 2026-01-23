@@ -18,7 +18,8 @@
 # include <libft/htable.h>
 # include <libft/logger.h>
 
-# define CLI_LOG(LEVEL, MES, ...)	cli_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define CLI_LOGGER_NAME	"cli"
+# define CLI_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, CLI_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define NONE	0
 
@@ -34,7 +35,6 @@ typedef struct	s_task
 	uint32_t	val;
 }				t_task;
 
-int     cli_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 int		cli_logger_print_file(const char *file_name);
 int		cli_read_stdin_pass(char *buf, size_t bufsize);
 t_htbl  *cli_task_htable(const t_task *task, int size);

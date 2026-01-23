@@ -41,15 +41,16 @@
 
 # define ASN_TYPE_NAME_SEQUENCE		"sequence"
 # define ASN_TYPE_NAME_OSTRING		"ostring"
-# define ASN_TYPE_NAME_BITSTRING		"bitstring"
-# define ASN_TYPE_NAME_OBJECT_ID		"objectId"
+# define ASN_TYPE_NAME_BITSTRING	"bitstring"
+# define ASN_TYPE_NAME_OBJECT_ID	"objectId"
 # define ASN_TYPE_NAME_OBJECT_DESC	"objectDesc"
 # define ASN_TYPE_NAME_INT			"int"
 # define ASN_TYPE_NAME_NULL			"null"
 # define ASN_TYPE_NAME_BOOL			"bool"
 # define ASN_TYPE_NAME_UNKNOWN		"unknown"
 
-# define ASN_LOG(LEVEL, MES, ...)	asn_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define ASN_LOGGER_NAME	"asn"
+# define ASN_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, ASN_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef struct		s_iasn
 {
@@ -60,8 +61,6 @@ typedef struct		s_iasn
 	void			*content;
 	size_t			size;
 }					t_iasn;
-
-int				asn_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 struct s_node	*asn_tree(const char *);
 t_node			*asn_tree_create(t_node *schema_json);

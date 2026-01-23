@@ -4,7 +4,8 @@
 #include <common.h>
 #include <libft/string.h>
 
-# define PEM_LOG(LEVEL, MES, ...)	pem_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define PEM_LOGGER_NAME	"pem"
+# define PEM_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, PEM_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 typedef enum e_pem_proc {
     PEM_PROC_TYPE_NONE = 0,        // No Proc-Type header (unencrypted)
@@ -23,8 +24,6 @@ typedef struct s_pem {
     uint8_t salt[8];
     int has_salt;
 } t_pem;
-
-int		pem_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 t_pem	*pem_create(const char *label, const uint8_t salt[8], t_pem_proc proc, t_pem_cipher cipher);
 void    pem_init(t_pem *pem);

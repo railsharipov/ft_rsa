@@ -18,8 +18,6 @@
 # include <alloc.h>
 # include <libft/common.h>
 
-# define SSL_GLOBAL_LOG_LEVEL		LIBFT_LOG_LEVEL_DEBUG
-
 # define SSL_FLAG(FLAG, FLAGS)			((int)(((FLAGS)&(FLAG))==(FLAG)))
 
 # define INVALID_INPUT_ERROR	"invalid input"

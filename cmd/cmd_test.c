@@ -6,6 +6,8 @@
 
 #define __CLI_TEST_LINE_BREAK	"----------------------------------------"
 
+t_logger *__extern_test_logger = NULL;
+
 int	cmd_test(const t_cmd *cmd)
 {
 	const struct {
@@ -30,12 +32,13 @@ int	cmd_test(const t_cmd *cmd)
 	t_func_test	f_test;
 	int			ret[NUM_TESTS];
 	int			idx, num_passed;
+	t_logger	logger;
 
-	TEST_LOG_SET_LEVEL(ERROR);
+	logger = *ft_logger_get_default_logger();
+	logger.log_level = LIBFT_LOG_LEVEL_INFO;
+	logger.debug_info_thres = LIBFT_LOG_LEVEL_WARN;
+	__extern_test_logger = &logger;
 
-	if (ft_streq(ft_htbl_get(cmd->opts, "-v"), "all")) {
-		TEST_LOG_SET_LEVEL(DEBUG);
-	}
 	ft_bzero(ret, sizeof(ret));
 	num_passed = 0;
 
@@ -45,46 +48,49 @@ int	cmd_test(const t_cmd *cmd)
 			TEST_LOG(ERROR, INVALID_INPUT_ERROR);
 			return (SSL_ERR);
 		}
-		CMD_LOG(INFO, TXT_CYAN("testing %s"), __TESTS[idx].name);
+		TEST_LOG(INFO, TXT_CYAN("testing %s"), __TESTS[idx].name);
 
 		f_test = __TESTS[idx].f_test;
 
 		if (NULL == f_test) {
-			CMD_LOG(ERROR, "unknown test");
+			TEST_LOG(ERROR, "unknown test");
 			return (SSL_ERR);
 		}
+
+		__extern_test_logger = ft_logger_get_default_logger();
 		ret[idx] = f_test();
+		__extern_test_logger = &logger;
 
 		if (SSL_OK != ret[idx]) {
-			CMD_LOG(ERROR, "test failed");
+			TEST_LOG(ERROR, "test failed");
 		} else {
 			num_passed++;
 		}
 		idx++;
 	}
 
-	CMD_LOG(INFO, __CLI_TEST_LINE_BREAK);
+	TEST_LOG(INFO, __CLI_TEST_LINE_BREAK);
 
 	if (num_passed == NUM_TESTS) {
-		CMD_LOG(INFO, "SUMMARY: " TXT_B_GREEN("ALL PASS"));
+		TEST_LOG(INFO, "SUMMARY: " TXT_B_GREEN("ALL PASS"));
 	} else {
-		CMD_LOG(INFO, "SUMMARY: " TXT_B_RED("FAIL"));
+		TEST_LOG(INFO, "SUMMARY: " TXT_B_RED("FAIL"));
 	}
 
-	CMD_LOG(INFO, "tested: %d, pass: %d, fail: %d", NUM_TESTS, num_passed, NUM_TESTS - num_passed);
-	CMD_LOG(INFO, __CLI_TEST_LINE_BREAK);
+	TEST_LOG(INFO, "tested: %d, pass: %d, fail: %d", NUM_TESTS, num_passed, NUM_TESTS - num_passed);
+	TEST_LOG(INFO, __CLI_TEST_LINE_BREAK);
 
 	idx = 0;
 	while (idx < NUM_TESTS) {
 		if (SSL_OK == ret[idx]) {
 			num_passed++;
-			CMD_LOG(INFO, TXT_B_GREEN("PASS") TXT_CYAN(" %s"), __TESTS[idx].name);
+			TEST_LOG(INFO, TXT_B_GREEN("PASS") TXT_CYAN(" %s"), __TESTS[idx].name);
 		} else {
-			CMD_LOG(INFO, TXT_B_RED("FAIL") TXT_CYAN(" %s"), __TESTS[idx].name);
+			TEST_LOG(INFO, TXT_B_RED("FAIL") TXT_CYAN(" %s"), __TESTS[idx].name);
 		}
 		idx++;
 	}
-	CMD_LOG(INFO, __CLI_TEST_LINE_BREAK);
+	TEST_LOG(INFO, __CLI_TEST_LINE_BREAK);
 
 	return (SSL_OK);
 }

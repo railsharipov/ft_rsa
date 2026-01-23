@@ -9,7 +9,8 @@
 
 # define IO_BUFSIZE 512
 
-# define IO_LOG(LEVEL, MES, ...)	io_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define IO_LOGGER_NAME	"io"
+# define IO_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, IO_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define IO_INIT_ERROR		"i/o init error"
 # define IO_READ_ERROR		"i/o read error"
@@ -82,13 +83,10 @@ void	io_fclose_multi(t_iodes *iodes, ...);
 void	io_copy(t_iodes * const dest, t_iodes * const src);
 void	io_print_stats(const t_iodes *iodes, const char *name);
 
-// Logging
-int		io_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
-
 // IO V2 API
 
-typedef ssize_t	(*t_func_io_v2_read)(void *ctx, char *buf, size_t nbytes);
-typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const char *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_read)(void *ctx, void *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const void *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
 typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
 
@@ -134,8 +132,8 @@ typedef struct s_io_v2_pipe {
 	t_buffer			*buffer;
 } t_io_v2_pipe;
 
-ssize_t	io_v2_read(t_io_v2_stream *stream, char *buf, size_t nbytes);
-ssize_t	io_v2_write(t_io_v2_stream *stream, const char *buf, size_t nbytes);
+ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
+ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
 ssize_t	io_v2_flush(t_io_v2_stream *stream);
 ssize_t	io_v2_close(t_io_v2_stream *stream);
 

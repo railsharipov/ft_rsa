@@ -11,7 +11,8 @@
 # define RSA_EXPPUB 65537ULL
 # define RM_TRIALS  20
 
-# define RSA_LOG(LEVEL, MES, ...)	rsa_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define RSA_LOGGER_NAME	"rsa"
+# define RSA_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, RSA_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum  e_rsa
 {
@@ -48,8 +49,6 @@ typedef struct	s_rsa
 	t_num		*exponent2;
 	t_num		*coeff;
 }				t_rsa;
-
-int			rsa_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int			rsa_key_items(t_node *asn_key, t_rsa **rsa_key);
 void		rsa_key_items_del(t_rsa *rsa_key);

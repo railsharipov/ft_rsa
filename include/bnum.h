@@ -45,7 +45,8 @@
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
 # define BNUM_SIGN(X)	(((X)->sign == BNUM_NEG)?(BNUM_NEG):(BNUM_POS))
 
-# define BNUM_LOG(LEVEL, MES, ...)	bnum_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define BNUM_LOGGER_NAME	"bnum"
+# define BNUM_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, BNUM_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define BNUM_ALLOC(PTR, SZ)		LIBFT_ALLOC(PTR, SZ)
 # define BNUM_REALLOC(PTR, SZ, NSZ)	LIBFT_REALLOC(PTR, SZ, NSZ)
@@ -69,8 +70,6 @@ typedef struct			s_num
 		X = Y;              \
 		Y = T;              \
 	} while (0)
-
-int		bnum_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 void    bnum_abs(const t_num *num, t_num *res);
 void    bnum_add(const t_num *a, const t_num *b, t_num *res);

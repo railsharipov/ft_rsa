@@ -7,8 +7,10 @@
 # include <libft/string.h>
 # include <libft/logger.h>
 
-# define TEST_LOG(LEVEL, MES, ...)	test_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-# define TEST_LOG_SET_LEVEL(LEVEL)	test_logger_set_level(LIBFT_LOG_LEVEL_##LEVEL)
+extern t_logger *__extern_test_logger;
+
+# define TEST_LOGGER_NAME	"test"
+# define TEST_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, __extern_test_logger, TEST_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 
@@ -38,9 +40,6 @@
 	} while (0)
 
 typedef int	(*t_func_test)(void);
-
-int		test_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
-void	test_logger_set_level(uint8_t level);
 
 int		test_info(int module_id, int verbose);
 int		test_assert(int boolean, const char *expr);

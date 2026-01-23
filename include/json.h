@@ -6,9 +6,8 @@
 # include <libft/std.h>
 # include <libft/logger.h>
 
-# define JSON_LOG_LEVEL				LIBFT_LOG_LEVEL_DEBUG
-
-# define JSON_LOG(LEVEL, MES, ...)	json_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define JSON_LOGGER_NAME	"json"
+# define JSON_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, JSON_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 enum	e_json_type {
     JSON_TYPE_BYTES = 1,
@@ -43,8 +42,6 @@ enum    e_json_q_type
 typedef int (*t_func_json_map)(t_node *node);
 typedef int (*t_func_json_select)(t_node *node, t_node *query_node, t_node **ret_node);
 typedef int (*t_func_json_dump)(t_node *node, t_ostring *ostring);
-
-int		json_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int     json_parse(const char *s, t_node **node);
 int     json_query(const char *s, t_node *json, t_node **ret_node);

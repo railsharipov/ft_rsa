@@ -9,7 +9,8 @@
 # define DES_BLOCK_SIZE	8
 # define DES_KSCHED_LEN	16
 
-# define DES_LOG(LEVEL, MES, ...)	des_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
+# define DES_LOGGER_NAME	"des"
+# define DES_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, DES_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 struct s_des;
 
@@ -50,8 +51,6 @@ enum	e_des
 	DES_E = 1UL << 7,
 	DES_D = 1UL << 8
 };
-
-int		des_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
 
 int		des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode);
 ssize_t	des_update(t_des *des, const char *in, char *out, size_t size);
