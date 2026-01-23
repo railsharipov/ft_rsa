@@ -61907,4 +61907,4 @@ Ada Reference Manual — 2012 Edition
 919 13 December 2012 Index
 Yield_To_Same_Or_Higher
  in Ada.Dispatching.Non_Preemptive
-D.2.4(2.2/3) 
+D.2.4(2.2/3)                               
