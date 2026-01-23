@@ -65,16 +65,16 @@ static int	__test_io_file_read(void)
 	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
 
 	rbytes = io_v2_read(stream, buf, bufsize);
-	TEST_ASSERT(rbytes == 0);
+	TEST_ASSERT(rbytes == -1);
 	TEST_ASSERT(stream->status == IO_V2_STATUS_EOF);
 
 	rbytes = io_v2_close(stream);
 	TEST_ASSERT(rbytes == 0);
-	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	rbytes = io_v2_read(stream, buf, 1);
 	TEST_ASSERT(rbytes == -1);
-	TEST_ASSERT(stream->status == IO_V2_STATUS_ERROR);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	ft_ostr_clear(&ref_content);
 
@@ -83,7 +83,7 @@ static int	__test_io_file_read(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
-	bufsize = IO_BUFSIZE;
+	bufsize = 1024 * 1024;
 	SSL_ALLOC(buf, bufsize);
 
 	ret = file_reader(&stream, __large_text_file_path);
@@ -106,7 +106,7 @@ static int	__test_io_file_read(void)
 
 	rbytes = io_v2_close(stream);
 	TEST_ASSERT(rbytes == 0);
-	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	ft_ostr_clear(&test_content);
 	ft_ostr_clear(&ref_content);
@@ -145,7 +145,7 @@ static int	__test_io_file_write(void)
 
 	wbytes = io_v2_close(stream);
 	TEST_ASSERT(wbytes == 0);
-	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	if (SSL_OK != file_read_all(__test_text_file_path, &test_content)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
@@ -163,7 +163,7 @@ static int	__test_io_file_write(void)
 		TEST_FAIL();
 	}
 
-	ret = file_writer(&stream, __large_text_file_path);
+	ret = file_writer(&stream, __test_text_file_path);
 	TEST_ASSERT(SSL_OK == ret);
 
 	tbytes = 0;
@@ -183,12 +183,13 @@ static int	__test_io_file_write(void)
 
 	wbytes = io_v2_close(stream);
 	TEST_ASSERT(wbytes == 0);
-	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	if (SSL_OK != file_read_all(__test_text_file_path, &test_content)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
+	ft_printf("test_content.size=%zu, ref_content.size=%zu\n", test_content.size, ref_content.size);
 	TEST_ASSERT(test_content.size == ref_content.size);
 	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, ref_content.size) == 0);
 

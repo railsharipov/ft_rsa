@@ -108,6 +108,7 @@ typedef enum e_io_v2_status {
 	IO_V2_STATUS_OK		= 0,
 	IO_V2_STATUS_ERROR	= -1,
 	IO_V2_STATUS_EOF	= -2,
+	IO_V2_STATUS_CLOSED	= -3,
 } t_io_v2_status;
 
 struct s_io_v2_pipe;

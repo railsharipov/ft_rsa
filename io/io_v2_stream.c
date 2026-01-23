@@ -18,7 +18,13 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
+			IO_LOG(ERROR, "stream is in error state");
+            return (-1);
+        case IO_V2_STATUS_CLOSED:
+			IO_LOG(ERROR, "stream is closed");
+            return (-1);
         case IO_V2_STATUS_EOF:
+			IO_LOG(ERROR, "stream is at EOF");
             return (-1);
         default:
             IO_LOG(ERROR, "invalid stream status %#x", stream->status);
@@ -61,6 +67,10 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
+			IO_LOG(ERROR, "stream is in error state");
+            return (-1);
+        case IO_V2_STATUS_CLOSED:
+			IO_LOG(ERROR, "stream is closed");
             return (-1);
         default:
             IO_LOG(ERROR, "invalid stream status %#x", stream->status);
@@ -97,6 +107,20 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
         IO_LOG(DEBUG, "stream is not closable, nothing to close");
         return (0);
     }
+    switch (stream->status) {
+        case IO_V2_STATUS_OK:
+		case IO_V2_STATUS_EOF:
+            break;
+        case IO_V2_STATUS_ERROR:
+			IO_LOG(ERROR, "stream is in error state");
+            return (-1);
+        case IO_V2_STATUS_CLOSED:
+			IO_LOG(ERROR, "stream is closed");
+            return (-1);
+        default:
+            IO_LOG(ERROR, "invalid stream status %#x", stream->status);
+            return (-1);
+    }
     if (NULL == stream->interface.close) {
         stream->status = IO_V2_STATUS_ERROR;
         IO_LOG(ERROR, "close function is not implemented");
@@ -104,13 +128,11 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
     }
     result = stream->interface.close(stream->ctx);
     if (result < 0) {
-        if (result == IO_V2_STATUS_EOF) {
-            stream->status = IO_V2_STATUS_EOF;
-        } else {
-            stream->status = IO_V2_STATUS_ERROR;
-        }
+		IO_LOG(ERROR, "close failed");
+        stream->status = IO_V2_STATUS_ERROR;
         return (-1);
     }
+	stream->status = IO_V2_STATUS_CLOSED;
     return (result);
 }
 
@@ -136,6 +158,10 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
+			IO_LOG(ERROR, "stream is in error state");
+            return (-1);
+        case IO_V2_STATUS_CLOSED:
+			IO_LOG(ERROR, "stream is closed");
             return (-1);
         default:
             IO_LOG(ERROR, "invalid stream status %#x", stream->status);

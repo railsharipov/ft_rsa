@@ -30,7 +30,10 @@ int	main(int ac, const char **av)
 	cmd_arg = args_new_cmd(av[0], "SSL-ish command line tool", NULL);
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("--debug", "set debug log level", AP_OPT_TYPE_FLAG));
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("--trace", "set trace log level", AP_OPT_TYPE_FLAG));
-	args_add_global_cmd_opt(cmd_arg, args_new_opt("-q", "quiet mode, show errors only", AP_OPT_TYPE_FLAG));
+	args_add_global_cmd_opt(cmd_arg, args_new_opt("--warn", "set warning log level", AP_OPT_TYPE_FLAG));
+	args_add_global_cmd_opt(cmd_arg, args_new_opt("--info", "set info log level", AP_OPT_TYPE_FLAG));
+	args_add_global_cmd_opt(cmd_arg, args_new_opt("--error", "set error log level", AP_OPT_TYPE_FLAG));
+	args_add_global_cmd_opt(cmd_arg, args_new_opt("-q", "quiet mode, errors only", AP_OPT_TYPE_FLAG));
 
 	// base64 command
 	sub_cmd_arg = args_new_cmd("base64", "Base64 encoding", cmd_base64);
@@ -134,7 +137,15 @@ int	main(int ac, const char **av)
 		__logger.log_level = LIBFT_LOG_LEVEL_TRACE;
 		__logger.debug_info_thres = LIBFT_LOG_LEVEL_TRACE;
 	}
-	if (ft_htbl_has(cmd.opts, "-q")) {
+	if (ft_htbl_has(cmd.opts, "--warn")) {
+		__logger.log_level = LIBFT_LOG_LEVEL_WARN;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_WARN;
+	}
+	if (ft_htbl_has(cmd.opts, "--info")) {
+		__logger.log_level = LIBFT_LOG_LEVEL_INFO;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_INFO;
+	}
+	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
 		__logger.log_level = LIBFT_LOG_LEVEL_ERROR;
 		__logger.debug_info_thres = LIBFT_LOG_LEVEL_ERROR;
 	}
