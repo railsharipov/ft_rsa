@@ -5,9 +5,9 @@ typedef struct s_io_v2_buffered_reader_ctx {
 	t_buffer *buffer;
 } t_io_v2_buffered_reader_ctx;
 
-static ssize_t  __io_v2_buffered_stream_read(void *vctx, char *buf, size_t nbytes);
+static ssize_t  __io_v2_buffered_stream_read(void *vctx, void *buf, size_t nbytes);
 static ssize_t  __io_v2_buffered_stream_close(void *vctx);
-static ssize_t  __io_v2_read_adapter(void *ctx, const char *buf, size_t nbytes);
+static ssize_t  __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes);
 
 int io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity)
 {
@@ -42,15 +42,15 @@ int io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, siz
     return (SSL_OK);
 }
 
-static ssize_t __io_v2_read_adapter(void *ctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
 {
 	t_io_v2_stream *stream;
 
 	stream = (t_io_v2_stream *)ctx;
-	return (stream->interface.read(stream->ctx, (char *)buf, nbytes));
+	return (stream->interface.read(stream->ctx, buf, nbytes));
 }
 
-static ssize_t	__io_v2_buffered_stream_read(void *vctx, char *buf, size_t nbytes)
+static ssize_t	__io_v2_buffered_stream_read(void *vctx, void *buf, size_t nbytes)
 {
 	t_io_v2_buffered_reader_ctx *ctx;
 	t_io_v2_stream *stream;

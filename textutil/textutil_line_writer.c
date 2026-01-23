@@ -1,16 +1,13 @@
 #include <textutil.h>
 #include <io.h>
 
-#include <textutil.h>
-#include <io.h>
-
 typedef struct s_textutil_line_writer_ctx {
 	t_io_v2_stream *buffered_downstream;
 	size_t line_len;
 	size_t seek;
 } t_textutil_line_writer_ctx;
 
-static ssize_t __textutil_line_write(void *vctx, const char *buf, size_t nbytes);
+static ssize_t __textutil_line_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t __textutil_line_flush(void *vctx);
 static ssize_t __textutil_line_close(void *vctx);
 
@@ -52,16 +49,19 @@ int textutil_line_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, si
     (*stream)->ctx = ctx;
     (*stream)->interface = interface;
     (*stream)->flags = IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE;
+    (*stream)->status = IO_V2_STATUS_OK;
 
 	return (SSL_OK);
 }
 
-static ssize_t __textutil_line_write(void *vctx, const char *buf, size_t nbytes)
+static ssize_t __textutil_line_write(void *vctx, const void *buf, size_t nbytes)
 {
     t_textutil_line_writer_ctx *ctx;
     ssize_t wbytes, tbytes, idx;
+    const char *cbuf;
 
     ctx = (t_textutil_line_writer_ctx *)vctx;
+    cbuf = (const char *)buf;
 
 	tbytes = 0;
 	idx = 0;
@@ -74,7 +74,7 @@ static ssize_t __textutil_line_write(void *vctx, const char *buf, size_t nbytes)
 			tbytes += wbytes;
 		}
 		else {
-			wbytes = io_v2_write(ctx->buffered_downstream, buf + idx, 1);
+			wbytes = io_v2_write(ctx->buffered_downstream, cbuf + idx, 1);
 			if (wbytes < 0) {
 				return (IO_V2_STATUS_ERROR);
 			}
@@ -107,7 +107,7 @@ static ssize_t __textutil_line_close(void *vctx)
 
 	ctx = (t_textutil_line_writer_ctx *)vctx;
 
-	if (IO_V2_STATUS_ERROR == io_v2_close(ctx->buffered_downstream)) {
+	if (io_v2_close(ctx->buffered_downstream) < 0) {
 		return (IO_V2_STATUS_ERROR);
 	}
 	SSL_FREE(ctx);

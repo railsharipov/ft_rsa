@@ -7,7 +7,7 @@ typedef struct s_textutil_line_reader_ctx {
 	size_t seek;
 } t_textutil_line_reader_ctx;
 
-static ssize_t __textutil_line_read(void *ctx, char *buf, size_t nbytes);
+static ssize_t __textutil_line_read(void *ctx, void *buf, size_t nbytes);
 static ssize_t __textutil_line_close(void *ctx);
 
 int textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *buffered_upstream, size_t max_line_len)
@@ -52,19 +52,21 @@ int textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *buffered_upstr
 	return (SSL_OK);
 }
 
-static ssize_t __textutil_line_read(void *vctx, char *buf, size_t max_nbytes)
+static ssize_t __textutil_line_read(void *vctx, void *buf, size_t max_nbytes)
 {
 	t_textutil_line_reader_ctx *ctx;
     ssize_t rbytes, tbytes;
 	size_t nbytes;
+	char *cbuf;
 
 	ctx = (t_textutil_line_reader_ctx *)vctx;
+	cbuf = (char *)buf;
 
 	tbytes = 0;
 	nbytes = MIN(ctx->max_line_len, max_nbytes);
 
 	while (tbytes < nbytes) {
-		rbytes = io_v2_read(ctx->buffered_upstream, buf + tbytes, 1);
+		rbytes = io_v2_read(ctx->buffered_upstream, cbuf + tbytes, 1);
 		if (rbytes < 0) {
 			if (IO_V2_STATUS_EOF == ctx->buffered_upstream->status && tbytes > 0) {
 				return (tbytes);
@@ -72,7 +74,7 @@ static ssize_t __textutil_line_read(void *vctx, char *buf, size_t max_nbytes)
 				return (ctx->buffered_upstream->status);
 			}
 		}
-		if (buf[tbytes] == '\n') {
+		if (cbuf[tbytes] == '\n') {
 			return (tbytes);
 		}
 		tbytes += rbytes;

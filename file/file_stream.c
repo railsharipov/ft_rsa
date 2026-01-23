@@ -7,8 +7,8 @@ typedef struct s_io_v2_file_ctx {
     ssize_t		seek;
 } t_io_v2_file_ctx;
 
-static ssize_t __io_v2_file_read(void *vctx, char *buf, size_t nbytes);
-static ssize_t __io_v2_file_write(void *vctx, const char *buf, size_t nbytes);
+static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes);
+static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_file_close(void *vctx);
 
 int file_reader(t_io_v2_stream **stream, const char *file_path)
@@ -81,7 +81,7 @@ int file_writer(t_io_v2_stream **stream, const char *file_path)
     return (SSL_OK);
 }
 
-static ssize_t __io_v2_file_read(void *vctx, char *buf, size_t nbytes)
+static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
 {
     t_io_v2_file_ctx *ctx;
     ssize_t rbytes;
@@ -121,7 +121,7 @@ static ssize_t __io_v2_file_read(void *vctx, char *buf, size_t nbytes)
     }
 }
 
-static ssize_t __io_v2_file_write(void *vctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
 {
     t_io_v2_file_ctx *ctx;
     ssize_t wbytes;

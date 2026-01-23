@@ -1,6 +1,6 @@
 #include <io.h>
 
-ssize_t io_v2_read(t_io_v2_stream *stream, char *buf, size_t nbytes)
+ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
 {
     ssize_t result;
 
@@ -43,7 +43,7 @@ ssize_t io_v2_read(t_io_v2_stream *stream, char *buf, size_t nbytes)
     return (result);
 }
 
-ssize_t io_v2_write(t_io_v2_stream *stream, const char *buf, size_t nbytes)
+ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 {
     ssize_t result;
 

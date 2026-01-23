@@ -5,10 +5,10 @@ typedef struct s_io_v2_buffered_writer_ctx {
 	t_buffer *buffer;
 } t_io_v2_buffered_writer_ctx;
 
-static ssize_t  __io_v2_buffered_stream_write(void *vctx, const char *buf, size_t nbytes);
+static ssize_t  __io_v2_buffered_stream_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t  __io_v2_buffered_stream_flush(void *vctx);
 static ssize_t  __io_v2_buffered_stream_close(void *vctx);
-static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes);
+static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes);
 
 int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity)
 {
@@ -44,7 +44,7 @@ int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, s
     return (SSL_OK);
 }
 
-static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
 {
 	t_io_v2_stream *stream;
 
@@ -52,7 +52,7 @@ static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes)
 	return (stream->interface.write(stream->ctx, buf, nbytes));
 }
 
-static ssize_t __io_v2_buffered_stream_write(void *vctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_buffered_stream_write(void *vctx, const void *buf, size_t nbytes)
 {
     t_io_v2_buffered_writer_ctx *ctx;
 	t_io_v2_stream *stream;

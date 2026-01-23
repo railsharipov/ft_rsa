@@ -1,7 +1,7 @@
 #include <io.h>
 
-static ssize_t __io_v2_read_adapter(void *ctx, const char *buf, size_t nbytes);
-static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes);
+static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes);
+static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes);
 
 int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream, size_t capacity)
 {
@@ -32,15 +32,15 @@ int io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stre
     return (SSL_ERR);
 }
 
-static ssize_t __io_v2_read_adapter(void *ctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
 {
 	t_io_v2_stream *stream;
 
 	stream = (t_io_v2_stream *)ctx;
-	return (stream->interface.read(stream->ctx, (char *)buf, nbytes));
+	return (stream->interface.read(stream->ctx, buf, nbytes));
 }
 
-static ssize_t __io_v2_write_adapter(void *ctx, const char *buf, size_t nbytes)
+static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
 {
 	t_io_v2_stream *stream;
 

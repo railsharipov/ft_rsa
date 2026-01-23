@@ -4,7 +4,8 @@
 
 int file_read_all(const char *path, t_ostring *ostring)
 {
-	char	buf[IO_BUFSIZE];
+	const size_t	bufsize = 1024 * 1024;
+	char	buf[bufsize];
 	ssize_t	nbytes;
 	int 	fd;
 
@@ -20,10 +21,8 @@ int file_read_all(const char *path, t_ostring *ostring)
 	ostring->content = NULL;
 	ostring->size = 0;
 
-	while ((nbytes = read(fd, buf, IO_BUFSIZE)) > 0) {
-		SSL_REALLOC(ostring->content, ostring->size, ostring->size + nbytes);
-		ft_memcpy(ostring->content + ostring->size, buf, nbytes);
-		ostring->size += nbytes;
+	while ((nbytes = read(fd, buf, bufsize)) > 0) {
+		ft_ostr_append(ostring, (void *)buf, nbytes);
 	}
 	if (close(fd) < 0) {
 		FILE_LOG(WARN, "failed to close file %s after read", path);
