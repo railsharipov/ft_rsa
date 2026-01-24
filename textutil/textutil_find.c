@@ -2,7 +2,7 @@
 #include <libft/string.h>
 #include <libft/std.h>
 
-int textutil_find(const char *octets, size_t olen, const char *pattern, size_t patlen)
+ssize_t textutil_find(const char *octets, size_t olen, const char *pattern, size_t patlen)
 {
 	unsigned int pathash, winhash;
 	unsigned char *oct, *pat;
@@ -47,7 +47,7 @@ int textutil_find(const char *octets, size_t olen, const char *pattern, size_t p
 	return (-1);
 }
 
-int textutil_findf(const char *octets, size_t olen, const char *format, ...)
+ssize_t textutil_findf(const char *octets, size_t olen, const char *format, ...)
 {
 	va_list	ap;
 	char	*pattern;

@@ -96,19 +96,13 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	}
 	ft_ostr_append(&b64enc_lines, (char *)enc->content + pos, idx - pos);
 	PEM_LOG(TRACE, "copied base64 encoding: content: %p, size: %d", b64enc_lines.content, b64enc_lines.size);
-
 	PEM_LOG(TRACE, "deleting whitespace from base64 encoding");
-	////////////////////
-	////////////////////
 
-	// TODO: fix this, b64enc has no initialized content pointer
-	if (SSL_OK != textutil_del_eol((char *)b64enc_lines.content, (char *)b64enc.content, b64enc_lines.size)) {
+	if (SSL_OK != textutil_del_eol((char *)b64enc_lines.content, b64enc_lines.size, (char **)&b64enc.content, &b64enc.size)) {
 		PEM_LOG(ERROR, "bad base64 format");
 		goto label_exit;
 	}
 
-	////////////////////
-	////////////////////
 	PEM_LOG(TRACE, "decoding base64 encoding: content: %p, size: %d", b64enc.content, b64enc.size);
 	if (SSL_OK != base64_decode(b64enc.content, b64enc.size, &b64dec.content, &b64dec.size)) {
 		PEM_LOG(ERROR, "bad base64 encoding");

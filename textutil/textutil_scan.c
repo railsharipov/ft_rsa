@@ -63,7 +63,7 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 	int		matches = 0;
 
 	TEXTUTIL_LOG(TRACE, "Scanning using format string: '%s'", format);
-	
+
 	while (format[fpos] != '\0' && inpos < inlen) {
 		if (ft_iseolws(format[fpos])) {
 			while (ft_iseolws(format[fpos])) {

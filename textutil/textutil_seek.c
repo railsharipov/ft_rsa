@@ -20,7 +20,7 @@ ssize_t textutil_seekf(const char *in, size_t inlen, const char *format, ...)
 	va_start(ap, format);
 	patlen = ft_vsprintf(&pat, format, ap);
 	va_end(ap);
-	
+
 	match = 0;
 	if (patlen > 0 && patlen <= inlen) {
 		match = ft_strncmp(in, pat, patlen) == 0;
@@ -40,7 +40,7 @@ ssize_t textutil_bseekf(const char *in, size_t inlen, const char *format, ...)
 	va_start(ap, format);
 	patlen = ft_vsprintf(&pat, format, ap);
 	va_end(ap);
-	
+
 	match = 0;
 	if (patlen > 0 && patlen <= inlen) {
 		match = ft_strncmp(in, pat, patlen) == 0;

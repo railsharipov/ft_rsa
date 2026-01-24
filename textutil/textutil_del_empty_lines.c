@@ -14,25 +14,31 @@ static const int LF = 0xA;
 
 // Delete empty lines in character array
 
-ssize_t textutil_del_empty_lines(const char *in, char *out, size_t len)
+int textutil_del_empty_lines(const char *in, size_t inlen, char **out, size_t *outlen)
 {
+	char	*res;
   	size_t   ix, iy;
 
-	if (NULL == in || NULL == out) {
-		return (-1);
+	if (NULL == in || NULL == out || NULL == outlen) {
+		return (SSL_ERR);
 	}
+	SSL_ALLOC(res, inlen + 1);
 	ix = 0;
 	iy = 0;
-	while (ix < len) {
+	while (ix < inlen) {
 		if (ft_iseol(in[ix])) {
-			out[iy++] = LF;
-			while (ix < len && ft_iseol(in[ix])) {
+			res[iy++] = LF;
+			while (ix < inlen && ft_iseol(in[ix])) {
 				ix++;
 			}
 		}
 		else {
-			out[iy++] = in[ix++];
+			res[iy++] = in[ix++];
 		}
 	}
-	return ((ssize_t)iy);
+	res[iy] = '\0';
+	*out = res;
+	*outlen = iy;
+
+	return (SSL_OK);
 }

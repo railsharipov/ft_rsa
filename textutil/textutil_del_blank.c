@@ -7,21 +7,27 @@
 // HT = horizontal tab
 // SP = space
 
-ssize_t textutil_del_blank(const char *in, char *out, size_t len)
+int textutil_del_blank(const char *in, size_t inlen, char **out, size_t *outlen)
 {
+	char	*res;
 	size_t   ix, iy;
 
-	if (NULL == in || NULL == out) {
-		return (-1);
+	if (NULL == in || NULL == out || NULL == outlen) {
+		return (SSL_ERR);
 	}
+	SSL_ALLOC(res, inlen + 1);
 	ix = 0;
 	iy = 0;
-	while (ix < len) {
+	while (ix < inlen) {
 		if (!ft_isblank(in[ix])) {
-			out[iy] = in[ix];
+			res[iy] = in[ix];
 			iy++;
 		}
 		ix++;
 	}
-	return ((ssize_t)iy);
+	res[iy] = '\0';
+	*out = res;
+	*outlen = iy;
+
+	return (SSL_OK);
 }
