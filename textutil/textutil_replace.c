@@ -12,10 +12,10 @@ int textutil_nreplace(const char *in, size_t inlen, char **out, size_t *outlen, 
 		return (SSL_ERR);
 	}
 	if (patlen > inlen) {
-		return (SSL_ERR);
+		return (SSL_OK);
 	}
 	if ((idx = textutil_find(in, inlen, pat, patlen)) < 0) {
-		return (SSL_ERR);
+		return (SSL_OK);
 	}
 	end = idx + patlen;
 	reslen = inlen - patlen + replen;

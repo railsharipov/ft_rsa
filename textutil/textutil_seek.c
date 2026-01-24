@@ -4,8 +4,15 @@
 
 ssize_t textutil_seek(const char *in, size_t inlen, const char *pat, size_t patlen)
 {
-	if (patlen > 0 && patlen <= inlen && ft_strncmp(in, pat, patlen) == 0) {
-		return ((ssize_t)patlen);
+	if (NULL == in || NULL == pat) {
+		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (0);
+	}
+	if (patlen == 0 || patlen > inlen) {
+		return (0);
+	}
+	if (ft_strneq(in, pat, patlen)) {
+		return (patlen);
 	}
 	return (0);
 }
@@ -17,6 +24,10 @@ ssize_t textutil_seekf(const char *in, size_t inlen, const char *format, ...)
 	size_t	patlen;
 	int		match;
 
+	if (NULL == in || NULL == format) {
+		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (0);
+	}
 	va_start(ap, format);
 	patlen = ft_vsprintf(&pat, format, ap);
 	va_end(ap);
@@ -37,6 +48,10 @@ ssize_t textutil_bseekf(const char *in, size_t inlen, const char *format, ...)
 	size_t	patlen;
 	int		match;
 
+	if (NULL == in || NULL == format) {
+		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (0);
+	}
 	va_start(ap, format);
 	patlen = ft_vsprintf(&pat, format, ap);
 	va_end(ap);
