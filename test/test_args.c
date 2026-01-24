@@ -24,111 +24,176 @@ static int	__test_args_setup(void)
 
 static int	__test_args_parse(void)
 {
-	// const char *sargs[] = {"test", "-v", "all", "-h", "10", NULL};
-	// const char *sargs_2[] = { "test", "-v", "all", "-i", NULL};
-	// t_args args;
-	// t_args_cmd *cmd;
-	// t_args_opt *opt;
-	// int ret;
+	t_arg_cmd *cmd_arg, *sub_cmd_arg;
+	t_arg_opt *opt_arg;
+	t_cmd cmd;
+	int ret;
 
-	// // test 1
-	// ret = args_init(&args);
-	// TEST_ASSERT(ret == SSL_OK);
+	// new command
+	cmd_arg = args_new_cmd("test", "test command", free);
+	TEST_ASSERT(cmd_arg != NULL);
+	TEST_ASSERT(ft_streq(cmd_arg->name, "test"));
+	TEST_ASSERT(ft_streq(cmd_arg->desc, "test command"));
+	TEST_ASSERT(cmd_arg->func == free);
+	TEST_ASSERT(cmd_arg->sub_cmds != NULL);
+	TEST_ASSERT(cmd_arg->opts != NULL);
+	TEST_ASSERT(cmd_arg->global_opts != NULL);
 
-	// cmd = args_cmd_new("test", NULL, NULL);
-	// TEST_ASSERT(cmd != NULL);
+	// new option
+	opt_arg = args_new_opt("-v", "v", AP_OPT_TYPE_STRING);
+	TEST_ASSERT(opt_arg != NULL);
+	TEST_ASSERT(ft_streq(opt_arg->name, "-v"));
+	TEST_ASSERT(ft_streq(opt_arg->desc, "v"));
+	TEST_ASSERT(opt_arg->type == AP_OPT_TYPE_STRING);
 
-	// opt = args_opt_new("-v", "test", AP_OPT_TYPE_STRING);
-	// TEST_ASSERT(opt != NULL);
-	// ret = args_add_sub_cmd(cmd, opt);
-	// TEST_ASSERT(ret == SSL_OK);
-	// opt = args_opt_new("-h", "test", AP_OPT_TYPE_NUMBER);
-	// TEST_ASSERT(opt != NULL);
-	// ret = args_add_sub_cmd(cmd, opt);
-	// TEST_ASSERT(ret == SSL_OK);
-	// opt = args_opt_new("-i", "test", AP_OPT_TYPE_FLAG);
-	// TEST_ASSERT(opt != NULL);
-	// ret = args_add_sub_cmd(cmd, opt);
-	// TEST_ASSERT(ret == SSL_OK);
+	// add options to command
+	ret = args_add_cmd_opt(cmd_arg, args_new_opt("-v", "v", AP_OPT_TYPE_STRING));
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd_arg->opts, "-v"));
+	TEST_ASSERT(ft_htbl_get(cmd_arg->opts, "-v") != NULL);
 
-	// ret = args_add_sub_cmd(&args, cmd);
-	// TEST_ASSERT(ret == SSL_OK);
+	ret = args_add_cmd_opt(cmd_arg, args_new_opt("-x", "x", AP_OPT_TYPE_NUMBER));
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd_arg->opts, "-x"));
+	TEST_ASSERT(ft_htbl_get(cmd_arg->opts, "-x") != NULL);
 
-	// ret = args_parse(&args, sargs);
-	// TEST_ASSERT(ret == SSL_OK);
+	ret = args_add_cmd_opt(cmd_arg, args_new_opt("-i", "i", AP_OPT_TYPE_FLAG));
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd_arg->opts, "-i"));
+	TEST_ASSERT(ft_htbl_get(cmd_arg->opts, "-i") != NULL);
 
-	// cmd = args_get_cmd(&args, "test");
-	// TEST_ASSERT(cmd != NULL);
-	// TEST_ASSERT(ft_strcmp(cmd->name, "test") == 0);
-	// TEST_ASSERT(cmd->func == NULL);
+	// must have default -h option
+	TEST_ASSERT(ft_htbl_has(cmd_arg->opts, "-h"));
+	TEST_ASSERT(ft_htbl_get(cmd_arg->opts, "-h") != NULL);
 
-	// opt = args_get_cmd_opt(cmd, "-v");
-	// TEST_ASSERT(opt != NULL);
-	// TEST_ASSERT(opt->set == 1);
-	// TEST_ASSERT(opt->pos == 1);
-	// TEST_ASSERT(opt->type == AP_OPT_TYPE_STRING);
-	// TEST_ASSERT(ft_strcmp(opt->value, "all") == 0);
+	// parse command
+	const char *argv_0[] = {"test", "-v", "all", "-x", "10", "-i", "-h", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
 
-	// opt = args_get_cmd_opt(cmd, "-h");
-	// TEST_ASSERT(opt != NULL);
-	// TEST_ASSERT(opt->set == 1);
-	// TEST_ASSERT(opt->pos == 3);
-	// TEST_ASSERT(opt->type == AP_OPT_TYPE_NUMBER);
-	// TEST_ASSERT(ft_strcmp(opt->value, "10") == 0);
+	ret = args_parse(&cmd, cmd_arg, argv_0, 5);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(cmd.arg_ref == cmd_arg);
+	TEST_ASSERT(cmd.func == free);
+	TEST_ASSERT(cmd.opts != NULL);
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-v"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-v"), "all"));
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-x"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-x"), "10"));
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-i"));
+	TEST_ASSERT(ft_htbl_get(cmd.opts, "-i") == NULL);
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-h"));
+	TEST_ASSERT(ft_htbl_get(cmd.opts, "-h") == NULL);
 
-	// opt = args_get_cmd_opt(cmd, "-i");
-	// TEST_ASSERT(opt != NULL);
-	// TEST_ASSERT(opt->set == 0);
-	// TEST_ASSERT(opt->type == AP_OPT_TYPE_FLAG);
+	// parsed command should have only options that were parsed
+	const char *argv_1[] = {"test", "-v", "all", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
 
-	// // test 2
-	// ret = args_init(&args);
-	// TEST_ASSERT(ret == SSL_OK);
+	ret = args_parse(&cmd, cmd_arg, argv_1, 3);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-v"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-v"), "all"));
+	TEST_ASSERT(!ft_htbl_has(cmd.opts, "-h"));
+	TEST_ASSERT(!ft_htbl_has(cmd.opts, "-x"));
+	TEST_ASSERT(!ft_htbl_has(cmd.opts, "-i"));
 
-	// cmd = args_cmd_new("test", NULL, NULL);
-	// TEST_ASSERT(cmd != NULL);
+	// add global options
+	ret = args_add_global_cmd_opt(cmd_arg, args_new_opt("-g", "g", AP_OPT_TYPE_STRING));
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd_arg->global_opts, "-g"));
+	TEST_ASSERT(ft_htbl_get(cmd_arg->global_opts, "-g") != NULL);
 
-	// opt = args_opt_new("-v", "test", AP_OPT_TYPE_STRING);
-	// TEST_ASSERT(opt != NULL);
-	// ret = args_add_sub_cmd(cmd, opt);
-	// TEST_ASSERT(ret == SSL_OK);
-	// opt = args_opt_new("-h", "test", AP_OPT_TYPE_NUMBER);
-	// TEST_ASSERT(opt != NULL);
-	// ret = args_add_sub_cmd(cmd, opt);
-	// TEST_ASSERT(ret == SSL_OK);
-	// opt = args_opt_new("-i", "test", AP_OPT_TYPE_FLAG);
-	// TEST_ASSERT(opt != NULL);
-	// ret = args_add_sub_cmd(cmd, opt);
-	// TEST_ASSERT(ret == SSL_OK);
+	// parse command with global options
+	const char *argv_2[] = {"test", "-v", "all", "-h", "-g", "global", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
 
-	// ret = args_add_sub_cmd(&args, cmd);
-	// TEST_ASSERT(ret == SSL_OK);
+	ret = args_parse(&cmd, cmd_arg, argv_2, 6);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-g"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-g"), "global"));
 
-	// ret = args_parse(&args, sargs_2);
-	// TEST_ASSERT(ret == SSL_OK);
+	// parse command with unknown option
+	const char *argv_3[] = { "test", "-v", "--invalid", "--rip", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
 
-	// cmd = args_get_cmd(&args, "test");
-	// TEST_ASSERT(cmd != NULL);
-	// TEST_ASSERT(ft_strcmp(cmd->name, "test") == 0);
-	// TEST_ASSERT(cmd->func == NULL);
+	ret = args_parse(&cmd, cmd_arg, argv_3, 3);
+	TEST_ASSERT(ret == SSL_ERR);
 
-	// opt = args_get_cmd_opt(cmd, "-i");
-	// TEST_ASSERT(opt != NULL);
-	// TEST_ASSERT(opt->set == 1);
-	// TEST_ASSERT(opt->pos == 3);
-	// TEST_ASSERT(opt->type == AP_OPT_TYPE_FLAG);
+	// parse command with missing value
+	const char *argv_4[] = { "test", "-v", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
 
-	// opt = args_get_cmd_opt(cmd, "-v");
-	// TEST_ASSERT(opt != NULL);
-	// TEST_ASSERT(opt->set == 1);
-	// TEST_ASSERT(opt->pos == 1);
-	// TEST_ASSERT(opt->type == AP_OPT_TYPE_STRING);
-	// TEST_ASSERT(ft_strcmp(opt->value, "all") == 0);
+	ret = args_parse(&cmd, cmd_arg, argv_4, 2);
+	TEST_ASSERT(ret == SSL_ERR);
 
-	// opt = args_get_cmd_opt(cmd, "-h");
-	// TEST_ASSERT(opt != NULL);
-	// TEST_ASSERT(opt->set == 0);
-	// TEST_ASSERT(opt->type == AP_OPT_TYPE_NUMBER);
+	// parse command with invalid value type
+	const char *argv_5[] = { "test", "-x", "abc", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
+
+	ret = args_parse(&cmd, cmd_arg, argv_5, 2);
+	TEST_ASSERT(ret == SSL_ERR);
+
+	// parse command with duplicate option
+	const char *argv_6[] = { "test", "-v", "all", "-v", "single", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
+
+	ret = args_parse(&cmd, cmd_arg, argv_6, 4);
+	TEST_ASSERT(ret == SSL_ERR);
+
+	// parse command with duplicate global option
+	const char *argv_7[] = { "test", "-v", "all", "-g", "global", "-g", "cooling", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
+
+	ret = args_parse(&cmd, cmd_arg, argv_7, 6);
+	TEST_ASSERT(ret == SSL_ERR);
+
+	// add sub command
+	sub_cmd_arg = args_new_cmd("sub", "sub command", ft_streq);
+	TEST_ASSERT(sub_cmd_arg != NULL);
+	ret = args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(cmd_arg->sub_cmds, "sub"));
+	TEST_ASSERT(ft_htbl_get(cmd_arg->sub_cmds, "sub") == sub_cmd_arg);
+
+	// parse command with sub command with default options
+	const char *argv_8[] = { "test", "sub", "-h", "-g", "global", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
+
+	ret = args_parse(&cmd, cmd_arg, argv_8, 3);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(cmd.arg_ref == sub_cmd_arg);
+	TEST_ASSERT(cmd.func == ft_streq);
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-h"));
+	TEST_ASSERT(ft_htbl_get(cmd.opts, "-h") == NULL);
+	// sub command should have main command global options
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-g"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-g"), "global"));
+
+	// add options to sub command
+	ret = args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "s", AP_OPT_TYPE_STRING));
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(ft_htbl_has(sub_cmd_arg->opts, "-s"));
+	TEST_ASSERT(ft_htbl_get(sub_cmd_arg->opts, "-s") != NULL);
+
+	// parse command with sub-commands with options
+	const char *argv_9[] = { "test", "sub", "-s", "slurp", "-g", "global", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
+
+	ret = args_parse(&cmd, cmd_arg, argv_9, 3);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(cmd.arg_ref == sub_cmd_arg);
+	TEST_ASSERT(cmd.func == ft_streq);
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-s"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-s"), "slurp"));
+	// sub command should have main command global options
+	TEST_ASSERT(ft_htbl_has(cmd.opts, "-g"));
+	TEST_ASSERT(ft_streq(ft_htbl_get(cmd.opts, "-g"), "global"));
+
+	// parse command with invalid argument order: sub-command must not follow an option
+	const char *argv_10[] = { "test", "-v", "all", "sub", "-g", "global", "-s", "slurp", NULL};
+	ft_bzero(&cmd, sizeof(t_cmd));
+
+	ret = args_parse(&cmd, cmd_arg, argv_10, 8);
+	TEST_ASSERT(ret == SSL_ERR);
 
 	return (SSL_OK);
 }

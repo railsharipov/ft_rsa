@@ -64,6 +64,10 @@ static int	__parse_opts(t_htbl *opts, t_htbl *global_opts, t_htbl *parsed_opts, 
 			ARGP_LOG(ERROR, "unknown option: %s", argv[pos]);
 			return (SSL_ERR);
 		}
+		if (ft_htbl_has(parsed_opts, opt->name)) {
+			ARGP_LOG(ERROR, "duplicate option: %s", opt->name);
+			return (SSL_ERR);
+		}
 		switch (opt->type) {
 			case AP_OPT_TYPE_FLAG:
 				ft_htbl_add(parsed_opts, NULL, opt->name);
