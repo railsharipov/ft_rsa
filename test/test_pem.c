@@ -6,7 +6,6 @@
 #include <bnum.h>
 #include <rand.h>
 #include <test.h>
-#include <io.h>
 #include <textutil.h>
 #include <base64.h>
 #include <json.h>

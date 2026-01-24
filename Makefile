@@ -50,7 +50,7 @@ sanitize: override CC = gcc -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanit
 sanitize: override LDFLAGS = -fsanitize=address
 sanitize: $(NAME)
 
-test: override CC = gcc -Og -g -std=c11 -Wall -Wextra
+test: override CC = gcc -Og -g -std=c11 -Wall -Wextra -fsanitize=address -fno-omit-frame-pointer
 test: $(NAME)
 
 $(NAME): $(OBJS)

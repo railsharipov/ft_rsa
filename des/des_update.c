@@ -19,6 +19,16 @@
 static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t size);
 static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t size);
 
+/*
+* Update the DES context with the given input and output buffers.
+*
+* @param des The DES context.
+* @param in The input buffer.
+* @param out The output buffer.
+* @param size The size of the input and output buffers.
+*
+* @return The number of bytes written to the output buffer.
+*/
 ssize_t des_update(t_des *des, const char *in, char *out, size_t size)
 {
 	DES_LOG(TRACE, "update start");

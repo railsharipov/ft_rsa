@@ -19,6 +19,15 @@
 static ssize_t __encrypt_final(t_des *des, char *out, size_t size);
 static ssize_t __decrypt_final(t_des *des, char *out, size_t size);
 
+/*
+* Finalize the DES context and write the final block to the output buffer.
+*
+* @param des The DES context.
+* @param out The output buffer.
+* @param size The size of the output buffer.
+*
+* @return The number of bytes written to the output buffer.
+*/
 ssize_t des_final(t_des *des, char *out, size_t size)
 {
 	DES_LOG(TRACE, "final start");

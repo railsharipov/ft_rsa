@@ -63,7 +63,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 			PEM_LOG(ERROR, "invalid pem proc type: %d", pem->proc);
 			goto label_exit;
 		}
-		
+
 		if (pem->cipher == PEM_CIPHER_DES_CBC) {
 			if (pem->has_salt == 0) {
 				PEM_LOG(TRACE, "no salt provided: generating random salt for des cipher");

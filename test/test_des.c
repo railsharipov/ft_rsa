@@ -6,387 +6,271 @@
 #include <file.h>
 #include <libft/bytes.h>
 
-// static int	__test_des_setup(void);
-// static void	__test_des_cleanup(void);
+static int	__test_des_setup(void);
+static void	__test_des_cleanup(void);
 
-// static int	__test_des_ecb_encrypt(void);
-// static int	__test_des_ecb_decrypt(void);
-// static int	__test_des_cbc_encrypt(void);
-// static int	__test_des_cbc_decrypt(void);
+static int	__test_des_ecb_encrypt(void);
+static int	__test_des_ecb_decrypt(void);
+static int	__test_des_cbc_encrypt(void);
+static int	__test_des_cbc_decrypt(void);
 
-// static const char	*__small_text_file_path = "test/files/text/small.txt";
-// static const char	*__large_text_file_path = "test/files/text/large.txt";
+static ssize_t	__helper_des_update(t_des *des, const t_ostring *in, t_ostring *out);
+static ssize_t	__helper_des_final(t_des *des, t_ostring *out);
 
-// static const char	*__des_ecb_small_cipher_file_path = "test/files/des/des-ecb-small-cipher";
-// static const char	*__des_ecb_large_cipher_file_path = "test/files/des/des-ecb-large-cipher";
-// static const char	*__des_cbc_small_cipher_file_path = "test/files/des/des-cbc-small-cipher";
-// static const char	*__des_cbc_large_cipher_file_path = "test/files/des/des-cbc-large-cipher";
+static const char	*__small_text_file_path = "test/files/text/small.txt";
+static const char	*__large_text_file_path = "test/files/text/large.txt";
 
-// static t_ostring	__small_text;
-// static t_ostring	__des_ecb_small_cipher;
-// static t_ostring	__des_cbc_small_cipher;
+static const char	*__des_ecb_small_cipher_file_path = "test/files/des/des-ecb-small-cipher";
+static const char	*__des_ecb_large_cipher_file_path = "test/files/des/des-ecb-large-cipher";
+static const char	*__des_cbc_small_cipher_file_path = "test/files/des/des-cbc-small-cipher";
+static const char	*__des_cbc_large_cipher_file_path = "test/files/des/des-cbc-large-cipher";
 
-// static const char	*__keyhex = "F122D9DEFE7F91F6";
-// static const char	*__ivhex = "6F19F7EFED9D221F";
+static t_ostring	*__small_text;
+static t_ostring	*__large_text;
+static t_ostring	*__des_ecb_small_cipher;
+static t_ostring	*__des_cbc_small_cipher;
+static t_ostring	*__des_ecb_large_cipher;
+static t_ostring	*__des_cbc_large_cipher;
 
-// static uint8_t	__key[8];
-// static uint8_t	__iv[8];
+static const char	*__keyhex = "F122D9DEFE7F91F6";
+static const char	*__ivhex = "6F19F7EFED9D221F";
 
-// TODO: fix DES tests.
+static uint8_t	__key[8];
+static uint8_t	__iv[8];
 
 int	test_des(void)
 {
-	return (SSL_OK);
-	// int ret;
+	int ret;
 
-	// if (SSL_OK != __test_des_setup()) {
-	// 	TEST_LOG(ERROR, "failed to setup test");
-	// 	TEST_FAIL();
-	// }
+	if (SSL_OK != __test_des_setup()) {
+		TEST_LOG(ERROR, "failed to setup test");
+		TEST_FAIL();
+	}
 
-	// ret = __test_des_ecb_encrypt()
-	// 	| __test_des_ecb_decrypt()
-	// 	| __test_des_cbc_encrypt()
-	// 	| __test_des_cbc_decrypt();
+	ret = __test_des_ecb_encrypt()
+		| __test_des_ecb_decrypt()
+		| __test_des_cbc_encrypt()
+		| __test_des_cbc_decrypt();
 
-	// __test_des_cleanup();
+	__test_des_cleanup();
 
-	// return (ret);
+	return (ret);
 }
 
-// static int	__test_des_setup(void)
-// {
-// 	if (SSL_OK != file_read_all(__small_text_file_path, &__small_text)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != file_read_all(__des_ecb_small_cipher_file_path, &__des_ecb_small_cipher)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != file_read_all(__des_cbc_small_cipher_file_path, &__des_cbc_small_cipher)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ft_hex_to_bytes(__key, __keyhex, 16);
-// 	ft_hex_to_bytes(__iv, __ivhex, 16);
+static int	__test_des_setup(void)
+{
+	__small_text = ft_ostr_new();
+	__large_text = ft_ostr_new();
+	__des_ecb_small_cipher = ft_ostr_new();
+	__des_cbc_small_cipher = ft_ostr_new();
+	__des_ecb_large_cipher = ft_ostr_new();
+	__des_cbc_large_cipher = ft_ostr_new();
 
-// 	return (SSL_OK);
-// }
+	if (SSL_OK != file_read_all(__small_text_file_path, __small_text)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != file_read_all(__des_ecb_small_cipher_file_path, __des_ecb_small_cipher)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != file_read_all(__des_cbc_small_cipher_file_path, __des_cbc_small_cipher)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != file_read_all(__large_text_file_path, __large_text)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != file_read_all(__des_ecb_large_cipher_file_path, __des_ecb_large_cipher)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		return (SSL_ERR);
+	}
+	if (SSL_OK != file_read_all(__des_cbc_large_cipher_file_path, __des_cbc_large_cipher)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		return (SSL_ERR);
+	}
+	ft_hex_to_bytes(__key, __keyhex, 16);
+	ft_hex_to_bytes(__iv, __ivhex, 16);
 
-// static void	__test_des_cleanup(void)
-// {
-// 	return ;
-// }
+	return (SSL_OK);
+}
 
-// static int	__test_des_ecb_encrypt(void)
-// {
-// 	t_des		des;
-// 	t_iodes		in, out, tmp;
-// 	t_ostring	cipher;
-// 	int			ret;
+static void	__test_des_cleanup(void)
+{
+	ft_ostr_del(__small_text);
+	ft_ostr_del(__large_text);
+	ft_ostr_del(__des_ecb_small_cipher);
+	ft_ostr_del(__des_cbc_small_cipher);
+	ft_ostr_del(__des_ecb_large_cipher);
+	ft_ostr_del(__des_cbc_large_cipher);
+}
 
-// 	// Small text file.
-// 	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
-// 	ft_ostr_init(&cipher);
-	
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __small_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_osbuf(&out, IO_WRITE, &cipher)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
+static int	__test_des_ecb_encrypt(void)
+{
+	t_des		des;
+	t_ostring	cipher;
+	ssize_t		nbytes;
 
-// 	ret = des_final(&des, &out);
-// 	TEST_ASSERT(ret == SSL_OK);
-// 	TEST_ASSERT(cipher.size == __des_ecb_small_cipher.size);
-// 	TEST_ASSERT(ft_memcmp(cipher.content, __des_ecb_small_cipher.content, cipher.size) == 0);
+	// Small text file.
+	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
+	ft_ostr_init(&cipher);
 
-// 	// Large text file.
-// 	const char	*test_cipher_file_path = "/tmp/test_des_ecb_cipher";
+	nbytes = __helper_des_update(&des, __small_text, &cipher);
+	TEST_ASSERT(nbytes > 0);
 
-// 	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
-// 	ft_ostr_init(&cipher);
+	nbytes = __helper_des_final(&des, &cipher);
+	TEST_ASSERT(nbytes > 0);
+	TEST_ASSERT(cipher.size == __des_ecb_small_cipher->size);
+	TEST_ASSERT(ft_memcmp(cipher.content, __des_ecb_small_cipher->content, cipher.size) == 0);
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __large_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&out, IO_WRITE|IO_FILE, test_cipher_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
-	
-// 	ret = des_final(&des, &out);
-// 	io_fclose(&out);
-// 	TEST_ASSERT(ret == SSL_OK);
+	// Large text file.
+	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
+	ft_ostr_init(&cipher);
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, test_cipher_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&tmp, IO_READ|IO_FILE, __des_ecb_large_cipher_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	size_t r1, r2;
-// 	char buf1[IO_BUFSIZE], buf2[IO_BUFSIZE];
-// 	int check_result = 0;
+	nbytes = __helper_des_update(&des, __large_text, &cipher);
+	TEST_ASSERT(nbytes > 0);
 
-// 	do {
-// 		r1 = io_read(&in, buf1, sizeof(buf1));
-// 		r2 = io_read(&tmp, buf2, sizeof(buf2));
-// 		check_result = (int)((r1 >= 0) && (r2 >= 0) && (r1 == r2) && (ft_memcmp(buf1, buf2, r1) == 0));
-// 	} while (r1 > 0 && r2 > 0 && check_result);
+	nbytes = __helper_des_final(&des, &cipher);
+	TEST_ASSERT(nbytes > 0);
+	TEST_ASSERT(cipher.size == __des_ecb_large_cipher->size);
+	TEST_ASSERT(ft_memcmp(cipher.content, __des_ecb_large_cipher->content, cipher.size) == 0);
+	ft_ostr_clear(&cipher);
 
-// 	TEST_ASSERT(check_result > 0);
+	TEST_PASS();
+}
 
-// 	io_fclose(&in);
-// 	io_fclose(&tmp);
-// 	TEST_ASSERT(r1 == 0);
-// 	TEST_ASSERT(r2 == 0);
+static int	__test_des_ecb_decrypt(void)
+{
+	t_des		des;
+	t_ostring	mes;
+	ssize_t		nbytes;
 
-// 	TEST_PASS();
-// }
+	// Small cipher file.
+	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_DECRYPT);
+	ft_ostr_init(&mes);
 
-// static int	__test_des_ecb_decrypt(void)
-// {
-// 	t_des		des;
-// 	t_iodes		in, out, tmp;
-// 	t_ostring	mes;
-// 	int			ret;
+	nbytes = __helper_des_update(&des, __des_ecb_small_cipher, &mes);
+	TEST_ASSERT(nbytes > 0);
 
-// 	// Small cipher file.
-// 	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_DECRYPT);
-// 	ft_ostr_init(&mes);
+	nbytes = __helper_des_final(&des, &mes);
+	TEST_ASSERT(nbytes >= 0);
+	TEST_ASSERT(mes.size == __small_text->size);
+	TEST_ASSERT(ft_memcmp(mes.content, __small_text->content, mes.size) == 0);
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __des_ecb_small_cipher_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_osbuf(&out, IO_WRITE, &mes)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
+	// Large cipher file.
+	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_DECRYPT);
+	ft_ostr_init(&mes);
 
-// 	ret = des_final(&des, &out);
-// 	TEST_ASSERT(ret == SSL_OK);
-// 	TEST_ASSERT(mes.size == __small_text.size);
-// 	TEST_ASSERT(ft_memcmp(mes.content, __small_text.content, mes.size) == 0);
+	nbytes = __helper_des_update(&des, __des_ecb_large_cipher, &mes);
+	TEST_ASSERT(nbytes > 0);
 
-// 	// Large cipher file.
-// 	const char	*test_text_file_path = "/tmp/test_des_ecb_text";
+	nbytes = __helper_des_final(&des, &mes);
+	TEST_ASSERT(nbytes >= 0);
+	TEST_ASSERT(mes.size == __large_text->size);
+	TEST_ASSERT(ft_memcmp(mes.content, __large_text->content, mes.size) == 0);
+	ft_ostr_clear(&mes);
 
-// 	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_DECRYPT);
+	TEST_PASS();
+}
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __des_ecb_large_cipher_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&out, IO_WRITE|IO_FILE, test_text_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
-	
-// 	ret = des_final(&des, &out);
-// 	io_fclose(&out);
-// 	TEST_ASSERT(ret == SSL_OK);
+static int	__test_des_cbc_encrypt(void)
+{
+	t_des		des;
+	t_ostring	cipher;
+	ssize_t		nbytes;
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, test_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&tmp, IO_READ|IO_FILE, __large_text_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	size_t r1, r2;
-// 	char buf1[IO_BUFSIZE], buf2[IO_BUFSIZE];
+	// Small text file.
+	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT);
+	ft_ostr_init(&cipher);
 
-// 	int check_result = 0;
+	nbytes = __helper_des_update(&des, __small_text, &cipher);
+	TEST_ASSERT(nbytes > 0);
 
-// 	do {
-// 		r1 = io_read(&in, buf1, sizeof(buf1));
-// 		r2 = io_read(&tmp, buf2, sizeof(buf2));
-// 		check_result = (int)((r1 >= 0) && (r2 >= 0) && (r1 == r2) && (ft_memcmp(buf1, buf2, r1) == 0));
-// 	} while (r1 > 0 && r2 > 0 && check_result);
+	nbytes = __helper_des_final(&des, &cipher);
+	TEST_ASSERT(nbytes > 0);
+	TEST_ASSERT(cipher.size == __des_cbc_small_cipher->size);
+	TEST_ASSERT(ft_memcmp(cipher.content, __des_cbc_small_cipher->content, cipher.size) == 0);
 
-// 	TEST_ASSERT(check_result > 0);
+	// Large text file.
+	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT);
+	ft_ostr_init(&cipher);
 
-// 	io_fclose(&in);
-// 	io_fclose(&tmp);
-// 	TEST_ASSERT(r1 == 0);
-// 	TEST_ASSERT(r2 == 0);
+	nbytes = __helper_des_update(&des, __large_text, &cipher);
+	TEST_ASSERT(nbytes > 0);
 
-// 	TEST_PASS();
-// }
+	nbytes = __helper_des_final(&des, &cipher);
+	TEST_ASSERT(nbytes > 0);
+	TEST_ASSERT(cipher.size == __des_cbc_large_cipher->size);
+	TEST_ASSERT(ft_memcmp(cipher.content, __des_cbc_large_cipher->content, cipher.size) == 0);
+	ft_ostr_clear(&cipher);
 
-// static int	__test_des_cbc_encrypt(void)
-// {
-// 	t_des		des;
-// 	t_iodes		in, out, tmp;
-// 	t_ostring	cipher;
-// 	int			ret;
+	TEST_PASS();
+}
 
-// 	// Small text file.
-// 	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT);
-// 	ft_ostr_init(&cipher);
+static int	__test_des_cbc_decrypt(void)
+{
+	t_des		des;
+	t_ostring	mes;
+	ssize_t		nbytes;
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __small_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_osbuf(&out, IO_WRITE, &cipher)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
+	// Small cipher file.
+	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_DECRYPT);
+	ft_ostr_init(&mes);
 
-// 	ret = des_final(&des, &out);
-// 	TEST_ASSERT(ret == SSL_OK);
-// 	TEST_ASSERT(cipher.size == __des_cbc_small_cipher.size);
-// 	TEST_ASSERT(ft_memcmp(cipher.content, __des_cbc_small_cipher.content, cipher.size) == 0);
+	nbytes = __helper_des_update(&des, __des_cbc_small_cipher, &mes);
+	TEST_ASSERT(nbytes > 0);
 
-// 	// Large text file.
-// 	const char	*test_cipher_file_path = "/tmp/test_des_cbc_cipher";
+	nbytes = __helper_des_final(&des, &mes);
+	TEST_ASSERT(nbytes >= 0);
+	TEST_ASSERT(mes.size == __small_text->size);
+	TEST_ASSERT(ft_memcmp(mes.content, __small_text->content, mes.size) == 0);
 
-// 	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT);
+	// Large cipher file.
+	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_DECRYPT);
+	ft_ostr_init(&mes);
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __large_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&out, IO_WRITE|IO_FILE, test_cipher_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
-	
-// 	ret = des_final(&des, &out);
-// 	io_fclose(&out);
-// 	TEST_ASSERT(ret == SSL_OK);
+	nbytes = __helper_des_update(&des, __des_cbc_large_cipher, &mes);
+	TEST_ASSERT(nbytes > 0);
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, test_cipher_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&tmp, IO_READ|IO_FILE, __des_cbc_large_cipher_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	size_t r1, r2;
-// 	char buf1[IO_BUFSIZE], buf2[IO_BUFSIZE];
+	nbytes = __helper_des_final(&des, &mes);
+	TEST_ASSERT(nbytes >= 0);
 
-// 	int check_result = 0;
+	TEST_ASSERT(mes.size == __large_text->size);
+	TEST_ASSERT(ft_memcmp(mes.content, __large_text->content, mes.size) == 0);
+	ft_ostr_clear(&mes);
 
-// 	do {
-// 		r1 = io_read(&in, buf1, sizeof(buf1));
-// 		r2 = io_read(&tmp, buf2, sizeof(buf2));
-// 		check_result = (int)((r1 >= 0) && (r2 >= 0) && (r1 == r2) && (ft_memcmp(buf1, buf2, r1) == 0));
-// 	} while (r1 > 0 && r2 > 0 && check_result);
+	TEST_PASS();
+}
 
-// 	TEST_ASSERT(check_result > 0);
 
-// 	io_fclose(&in);
-// 	io_fclose(&tmp);
-// 	TEST_ASSERT(r1 == 0);
-// 	TEST_ASSERT(r2 == 0);
+static ssize_t	__helper_des_update(t_des *des, const t_ostring *in, t_ostring *out)
+{
+	char	*buf;
+	ssize_t wbytes;
 
-// 	TEST_PASS();
-// }
+	SSL_ALLOC(buf, in->size);
+	wbytes = des_update(des, (char *)in->content, buf, in->size);
+	if (wbytes < 0) {
+		SSL_FREE(buf);
+		return (-1);
+	}
+	ft_ostr_append(out, buf, wbytes);
+	SSL_FREE(buf);
 
-// static int	__test_des_cbc_decrypt(void)
-// {
-// 	t_des		des;
-// 	t_iodes		in, out, tmp;
-// 	t_ostring	mes;
-// 	int			ret;
+	return (wbytes);
+}
 
-// 	// Small cipher file.
-// 	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_DECRYPT);
-// 	ft_ostr_init(&mes);
+static ssize_t	__helper_des_final(t_des *des, t_ostring *out)
+{
+	char	buf[DES_BLOCK_SIZE];
+	ssize_t wbytes;
 
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __des_cbc_small_cipher_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_osbuf(&out, IO_WRITE, &mes)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
+	wbytes = des_final(des, (char *)buf, sizeof(buf));
+	if (wbytes < 0) {
+		return (-1);
+	}
+	ft_ostr_append(out, buf, wbytes);
 
-// 	ret = des_final(&des, &out);
-// 	TEST_ASSERT(ret == SSL_OK);
-// 	TEST_ASSERT(mes.size == __small_text.size);
-// 	TEST_ASSERT(ft_memcmp(mes.content, __small_text.content, mes.size) == 0);
-
-// 	// Large cipher file.
-// 	const char	*test_text_file_path = "/tmp/test_des_cbc_text";
-
-// 	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_DECRYPT);
-
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, __des_cbc_large_cipher_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&out, IO_WRITE|IO_FILE, test_text_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	ret = des_update(&des, &in, &out);
-// 	io_fclose(&in);
-// 	TEST_ASSERT(ret == SSL_OK);
-	
-// 	ret = des_final(&des, &out);
-// 	io_fclose(&out);
-// 	TEST_ASSERT(ret == SSL_OK);
-
-// 	if (SSL_OK != io_fopen(&in, IO_READ|IO_FILE, test_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != io_fopen(&tmp, IO_READ|IO_FILE, __large_text_file_path)) {
-// 		TEST_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	size_t r1, r2;
-// 	char buf1[IO_BUFSIZE], buf2[IO_BUFSIZE];
-
-// 	int check_result = 0;
-
-// 	do {
-// 		r1 = io_read(&in, buf1, sizeof(buf1));
-// 		r2 = io_read(&tmp, buf2, sizeof(buf2));
-// 		check_result = (int)((r1 >= 0) && (r2 >= 0) && (r1 == r2) && (ft_memcmp(buf1, buf2, r1) == 0));
-// 	} while (r1 > 0 && r2 > 0 && check_result);
-
-// 	TEST_ASSERT(check_result > 0);
-
-// 	io_fclose(&in);
-// 	io_fclose(&tmp);
-// 	TEST_ASSERT(r1 == 0);
-// 	TEST_ASSERT(r2 == 0);
-
-// 	TEST_PASS();
-// }
+	return (wbytes);
+}
