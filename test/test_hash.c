@@ -23,12 +23,12 @@ static const char	*__small_text_sha256_hash_hex = "e3cc9b1cbd3c9a0cea76629b3951f
 static const char	*__small_text_sha384_hash_hex = "6c25956f00aff98b52ddfc84deebc33056700008379b4df4f54cabc10fe0738f47a4b9368412ce0d044e00be97c1795c";
 static const char	*__small_text_sha512_hash_hex = "2c38c8a19dddbc1c3187e54ceb55a0634db2f541bc11c2db2970e1cb8f37be450d5be343dcaba9db2d7372832f399841d7fbf40c5acc1ea81237303a1891521c";
 
-static const char	*__large_text_md5_hash_hex = "89a1081a26676f7fdf65ae3eddcbf0b1";
-static const char	*__large_text_sha1_hash_hex = "4f157b1875c07993e4938409936a28c16d544c06";
-static const char	*__large_text_sha224_hash_hex = "ed36e9f7d87966ba791d78a43320c11a5f59dafe276d20455bb0b151";
-static const char	*__large_text_sha256_hash_hex = "4574984f6ad330f87c264f5e10e36763cb64629bac449e562dde521ac600a946";
-static const char	*__large_text_sha384_hash_hex = "1046c7e6a928dbfc40ebca930b203ba2abcbf177a6fe552f17cf57df81c965021f4eeaef22e676780ccba8dcd69ed2df";
-static const char	*__large_text_sha512_hash_hex = "d2960cebf987d8df1c669cdfb2a7935e804e86de4f9bb7a21c8d306bfbda28d340bb6f723e54bd5d8ead1a1f9dbe7fcb7c75475f4fbb65327b2a2fee6996cc94";
+static const char	*__large_text_md5_hash_hex = "54500f5736bb406b1414a38997bf4b9b";
+static const char	*__large_text_sha1_hash_hex = "f6e52b13d88233e73294e2b14bbdcb147abe7cc8";
+static const char	*__large_text_sha224_hash_hex = "99f1e118af8e1298c7d08da62c0b6e84f5d69f634fdac7447183bd1d";
+static const char	*__large_text_sha256_hash_hex = "d148da3b9e486b4d6b7cbbf254e1ac01ca1d0cf6aa639b28db64bc9b19841d8c";
+static const char	*__large_text_sha384_hash_hex = "0bd865253f4fc9084bdcba4603c81e5fb7b387f11f9ab91cf74d92a2f6d2e165aa2558c00a5fba9ff5372214779c1ecf";
+static const char	*__large_text_sha512_hash_hex = "a4ea60088ba626a8bcbe47891ca25708f8ff789aff305620573d9969fdb4d1ca1ed8812f70a9fe5b885cfb0a193952cede38f81708479bcaf36176c7ee4749f5";
 
 int	test_hash(void)
 {
