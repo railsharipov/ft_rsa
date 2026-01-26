@@ -49,7 +49,7 @@ static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
 	t_io_v2_stream *stream;
 
 	stream = (t_io_v2_stream *)ctx;
-	return (stream->interface.write(stream->ctx, buf, nbytes));
+	return (io_v2_write(stream, buf, nbytes));
 }
 
 static ssize_t __io_v2_buffered_stream_write(void *vctx, const void *buf, size_t nbytes)
@@ -58,7 +58,7 @@ static ssize_t __io_v2_buffered_stream_write(void *vctx, const void *buf, size_t
 	t_io_v2_stream *stream;
 	ssize_t wbytes;
 	ssize_t rbytes;
-	ssize_t tbytes;
+	size_t tbytes;
 
 	ctx = (t_io_v2_buffered_writer_ctx *)vctx;
 	stream = ctx->downstream;
@@ -66,20 +66,25 @@ static ssize_t __io_v2_buffered_stream_write(void *vctx, const void *buf, size_t
 
 	while (tbytes < nbytes) {
 		if (ft_buffer_is_full(ctx->buffer)) {
-			IO_LOG(TRACE, "buffer is full, reading %zu bytes from buffer to stream", ft_buffer_used(ctx->buffer));
+			switch (stream->status) {
+				case IO_V2_STATUS_OK:
+					break;
+				case IO_V2_STATUS_ERROR:
+					IO_LOG(ERROR, "stream is in error state");
+					return (IO_V2_STATUS_ERROR);
+				case IO_V2_STATUS_CLOSED:
+					IO_LOG(ERROR, "stream is closed");
+					return (IO_V2_STATUS_ERROR);
+				default:
+					IO_LOG(ERROR, "invalid stream status");
+					return (IO_V2_STATUS_ERROR);
+			}
+			IO_LOG(TRACE, "buffer is full, reading %zd bytes from buffer to stream", ft_buffer_used(ctx->buffer));
 			rbytes = ft_buffer_read_with_func(ctx->buffer, __io_v2_write_adapter, stream, ft_buffer_used(ctx->buffer));
 			if (rbytes < 0) {
 				IO_LOG(ERROR, "failed to read from buffer to stream");
-				return (IO_V2_STATUS_ERROR);
-			}
-			IO_LOG(TRACE, "read %zu bytes from buffer to stream", rbytes);
-			if (stream->status == IO_V2_STATUS_ERROR) {
-				IO_LOG(TRACE, "stream is in error state, stopping write");
-				return (IO_V2_STATUS_ERROR);
-			}
-			if (rbytes == 0) {
-				IO_LOG(TRACE, "no more bytes to write, stopping write");
-				return (tbytes);
+			} else {
+				IO_LOG(TRACE, "read %zd bytes from buffer to stream", rbytes);
 			}
 		}
 		else {
@@ -89,7 +94,7 @@ static ssize_t __io_v2_buffered_stream_write(void *vctx, const void *buf, size_t
 				IO_LOG(ERROR, "failed to write to buffer");
 				return (IO_V2_STATUS_ERROR);
 			}
-			IO_LOG(TRACE, "wrote %zu bytes to buffer", wbytes);
+			IO_LOG(TRACE, "wrote %zd bytes to buffer", wbytes);
 			tbytes += wbytes;
 		}
 	}
@@ -101,7 +106,7 @@ static ssize_t __io_v2_buffered_stream_flush(void *vctx)
     t_io_v2_buffered_writer_ctx *ctx;
     t_io_v2_stream *downstream;
     t_buffer *buffer;
-    ssize_t wbytes;
+    size_t wbytes;
 
     ctx = (t_io_v2_buffered_writer_ctx *)vctx;
 
@@ -112,16 +117,28 @@ static ssize_t __io_v2_buffered_stream_flush(void *vctx)
 
     wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, ft_buffer_used(buffer));
     if (wbytes < 0) {
-        IO_LOG(ERROR, "failed to flush buffered stream");
-        return (IO_V2_STATUS_ERROR);
-    }
+		IO_LOG(ERROR, "failed to flush buffered stream");
+		switch (downstream->status) {
+			case IO_V2_STATUS_ERROR:
+				IO_LOG(ERROR, "stream is in error state");
+				return (IO_V2_STATUS_ERROR);
+			case IO_V2_STATUS_CLOSED:
+				IO_LOG(ERROR, "stream is closed");
+				return (IO_V2_STATUS_ERROR);
+			default:
+				IO_LOG(ERROR, "invalid stream status");
+				return (IO_V2_STATUS_ERROR);
+		}
+    } else {
+		IO_LOG(TRACE, "flushed %zd bytes to downstream", wbytes);
+	}
     return (wbytes);
 }
 
 static ssize_t __io_v2_buffered_stream_close(void *vctx)
 {
     t_io_v2_buffered_writer_ctx *ctx;
-    ssize_t flush_result;
+    ssize_t wbytes;
 
     ctx = (t_io_v2_buffered_writer_ctx *)vctx;
 
@@ -129,16 +146,19 @@ static ssize_t __io_v2_buffered_stream_close(void *vctx)
 
     if (!ft_buffer_is_empty(ctx->buffer)) {
         IO_LOG(TRACE, "flushing remaining %zu bytes before close", ft_buffer_used(ctx->buffer));
-        flush_result = __io_v2_buffered_stream_flush(vctx);
-        if (flush_result < 0) {
+        wbytes = __io_v2_buffered_stream_flush(vctx);
+        if (wbytes < 0) {
             IO_LOG(ERROR, "failed to flush buffer before close");
-            return (IO_V2_STATUS_ERROR);
+            return (wbytes);
+        } else {
+            IO_LOG(TRACE, "flushed %zd bytes before close", wbytes);
         }
     }
-
     if (io_v2_close(ctx->downstream) < 0) {
-        IO_LOG(ERROR, "failed to close underlying stream");
-        return (IO_V2_STATUS_ERROR);
+        IO_LOG(ERROR, "failed to close downstream stream");
+        return (wbytes);
+    } else {
+        IO_LOG(TRACE, "closed downstream");
     }
     ctx->downstream = NULL;
 
@@ -147,7 +167,6 @@ static ssize_t __io_v2_buffered_stream_close(void *vctx)
         ctx->buffer = NULL;
     }
     SSL_FREE(ctx);
-    IO_LOG(TRACE, "buffered stream closed");
 
     return (IO_V2_STATUS_OK);
 }

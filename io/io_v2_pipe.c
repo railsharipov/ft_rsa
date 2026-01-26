@@ -9,6 +9,10 @@ int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_str
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
+	if (capacity == 0) {
+		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
     if (!SSL_FLAG(IO_V2_FLAG_READ, upstream->flags)) {
         IO_LOG(ERROR, "upstream stream is not readable");
         return (SSL_ERR);
@@ -28,7 +32,16 @@ int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_str
 
 int io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream, size_t capacity)
 {
+	if (NULL == pipe || NULL == upstream || NULL == downstream) {
+		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	if (capacity == 0) {
+		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
     IO_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+
     return (SSL_ERR);
 }
 
@@ -37,7 +50,7 @@ static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
 	t_io_v2_stream *stream;
 
 	stream = (t_io_v2_stream *)ctx;
-	return (stream->interface.read(stream->ctx, buf, nbytes));
+	return (io_v2_read(stream, buf, nbytes));
 }
 
 static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
@@ -45,7 +58,7 @@ static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
 	t_io_v2_stream *stream;
 
 	stream = (t_io_v2_stream *)ctx;
-	return (stream->interface.write(stream->ctx, buf, nbytes));
+	return (io_v2_write(stream, buf, nbytes));
 }
 
 ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
@@ -96,16 +109,15 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
     IO_LOG(TRACE, "reading from upstream");
     rbytes = ft_buffer_write_with_func(buffer, __io_v2_read_adapter, upstream, nbytes);
     if (rbytes < 0) {
+		if (upstream->status == IO_V2_STATUS_EOF) {
+			pipe->status = IO_V2_STATUS_EOF;
+			return (-1);
+		}
         IO_LOG(ERROR, "read from upstream failed");
         pipe->status = IO_V2_STATUS_ERROR;
         return (-1);
     }
     IO_LOG(TRACE, "read %zu bytes from upstream", rbytes);
-    if (rbytes == 0 && upstream->status == IO_V2_STATUS_EOF) {
-        IO_LOG(TRACE, "upstream is at EOF");
-        pipe->status = IO_V2_STATUS_EOF;
-        return (0);
-    }
 
     IO_LOG(TRACE, "writing to downstream");
     wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, rbytes);
@@ -115,11 +127,6 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
         return (-1);
     }
     IO_LOG(TRACE, "wrote %zu bytes to downstream", wbytes);
-    if (wbytes == 0 && downstream->status == IO_V2_STATUS_EOF) {
-        IO_LOG(TRACE, "downstream is at EOF");
-        pipe->status = IO_V2_STATUS_EOF;
-        return (0);
-    }
 
     return (wbytes);
 }
@@ -127,6 +134,7 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
 ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
 {
     t_io_v2_stream *downstream;
+	ssize_t wbytes;
 
     downstream = pipe->downstream;
 
@@ -154,7 +162,15 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
         return (-1);
     }
     IO_LOG(TRACE, "flushing %zu bytes to downstream", ft_buffer_used(pipe->buffer));
-    return (ft_buffer_read_with_func(pipe->buffer, __io_v2_write_adapter, downstream, ft_buffer_used(pipe->buffer)));
+    wbytes = ft_buffer_read_with_func(pipe->buffer, __io_v2_write_adapter, downstream, ft_buffer_used(pipe->buffer));
+    if (wbytes < 0) {
+        IO_LOG(ERROR, "flush to downstream failed");
+        pipe->status = IO_V2_STATUS_ERROR;
+        return (-1);
+    }
+    IO_LOG(TRACE, "flushed %zu bytes to downstream", wbytes);
+
+    return (wbytes);
 }
 
 /*
