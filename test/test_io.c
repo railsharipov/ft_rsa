@@ -2,9 +2,11 @@
 #include <io.h>
 #include <file.h>
 #include <test.h>
+#include <rand.h>
 #include <libft/string.h>
 
 static int	__test_io_setup(void);
+static int	__test_io_interface(void);
 static int	__test_io_file_read(void);
 static int	__test_io_file_write(void);
 static int	__test_io_buffered_reader(void);
@@ -15,6 +17,13 @@ static const char	*__large_text_file_path = "test/files/text/large.txt";
 
 static const char	*__test_text_file_path = "test/files/text/test.txt";
 
+static const size_t	__mock_data_size_max = 1024 * 1024;
+static size_t		__mock_data_size_seed;
+
+typedef struct s_mock_ctx {
+	size_t	data_size;
+} t_mock_ctx;
+
 int	test_io(void)
 {
 	if (SSL_OK != __test_io_setup()) {
@@ -23,7 +32,8 @@ int	test_io(void)
 	}
 
 	return (
-		__test_io_file_read()
+		__test_io_interface()
+		| __test_io_file_read()
 		| __test_io_file_write()
 		| __test_io_buffered_reader()
 		| __test_io_buffered_writer()
@@ -32,7 +42,291 @@ int	test_io(void)
 
 static int	__test_io_setup(void)
 {
+	{
+		uint64_t	seed;
+
+		if (SSL_OK != rand_useed(&seed, sizeof(size_t))) {
+			TEST_LOG(ERROR, "failed to get random seed");
+			return (SSL_ERR);
+		}
+		__mock_data_size_seed = (size_t)seed;
+	}
 	return (SSL_OK);
+}
+
+static ssize_t	__mock_interface_read_ok(void *ctx, void *buf, size_t nbytes)
+{
+	t_mock_ctx	*mock_ctx;
+	ssize_t		result;
+
+	(void)buf;
+	mock_ctx = (t_mock_ctx *)ctx;
+
+	if (mock_ctx->data_size < nbytes) {
+		result = mock_ctx->data_size;
+		mock_ctx->data_size = 0;
+	}
+	else {
+		result = nbytes;
+		mock_ctx->data_size -= nbytes;
+	}
+	return (result);
+}
+
+static ssize_t	__mock_interface_write_ok(void *ctx, const void *buf, size_t nbytes)
+{
+	(void)buf;
+	(void)ctx;
+	return (nbytes);
+}
+
+static ssize_t	__mock_interface_ok(void *ctx, void *buf, size_t nbytes)
+{
+	(void)ctx;
+	(void)buf;
+	(void)nbytes;
+	return (IO_V2_STATUS_OK);
+}
+
+static ssize_t	__mock_interface_eof(void *ctx, void *buf, size_t nbytes)
+{
+	(void)ctx;
+	(void)buf;
+	(void)nbytes;
+	return (IO_V2_STATUS_EOF);
+}
+
+static ssize_t	__mock_interface_error(void *ctx, void *buf, size_t nbytes)
+{
+	(void)ctx;
+	(void)buf;
+	(void)nbytes;
+	return (IO_V2_STATUS_ERROR);
+}
+
+static void	*__mock_stream_ctx(void)
+{
+	t_mock_ctx	*ctx;
+
+	SSL_ALLOC(ctx, sizeof(t_mock_ctx));
+	ctx->data_size = __mock_data_size_seed * (__mock_data_size_seed + 1) % __mock_data_size_max;
+	return (ctx);
+}
+
+static t_io_v2_stream	__mock_stream(t_io_v2_interface interface, t_io_v2_flag flags)
+{
+	return (t_io_v2_stream){
+		.interface = interface,
+		.flags = flags,
+		.status = IO_V2_STATUS_OK,
+		.ctx = __mock_stream_ctx(),
+	};
+}
+
+static int	__test_io_interface(void)
+{
+	t_io_v2_stream		stream;
+	t_io_v2_interface	interface;
+	size_t			bufsize = 10 * 1024;
+	char			*buf;
+	ssize_t			result;
+
+	SSL_ALLOC(buf, bufsize);
+
+	// invalid input
+
+	result = io_v2_read(NULL, buf, bufsize);
+	TEST_ASSERT(result == -1);
+
+	result = io_v2_write(NULL, NULL, bufsize);
+	TEST_ASSERT(result == -1);
+
+	result = io_v2_flush(NULL);
+	TEST_ASSERT(result == -1);
+
+	result = io_v2_close(NULL);
+	TEST_ASSERT(result == -1);
+
+	// invalid flags
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_read_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_READ);
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_read_ok,
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
+	result = io_v2_flush(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.close = (t_func_io_v2_close)__mock_interface_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_READ);
+	result = io_v2_close(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	// invalid status
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_read_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_READ);
+	stream.status = IO_V2_STATUS_ERROR;
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	stream.status = IO_V2_STATUS_EOF;
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_EOF);
+
+	stream.status = IO_V2_STATUS_CLOSED;
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
+	stream.status = IO_V2_STATUS_ERROR;
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	stream.status = IO_V2_STATUS_CLOSED;
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.flush = (t_func_io_v2_flush)__mock_interface_write_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH);
+	stream.status = IO_V2_STATUS_ERROR;
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	stream.status = IO_V2_STATUS_CLOSED;
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
+
+	interface = (t_io_v2_interface){
+		.close = (t_func_io_v2_close)__mock_interface_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_CLOSE);
+	stream.status = IO_V2_STATUS_ERROR;
+	result = io_v2_close(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	stream.status = IO_V2_STATUS_CLOSED;
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
+
+	// happy path
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_read_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_READ);
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result >= 0);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result >= 0);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.flush = (t_func_io_v2_flush)__mock_interface_write_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH);
+	result = io_v2_flush(&stream);
+	TEST_ASSERT(result >= 0);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.close = (t_func_io_v2_close)__mock_interface_ok
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_CLOSE);
+	result = io_v2_close(&stream);
+	TEST_ASSERT(result == 0);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
+
+	// error path
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_error,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_READ);
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_error
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
+	result = io_v2_write(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.flush = (t_func_io_v2_flush)__mock_interface_error,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH);
+	result = io_v2_flush(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	interface = (t_io_v2_interface){
+		.close = (t_func_io_v2_close)__mock_interface_error
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_CLOSE);
+	result = io_v2_close(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	// eof path
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_eof,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_READ);
+	result = io_v2_read(&stream, buf, bufsize);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_EOF);
+
+	TEST_PASS();
 }
 
 static int	__test_io_file_read(void)
@@ -212,9 +506,7 @@ static int	__test_io_buffered_reader(void)
 	size_t			bufsize;
 	int				ret;
 
-	/* ****************************************************************** */
 	/* Case 1: read size is less than the capacity of the buffered stream */
-	/* ****************************************************************** */
 
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);
@@ -282,9 +574,7 @@ static int	__test_io_buffered_reader(void)
 	// upstream must have been closed by the buffered stream close
 	TEST_ASSERT(upstream->status == IO_V2_STATUS_CLOSED);
 
-	/* ********************************************************************* */
 	/* Case 2: read size is greater than the capacity of the buffered stream */
-	/* ********************************************************************* */
 
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);
@@ -381,9 +671,7 @@ static int	__test_io_buffered_writer(void)
 	TEST_ASSERT(buffered_stream->ctx != NULL);
 	TEST_ASSERT(buffered_stream->flags == (IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE));
 
-	/* ******************************************************************* */
 	/* Case 1: write size is less than the capacity of the buffered stream */
-	/* ******************************************************************* */
 
 	// data must be successfully written to the buffered stream
 	tbytes = 0;
@@ -432,9 +720,7 @@ static int	__test_io_buffered_writer(void)
 	ft_ostr_clear(&ref_content);
 	ft_ostr_clear(&test_content);
 
-	/* ********************************************************************** */
 	/* Case 2: write size is greater than the capacity of the buffered stream */
-	/* ********************************************************************** */
 
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);

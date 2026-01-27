@@ -96,7 +96,7 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 
 ssize_t io_v2_flush(t_io_v2_stream *stream)
 {
-    ssize_t result, tbytes;
+    ssize_t result;
 
     IO_LOG(TRACE, "flushing stream %p", stream);
 
@@ -105,8 +105,8 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         return (-1);
     }
     if (!SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
-        IO_LOG(DEBUG, "stream is not flushable, nothing to flush");
-        return (0);
+        IO_LOG(ERROR, "stream is not flushable");
+        return (-1);
     }
     if (!SSL_FLAG(IO_V2_FLAG_WRITE, stream->flags)) {
         IO_LOG(ERROR, "stream is not writable");
@@ -130,20 +130,15 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         IO_LOG(ERROR, "flush function is not implemented");
         return (-1);
     }
-    tbytes = 0;
-    do {
-        result = stream->interface.flush(stream->ctx);
-        if (result < 0) {
-			stream->status = IO_V2_STATUS_ERROR;
-			IO_LOG(ERROR, "flush failed");
-            return (-1);
-        }
-        tbytes += result;
-		IO_LOG(TRACE, "flushed %zu bytes", tbytes);
-    }
-    while (result > 0);
+	result = stream->interface.flush(stream->ctx);
+	if (result < 0) {
+		stream->status = IO_V2_STATUS_ERROR;
+		IO_LOG(ERROR, "flush failed");
+		return (-1);
+	}
+	IO_LOG(TRACE, "flushed %zu bytes", result);
 
-    return (tbytes);
+    return (result);
 }
 
 ssize_t io_v2_close(t_io_v2_stream *stream)
@@ -157,8 +152,8 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
         return (-1);
     }
     if (!SSL_FLAG(IO_V2_FLAG_CLOSE, stream->flags)) {
-        IO_LOG(DEBUG, "stream is not closable, nothing to close");
-        return (0);
+        IO_LOG(ERROR, "stream is not closable");
+        return (-1);
     }
     switch (stream->status) {
         case IO_V2_STATUS_OK:
