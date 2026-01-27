@@ -52,7 +52,7 @@ static int	__test_io_file_read(void)
 	bufsize = ref_content.size;
 	SSL_ALLOC(buf, bufsize);
 
-	ret = file_reader(&stream, __small_text_file_path);
+	ret = io_v2_file_reader(&stream, __small_text_file_path);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
 	TEST_ASSERT(stream->interface.read != NULL);
@@ -90,7 +90,7 @@ static int	__test_io_file_read(void)
 	bufsize = 1024 * 1024;
 	SSL_ALLOC(buf, bufsize);
 
-	ret = file_reader(&stream, __large_text_file_path);
+	ret = io_v2_file_reader(&stream, __large_text_file_path);
 	TEST_ASSERT(SSL_OK == ret);
 
 	ft_ostr_init(&test_content);
@@ -132,7 +132,7 @@ static int	__test_io_file_write(void)
 		TEST_FAIL();
 	}
 
-	ret = file_writer(&stream, __test_text_file_path);
+	ret = io_v2_file_writer(&stream, __test_text_file_path);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
 	TEST_ASSERT(stream->interface.read == NULL);
@@ -167,7 +167,7 @@ static int	__test_io_file_write(void)
 		TEST_FAIL();
 	}
 
-	ret = file_writer(&stream, __test_text_file_path);
+	ret = io_v2_file_writer(&stream, __test_text_file_path);
 	TEST_ASSERT(SSL_OK == ret);
 
 	tbytes = 0;
@@ -212,9 +212,10 @@ static int	__test_io_buffered_reader(void)
 	size_t			bufsize;
 	int				ret;
 
-	/*
-	* Case 1: read size is less than the capacity of the buffered stream
-	*/
+	/* ****************************************************************** */
+	/* Case 1: read size is less than the capacity of the buffered stream */
+	/* ****************************************************************** */
+
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);
 
@@ -225,7 +226,7 @@ static int	__test_io_buffered_reader(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
-	if (SSL_OK != file_reader(&upstream, __small_text_file_path)) {
+	if (SSL_OK != io_v2_file_reader(&upstream, __small_text_file_path)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
@@ -281,9 +282,10 @@ static int	__test_io_buffered_reader(void)
 	// upstream must have been closed by the buffered stream close
 	TEST_ASSERT(upstream->status == IO_V2_STATUS_CLOSED);
 
-	/*
-	 * Case 2: read size is greater than the capacity of the buffered stream
-	 */
+	/* ********************************************************************* */
+	/* Case 2: read size is greater than the capacity of the buffered stream */
+	/* ********************************************************************* */
+
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);
 
@@ -294,7 +296,7 @@ static int	__test_io_buffered_reader(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
-	if (SSL_OK != file_reader(&upstream, __large_text_file_path)) {
+	if (SSL_OK != io_v2_file_reader(&upstream, __large_text_file_path)) {
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
@@ -364,7 +366,7 @@ static int	__test_io_buffered_writer(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
-	if (SSL_OK != file_writer(&downstream, __test_text_file_path)) {
+	if (SSL_OK != io_v2_file_writer(&downstream, __test_text_file_path)) {
 		TEST_LOG(ERROR, FILE_WRITE_ERROR);
 		TEST_FAIL();
 	}
@@ -379,9 +381,9 @@ static int	__test_io_buffered_writer(void)
 	TEST_ASSERT(buffered_stream->ctx != NULL);
 	TEST_ASSERT(buffered_stream->flags == (IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE));
 
-	/*
-	 * Case 1: write size is less than the capacity of the buffered stream
-	 */
+	/* ******************************************************************* */
+	/* Case 1: write size is less than the capacity of the buffered stream */
+	/* ******************************************************************* */
 
 	// data must be successfully written to the buffered stream
 	tbytes = 0;
@@ -413,10 +415,10 @@ static int	__test_io_buffered_writer(void)
 	TEST_ASSERT(buffered_stream->status == IO_V2_STATUS_OK);
 
 	// close the buffered stream
-	// downstream should have been closed by the buffered stream close
 	wbytes = io_v2_close(buffered_stream);
 	TEST_ASSERT(wbytes == 0);
 	TEST_ASSERT(buffered_stream->status == IO_V2_STATUS_CLOSED);
+	// downstream should have been closed by the buffered stream close
 	TEST_ASSERT(downstream->status == IO_V2_STATUS_CLOSED);
 
 	// read the content of the test file
@@ -430,9 +432,9 @@ static int	__test_io_buffered_writer(void)
 	ft_ostr_clear(&ref_content);
 	ft_ostr_clear(&test_content);
 
-	/*
-	 * Case 2: write size is greater than the capacity of the buffered stream
-	 */
+	/* ********************************************************************** */
+	/* Case 2: write size is greater than the capacity of the buffered stream */
+	/* ********************************************************************** */
 
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);
@@ -446,7 +448,7 @@ static int	__test_io_buffered_writer(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
-	if (SSL_OK != file_writer(&downstream, __test_text_file_path)) {
+	if (SSL_OK != io_v2_file_writer(&downstream, __test_text_file_path)) {
 		TEST_LOG(ERROR, FILE_WRITE_ERROR);
 		TEST_FAIL();
 	}

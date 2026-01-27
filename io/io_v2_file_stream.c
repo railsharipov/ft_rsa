@@ -1,4 +1,4 @@
-#include <file.h>
+#include <io.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
 
@@ -11,7 +11,7 @@ static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes);
 static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_file_close(void *vctx);
 
-int file_reader(t_io_v2_stream **stream, const char *file_path)
+int io_v2_file_reader(t_io_v2_stream **stream, const char *file_path)
 {
     const t_io_v2_interface interface = {
         .read = __io_v2_file_read,
@@ -46,7 +46,7 @@ int file_reader(t_io_v2_stream **stream, const char *file_path)
     return (SSL_OK);
 }
 
-int file_writer(t_io_v2_stream **stream, const char *file_path)
+int io_v2_file_writer(t_io_v2_stream **stream, const char *file_path)
 {
     const t_io_v2_interface interface = {
         .write = __io_v2_file_write,

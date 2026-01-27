@@ -13,9 +13,6 @@ typedef struct s_file {
     char *path;
 } t_file;
 
-int file_reader(t_io_v2_stream **stream, const char *file_path);
-int file_writer(t_io_v2_stream **stream, const char *file_path);
-
 int file_read_all(const char *path, t_ostring *ostring);
 int file_write_all(const char *path, t_ostring *ostring);
 

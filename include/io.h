@@ -141,6 +141,12 @@ ssize_t	io_v2_close(t_io_v2_stream *stream);
 int		io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity);
 int		io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);
 
+int		io_v2_file_reader(t_io_v2_stream **stream, const char *file_path);
+int		io_v2_file_writer(t_io_v2_stream **stream, const char *file_path);
+
+int		io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
+int		io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
+
 int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
 int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
 ssize_t	io_v2_pipe_close(t_io_v2_pipe *pipe);

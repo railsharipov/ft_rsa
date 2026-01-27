@@ -1,4 +1,3 @@
-#include <bytes.h>
 #include <io.h>
 
 typedef struct s_io_v2_bytes_ctx {
@@ -10,7 +9,7 @@ static ssize_t __io_v2_bytes_read(void *vctx, void *buf, size_t nbytes);
 static ssize_t __io_v2_bytes_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_bytes_close(void *vctx);
 
-int bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
+int io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
 {
     const t_io_v2_interface interface = {
         .read = __io_v2_bytes_read,
@@ -39,7 +38,7 @@ int bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
     return (SSL_OK);
 }
 
-int bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
+int io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
 {
     const t_io_v2_interface interface = {
         .write = __io_v2_bytes_write,
