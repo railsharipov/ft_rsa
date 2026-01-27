@@ -568,6 +568,59 @@ static int	__test_io_bytes_reader(void)
 
 static int	__test_io_bytes_writer(void)
 {
+	t_io_v2_stream	*stream;
+	t_ostring		ref_content, test_content;
+	ssize_t			wbytes, tbytes;
+	size_t			write_size = 10 * 1024;
+	int				ret;
+
+	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	TEST_ASSERT(ref_content.size > write_size);
+	ft_ostr_init(&test_content);
+	tbytes = 0;
+
+	ret = io_v2_bytes_writer(&stream, &test_content);
+	TEST_ASSERT(SSL_OK == ret);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(stream->interface.read == NULL);
+	TEST_ASSERT(stream->interface.write != NULL);
+	TEST_ASSERT(stream->interface.close != NULL);
+	TEST_ASSERT(stream->interface.flush == NULL);
+	TEST_ASSERT(stream->ctx != NULL);
+	TEST_ASSERT(stream->flags == (IO_V2_FLAG_WRITE | IO_V2_FLAG_CLOSE));
+
+	// write must be successful
+	wbytes = io_v2_write(stream, ref_content.content, write_size);
+	TEST_ASSERT(wbytes > 0);
+	TEST_ASSERT(wbytes == write_size);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	tbytes += wbytes;
+
+	// write the rest of the data to the stream
+	while (tbytes < ref_content.size && stream->status == IO_V2_STATUS_OK) {
+		wbytes = io_v2_write(stream, ref_content.content + tbytes, MIN(write_size, ref_content.size - tbytes));
+		if (wbytes <= 0) {
+			break;
+		}
+		tbytes += wbytes;
+	}
+	// stream must be in OK status
+	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	// test content must be the same as the reference content
+	TEST_ASSERT(tbytes == ref_content.size);
+	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, tbytes) == 0);
+
+	// close must be successful
+	wbytes = io_v2_close(stream);
+	TEST_ASSERT(wbytes == 0);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
+
+	ft_ostr_clear(&ref_content);
+	ft_ostr_clear(&test_content);
+
 	TEST_PASS();
 }
 
