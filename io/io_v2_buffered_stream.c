@@ -37,12 +37,10 @@ int io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, siz
     ctx->stream = upstream;
     ctx->buffer = ft_buffer_new(capacity);
 
-    SSL_ALLOC((*stream), sizeof(t_io_v2_stream));
-    (*stream)->ctx = ctx;
-    (*stream)->interface = interface;
-    (*stream)->flags = IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE;
-    (*stream)->status = IO_V2_STATUS_OK;
-
+	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE), ctx)) {
+		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		return (SSL_ERR);
+	}
     return (SSL_OK);
 }
 
@@ -71,12 +69,10 @@ int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, s
 	ctx->stream = downstream;
     ctx->buffer = ft_buffer_new(capacity);
 
-    SSL_ALLOC((*stream), sizeof(t_io_v2_stream));
-    (*stream)->ctx = ctx;
-    (*stream)->interface = interface;
-    (*stream)->flags = IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE;
-    (*stream)->status = IO_V2_STATUS_OK;
-
+	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE), ctx)) {
+		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		return (SSL_ERR);
+	}
     return (SSL_OK);
 }
 

@@ -1,5 +1,12 @@
 #include <io.h>
 
+# define __IO_INVALID_INTFC_ERROR	"interface is invalid"
+
+# define __IO_CLOSED_STATUS_ERROR	"stream is closed"
+# define __IO_ERROR_STATUS_ERROR	"stream is in error state"
+# define __IO_EOF_STATUS_ERROR		"stream is at EOF"
+# define __IO_INVALID_STATUS_ERROR	"stream has invalid status"
+
 ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
 {
     ssize_t result;
@@ -18,21 +25,21 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
-			IO_LOG(ERROR, "stream is in error state");
+			IO_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
             return (-1);
         case IO_V2_STATUS_CLOSED:
-			IO_LOG(ERROR, "stream is closed");
+			IO_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
             return (-1);
         case IO_V2_STATUS_EOF:
-			IO_LOG(ERROR, "stream is at EOF");
+			IO_LOG(ERROR, __IO_EOF_STATUS_ERROR);
             return (-1);
         default:
-            IO_LOG(ERROR, "invalid stream status %#x", stream->status);
+            IO_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
             return (-1);
     }
     if (NULL == stream->interface.read) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "no read interface");
+        IO_LOG(ERROR, __IO_INVALID_INTFC_ERROR);
         return (-1);
     }
     result = stream->interface.read(stream->ctx, buf, nbytes);
@@ -41,7 +48,7 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
 			IO_LOG(TRACE, "read reached EOF");
             stream->status = IO_V2_STATUS_EOF;
         } else {
-			IO_LOG(ERROR, "read failed");
+			IO_LOG(ERROR, "interface read error");
 			stream->status = IO_V2_STATUS_ERROR;
         }
         return (-1);
@@ -69,24 +76,24 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
-			IO_LOG(ERROR, "stream is in error state");
+			IO_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
             return (-1);
         case IO_V2_STATUS_CLOSED:
-			IO_LOG(ERROR, "stream is closed");
+			IO_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
             return (-1);
         default:
-            IO_LOG(ERROR, "invalid stream status %#x", stream->status);
+            IO_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
             return (-1);
     }
     if (NULL == stream->interface.write) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "no write interface");
+        IO_LOG(ERROR, __IO_INVALID_INTFC_ERROR);
         return (-1);
     }
     result = stream->interface.write(stream->ctx, buf, nbytes);
     if (result < 0) {
+        IO_LOG(ERROR, "interface write error");
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "write failed");
         return (-1);
     }
 	IO_LOG(TRACE, "wrote %zu bytes", result);
@@ -116,24 +123,24 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
-			IO_LOG(ERROR, "stream is in error state");
+			IO_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
             return (-1);
         case IO_V2_STATUS_CLOSED:
-			IO_LOG(ERROR, "stream is closed");
+			IO_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
             return (-1);
         default:
-            IO_LOG(ERROR, "invalid stream status %#x", stream->status);
+            IO_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
             return (-1);
     }
     if (NULL == stream->interface.flush) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "no flush interface");
+        IO_LOG(ERROR, __IO_INVALID_INTFC_ERROR);
         return (-1);
     }
 	result = stream->interface.flush(stream->ctx);
 	if (result < 0) {
+		IO_LOG(ERROR, "interface flush error");
 		stream->status = IO_V2_STATUS_ERROR;
-		IO_LOG(ERROR, "flush failed");
 		return (-1);
 	}
 	IO_LOG(TRACE, "flushed %zu bytes", result);
@@ -158,6 +165,7 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
 	/* All known states are ok except closed state */
     switch (stream->status) {
         case IO_V2_STATUS_OK:
+			// force flush to prevent data loss
 			if (SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
 				IO_LOG(TRACE, "flushing stream on close");
 				result = io_v2_flush(stream);
@@ -173,20 +181,20 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
         case IO_V2_STATUS_ERROR:
             break;
         case IO_V2_STATUS_CLOSED:
-			IO_LOG(ERROR, "stream is already closed");
+			IO_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
             return (-1);
         default:
-            IO_LOG(ERROR, "invalid stream status %#x", stream->status);
+            IO_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
             return (-1);
     }
     if (NULL == stream->interface.close) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "no close interface");
+        IO_LOG(ERROR, __IO_INVALID_INTFC_ERROR);
         return (-1);
     }
     result = stream->interface.close(stream->ctx);
     if (result < 0) {
-		IO_LOG(ERROR, "close failed");
+		IO_LOG(ERROR, "interface close error");
         stream->status = IO_V2_STATUS_ERROR;
         return (-1);
     }
