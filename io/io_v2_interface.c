@@ -155,28 +155,30 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
         IO_LOG(ERROR, "stream is not closable");
         return (-1);
     }
+	/* All known states are ok except closed state */
     switch (stream->status) {
         case IO_V2_STATUS_OK:
+			if (SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
+				IO_LOG(TRACE, "flushing stream on close");
+				result = io_v2_flush(stream);
+				if (result < 0) {
+					IO_LOG(ERROR, "failed to flush stream on close");
+					stream->status = IO_V2_STATUS_ERROR;
+					return (-1);
+				}
+				IO_LOG(TRACE, "flushed stream on close");
+			}
+			break;
 		case IO_V2_STATUS_EOF:
-            break;
         case IO_V2_STATUS_ERROR:
-			IO_LOG(ERROR, "stream is in error state");
-            return (-1);
+            break;
         case IO_V2_STATUS_CLOSED:
-			IO_LOG(ERROR, "stream is closed");
+			IO_LOG(ERROR, "stream is already closed");
             return (-1);
         default:
             IO_LOG(ERROR, "invalid stream status %#x", stream->status);
             return (-1);
     }
-	if (SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
-		result = io_v2_flush(stream);
-		if (result < 0) {
-			IO_LOG(ERROR, "failed to flush stream on close");
-			return (-1);
-		}
-		IO_LOG(TRACE, "flushed stream on close");
-	}
     if (NULL == stream->interface.close) {
         stream->status = IO_V2_STATUS_ERROR;
         IO_LOG(ERROR, "no close interface");

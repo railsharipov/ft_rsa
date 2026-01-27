@@ -13,6 +13,7 @@ static int	__test_io_bytes_reader(void);
 static int	__test_io_bytes_writer(void);
 static int	__test_io_buffered_reader(void);
 static int	__test_io_buffered_writer(void);
+static int	__test_io_pipe_unidir(void);
 
 static const char	*__small_text_file_path = "test/files/text/small.txt";
 static const char	*__large_text_file_path = "test/files/text/large.txt";
@@ -37,6 +38,7 @@ int	test_io(void)
 		| __test_io_bytes_writer()
 		| __test_io_buffered_reader()
 		| __test_io_buffered_writer()
+		| __test_io_pipe_unidir()
 	);
 }
 
@@ -56,6 +58,9 @@ static int	__test_io_setup(void)
 
 struct s_mock_ctx {
 	size_t	data_size;
+	size_t	bytes_read;
+	size_t	bytes_written;
+	size_t	bytes_flushed;
 };
 
 static ssize_t	__mock_interface_read_ok(void *ctx, void *buf, size_t nbytes)
@@ -74,14 +79,27 @@ static ssize_t	__mock_interface_read_ok(void *ctx, void *buf, size_t nbytes)
 		result = nbytes;
 		mock_ctx->data_size -= nbytes;
 	}
+	mock_ctx->bytes_read += result;
 	return (result);
 }
 
 static ssize_t	__mock_interface_write_ok(void *ctx, const void *buf, size_t nbytes)
 {
+	struct s_mock_ctx *mock_ctx;
+
 	(void)buf;
-	(void)ctx;
+	mock_ctx = (struct s_mock_ctx *)ctx;
+	mock_ctx->bytes_written += nbytes;
 	return (nbytes);
+}
+
+static ssize_t	__mock_interface_flush_ok(void *ctx)
+{
+	struct s_mock_ctx *mock_ctx;
+
+	mock_ctx = (struct s_mock_ctx *)ctx;
+	mock_ctx->bytes_flushed += mock_ctx->data_size;
+	return (mock_ctx->data_size);
 }
 
 static ssize_t	__mock_interface_ok(void *ctx, void *buf, size_t nbytes)
@@ -114,6 +132,9 @@ static void	*__mock_stream_ctx(void)
 
 	SSL_ALLOC(ctx, sizeof(struct s_mock_ctx));
 	ctx->data_size = __mock_data_size_seed * (__mock_data_size_seed + 1) % __mock_data_size_max;
+	ctx->bytes_read = 0;
+	ctx->bytes_written = 0;
+	ctx->bytes_flushed = 0;
 	return (ctx);
 }
 
@@ -124,6 +145,16 @@ static t_io_v2_stream	__mock_stream(t_io_v2_interface interface, t_io_v2_flag fl
 		.flags = flags,
 		.status = IO_V2_STATUS_OK,
 		.ctx = __mock_stream_ctx(),
+	};
+}
+
+static t_io_v2_stream	__mock_stream_with_ctx(t_io_v2_interface interface, t_io_v2_flag flags, void *ctx)
+{
+	return (t_io_v2_stream){
+		.interface = interface,
+		.flags = flags,
+		.status = IO_V2_STATUS_OK,
+		.ctx = ctx,
 	};
 }
 
@@ -223,7 +254,7 @@ static int	__test_io_interface(void)
 
 	interface = (t_io_v2_interface){
 		.write = (t_func_io_v2_write)__mock_interface_write_ok,
-		.flush = (t_func_io_v2_flush)__mock_interface_write_ok,
+		.flush = (t_func_io_v2_flush)__mock_interface_flush_ok,
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH);
 	stream.status = IO_V2_STATUS_ERROR;
@@ -240,10 +271,10 @@ static int	__test_io_interface(void)
 		.close = (t_func_io_v2_close)__mock_interface_ok,
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_CLOSE);
-	stream.status = IO_V2_STATUS_ERROR;
+	stream.status = IO_V2_STATUS_CLOSED;
 	result = io_v2_close(&stream);
 	TEST_ASSERT(result == -1);
-	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
 
 	stream.status = IO_V2_STATUS_CLOSED;
 	result = io_v2_write(&stream, buf, bufsize);
@@ -270,7 +301,7 @@ static int	__test_io_interface(void)
 
 	interface = (t_io_v2_interface){
 		.write = (t_func_io_v2_write)__mock_interface_write_ok,
-		.flush = (t_func_io_v2_flush)__mock_interface_write_ok,
+		.flush = (t_func_io_v2_flush)__mock_interface_flush_ok,
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH);
 	result = io_v2_flush(&stream);
@@ -329,6 +360,23 @@ static int	__test_io_interface(void)
 	result = io_v2_read(&stream, buf, bufsize);
 	TEST_ASSERT(result == -1);
 	TEST_ASSERT(stream.status == IO_V2_STATUS_EOF);
+
+	// close must trigger flush
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.flush = (t_func_io_v2_flush)__mock_interface_flush_ok,
+		.close = (t_func_io_v2_close)__mock_interface_ok,
+	};
+	struct s_mock_ctx *ctx = __mock_stream_ctx();
+	size_t data_size = ctx->data_size;
+
+	stream = __mock_stream_with_ctx(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE, ctx);
+	result = io_v2_close(&stream);
+	TEST_ASSERT(result == 0);
+	TEST_ASSERT(ctx->bytes_flushed > 0);
+	TEST_ASSERT(ctx->bytes_flushed == data_size);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
 
 	TEST_PASS();
 }
@@ -919,5 +967,68 @@ static int	__test_io_buffered_writer(void)
 	ft_ostr_clear(&ref_content);
 	ft_ostr_clear(&test_content);
 
+	TEST_PASS();
+}
+
+static int	__test_io_pipe_unidir(void)
+{
+	t_io_v2_pipe	*pipe;
+	t_io_v2_stream	*upstream, *downstream;
+	t_ostring		test_content, ref_content;
+	size_t			capacity = 10 * 1024;
+	ssize_t			result;
+	int				ret;
+
+	ft_ostr_init(&test_content);
+	ft_ostr_init(&ref_content);
+
+	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	TEST_ASSERT(ref_content.size > capacity);
+
+	if (SSL_OK != io_v2_bytes_reader(&upstream, &ref_content)) {
+		TEST_LOG(ERROR, "failed to create bytes reader");
+		TEST_FAIL();
+	}
+	if (SSL_OK != io_v2_bytes_writer(&downstream, &test_content)) {
+		TEST_LOG(ERROR, "failed to create bytes writer");
+		TEST_FAIL();
+	}
+
+	ret = io_v2_pipe_unidir(&pipe, upstream, downstream, capacity);
+	TEST_ASSERT(SSL_OK == ret);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(pipe->type == IO_V2_PIPE_TYPE_UNIDIR);
+	TEST_ASSERT(pipe->ctx != NULL);
+
+	// pump must be successful
+	result = io_v2_pipe_pump(pipe, capacity);
+	TEST_ASSERT(result > 0);
+	TEST_ASSERT(result == capacity);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, result) == 0);
+
+	// consecutive pumps must be successful
+	while (pipe->status == IO_V2_STATUS_OK) {
+		result = io_v2_pipe_pump(pipe, capacity);
+		if (result < 0) {
+			break;
+		}
+	}
+	// EOF must be reached
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_EOF);
+	// test content must be the same as the reference content
+	TEST_ASSERT(test_content.size == ref_content.size);
+	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, test_content.size) == 0);
+
+	// close must be successful
+	result = io_v2_pipe_close(pipe);
+	TEST_ASSERT(result == 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_CLOSED);
+	TEST_ASSERT(pipe->ctx == NULL);
+
+	// close must be successful
 	TEST_PASS();
 }

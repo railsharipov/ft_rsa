@@ -114,10 +114,10 @@ typedef enum e_io_v2_status {
 struct s_io_v2_pipe;
 
 typedef struct s_io_v2_stream {
-	t_io_v2_interface			interface;
-	t_io_v2_flag				flags;
-	t_io_v2_status				status;
-	void						*ctx;
+	t_io_v2_interface	interface;
+	t_io_v2_flag		flags;
+	t_io_v2_status		status;
+	void				*ctx;
 } t_io_v2_stream;
 
 typedef enum e_io_v2_pipe_type {
@@ -126,11 +126,9 @@ typedef enum e_io_v2_pipe_type {
 } t_io_v2_pipe_type;
 
 typedef struct s_io_v2_pipe {
-	t_io_v2_stream		*upstream;
-	t_io_v2_stream		*downstream;
 	t_io_v2_pipe_type	type;
 	t_io_v2_status		status;
-	t_buffer			*buffer;
+	void				*ctx;
 } t_io_v2_pipe;
 
 ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
@@ -149,6 +147,8 @@ int		io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
 
 int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
 int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
+ssize_t	io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes);
+ssize_t	io_v2_pipe_flush(t_io_v2_pipe *pipe);
 ssize_t	io_v2_pipe_close(t_io_v2_pipe *pipe);
 
 #endif
