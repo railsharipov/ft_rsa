@@ -32,7 +32,7 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
     }
     if (NULL == stream->interface.read) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "read function is not implemented");
+        IO_LOG(ERROR, "no read interface");
         return (-1);
     }
     result = stream->interface.read(stream->ctx, buf, nbytes);
@@ -80,7 +80,7 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
     }
     if (NULL == stream->interface.write) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "write function is not implemented");
+        IO_LOG(ERROR, "no write interface");
         return (-1);
     }
     result = stream->interface.write(stream->ctx, buf, nbytes);
@@ -127,7 +127,7 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
     }
     if (NULL == stream->interface.flush) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "flush function is not implemented");
+        IO_LOG(ERROR, "no flush interface");
         return (-1);
     }
 	result = stream->interface.flush(stream->ctx);
@@ -179,7 +179,7 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
 	}
     if (NULL == stream->interface.close) {
         stream->status = IO_V2_STATUS_ERROR;
-        IO_LOG(ERROR, "close function is not implemented");
+        IO_LOG(ERROR, "no close interface");
         return (-1);
     }
     result = stream->interface.close(stream->ctx);

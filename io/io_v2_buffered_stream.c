@@ -104,6 +104,8 @@ static ssize_t	__io_v2_buffered_read(void *vctx, void *buf, size_t nbytes)
 	ssize_t wbytes;
 	size_t tbytes;
 
+	IO_LOG(TRACE, "reading %zu bytes from buffered stream", nbytes);
+
 	ctx = (t_io_v2_buffered_ctx *)vctx;
 	upstream = ctx->stream;
 	tbytes = 0;
@@ -158,6 +160,8 @@ static ssize_t __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes
 	ssize_t wbytes;
 	ssize_t rbytes;
 	size_t tbytes;
+
+	IO_LOG(TRACE, "writing %zu bytes to buffered stream", nbytes);
 
 	ctx = (t_io_v2_buffered_ctx *)vctx;
 	downstream = ctx->stream;

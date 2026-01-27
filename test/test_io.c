@@ -7,8 +7,10 @@
 
 static int	__test_io_setup(void);
 static int	__test_io_interface(void);
-static int	__test_io_file_read(void);
-static int	__test_io_file_write(void);
+static int	__test_io_file_reader(void);
+static int	__test_io_file_writer(void);
+static int	__test_io_bytes_reader(void);
+static int	__test_io_bytes_writer(void);
 static int	__test_io_buffered_reader(void);
 static int	__test_io_buffered_writer(void);
 
@@ -20,10 +22,6 @@ static const char	*__test_text_file_path = "test/files/text/test.txt";
 static const size_t	__mock_data_size_max = 1024 * 1024;
 static size_t		__mock_data_size_seed;
 
-typedef struct s_mock_ctx {
-	size_t	data_size;
-} t_mock_ctx;
-
 int	test_io(void)
 {
 	if (SSL_OK != __test_io_setup()) {
@@ -33,8 +31,10 @@ int	test_io(void)
 
 	return (
 		__test_io_interface()
-		| __test_io_file_read()
-		| __test_io_file_write()
+		| __test_io_file_reader()
+		| __test_io_file_writer()
+		| __test_io_bytes_reader()
+		| __test_io_bytes_writer()
 		| __test_io_buffered_reader()
 		| __test_io_buffered_writer()
 	);
@@ -54,13 +54,17 @@ static int	__test_io_setup(void)
 	return (SSL_OK);
 }
 
+struct s_mock_ctx {
+	size_t	data_size;
+};
+
 static ssize_t	__mock_interface_read_ok(void *ctx, void *buf, size_t nbytes)
 {
-	t_mock_ctx	*mock_ctx;
+	struct s_mock_ctx *mock_ctx;
 	ssize_t		result;
 
 	(void)buf;
-	mock_ctx = (t_mock_ctx *)ctx;
+	mock_ctx = (struct s_mock_ctx *)ctx;
 
 	if (mock_ctx->data_size < nbytes) {
 		result = mock_ctx->data_size;
@@ -106,9 +110,9 @@ static ssize_t	__mock_interface_error(void *ctx, void *buf, size_t nbytes)
 
 static void	*__mock_stream_ctx(void)
 {
-	t_mock_ctx	*ctx;
+	struct s_mock_ctx *ctx;
 
-	SSL_ALLOC(ctx, sizeof(t_mock_ctx));
+	SSL_ALLOC(ctx, sizeof(struct s_mock_ctx));
 	ctx->data_size = __mock_data_size_seed * (__mock_data_size_seed + 1) % __mock_data_size_max;
 	return (ctx);
 }
@@ -329,7 +333,7 @@ static int	__test_io_interface(void)
 	TEST_PASS();
 }
 
-static int	__test_io_file_read(void)
+static int	__test_io_file_reader(void)
 {
 	t_io_v2_stream	*stream;
 	t_ostring		ref_content, test_content;
@@ -413,7 +417,7 @@ static int	__test_io_file_read(void)
 	TEST_PASS();
 }
 
-static int	__test_io_file_write(void)
+static int	__test_io_file_writer(void)
 {
 	t_io_v2_stream	*stream;
 	t_ostring		ref_content, test_content;
@@ -493,6 +497,77 @@ static int	__test_io_file_write(void)
 	ft_ostr_clear(&ref_content);
 	ft_ostr_clear(&test_content);
 
+	TEST_PASS();
+}
+
+static int	__test_io_bytes_reader(void)
+{
+	t_io_v2_stream	*stream;
+	t_ostring		ref_content, test_content;
+	char 			*buf;
+	size_t			bufsize;
+	ssize_t			rbytes;
+	int				ret;
+
+	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	bufsize = 10 * 1024;
+	SSL_ALLOC(buf, bufsize);
+	ft_ostr_init(&test_content);
+
+	ret = io_v2_bytes_reader(&stream, &ref_content);
+	TEST_ASSERT(SSL_OK == ret);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(stream->interface.read != NULL);
+	TEST_ASSERT(stream->interface.write == NULL);
+	TEST_ASSERT(stream->interface.close != NULL);
+	TEST_ASSERT(stream->interface.flush == NULL);
+	TEST_ASSERT(stream->ctx != NULL);
+	TEST_ASSERT(stream->flags == (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE));
+
+	// read must be successful
+	rbytes = io_v2_read(stream, buf, bufsize);
+	TEST_ASSERT(rbytes > 0);
+	TEST_ASSERT(rbytes == bufsize);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, bufsize) == 0);
+	ft_ostr_append(&test_content, buf, rbytes);
+
+	// read remaining bytes
+	while (stream->status == IO_V2_STATUS_OK) {
+		rbytes = io_v2_read(stream, buf, bufsize);
+		if (rbytes < 0) {
+			break;
+		}
+		ft_ostr_append(&test_content, buf, rbytes);
+	}
+	// EOF must be reached
+	TEST_ASSERT(stream->status == IO_V2_STATUS_EOF);
+	// test content must be the same as the reference content
+	TEST_ASSERT(test_content.size == ref_content.size);
+	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, test_content.size) == 0);
+
+	// read must fail because the stream is at EOF
+	rbytes = io_v2_read(stream, buf, bufsize);
+	TEST_ASSERT(rbytes == -1);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_EOF);
+
+	// close must be successful
+	rbytes = io_v2_close(stream);
+	TEST_ASSERT(rbytes == 0);
+	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
+
+	ft_ostr_clear(&ref_content);
+	ft_ostr_clear(&test_content);
+	SSL_FREE(buf);
+
+	TEST_PASS();
+}
+
+static int	__test_io_bytes_writer(void)
+{
 	TEST_PASS();
 }
 

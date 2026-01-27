@@ -83,9 +83,11 @@ int io_v2_file_writer(t_io_v2_stream **stream, const char *file_path)
 
 static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
 {
-    t_io_v2_file_ctx *ctx;
+	t_io_v2_file_ctx *ctx;
     ssize_t rbytes;
     int err;
+
+    IO_LOG(TRACE, "reading %zu bytes from file stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -127,6 +129,8 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
     ssize_t wbytes;
     int err;
 
+    IO_LOG(TRACE, "writing %zu bytes to file stream", nbytes);
+
     if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
@@ -165,6 +169,8 @@ static ssize_t __io_v2_file_close(void *vctx)
     t_io_v2_file_ctx *ctx;
     int result, err;
 
+    IO_LOG(TRACE, "closing file stream");
+
     if (NULL == vctx) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
@@ -189,6 +195,7 @@ static ssize_t __io_v2_file_close(void *vctx)
         return (IO_V2_STATUS_ERROR);
     }
     ctx->fd = -1;
+    IO_LOG(TRACE, "closed file stream");
 
     return (IO_V2_STATUS_OK);
 }

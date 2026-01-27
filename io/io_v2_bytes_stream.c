@@ -69,8 +69,10 @@ int io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
 
 static ssize_t __io_v2_bytes_read(void *vctx, void *buf, size_t nbytes)
 {
-    t_io_v2_bytes_ctx *ctx;
+	t_io_v2_bytes_ctx *ctx;
     ssize_t rbytes;
+
+    IO_LOG(TRACE, "reading %zu bytes from bytes stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -90,12 +92,16 @@ static ssize_t __io_v2_bytes_read(void *vctx, void *buf, size_t nbytes)
     ft_memcpy(buf, ctx->ostring->content + ctx->seek, rbytes);
     ctx->seek += rbytes;
 
+    IO_LOG(TRACE, "read %zu bytes from bytes stream", rbytes);
+
     return (rbytes);
 }
 
 static ssize_t __io_v2_bytes_write(void *vctx, const void *buf, size_t nbytes)
 {
     t_io_v2_bytes_ctx *ctx;
+
+	IO_LOG(TRACE, "writing %zu bytes to bytes stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -113,11 +119,16 @@ static ssize_t __io_v2_bytes_write(void *vctx, const void *buf, size_t nbytes)
     }
     ctx->seek += nbytes;
 
+    IO_LOG(TRACE, "wrote %zu bytes to bytes stream", nbytes);
+
     return (nbytes);
 }
 
-static ssize_t __io_v2_bytes_close(void *vctx) {
+static ssize_t __io_v2_bytes_close(void *vctx)
+{
     t_io_v2_bytes_ctx *ctx;
+
+    IO_LOG(TRACE, "closing bytes stream");
 
     if (NULL == vctx) {
         IO_LOG(ERROR, INVALID_INPUT_ERROR);
