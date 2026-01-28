@@ -22,17 +22,14 @@ void	__tostr(char *str, intmax_t nb, intmax_t mult)
 	if (nb < 0) {
 		str[i++] = '-';
 	}
-
 	if (nb < 0) {
 		nb = -nb;
 	}
-
 	while (mult) {
 		str[i++] = nb / mult + 48;
 		nb = nb % mult;
 		mult = mult / 10;
 	}
-
 	str[i] = 0;
 }
 
@@ -52,7 +49,6 @@ char	*ft_itoa(intmax_t n)
 		n = n / 10;
 		len++;
 	}
-
 	LIBFT_ALLOC(str, len + 1);
 	__tostr(str, nb, mult);
 

@@ -32,7 +32,6 @@ ssize_t	ft_atoi(const char *str)
 	while (__is_blank(str[i])) {
 		i++;
 	}
-
 	neg = (str[i] == '-') ? -1 : 1;
 
 	if (str[i] == '-' || str[i] == '+') {
@@ -41,6 +40,23 @@ ssize_t	ft_atoi(const char *str)
 	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0) {
 		nb = nb * 10 + str[i++] - 48;
 	}
-
 	return (neg * nb);
+}
+
+size_t	ft_atoi_u(const char *str)
+{
+	int		i;
+	size_t	nb;
+
+	nb = 0;
+
+	i = 0;
+	while (__is_blank(str[i])) {
+		i++;
+	}
+	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0) {
+		nb = nb * 10 + str[i++] - 48;
+	}
+
+	return (nb);
 }

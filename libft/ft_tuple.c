@@ -1,13 +1,13 @@
 #include <libft/tuple.h>
 #include <libft/alloc.h>
 
-static t_tuple	*__create(void);
+static t_tuple	*__create_tuple(void);
 
 t_tuple *ft_tuple_new(void *head, size_t head_size, void *tail, size_t tail_size)
 {
 	t_tuple *tuple;
 
-	tuple = __create();
+	tuple = __create_tuple();
 	tuple->__head = ft_node_new(NULL, head, head_size);
 	tuple->__tail = ft_node_new(NULL, tail, tail_size);
 	return (tuple);
@@ -17,7 +17,7 @@ t_tuple *ft_tuple_new_with_f_del(void *head, size_t head_size, void *tail, size_
 {
 	t_tuple *tuple;
 
-	tuple = __create();
+	tuple = __create_tuple();
 	tuple->__head = ft_node_new_with_f_del(NULL, head, head_size, f_del);
 	tuple->__tail = ft_node_new_with_f_del(NULL, tail, tail_size, f_del);
 	return (tuple);
@@ -60,7 +60,7 @@ void 	*ft_tuple_get(t_tuple *tuple, int index)
 	return (tuple->__tail->content);
 }
 
-static t_tuple	*__create(void)
+static t_tuple	*__create_tuple(void)
 {
 	t_tuple *tuple;
 

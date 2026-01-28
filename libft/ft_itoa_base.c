@@ -23,7 +23,6 @@ static int	__space_needed(intmax_t value, int base)
 		len++;
 		value = value / base;
 	}
-
 	return (len);
 }
 
@@ -32,7 +31,6 @@ void	__digit_arr(uint8_t *arr, intmax_t val, int base, int len)
 	if (val < 0) {
 		val = -val;
 	}
-
 	while (len) {
 		arr[len-1] = (uint8_t)(val % base);
 		val = val / base;
@@ -78,19 +76,15 @@ char	*ft_itoa_base(intmax_t value, int base)
 	if (base > 16) {
 		return (ft_strdup("n/a"));
 	}
-
 	if (value == 0) {
 		return (ft_strdup("0"));
 	}
-
 	if (base != 10 && value < 0) {
 		value = -value;
 	}
-
 	if (base == 10 && value < 0) {
 		is_neg = 1;
 	}
-
 	len = __space_needed(value, base);
 	__digit_arr(arr, value, base, len);
 
