@@ -1,82 +1,49 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2018/05/28 09:51:19 by rsharipo          #+#    #+#              #
-#    Updated: 2018/10/12 18:55:47 by rsharipo         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 NAME := ft_ssl
 
-MODULES := ssl error bnum textutil cli util io rand hash base64 des asn der pem\
- rsa test json args cmd file bytes
-LIBS := libft
+SRCS := main.c $(sort $(wildcard */*.c))
 
-OBJ_PREFIX := obj
-DEP_PREFIX := dep
+OBJ_DIR := obj
+DEP_DIR := dep
 
-OBJ_DIRS := $(foreach dir, $(MODULES), $(addprefix $(OBJ_PREFIX)/,$(dir)))
-OBJ_DIRS += $(foreach dir, $(LIBS), $(addprefix $(OBJ_PREFIX)/,$(dir)))
+OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
+DEPS := $(SRCS:%.c=$(DEP_DIR)/%.d)
 
-DEP_DIRS := $(foreach dir, $(MODULES), $(addprefix $(DEP_PREFIX)/,$(dir)))
-DEP_DIRS += $(foreach dir, $(LIBS), $(addprefix $(DEP_PREFIX)/,$(dir)))
+CC := gcc
+CFLAGS := -O3 -std=c11 -I./include
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 
-SRCS := $(foreach dir, $(MODULES), $(wildcard $(dir)/$(dir)_*.c))
-SRCS += $(foreach dir, $(LIBS), $(wildcard $(dir)/*.c))
-SRCS += main.c
-
-OBJS := $(foreach file, $(SRCS:.c=.o), $(addprefix $(OBJ_PREFIX)/,$(file)))
-
-DEPS := $(foreach file, $(SRCS:.c=.d), $(addprefix $(DEP_PREFIX)/,$(file)))
-
-CC = gcc -O3 -std=c11
-CFLAGS = -I./include
-LDFLAGS =
-LDLIBS =
-DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_PREFIX)/$*.d
-
-.PHONY: all sanitize debug
+.PHONY: all debug sanitize test clean fclean re
 
 all: $(NAME)
 
-debug: override CC = gcc -Og -g -std=c11 -Wall -Werror -Wfatal-errors
+debug: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -I./include
 debug: $(NAME)
 
-sanitize: override CC = gcc -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer
-sanitize: override LDFLAGS = -fsanitize=address
+sanitize: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include
+sanitize: LDFLAGS := -fsanitize=address
 sanitize: $(NAME)
 
-test: override CC = gcc -Og -g -std=c11 -Wall -Wextra -fsanitize=address -fno-omit-frame-pointer
+test: CFLAGS := -Og -g -std=c11 -Wall -Wextra -I./include
 test: $(NAME)
 
 $(NAME): $(OBJS)
 	@echo linking: $(NAME)
-	@$(CC) $(LDFLAGS) $(CFLAGS) $(LDLIBS) -o $@ $(OBJS)
+	@$(CC) $(LDFLAGS) -o $@ $(OBJS)
 
-$(OBJ_PREFIX)/%.o: %.c $(DEP_PREFIX)/%.d | $(OBJ_DIRS) $(DEP_DIRS)
+$(OBJ_DIR)/%.o: %.c | $(DEP_DIR)/%.d
+	@mkdir -p $(dir $@) $(dir $(DEP_DIR)/$*.d)
 	@echo compiling: $<
-	@$(CC) $(DEPFLAGS) $(CFLAGS) $< -o $@ -c
-
-$(OBJ_DIRS) $(DEP_DIRS):
-	@mkdir -p $@
+	@$(CC) $(DEPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(DEPS):
 -include $(DEPS)
 
-.PHONY: clean fclean re
-
 clean:
 	@echo cleaning
-	-@rm -f $(OBJS) $(DEPS) || true
-	-@rm -dR $(DEP_PREFIX) $(OBJ_PREFIX) || true
+	@rm -rf $(OBJ_DIR) $(DEP_DIR)
 
 fclean: clean
 	@echo removing $(NAME)
-	-@rm -f $(NAME)
+	@rm -f $(NAME)
 
-re: fclean
-	make all
+re: fclean all
