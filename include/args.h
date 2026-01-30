@@ -6,9 +6,6 @@
 # include <libft/htable.h>
 # include <libft/logger.h>
 
-# define ARGP_LOGGER_NAME	"args"
-# define ARGP_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, ARGP_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define DEFAULT_CMD	"default"
 
 typedef enum	e_opt_type

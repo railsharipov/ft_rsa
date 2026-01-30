@@ -17,7 +17,7 @@ static int	__test_base64_check(void);
 int	test_base64(void)
 {
 	if (SSL_OK != __test_base64_setup()) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		TEST_FAIL();
 	}
 
@@ -31,15 +31,15 @@ int	test_base64(void)
 static int	__test_base64_setup(void)
 {
 	if (SSL_OK != file_read_all(__binary_file_path, &__binary)) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__base64_file_path, &__base64)) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (__binary.size == 0 || __base64.size == 0) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 

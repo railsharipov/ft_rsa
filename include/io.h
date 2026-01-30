@@ -9,9 +9,6 @@
 
 # define IO_BUFSIZE 512
 
-# define IO_LOGGER_NAME	"io"
-# define IO_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, IO_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define IO_INIT_ERROR		"i/o init error"
 # define IO_READ_ERROR		"i/o read error"
 # define IO_WRITE_ERROR		"i/o write error"
@@ -91,6 +88,8 @@ typedef ssize_t	(*t_func_io_v2_read)(void *ctx, void *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const void *buf, size_t nbytes);
 typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
 typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
+
+typedef int	(*t_func_io_v2_filter)(void *input, size_t insize, void *output, size_t outsize, size_t *bytes_read, size_t *bytes_written);
 
 typedef struct s_io_v2_interface {
 	t_func_io_v2_read	read;

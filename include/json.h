@@ -6,9 +6,6 @@
 # include <libft/std.h>
 # include <libft/logger.h>
 
-# define JSON_LOGGER_NAME	"json"
-# define JSON_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, JSON_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 enum	e_json_type {
     JSON_TYPE_BYTES = 1,
     JSON_TYPE_ARRAY,

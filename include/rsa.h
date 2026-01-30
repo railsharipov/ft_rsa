@@ -11,9 +11,6 @@
 # define RSA_EXPPUB 65537ULL
 # define RM_TRIALS  20
 
-# define RSA_LOGGER_NAME	"rsa"
-# define RSA_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, RSA_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 enum  e_rsa
 {
 	RSA_PUBKEY		= 1UL << 1,

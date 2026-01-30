@@ -17,7 +17,7 @@ static int	__eme_pkcs1_v1_5_ps(
 	size_t		ix;
 
 	if (SSL_OK != rand_useed(&seed, 8)) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	rand_mtw_init(seed);
@@ -65,7 +65,7 @@ static int	__eme_pkcs1_v1_5_concat(
 static int  __encrypt_prim(t_num *mes_rep, t_num *ciph_rep)
 {
 	if (bnum_cmp_u(mes_rep, __items->modulus) >= 0) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -113,7 +113,7 @@ static int  __encrypt(const unsigned char *mes, size_t messize, unsigned char **
 	SSL_FREE(octets);
 
 	if (SSL_OK != res) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -125,17 +125,17 @@ static int  __encrypt(const unsigned char *mes, size_t messize, unsigned char **
 int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key)
 {
 	if ((NULL == mes) || (NULL == mes->content) || (NULL == ciph) || (NULL == asn_key)) {
-		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ciph->content = NULL;
 
 	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
-		RSA_LOG(ERROR, "invalid rsa key");
+		SSL_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __encrypt(mes->content, mes->size, &(ciph->content), &(ciph->size))) {
-		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

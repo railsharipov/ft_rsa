@@ -1,6 +1,7 @@
 #ifndef BNUM_H
 # define BNUM_H
 
+# include <common.h>
 # include <inttypes.h>
 # include <stddef.h>
 # include <sys/errno.h>
@@ -44,9 +45,6 @@
 # define BNUM_EVEN(X)	(((X)->val[0] & 1u) == 0u)
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
 # define BNUM_SIGN(X)	(((X)->sign == BNUM_NEG)?(BNUM_NEG):(BNUM_POS))
-
-# define BNUM_LOGGER_NAME	"bnum"
-# define BNUM_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, BNUM_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
 
 # define BNUM_ALLOC(PTR, SZ)		LIBFT_ALLOC(PTR, SZ)
 # define BNUM_REALLOC(PTR, SZ, NSZ)	LIBFT_REALLOC(PTR, SZ, NSZ)

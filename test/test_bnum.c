@@ -54,7 +54,7 @@ int	test_bnum(void)
 	int		ret;
 
 	if (SSL_OK != __test_bnum_setup()) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		TEST_FAIL();
 	}
 

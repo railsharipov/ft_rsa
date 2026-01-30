@@ -66,7 +66,7 @@ size_t	json_dumpb_with_f_dumper(t_node *node, char *buf, size_t size, t_func_jso
 static int	__f_default_dumper(t_node *node, t_ostring *ostring)
 {
 	if (NULL == node) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -112,11 +112,11 @@ static int __dumps_object(t_node *node, t_ostring *ostring)
 		is_first = 0;
 
 		if (cur_node->key == NULL) {
-			JSON_LOG(ERROR, "unexpected missing key");
+			SSL_LOG(ERROR, "unexpected missing key");
 			return (SSL_ERR);
 		}
 		if (cur_node->content == NULL) {
-			JSON_LOG(ERROR, "unexpected missing content");
+			SSL_LOG(ERROR, "unexpected missing content");
 			return (SSL_ERR);
 		}
 

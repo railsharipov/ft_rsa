@@ -17,7 +17,7 @@
 int	base64_init(t_b64 *base64, t_b64_mode mode)
 {
 	if (NULL == base64) {
-		B64_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ft_bzero(base64, sizeof(t_b64));

@@ -46,43 +46,43 @@ t_func_content_del json_get_f_del(enum e_json_type type)
 
 static void __delete_array(void *content)
 {
-	JSON_LOG(TRACE, "deleting array");
+	SSL_LOG(TRACE, "deleting array");
 	ft_lst_del((t_node *)(content));
 }
 
 static void __delete_object(void *content)
 {
-	JSON_LOG(TRACE, "deleting object");
+	SSL_LOG(TRACE, "deleting object");
 	ft_htbl_del((t_htbl *)(content));
 }
 
 static void __delete_string(void *content)
 {
-	JSON_LOG(TRACE, "deleting string");
+	SSL_LOG(TRACE, "deleting string");
 	LIBFT_FREE(content);
 }
 
 static void __delete_null(void *content)
 {
-	JSON_LOG(TRACE, "deleting null");
+	SSL_LOG(TRACE, "deleting null");
 	return ;
 }
 
 static void __delete_boolean(void *content)
 {
-	JSON_LOG(TRACE, "deleting boolean");
+	SSL_LOG(TRACE, "deleting boolean");
 	return ;
 }
 
 static void __delete_number(void *content)
 {
-	JSON_LOG(TRACE, "deleting number");
+	SSL_LOG(TRACE, "deleting number");
 	bnum_del((t_num *)(content));
 }
 
 static void __delete_bytes(void *content)
 {
-	JSON_LOG(TRACE, "deleting bytes");
+	SSL_LOG(TRACE, "deleting bytes");
 	LIBFT_FREE(content);
 }
 

@@ -15,6 +15,7 @@
 #include <libft/ntree.h>
 #include <libft/2darray.h>
 #include <libft/bytes.h>
+#include <libft/buffer.h>
 
 static char 	*__s1;
 static char 	*__s2;
@@ -72,13 +73,14 @@ static int __test_ft_htbl(void);
 static int __test_ft_htbl_rawkey(void);
 static int __test_ft_htbl_conversion(void);
 static int __test_ft_ntree(void);
+static int __test_ft_buffer(void);
 
 int test_libft(void)
 {
 	int		ret;
 
 	if (SSL_OK != __test_libft_setup()) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		TEST_FAIL();
 	}
 
@@ -129,7 +131,8 @@ int test_libft(void)
 		| __test_ft_htbl()
 		| __test_ft_htbl_rawkey()
 		| __test_ft_htbl_conversion()
-		| __test_ft_ntree();
+		| __test_ft_ntree()
+		| __test_ft_buffer();
 
 	return (ret);
 }
@@ -2147,6 +2150,20 @@ static int __test_ft_ntree(void)
 	TEST_ASSERT(size == nwords);
 
 	ft_2darray_del_null_terminated((void **)words);
+
+	TEST_PASS();
+}
+
+static int __test_ft_buffer(void)
+{
+	t_buffer *buffer;
+
+	buffer = ft_buffer_new(1024);
+	TEST_ASSERT(buffer != NULL);
+	TEST_ASSERT(ft_buffer_is_empty(buffer));
+	TEST_ASSERT(ft_buffer_available(buffer) == 1024);
+
+	ft_buffer_del(buffer);
 
 	TEST_PASS();
 }

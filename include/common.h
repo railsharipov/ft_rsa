@@ -17,8 +17,10 @@
 # include <stddef.h>
 # include <alloc.h>
 # include <libft/common.h>
+# include <libft/logger.h>
 
-# define SSL_FLAG(FLAG, FLAGS)			((int)(((FLAGS)&(FLAG))==(FLAG)))
+# define SSL_LOG(LEVEL, FMT, ...)	logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__)
+# define SSL_FLAG(FLAG, FLAGS)		((int)(((FLAGS)&(FLAG))==(FLAG)))
 
 # define INVALID_INPUT_ERROR	"invalid input"
 # define FILE_READ_ERROR		"failed to read file"
@@ -43,5 +45,8 @@ enum	e_ssl_status
 
 typedef uint32_t	t_bool;
 typedef __uint128_t	uint128_t;
+
+int			logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+t_logger	*logger_get_logger(void);
 
 #endif

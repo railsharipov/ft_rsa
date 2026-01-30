@@ -19,12 +19,12 @@ static int	__map_bytes_node(t_node *node, t_func_json_map f, t_node *ret_node);
 int	json_map(t_node *json, t_func_json_map f, t_node **ret_json)
 {
 	if (json == NULL || f == NULL || ret_json == NULL) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
 	if (SSL_OK != __map_node(json, json->type, f, ret_json)) {
-		JSON_LOG(ERROR, "failed to map values");
+		SSL_LOG(ERROR, "failed to map values");
 		return (SSL_ERR);
 	}
 
@@ -37,7 +37,7 @@ static int	__map_node(t_node *node, int type, t_func_json_map f, t_node **ret_no
 	int		ret;
 
 	if (node->type != type) {
-		JSON_LOG(ERROR, "expected %s, got %s", json_get_type_name(type), json_get_type_name(node->type));
+		SSL_LOG(ERROR, "expected %s, got %s", json_get_type_name(type), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 
@@ -69,7 +69,7 @@ static int	__map_node(t_node *node, int type, t_func_json_map f, t_node **ret_no
 			ret = __map_bytes_node(node, f, result_node);
 			break;
 		default:
-			JSON_LOG(ERROR, "cannot map over type: %s", json_get_type_name(node->type));
+			SSL_LOG(ERROR, "cannot map over type: %s", json_get_type_name(node->type));
 			return (SSL_ERR);
 	}
 
@@ -87,7 +87,7 @@ static int	__map_object_node(t_node *node, t_func_json_map f, t_node *result_nod
 	t_node	*dst_value_node;
 	int		status;
 
-	JSON_LOG(TRACE, "mapping object node");
+	SSL_LOG(TRACE, "mapping object node");
 
 	htbl = node->content;
 	dst_htbl = ft_htbl_create(0);
@@ -97,7 +97,7 @@ static int	__map_object_node(t_node *node, t_func_json_map f, t_node *result_nod
 		value_node = item->content;
 		dst_value_node = ft_node_create();
 
-		JSON_LOG(TRACE, "mapping over node with key: `%s`", item->key);
+		SSL_LOG(TRACE, "mapping over node with key: `%s`", item->key);
 
 		if (SSL_OK != __map_node(value_node, value_node->type, f, &dst_value_node)) {
 			ft_node_del(dst_value_node);
@@ -123,7 +123,7 @@ static int	__map_array_node(t_node *node, t_func_json_map f, t_node *result_node
 	t_node	*dst_list;
 	t_node	*item;
 
-	JSON_LOG(TRACE, "mapping array with %d items", node->size);
+	SSL_LOG(TRACE, "mapping array with %d items", node->size);
 
 	dst_list = NULL;
 	src_list = (t_node *)node->content;
@@ -131,7 +131,7 @@ static int	__map_array_node(t_node *node, t_func_json_map f, t_node *result_node
 	while (src_list) {
 		item = ft_node_create();
 
-		JSON_LOG(TRACE, "mapping array item of type: %s", json_get_type_name(src_list->type));
+		SSL_LOG(TRACE, "mapping array item of type: %s", json_get_type_name(src_list->type));
 
 		if (SSL_OK != __map_node(src_list, src_list->type, f, &item)) {
 			ft_node_del(item);

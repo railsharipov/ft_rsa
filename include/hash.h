@@ -14,8 +14,6 @@ typedef uint64_t	t_sha512_256_word;
 typedef uint64_t	t_sha384_word;
 typedef uint64_t	t_sha512_word;
 
-# define HASH_LOG(LEVEL, MES, ...)	hash_logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define MD5_BLOCK_SIZE			64
 # define SHA1_BLOCK_SIZE		64
 # define SHA224_BLOCK_SIZE		64

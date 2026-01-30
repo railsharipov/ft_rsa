@@ -80,7 +80,7 @@ static int	__init_hash_func_by_name(const char *name)
 	}
 
 	if (ix >= size) {
-		CLI_LOG(ERROR, "unknown hash algorithm");
+		SSL_LOG(ERROR, "unknown hash algorithm");
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -132,7 +132,7 @@ static int	__run_task(uint32_t tflag, uint32_t __gflag)
 		func_hash_update(&__hash, buf, rbytes);
 	}
 	if (rbytes < 0) {
-		CLI_LOG(ERROR, "io read error");
+		SSL_LOG(ERROR, "io read error");
 		return (SSL_ERR);
 	}
 	if (SSL_FLAG(HASH_P, tflag)) {
@@ -161,22 +161,22 @@ static int	__next_task(const char **opt)
 
 	if (NONE != task->tflag && SSL_FLAG(IO_FILE, task->oflag)) {
 		if (NULL == *opt) {
-			CLI_LOG(ERROR, "expected option flag");
+			SSL_LOG(ERROR, "expected option flag");
 			return (SSL_ERR);
 		}
 		if (SSL_OK != io_fopen(&__in, task->oflag, *opt)) {
-			CLI_LOG(ERROR, "io init error");
+			SSL_LOG(ERROR, "io init error");
 			return (SSL_ERR);
 		}
 		if (SSL_OK != __run_task(task->tflag, __gflag)) {
-			CLI_LOG(ERROR, "run task error");
+			SSL_LOG(ERROR, "run task error");
 			return (SSL_ERR);
 		}
 		io_fclose(&__in);
 	}
 	else if (NONE != task->tflag && SSL_FLAG(IO_OSBUF, task->oflag)) {
 		if (NULL == *opt) {
-			CLI_LOG(ERROR, "expected option flag");
+			SSL_LOG(ERROR, "expected option flag");
 			return (SSL_ERR);
 		}
 		ft_ostr_init(&osbuf);
@@ -184,11 +184,11 @@ static int	__next_task(const char **opt)
 		osbuf.size = ft_strlen(*opt);
 
 		if (SSL_OK != io_osbuf(&__in, task->oflag, &osbuf)) {
-			CLI_LOG(ERROR, "io init error");
+			SSL_LOG(ERROR, "io init error");
 			return (SSL_ERR);
 		}
 		if (SSL_OK != __run_task(task->tflag, __gflag)) {
-			CLI_LOG(ERROR, "run task error");
+			SSL_LOG(ERROR, "run task error");
 			return (SSL_ERR);
 		}
 	}
@@ -199,11 +199,11 @@ static int	__next_task(const char **opt)
 static int	__default_task(const char **opt)
 {
 	if (SSL_OK != io_fopen(&__in, IO_READ|IO_STDIN, NULL)) {
-		CLI_LOG(ERROR, "io init error");
+		SSL_LOG(ERROR, "io init error");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __run_task(NONE, HASH_Q)) {
-		CLI_LOG(ERROR, "run task error");
+		SSL_LOG(ERROR, "run task error");
 		return (SSL_ERR);
 	}
 
@@ -217,15 +217,15 @@ int	cli_hash(const char **opt, const char *name_comm)
 	__algo = (char *)name_comm;
 
 	if (NULL == opt) {
-		CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __init_hash_func_by_name(name_comm)) {
-		CLI_LOG(ERROR, "failed to initialize hash algorithm");
+		SSL_LOG(ERROR, "failed to initialize hash algorithm");
 		return (SSL_ERR);
 	}
 	if (NULL == (hash_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		CLI_LOG(ERROR, "failed to initialize task table");
+		SSL_LOG(ERROR, "failed to initialize task table");
 		return (SSL_ERR);
 	}
 	if (NULL == *opt) {

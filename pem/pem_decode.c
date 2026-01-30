@@ -29,11 +29,11 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	int			pos, matches, idx, ret;
 	t_des		des;
 
-	PEM_LOG(TRACE, "decoding pem: content: %p, size: %d", enc->content, enc->size);
+	SSL_LOG(TRACE, "decoding pem: content: %p, size: %d", enc->content, enc->size);
 	ret = SSL_ERR;
 
 	if (NULL == pem || NULL == enc || NULL == data) {
-		PEM_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ft_ostr_init(&b64enc_lines);
@@ -43,15 +43,15 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 
 	pos = 0;
 
-	PEM_LOG(TRACE, "scanning pem label begin: pos: %d", pos);
+	SSL_LOG(TRACE, "scanning pem label begin: pos: %d", pos);
 	matches = textutil_sscanf((char *)enc->content + pos, enc->size - pos, "-----BEGIN %[^-]-----\n", &pem->label);
 	if (matches != 1) {
-		PEM_LOG(ERROR, "bad encapsulation label");
+		SSL_LOG(ERROR, "bad encapsulation label");
 		goto label_exit;
 	}
 	pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "-----BEGIN %s-----\n", pem->label);
 
-	PEM_LOG(TRACE, "scanning proc type header: pos: %d", pos);
+	SSL_LOG(TRACE, "scanning proc type header: pos: %d", pos);
 	matches = textutil_bnscanf((char *)enc->content + pos, enc->size - pos, "Proc-Type: %s\n", proc_type, sizeof(proc_type));
 
 	if (matches == 1 && ft_streq(proc_type, "4,ENCRYPTED")) {
@@ -60,20 +60,20 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	} else {
 		pem->proc = PEM_PROC_TYPE_NONE;
 	}
-    PEM_LOG(TRACE, "proc type: %#x", pem->proc);
+    SSL_LOG(TRACE, "proc type: %#x", pem->proc);
 
 	if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
-		PEM_LOG(TRACE, "scanning encryption header: pos: %d", pos);
+		SSL_LOG(TRACE, "scanning encryption header: pos: %d", pos);
 
         matches = textutil_bnscanf((char *)enc->content + pos, enc->size - pos, "DEK-Info: %[^,],%[a-zA-Z0-9]\n", cipher_name, sizeof(cipher_name), salthex, sizeof(salthex));
 		if (matches != 2) {
-			PEM_LOG(ERROR, "bad encryption header");
+			SSL_LOG(ERROR, "bad encryption header");
 			goto label_exit;
 		}
 		pem->cipher = ft_streq(cipher_name, __CIPHER_NAME_DES_CBC) ? PEM_CIPHER_DES_CBC : PEM_CIPHER_NONE;
 
 		if (pem->cipher != PEM_CIPHER_DES_CBC) {
-			PEM_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);
+			SSL_LOG(ERROR, "unsupported pem cipher type: %d", pem->cipher);
 			goto label_exit;
 		} else {
 			pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "DEK-Info: DES-CBC,%s\n", salthex);
@@ -84,44 +84,44 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
          * must be the header IV, not a derived IV. */
         ft_memcpy(iv, salt, 8);
 
-		PEM_LOG(TRACE, "encryption: type=%#x, cipher=%s, iv=%s", pem->cipher, cipher_name, salthex);
+		SSL_LOG(TRACE, "encryption: type=%#x, cipher=%s, iv=%s", pem->cipher, cipher_name, salthex);
 	}
 	pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "\n");
 
-	PEM_LOG(TRACE, "searching pem label end: pos: %d", pos);
+	SSL_LOG(TRACE, "searching pem label end: pos: %d", pos);
 	idx = textutil_findf((char *)enc->content, enc->size, "%s%s%s", "-----END ", pem->label, "-----");
 	if (idx < 0) {
-		PEM_LOG(ERROR, "bad encapsulation end");
+		SSL_LOG(ERROR, "bad encapsulation end");
 		goto label_exit;
 	}
 	ft_ostr_append(&b64enc_lines, (char *)enc->content + pos, idx - pos);
-	PEM_LOG(TRACE, "copied base64 encoding: content: %p, size: %d", b64enc_lines.content, b64enc_lines.size);
-	PEM_LOG(TRACE, "deleting whitespace from base64 encoding");
+	SSL_LOG(TRACE, "copied base64 encoding: content: %p, size: %d", b64enc_lines.content, b64enc_lines.size);
+	SSL_LOG(TRACE, "deleting whitespace from base64 encoding");
 
 	if (SSL_OK != textutil_del_eol((char *)b64enc_lines.content, b64enc_lines.size, (char **)&b64enc.content, &b64enc.size)) {
-		PEM_LOG(ERROR, "bad base64 format");
+		SSL_LOG(ERROR, "bad base64 format");
 		goto label_exit;
 	}
 
-	PEM_LOG(TRACE, "decoding base64 encoding: content: %p, size: %d", b64enc.content, b64enc.size);
+	SSL_LOG(TRACE, "decoding base64 encoding: content: %p, size: %d", b64enc.content, b64enc.size);
 	if (SSL_OK != base64_decode(b64enc.content, b64enc.size, &b64dec.content, &b64dec.size)) {
-		PEM_LOG(ERROR, "bad base64 encoding");
+		SSL_LOG(ERROR, "bad base64 encoding");
 		goto label_exit;
 	}
-	PEM_LOG(TRACE, "decoded base64 encoding: content: %p, size: %d", b64dec.content, b64dec.size);
+	SSL_LOG(TRACE, "decoded base64 encoding: content: %p, size: %d", b64dec.content, b64dec.size);
 
     if (pem->proc == PEM_PROC_TYPE_ENCRYPTED) {
-		PEM_LOG(TRACE, "encrypted pem: generating key from password");
+		SSL_LOG(TRACE, "encrypted pem: generating key from password");
         /* Derive only the key using the header IV as the salt. Use the header IV
          * itself for the DES CBC initialization vector. */
         if (SSL_OK != rand_openssl_kdf(key, salt, NULL, pass)) {
-			PEM_LOG(ERROR, "bad key derivation");
+			SSL_LOG(ERROR, "bad key derivation");
 			goto label_exit;
 		}
-		PEM_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
+		SSL_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
 
 		if (SSL_OK != des_init(&des, key, iv, DES_CRYPT_CBC, DES_MODE_DECRYPT)) {
-			PEM_LOG(ERROR, "des init error");
+			SSL_LOG(ERROR, "des init error");
 			goto label_exit;
 		}
 		// Allocate output buffer (at most same size as input)
@@ -129,23 +129,23 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 
 		ssize_t update_written = des_update(&des, (char *)b64dec.content, (char *)data->content, b64dec.size);
 		if (update_written < 0) {
-			PEM_LOG(ERROR, "bad des decrypt");
+			SSL_LOG(ERROR, "bad des decrypt");
 			goto label_exit;
 		}
 		ssize_t final_written = des_final(&des, (char *)data->content + update_written, b64dec.size - update_written);
 		if (final_written < 0) {
-			PEM_LOG(ERROR, "bad des decrypt");
+			SSL_LOG(ERROR, "bad des decrypt");
 			goto label_exit;
 		}
 		data->size = update_written + final_written;
 	}
 	else {
-		PEM_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);
+		SSL_LOG(TRACE, "unencrypted pem: copying data: content: %p, size: %d", b64dec.content, b64dec.size);
 		ft_ostr_append_ostr(data, &b64dec);
 	}
 
 	ret = SSL_OK;
-	PEM_LOG(TRACE, "pem decode complete: content: %p, size: %d", data->content, data->size);
+	SSL_LOG(TRACE, "pem decode complete: content: %p, size: %d", data->content, data->size);
 
 label_exit:
 	if (ret != SSL_OK) {

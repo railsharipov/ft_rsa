@@ -43,7 +43,7 @@ int	test_des(void)
 	int ret;
 
 	if (SSL_OK != __test_des_setup()) {
-		TEST_LOG(ERROR, "failed to setup test");
+		SSL_LOG(ERROR, "failed to setup test");
 		TEST_FAIL();
 	}
 
@@ -67,27 +67,27 @@ static int	__test_des_setup(void)
 	__des_cbc_large_cipher = ft_ostr_new();
 
 	if (SSL_OK != file_read_all(__small_text_file_path, __small_text)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_ecb_small_cipher_file_path, __des_ecb_small_cipher)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_cbc_small_cipher_file_path, __des_cbc_small_cipher)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__large_text_file_path, __large_text)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_ecb_large_cipher_file_path, __des_ecb_large_cipher)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_cbc_large_cipher_file_path, __des_cbc_large_cipher)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	ft_hex_to_bytes(__key, __keyhex, 16);

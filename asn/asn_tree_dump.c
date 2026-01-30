@@ -19,7 +19,7 @@ char	*asn_tree_dump(t_node *asn_tree)
 char	*asn_tree_dumps(t_node *asn_tree)
 {
 	if (NULL == asn_tree) {
-		ASN_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (NULL);
 	}
 

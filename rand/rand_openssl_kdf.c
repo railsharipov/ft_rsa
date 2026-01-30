@@ -30,11 +30,11 @@ int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vec
 	size_t	pass_len;
 
 	if (NULL == salt) {
-		RAND_LOG(ERROR, "salt is required");
+		SSL_LOG(ERROR, "salt is required");
 		return (SSL_ERR);
 	}
 	if (NULL == pass) {
-		RAND_LOG(ERROR, "password is required");
+		SSL_LOG(ERROR, "password is required");
 		return (SSL_ERR);
 	}
 

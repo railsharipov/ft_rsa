@@ -6,12 +6,12 @@ void	bnum_gcd(const t_num *a, const t_num *b, t_num *res)
 	int		k, xk, yk;
 
 	if ((a->sign == BNUM_NEG) || (b->sign == BNUM_NEG)) {
-		BNUM_LOG(ERROR, "negative number is not supported");
+		SSL_LOG(ERROR, "negative number is not supported");
 		return ;
     };
 
 	if (BNUM_ZERO(a) || BNUM_ZERO(b)) {
-		BNUM_LOG(ERROR, "gcd is undefined for zero input");
+		SSL_LOG(ERROR, "gcd is undefined for zero input");
 		return ;
     };
 

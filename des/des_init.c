@@ -29,13 +29,13 @@ static void	__init_decrypt_schedule(uint64_t *kshed, const uint8_t *key);
 
 int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode)
 {
-	DES_LOG(TRACE, "init start");
-	DES_LOG(DEBUG, "init: key: %s", ft_bytes_to_hex(key, 8));
+	SSL_LOG(TRACE, "init start");
+	SSL_LOG(DEBUG, "init: key: %s", ft_bytes_to_hex(key, 8));
 	if (iv) {
-		DES_LOG(DEBUG, "init: iv: %s", ft_bytes_to_hex(iv, 8));
+		SSL_LOG(DEBUG, "init: iv: %s", ft_bytes_to_hex(iv, 8));
     }
     if (NULL == des || NULL == key) {
-        DES_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     ft_bzero(des, sizeof(t_des));
@@ -48,7 +48,7 @@ int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt c
             des->f_permute_block = des_permute_block_cbc;
             break;
         default:
-            DES_LOG(ERROR, INVALID_INPUT_ERROR ": unknown crypt");
+            SSL_LOG(ERROR, INVALID_INPUT_ERROR ": unknown crypt");
             return (SSL_ERR);
     }
 
@@ -60,7 +60,7 @@ int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt c
             __init_decrypt_schedule(des->ksched, key);
             break ;
         default:
-            DES_LOG(ERROR, INVALID_INPUT_ERROR ": unknown mode");
+            SSL_LOG(ERROR, INVALID_INPUT_ERROR ": unknown mode");
             return (SSL_ERR);
     }
 
@@ -71,7 +71,7 @@ int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt c
         ft_memcpy(des->vect, iv, DES_BLOCK_SIZE);
     }
 
-	DES_LOG(TRACE, "init finish");
+	SSL_LOG(TRACE, "init finish");
     return (SSL_OK);
 }
 

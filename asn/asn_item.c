@@ -62,7 +62,7 @@ int	asn_item_set_type(t_iasn *item, char *type)
 	uint8_t	tagnum;
 
 	if (NULL == type || NULL == item) {
-		return (ASN_LOG(ERROR, INVALID_INPUT_ERROR));
+		return (SSL_LOG(ERROR, INVALID_INPUT_ERROR));
 	}
 
 	if (ft_streq(type, ASN_TYPE_NAME_SEQUENCE)) {
@@ -90,7 +90,7 @@ int	asn_item_set_type(t_iasn *item, char *type)
 		tagnum = ASN_TAGNUM_BOOLEAN;
 	}
 	else {
-		ASN_LOG(ERROR, "unknown asn type: %s", type);
+		SSL_LOG(ERROR, "unknown asn type: %s", type);
 		return (SSL_ERR);
 	}
 	item->tagnum = tagnum;

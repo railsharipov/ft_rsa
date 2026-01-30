@@ -21,21 +21,21 @@ int textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *buffered_upstr
 	size_t buffered_upstream_capacity;
 
     if (NULL == stream) {
-        TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (NULL == buffered_upstream) {
-        TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (max_line_len == 0) {
-        TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
 
 	buffered_upstream_capacity = MAX(max_line_len, IO_BUFSIZE);
 	if (SSL_OK != io_v2_buffered_reader(&buffered_stream, buffered_upstream, buffered_upstream_capacity)) {
-		TEXTUTIL_LOG(ERROR, "failed to create buffered stream");
+		SSL_LOG(ERROR, "failed to create buffered stream");
 		return (SSL_ERR);
 	}
 	SSL_ALLOC(ctx, sizeof(t_textutil_line_reader_ctx));
@@ -80,7 +80,7 @@ static ssize_t __textutil_line_read(void *vctx, void *buf, size_t max_nbytes)
 		tbytes += rbytes;
 	}
 
-	TEXTUTIL_LOG(ERROR, "line is too long");
+	SSL_LOG(ERROR, "line is too long");
 	return (IO_V2_STATUS_ERROR);
 }
 

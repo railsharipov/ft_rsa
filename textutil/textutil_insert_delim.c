@@ -8,7 +8,7 @@ int	textutil_insert_delim(const char *in, size_t inlen, char **out, size_t *outl
 	size_t	ix, iy;
 
 	if (NULL == in || NULL == out || NULL == outlen || inlen == 0 || step <= 0) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 

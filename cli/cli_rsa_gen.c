@@ -46,7 +46,7 @@ static int	__init_io(const char *opt, const t_task *task)
 static int	__set_modsize(const char *opt)
 {
 	if (!ft_str_isnum(opt)) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -65,10 +65,10 @@ static void	__clear(void)
 
 static int	__write_output(void)
 {
-	CLI_LOG(INFO, "%@e is %d (%#x)", RSA_EXPPUB, RSA_EXPPUB);
+	SSL_LOG(INFO, "%@e is %d (%#x)", RSA_EXPPUB, RSA_EXPPUB);
 
 	if (io_write(&__out, (char *)__pem_pkey.content, __pem_pkey.size) < 0) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -80,14 +80,14 @@ static int __run_task(void)
 	t_pem	*pem;
 	int		ret;
 
-	CLI_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
+	SSL_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
 	
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand)) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != der_encode(__asn_pkey, __der_pkey))	{
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -96,11 +96,11 @@ static int __run_task(void)
 	pem_del(pem);
 
 	if (SSL_OK != ret) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __write_output()) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -115,7 +115,7 @@ static int	__get_task(const char **opt)
 	while (NULL != *opt) {
 		if (NULL == (task = ft_htbl_get(__rsa_htable, *opt))) {
 			if (SSL_OK != __set_modsize(*opt)) {
-				CLI_LOG(ERROR, "invalid option flag");
+				SSL_LOG(ERROR, "invalid option flag");
 				return (SSL_ERR);
 			}
 		} else {
@@ -123,12 +123,12 @@ static int	__get_task(const char **opt)
 			opt += task->val;
 
 			if (NULL == *opt) {
-				CLI_LOG(ERROR, "expected option flag");
+				SSL_LOG(ERROR, "expected option flag");
 				return (SSL_ERR);
 			}
 			else if (NULL != (f_task = task->ptr)) {
 				if (SSL_OK != f_task(*opt, task)) {
-					CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+					SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 					return (SSL_ERR);
 				}
 			}
@@ -143,15 +143,15 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 	int	ret;
 
 	if (NULL == opt) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (NULL == (__rsa_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != io_fopen(&__out, IO_WRITE_STDOUT, NULL)) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	__frand = NULL;
@@ -165,7 +165,7 @@ int	cli_rsa_gen(const char **opt, const char *name_comm)
 	__clear();
 
 	if (SSL_OK != ret) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

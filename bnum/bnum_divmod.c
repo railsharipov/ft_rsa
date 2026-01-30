@@ -10,7 +10,7 @@ void	bnum_divmod(const t_num *a, const t_num *b, t_num *c, t_num *d)
 	bsign = b->sign;
 
 	if (BNUM_ZERO(b)) {
-		BNUM_LOG(ERROR, "division by zero");
+		SSL_LOG(ERROR, "division by zero");
 		return ;
     };
 

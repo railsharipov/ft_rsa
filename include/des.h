@@ -9,9 +9,6 @@
 # define DES_BLOCK_SIZE	8
 # define DES_KSCHED_LEN	16
 
-# define DES_LOGGER_NAME	"des"
-# define DES_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, DES_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 struct s_des;
 
 typedef	void (*t_func_der_permute_block)(struct s_des *des, uint64_t *block);

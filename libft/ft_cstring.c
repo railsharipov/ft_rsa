@@ -104,6 +104,33 @@ int	ft_str_isprint(const char *s)
 	return (1);
 }
 
+char *ft_str_strip(const char *s)
+{
+	size_t	start;
+	size_t	slen;
+	size_t	idx;
+
+	if (NULL == s) {
+		return (NULL);
+	}
+	slen = ft_strlen(s);
+	idx = 0;
+	while (idx < slen) {
+		if (!ft_iswspace(s[idx])) {
+			break;
+		}
+		idx++;
+	}
+	start = idx;
+	while (idx < slen) {
+		if (ft_iswspace(s[idx])) {
+			break;
+		}
+		idx++;
+	}
+	return (ft_strsub(s, start, idx - start));
+}
+
 char	**ft_strsplit(char const *s, char c)
 {
 	int		idx;

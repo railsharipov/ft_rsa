@@ -8,7 +8,7 @@ int textutil_nreplace(const char *in, size_t inlen, char **out, size_t *outlen, 
 	size_t	idx, end, reslen;
 
 	if (NULL == in || NULL == out || NULL == outlen || NULL == pat || NULL == rep) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (patlen > inlen) {

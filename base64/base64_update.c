@@ -17,7 +17,7 @@
 int	base64_update(t_b64 *base64, t_iodes *input, t_iodes *output)
 {
 	// if (NULL == base64 || NULL == input || NULL == output) {
-	// 	B64_LOG(ERROR, INVALID_INPUT_ERROR);
+	// 	SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 	// 	return (SSL_ERR);
 	// }
 	// while ((rbytes = io_read(input, buf, sizeof(buf))) > 0) {

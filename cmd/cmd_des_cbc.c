@@ -53,7 +53,7 @@
 // 	int			ret;
 
 // 	if (NULL == cmd) {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 
@@ -63,7 +63,7 @@
 // 		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
 // 	}
 // 	if (SSL_OK != ret) {
-// 		CMD_LOG(ERROR, IO_INIT_ERROR);
+// 		SSL_LOG(ERROR, IO_INIT_ERROR);
 // 		return (SSL_ERR);
 // 	}
 
@@ -73,7 +73,7 @@
 // 		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
 // 	}
 // 	if (SSL_OK != ret) {
-// 		CMD_LOG(ERROR, IO_INIT_ERROR);
+// 		SSL_LOG(ERROR, IO_INIT_ERROR);
 // 		return (SSL_ERR);
 // 	}
 
@@ -94,7 +94,7 @@
 // 	}
 
 // 	if (SSL_OK != des_init(&des, key, vect, DES_CRYPT_CBC, mode)) {
-// 		CMD_LOG(ERROR, "des crypt init error");
+// 		SSL_LOG(ERROR, "des crypt init error");
 // 		return (SSL_ERR);
 // 	}
 
@@ -108,7 +108,7 @@
 // 			ret = io_fopen(&in_b64, IO_READ|IO_STDIN, NULL);
 // 		}
 // 		if (SSL_OK != base64_decode(in.content, in.size, &os_in.content, &os_in.size)) {
-// 			CMD_LOG(ERROR, "base64 decode error");
+// 			SSL_LOG(ERROR, "base64 decode error");
 // 			return (SSL_ERR);
 // 		}
 // 		in.content = os_in.content;
@@ -116,18 +116,18 @@
 // 	}
 
 // 	if (SSL_OK != des_update(&des, &in, &out)) {
-// 		CMD_LOG(ERROR, "des crypt error");
+// 		SSL_LOG(ERROR, "des crypt error");
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != des_final(&des, &out)) {
-// 		CMD_LOG(ERROR, "des crypt error");
+// 		SSL_LOG(ERROR, "des crypt error");
 // 		return (SSL_ERR);
 // 	}
 
 // 	io_fclose_multi(&in, &out, NULL);
 
 // 	if (SSL_OK != ret) {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	return (SSL_OK);
@@ -155,13 +155,13 @@
 // 	}
 
 // 	if (SSL_OK != __get_input(&input.content, &input.size)) {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 	
 // 	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
 // 		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
-// 			CMD_LOG(ERROR, "invalid salted format");
+// 			SSL_LOG(ERROR, "invalid salted format");
 // 			return SSL_ERR;
 // 		}
 // 		ft_memcpy(__salt, input.content + 8, 8);
@@ -171,7 +171,7 @@
 
 // 	if (__pass) {
 // 		if (SSL_OK != rand_openssl_kdf(__key, __salt, __vect, __pass)) {
-// 			CMD_LOG(ERROR, "kdf failed");
+// 			SSL_LOG(ERROR, "kdf failed");
 // 			return (SSL_ERR);
 // 		}
 // 	}
@@ -202,7 +202,7 @@
 // static int	__get_vector(const char *opt, const t_task *task)
 // {
 // 	if (!ft_str_ishex(opt)) {
-// 		CMD_LOG(ERROR, INVALID_INPUT_ERROR);
+// 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (DES_K == task->tflag) {
@@ -213,7 +213,7 @@
 // 	} else if (DES_V == task->tflag) {
 // 		__vecthex = (char *)opt;
 // 	} else {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	return (SSL_OK);
@@ -263,7 +263,7 @@
 // 	if (rbytes < 0) {
 // 		SSL_FREE(*input);
 // 		*insize = 0;
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	return (SSL_OK);
@@ -278,12 +278,12 @@
 // 		__out.delim = '\n';
 // 	}
 // 	if (io_write(&__out, output, outsize) < 0) {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
 // 		if (io_write(&__out, "\n", 1) < 0) {
-// 			CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 			return (SSL_ERR);
 // 		}
 // 	}
@@ -327,11 +327,11 @@
 // 	ret = SSL_OK;
 
 // 	if (SSL_OK != __enc(mes, ciph)) {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != base64_encode(ciph->content, ciph->size, &b64.content, &b64.size)) {
-// 		ret = (CMD_LOG(ERROR, UNSPECIFIED_ERROR));
+// 		ret = (SSL_LOG(ERROR, UNSPECIFIED_ERROR));
 // 	}
 
 // 	SSL_FREE(ciph->content);
@@ -351,12 +351,12 @@
 // 	t_ostring	cipher;
 
 // 	if (SSL_OK != base64_decode(b64->content, b64->size, &cipher.content, &cipher.size)) {
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != des_cbc_decrypt(__key, __vect, &cipher, mes)) {
 // 		SSL_FREE(cipher.content);
-// 		CMD_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	SSL_FREE(cipher.content);

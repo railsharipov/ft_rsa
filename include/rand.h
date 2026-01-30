@@ -6,9 +6,6 @@
 
 # define RAND_DEV	"/dev/random"
 
-# define RAND_LOGGER_NAME	"rand"
-# define RAND_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, RAND_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define MT_A		0xB5026F5AA96619E9
 # define MT_F		0x5851F42D4C957F2D
 # define MT_W		64

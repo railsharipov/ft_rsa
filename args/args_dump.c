@@ -7,7 +7,7 @@ void	args_dump_help(const t_arg_cmd *cmd_arg)
 	char	*helps;
 
 	if (cmd_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return ;
 	}
 	helps = args_dump_helps(cmd_arg);
@@ -26,7 +26,7 @@ char	*args_dump_helps(const t_arg_cmd *cmd_arg)
 	char		*helps;
 
 	if (cmd_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (NULL);
 	}
 	ft_memset(indents, ' ', indent_size);

@@ -51,22 +51,22 @@ int	cli_rsa_utl(const char **opt, const char *name_comm)
 	int	ret;
 
 	if (NULL == opt) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
 	if (NULL == (__rsa_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
 	if (SSL_OK != io_fopen(&__in, IO_READ_STDIN, NULL)) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
 	if (SSL_OK != io_fopen(&__out, IO_WRITE_STDOUT, NULL)) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -82,7 +82,7 @@ int	cli_rsa_utl(const char **opt, const char *name_comm)
 	cli_task_htable_del(__rsa_htable);
 
 	if (SSL_OK != ret) {
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -97,7 +97,7 @@ static int	__setup_task(const char **opt)
 	// dynamically setup task
 	while (NULL != *opt) {
 		if (NULL == (task = ft_htbl_get(__rsa_htable, *opt))) {
-			CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+			SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 			return (SSL_ERR);
 		}
 
@@ -107,14 +107,14 @@ static int	__setup_task(const char **opt)
 		if (task->val) {
 			if (NULL == * ++opt) {
 		}
-				CLI_LOG(ERROR, "expected option flag");
+				SSL_LOG(ERROR, "expected option flag");
 				return (SSL_ERR);
 			}
 
 		if (NULL != (f_setup = task->ptr)) {
 			if (SSL_OK != f_setup(*opt, task)) {
 		}
-				CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+				SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 				return (SSL_ERR);
 			}
 
@@ -122,7 +122,7 @@ static int	__setup_task(const char **opt)
 	}
 
 	if (!io_is_init(&__inkey)) {
-		CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -144,20 +144,20 @@ static int	__run_task(void)
 	ret = SSL_OK;
 
 	if (SSL_OK != __get_input(&__inkey, (char **)&(key.content), &(key.size))) {
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 	}
 
 	else if (SSL_OK != __get_input(&__in, (char **)&(input.content), &(input.size)))
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_OK != __decode_key(&key, &asn_key))
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_OK != __f_op(&input, &output, asn_key))
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	else if (SSL_OK != __write_output((char *)output.content, output.size))
-		ret = CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
 	asn_tree_del(asn_key);
 	SSL_FREE(input.content);
@@ -183,7 +183,7 @@ static int	__get_input(t_iodes *iodes, char **input, size_t *insize)
 	if (rbytes < 0) {
 		SSL_FREE(*input);
 		*insize = 0;
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -196,7 +196,7 @@ static int	__write_output(char *output, size_t outsize)
 	}
 	else if (io_write(&__out, output, outsize) < 0)
 	{
-		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -213,15 +213,15 @@ static int	__decode_key(t_ostring *key, t_node **asn_key)
 	ret = SSL_ERR;
 
 	if (SSL_OK != pem_decode(&pem, key, &der_key, NULL)) {
-		CLI_LOG(ERROR, "failed to decode pem");
+		SSL_LOG(ERROR, "failed to decode pem");
 		goto label_exit;
 	}
 	if (!ft_streq(__in_type, pem.label)) {
-		CLI_LOG(ERROR, "invalid pem label");
+		SSL_LOG(ERROR, "invalid pem label");
 		goto label_exit;
 	}
 	if (SSL_OK != der_decode(asn_key, &der_key)) {
-		CLI_LOG(ERROR, "failed to decode der");
+		SSL_LOG(ERROR, "failed to decode der");
 		goto label_exit;
 	}
 	ret = SSL_OK;

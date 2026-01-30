@@ -21,16 +21,16 @@ int io_v2_file_reader(t_io_v2_stream **stream, const char *file_path)
     int fd;
 
     if (NULL == stream) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (NULL == file_path) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     fd = open(file_path, O_RDONLY);
     if (fd < 0) {
-        IO_LOG(ERROR, "failed to open file %s: %s", file_path, strerror(errno));
+        SSL_LOG(ERROR, "failed to open file %s: %s", file_path, strerror(errno));
         return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
@@ -38,7 +38,7 @@ int io_v2_file_reader(t_io_v2_stream **stream, const char *file_path)
     ctx->seek = 0;
 
 	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE), ctx)) {
-		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
     return (SSL_OK);
@@ -54,16 +54,16 @@ int io_v2_file_writer(t_io_v2_stream **stream, const char *file_path)
     int fd;
 
     if (NULL == stream) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (NULL == file_path) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     fd = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) {
-        IO_LOG(ERROR, "failed to open file %s: %s", file_path, strerror(errno));
+        SSL_LOG(ERROR, "failed to open file %s: %s", file_path, strerror(errno));
         return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
@@ -71,7 +71,7 @@ int io_v2_file_writer(t_io_v2_stream **stream, const char *file_path)
     ctx->seek = 0;
 
 	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_WRITE | IO_V2_FLAG_CLOSE), ctx)) {
-		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
     return (SSL_OK);
@@ -83,10 +83,10 @@ static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
     ssize_t rbytes;
     int err;
 
-    IO_LOG(TRACE, "reading %zu bytes from file stream", nbytes);
+    SSL_LOG(TRACE, "reading %zu bytes from file stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
 
@@ -96,24 +96,24 @@ static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
 
     if (rbytes > 0) {
         ctx->seek += rbytes;
-        IO_LOG(TRACE, "read %zd bytes from fd=%d", rbytes, ctx->fd);
+        SSL_LOG(TRACE, "read %zd bytes from fd=%d", rbytes, ctx->fd);
         return (rbytes);
     }
     else if (rbytes == 0) {
-        IO_LOG(DEBUG, "EOF reached on fd=%d", ctx->fd);
+        SSL_LOG(DEBUG, "EOF reached on fd=%d", ctx->fd);
         return (IO_V2_STATUS_EOF);
     }
     else {
         if (err == EINTR) {
-            IO_LOG(DEBUG, "read interrupted by signal");
+            SSL_LOG(DEBUG, "read interrupted by signal");
             return (0);
         }
         else if (err == EAGAIN || err == EWOULDBLOCK) {
-            IO_LOG(DEBUG, "no data available (non-blocking)");
+            SSL_LOG(DEBUG, "no data available (non-blocking)");
             return (0);
         }
         else {
-            IO_LOG(ERROR, "read error on fd=%d: %s", ctx->fd, strerror(err));
+            SSL_LOG(ERROR, "read error on fd=%d: %s", ctx->fd, strerror(err));
             return (IO_V2_STATUS_ERROR);
         }
     }
@@ -125,10 +125,10 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
     ssize_t wbytes;
     int err;
 
-    IO_LOG(TRACE, "writing %zu bytes to file stream", nbytes);
+    SSL_LOG(TRACE, "writing %zu bytes to file stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     ctx = (t_io_v2_file_ctx *)vctx;
@@ -137,24 +137,24 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
 
     if (wbytes > 0) {
         ctx->seek += wbytes;
-        IO_LOG(TRACE, "wrote %zd bytes to fd=%d", wbytes, ctx->fd);
+        SSL_LOG(TRACE, "wrote %zd bytes to fd=%d", wbytes, ctx->fd);
         return (wbytes);
     }
     else if (wbytes == 0) {
-        IO_LOG(ERROR, "write returned 0 (disk full?) on fd=%d", ctx->fd);
+        SSL_LOG(ERROR, "write returned 0 (disk full?) on fd=%d", ctx->fd);
         return (IO_V2_STATUS_ERROR);
     }
     else {
         if (err == EINTR) {
-            IO_LOG(DEBUG, "write interrupted by signal");
+            SSL_LOG(DEBUG, "write interrupted by signal");
             return (0);
         }
         else if (err == EAGAIN || err == EWOULDBLOCK) {
-            IO_LOG(DEBUG, "cannot write now (non-blocking)");
+            SSL_LOG(DEBUG, "cannot write now (non-blocking)");
             return (0);
         }
         else {
-            IO_LOG(ERROR, "write error on fd=%d: %s", ctx->fd, strerror(err));
+            SSL_LOG(ERROR, "write error on fd=%d: %s", ctx->fd, strerror(err));
             return (IO_V2_STATUS_ERROR);
         }
     }
@@ -165,33 +165,33 @@ static ssize_t __io_v2_file_close(void *vctx)
     t_io_v2_file_ctx *ctx;
     int result, err;
 
-    IO_LOG(TRACE, "closing file stream");
+    SSL_LOG(TRACE, "closing file stream");
 
     if (NULL == vctx) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     ctx = (t_io_v2_file_ctx *)vctx;
 
     if (ctx->fd < 0) {
-        IO_LOG(WARN, "invalid file descriptor");
+        SSL_LOG(WARN, "invalid file descriptor");
         return (IO_V2_STATUS_OK);
     }
-    IO_LOG(DEBUG, "closing fd=%d", ctx->fd);
+    SSL_LOG(DEBUG, "closing fd=%d", ctx->fd);
     result = close(ctx->fd);
     err = errno;
 
     if (result < 0) {
         if (err == EINTR || err == EIO) {
-            IO_LOG(WARN, "fd %d is already closed: %s", ctx->fd, strerror(err));
+            SSL_LOG(WARN, "fd %d is already closed: %s", ctx->fd, strerror(err));
             ctx->fd = -1;
             return (IO_V2_STATUS_OK);
         }
-        IO_LOG(ERROR, "close error: %s", strerror(err));
+        SSL_LOG(ERROR, "close error: %s", strerror(err));
         return (IO_V2_STATUS_ERROR);
     }
     ctx->fd = -1;
-    IO_LOG(TRACE, "closed file stream");
+    SSL_LOG(TRACE, "closed file stream");
 
     return (IO_V2_STATUS_OK);
 }

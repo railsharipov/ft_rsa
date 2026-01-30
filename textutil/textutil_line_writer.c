@@ -23,21 +23,21 @@ int textutil_line_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, si
 	size_t buffered_downstream_capacity;
 
     if (NULL == stream) {
-        TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (NULL == downstream) {
-        TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (line_len == 0) {
-        TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
 
 	buffered_downstream_capacity = MAX(line_len + 1, IO_BUFSIZE);
 	if (SSL_OK != io_v2_buffered_writer(&buffered_downstream, downstream, buffered_downstream_capacity)) {
-		TEXTUTIL_LOG(ERROR, "failed to create buffered stream");
+		SSL_LOG(ERROR, "failed to create buffered stream");
 		return (SSL_ERR);
 	}
 	SSL_ALLOC(ctx, sizeof(t_textutil_line_writer_ctx));

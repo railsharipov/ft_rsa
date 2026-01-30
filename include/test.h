@@ -7,23 +7,18 @@
 # include <libft/string.h>
 # include <libft/logger.h>
 
-extern t_logger *__extern_test_logger;
-
-# define TEST_LOGGER_NAME	"test"
-# define TEST_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, __extern_test_logger, TEST_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define MAX_NUM_OF_TESTS_PER_MODULE	256
 
-# define TEST_RESULT(RES)	do { if ((RES == SSL_OK)) { TEST_LOG(INFO, TXT_B_GREEN("TEST OK")); } else { TEST_LOG(ERROR, TXT_B_RED("TEST FAIL")); } } while (0)
+# define TEST_RESULT(RES)	do { if ((RES == SSL_OK)) { SSL_LOG(INFO, TXT_B_GREEN("TEST OK")); } else { SSL_LOG(ERROR, TXT_B_RED("TEST FAIL")); } } while (0)
 # define TEST_PASS()		do { TEST_RESULT(SSL_OK); return (SSL_OK); } while (0)
 # define TEST_FAIL()		do { TEST_RESULT(SSL_ERR); return (SSL_ERR); } while (0)
 
 # define TEST_ASSERT(EXPR)										        \
 	do {														        \
 		if ((EXPR)) {											        \
-			TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR);	\
+			SSL_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR);	    \
 		} else {												        \
-			TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR);	    \
+			SSL_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR);	    \
 			TEST_FAIL();										        \
 		}														        \
 	} while (0)
@@ -31,10 +26,10 @@ extern t_logger *__extern_test_logger;
 # define TEST_ASSERT_W_MSG(EXPR, FMT, ...)								\
 	do {																\
 		if ((EXPR)) {													\
-			TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR);	\
+			SSL_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", #EXPR);	\
 		} else {														\
-			TEST_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR);	    \
-			TEST_LOG(ERROR, FMT __VA_OPT__(,) __VA_ARGS__);	            \
+			SSL_LOG(ERROR, TXT_RED("ASSERT FAIL") " (%s)", #EXPR);	    \
+			SSL_LOG(ERROR, FMT __VA_OPT__(,) __VA_ARGS__);	            \
 			TEST_FAIL();												\
 		}																\
 	} while (0)

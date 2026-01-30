@@ -26,7 +26,7 @@ int	json_validate(t_node *json)
 	__deep_scan = 1;
 
 	if (json == NULL) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	return (__validate_node(json));
@@ -37,7 +37,7 @@ int	json_validate_node(t_node *node)
 	__deep_scan = 0;
 
 	if (NULL == node) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	return (__validate_node(node));
@@ -48,7 +48,7 @@ int	json_validate_node_type(int type)
 	__deep_scan = 0;
 
 	if (type < 0 || type >= JSON_TYPE_COUNT) {
-		JSON_LOG(DEBUG, __JSON_INVALID_TYPE_ERROR);
+		SSL_LOG(DEBUG, __JSON_INVALID_TYPE_ERROR);
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -59,7 +59,7 @@ int	json_validate_node_is_of_type(t_node *node, int type)
 	__deep_scan = 0;
 
 	if (node->type != type) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(type), json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected %s, got %s", json_get_type_name(type), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -68,7 +68,7 @@ int	json_validate_node_is_of_type(t_node *node, int type)
 static int	__validate_node(t_node *node)
 {
 	if (NULL == node) {
-		JSON_LOG(DEBUG, __JSON_INVALID_NODE_ERROR);
+		SSL_LOG(DEBUG, __JSON_INVALID_NODE_ERROR);
 		return (SSL_ERR);
 	}
 	switch (node->type) {
@@ -88,7 +88,7 @@ static int	__validate_node(t_node *node)
 		case JSON_TYPE_BYTES:
 			return (SSL_OK);
 		default:
-			JSON_LOG(DEBUG, __JSON_INVALID_TYPE_ERROR);
+			SSL_LOG(DEBUG, __JSON_INVALID_TYPE_ERROR);
 			return (SSL_ERR);
 	}
 }
@@ -100,7 +100,7 @@ static int	__validate_object(t_node *node)
 	t_node	*value_node;
 
 	if (node->type != JSON_TYPE_OBJECT) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_OBJECT), json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_OBJECT), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 
@@ -111,7 +111,7 @@ static int	__validate_object(t_node *node)
 		while ((item = ft_htbl_node_next(htbl, item)) != NULL) {
 			value_node = item->content;
 			if (SSL_OK != __validate_node(value_node)) {
-				JSON_LOG(DEBUG, "bad object kv: bad value for key `%s`", item->key);
+				SSL_LOG(DEBUG, "bad object kv: bad value for key `%s`", item->key);
 				return (SSL_ERR);
 			}
 		}
@@ -125,7 +125,7 @@ static int	__validate_array(t_node *node)
 	t_node	*arr_item;
 
 	if (node->type != JSON_TYPE_ARRAY) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_ARRAY), json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_ARRAY), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 
@@ -134,7 +134,7 @@ static int	__validate_array(t_node *node)
 
 		while (arr_item) {
 			if (SSL_OK != __validate_node(arr_item)) {
-				JSON_LOG(DEBUG, "%s: invalid array item", json_get_type_name(JSON_TYPE_ARRAY));
+				SSL_LOG(DEBUG, "%s: invalid array item", json_get_type_name(JSON_TYPE_ARRAY));
 				return (SSL_ERR);
 			}
 			arr_item = arr_item->next;
@@ -147,11 +147,11 @@ static int	__validate_array(t_node *node)
 static int	__validate_string(t_node *node)
 {
 	if (node->content == NULL) {
-		JSON_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_STRING));
+		SSL_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_STRING));
 		return (SSL_ERR);
 	}
 	if (node->type != JSON_TYPE_STRING) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_STRING), json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_STRING), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -160,11 +160,11 @@ static int	__validate_string(t_node *node)
 static int	__validate_number(t_node *node)
 {
 	if (node->content == NULL) {
-		JSON_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_NUMBER));
+		SSL_LOG(DEBUG, "bad %s type", json_get_type_name(JSON_TYPE_NUMBER));
 		return (SSL_ERR);
 	}
 	if (node->type != JSON_TYPE_NUMBER) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_NUMBER), json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_NUMBER), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -173,7 +173,7 @@ static int	__validate_number(t_node *node)
 static int	__validate_boolean(t_node *node)
 {
 	if (node->type != JSON_TYPE_BOOL_TRUE && node->type != JSON_TYPE_BOOL_FALSE) {
-		JSON_LOG(DEBUG, "expected boolean type, got %s", json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected boolean type, got %s", json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
@@ -182,7 +182,7 @@ static int	__validate_boolean(t_node *node)
 static int	__validate_null(t_node *node)
 {
 	if (node->type != JSON_TYPE_NULL) {
-		JSON_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_NULL), json_get_type_name(node->type));
+		SSL_LOG(DEBUG, "expected %s, got %s", json_get_type_name(JSON_TYPE_NULL), json_get_type_name(node->type));
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

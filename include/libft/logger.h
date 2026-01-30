@@ -34,17 +34,13 @@ enum	e_logger_level
 
 typedef struct	s_logger
 {
-	t_func_log log_writer;
-	uint8_t 	log_level;
-	const char	*log_prefix;
-	uint8_t 	is_ansi_colored;
+	t_func_log	log_writer;
+	uint8_t 	log_level_thres;
 	uint8_t 	debug_info_thres;
+	uint8_t 	is_ansi_colored;
 } 				t_logger;
 
-int	ft_logger_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, const char *logger_name, uint8_t level, const char *fmt, ...);
-int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, const char *logger_name, uint8_t level, const char *fmt, va_list va_arg);
-
-void	ft_logger_set_default_logger(t_logger *logger);
-t_logger *ft_logger_get_default_logger(void);
+int	ft_logger_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, ...);
+int	ft_logger_va_log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
 
 #endif

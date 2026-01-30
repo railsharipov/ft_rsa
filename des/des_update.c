@@ -31,17 +31,17 @@ static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t si
 */
 ssize_t des_update(t_des *des, const char *in, char *out, size_t size)
 {
-	DES_LOG(TRACE, "update start");
+	SSL_LOG(TRACE, "update start");
 	if (NULL == des || NULL == in || NULL == out) {
-		DES_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 	if (des->mode == DES_MODE_DECRYPT) {
-		DES_LOG(DEBUG, "update: decrypting cipher");
+		SSL_LOG(DEBUG, "update: decrypting cipher");
 		return (__decrypt_update(des, in, out, size));
 	}
 	else {
-		DES_LOG(DEBUG, "update: encrypting plaintext");
+		SSL_LOG(DEBUG, "update: encrypting plaintext");
 		return (__encrypt_update(des, in, out, size));
 	}
 }
@@ -51,11 +51,11 @@ static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t si
 	size_t	in_pos, out_pos;
 
 	if (NULL == des || NULL == in || NULL == out) {
-		DES_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 	if (des->bufsize > DES_BLOCK_SIZE) {
-		DES_LOG(ERROR, UNEXPECTED_ERROR);
+		SSL_LOG(ERROR, UNEXPECTED_ERROR);
 		return (-1);
 	}
 
@@ -76,7 +76,7 @@ static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t si
 
 		// If buffer is full, process it
 		if (des->bufsize == DES_BLOCK_SIZE) {
-			DES_LOG(TRACE, "processing block");
+			SSL_LOG(TRACE, "processing block");
 			des->f_permute_block(des, (uint64_t *)des->buf);
 
 			ft_memcpy(out + out_pos, des->buf, DES_BLOCK_SIZE);
@@ -85,7 +85,7 @@ static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t si
 		}
 	}
 
-	DES_LOG(TRACE, "update finish: wrote %zu bytes", out_pos);
+	SSL_LOG(TRACE, "update finish: wrote %zu bytes", out_pos);
 	return (out_pos);
 }
 
@@ -94,11 +94,11 @@ static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t si
 	size_t	in_pos, out_pos;
 
 	if (NULL == des || NULL == in || NULL == out) {
-		DES_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 	if (des->bufsize > DES_BLOCK_SIZE) {
-		DES_LOG(ERROR, UNEXPECTED_ERROR);
+		SSL_LOG(ERROR, UNEXPECTED_ERROR);
 		return (-1);
 	}
 	in_pos = 0;
@@ -117,7 +117,7 @@ static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t si
 
 		// If buffer is full and there's more data, process the current block
 		if (des->bufsize == DES_BLOCK_SIZE && in_pos < size) {
-			DES_LOG(TRACE, "processing block");
+			SSL_LOG(TRACE, "processing block");
 
 			// Process it
 			des->f_permute_block(des, (uint64_t *)des->buf);
@@ -131,6 +131,6 @@ static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t si
 			des->bufsize = 0;
 		}
 	}
-	DES_LOG(TRACE, "update finish: wrote %zu bytes", out_pos);
+	SSL_LOG(TRACE, "update finish: wrote %zu bytes", out_pos);
 	return (out_pos);
 }

@@ -7,7 +7,7 @@ t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type)
 	t_arg_opt *opt_arg = NULL;
 
 	if (name == NULL) {
-		ARGP_LOG(ERROR, "option name is not set");
+		SSL_LOG(ERROR, "option name is not set");
 		return (NULL);
 	}
 	switch (type) {
@@ -16,7 +16,7 @@ t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type)
 		case AP_OPT_TYPE_NUMBER:
 			break;
 		default:
-			ARGP_LOG(ERROR, "unknown option type: %d", type);
+			SSL_LOG(ERROR, "unknown option type: %d", type);
 			return (NULL);
 	}
 	SSL_ALLOC(opt_arg, sizeof(t_arg_opt));
@@ -30,7 +30,7 @@ t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type)
 void	args_del_opt(t_arg_opt *opt_arg)
 {
 	if (opt_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return;
 	}
 	SSL_FREE(opt_arg->name);
@@ -43,7 +43,7 @@ t_arg_opt	*args_copy_opt(const t_arg_opt *opt_arg)
 	t_arg_opt *copy;
 
 	if (opt_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (NULL);
 	}
 	copy = args_new_opt(opt_arg->name, opt_arg->desc, opt_arg->type);

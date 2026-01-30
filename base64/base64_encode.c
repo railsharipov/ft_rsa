@@ -55,7 +55,7 @@ int	base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc,
 	unsigned char	*oenc;
 
 	if ((NULL == mes) || (NULL == enc) || (NULL == encsize)) {
-		B64_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	omes = (unsigned char *)mes;

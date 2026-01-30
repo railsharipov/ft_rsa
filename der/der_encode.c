@@ -29,24 +29,24 @@ int	der_encode(t_node *tree, t_ostring *encoded)
 {
 	t_iodes	iodes;
 	
-	DER_LOG(TRACE, "starting DER encode octet string");
+	SSL_LOG(TRACE, "starting DER encode octet string");
 	
 	if (NULL == tree || NULL == encoded) {
-		ASN_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
 	ft_ostr_init(encoded);
 
 	if (SSL_OK != io_osbuf(&iodes, IO_WRITE, encoded)) {
-		DER_LOG(ERROR, "failed to init io");
+		SSL_LOG(ERROR, "failed to init io");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != der_encode_stream(tree, &iodes)) {
-		DER_LOG(ERROR, "DER encode octet string failed");
+		SSL_LOG(ERROR, "DER encode octet string failed");
 		return (SSL_ERR);
 	}
-	DER_LOG(TRACE, "DER encode octet string completed successfully");
+	SSL_LOG(TRACE, "DER encode octet string completed successfully");
 
 	return (SSL_OK);
 }
@@ -55,20 +55,20 @@ int	der_encode_stream(t_node *tree, t_iodes *out)
 {
 	int		ret;
 
-	DER_LOG(TRACE, "starting DER encode stream");
+	SSL_LOG(TRACE, "starting DER encode stream");
 
 	if (NULL == tree || NULL == out) {
-		ASN_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ret = __encode(tree, out);
 
 	if (SSL_OK != ret) {
-		DER_LOG(ERROR, "DER encode stream failed");
+		SSL_LOG(ERROR, "DER encode stream failed");
 		return (SSL_ERR);
 	}
 
-	DER_LOG(TRACE, "DER encode stream completed successfully");
+	SSL_LOG(TRACE, "DER encode stream completed successfully");
 
 	return (SSL_OK);
 }
@@ -83,19 +83,19 @@ static int	__encode(t_node *node, t_iodes *out)
 	uint32_t		tagnum;
 
 	if (NULL == node) {
-		DER_LOG(TRACE, "end of encoding reached");
+		SSL_LOG(TRACE, "end of encoding reached");
 		return (SSL_OK);
 	}
 
 	asn_item = node->content;
 
 	if (NULL == asn_item) {
-		DER_LOG(ERROR, "invalid asn node: no content");
+		SSL_LOG(ERROR, "invalid asn node: no content");
 		return (SSL_ERR);
 	}
 	tagnum = asn_item->tagnum;
 
-	DER_LOG(TRACE, "encoding asn item: %s, tag number: %#x", asn_item_get_type_name(asn_item), tagnum);
+	SSL_LOG(TRACE, "encoding asn item: %s, tag number: %#x", asn_item_get_type_name(asn_item), tagnum);
 
 	switch (tagnum) {
 		case ASN_TAGNUM_SEQUENCE:
@@ -127,23 +127,23 @@ static int	__encode(t_node *node, t_iodes *out)
 			tag = ASN_ENCODE_PRIMITIVE;
 			break;
 		default:
-			DER_LOG(ERROR, "unknown tag number: %#x", tagnum);
+			SSL_LOG(ERROR, "unknown tag number: %#x", tagnum);
 			return (SSL_ERR);
 	}
 
 	if (__write_tag(tag, tagnum, out) < 0) {
-		DER_LOG(ERROR, "der tag write error");
+		SSL_LOG(ERROR, "der tag write error");
 		return (SSL_ERR);
 	}
 
 	data.content = asn_item->content;
 	data.size = asn_item->size;
 
-	DER_LOG(TRACE, "encoding content, size: %zu", data.size);
+	SSL_LOG(TRACE, "encoding content, size: %zu", data.size);
 	ft_ostr_init(&encoded);
 
 	if (SSL_OK != f_encode(tag, &encoded, &data)) {
-		DER_LOG(TRACE, "encode function failed for tag: %u", tagnum);
+		SSL_LOG(TRACE, "encode function failed for tag: %u", tagnum);
 		return (SSL_ERR);
 	}
 
@@ -151,11 +151,11 @@ static int	__encode(t_node *node, t_iodes *out)
 	ft_ostr_clear(&encoded);
 
 	if (wbytes < 0) {
-		DER_LOG(ERROR, "der content write error");
+		SSL_LOG(ERROR, "der content write error");
 		return (SSL_ERR);
 	}
 
-	DER_LOG(TRACE, "node encoded successfully for tag: %u", tagnum);
+	SSL_LOG(TRACE, "node encoded successfully for tag: %u", tagnum);
 
 	return (SSL_OK);
 }
@@ -164,16 +164,16 @@ static ssize_t	__write_content_octets(char *content, size_t size, t_iodes *out)
 {
 	ssize_t	wbytes;
 
-	DER_LOG(TRACE, "writing content octets, size: %zu", size);
+	SSL_LOG(TRACE, "writing content octets, size: %zu", size);
 
 	if (__write_len(size, out) < 0) {
-		DER_LOG(ERROR, "der len write error");
+		SSL_LOG(ERROR, "der len write error");
 		return (SSL_ERR);
 	}
 
 	wbytes = io_write(out, content, size);
 
-	DER_LOG(TRACE, "content octets written, bytes: %zd", wbytes);
+	SSL_LOG(TRACE, "content octets written, bytes: %zd", wbytes);
 
 	return (wbytes);
 }
@@ -182,7 +182,7 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)
 {
 	ssize_t	wbytes;
 
-	DER_LOG(TRACE, "writing tag: %#x, tag flags: %#x", tagnum, tag);
+	SSL_LOG(TRACE, "writing tag: %#x, tag flags: %#x", tagnum, tag);
 
 	if (tagnum > 30) {
 		// Complex tag
@@ -215,7 +215,7 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)
 
 		wbytes = io_write(out, (char *)buf, buf_size);
 		SSL_FREE(buf);
-		DER_LOG(TRACE, "complex tag written, bytes: %zd", wbytes);
+		SSL_LOG(TRACE, "complex tag written, bytes: %zd", wbytes);
 	}
 	else {
 		// Simple tag
@@ -226,7 +226,7 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)
 		buf[0] |= tagnum & 0x7F;
 
 		wbytes = io_write(out, (char *)buf, buf_size);
-		DER_LOG(TRACE, "simple tag written, bytes: %zd", wbytes);
+		SSL_LOG(TRACE, "simple tag written, bytes: %zd", wbytes);
 	}
 
 	return (wbytes);
@@ -236,7 +236,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 {
 	ssize_t	wbytes;
 
-	DER_LOG(TRACE, "writing length: %zu", len);
+	SSL_LOG(TRACE, "writing length: %zu", len);
 
 	if (len > 127) {
 		// Long length form
@@ -249,7 +249,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 		len_nbits = ft_uint_lmbit(len, 8 * sizeof(len));
         // Number of bytes needed to represent "len" in big-endian
         len_nbytes = CEIL_TO_MULTIPLE(len_nbits, 8) / 8;
-		DER_LOG(TRACE, "number of length bytes: %d", len_nbytes);
+		SSL_LOG(TRACE, "number of length bytes: %d", len_nbytes);
 
 		// Additional octet for length flags
 		buf_size = 1 + len_nbytes;
@@ -270,7 +270,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 
 		wbytes = io_write(out, (char *)buf, (size_t)buf_size);
 		SSL_FREE(buf);
-		DER_LOG(TRACE, "long length form written, bytes: %zd", wbytes);
+		SSL_LOG(TRACE, "long length form written, bytes: %zd", wbytes);
 	}
 	else {
 		// Short length form
@@ -280,7 +280,7 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 		buf[0] = len;
 
 		wbytes = io_write(out, (char *)buf, buf_size);
-		DER_LOG(TRACE, "short length form written, bytes: %zd", wbytes);
+		SSL_LOG(TRACE, "short length form written, bytes: %zd", wbytes);
 	}
 
 	return (wbytes);
@@ -290,15 +290,15 @@ static ssize_t	__write_len(size_t len, t_iodes *out)
 
 static int	__encode_ostring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
-	DER_LOG(TRACE, "encoding octet string, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding octet string, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
+		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
 	ft_ostr_append_ostr(encoded, data);
 
-	DER_LOG(TRACE, "octet string encoded successfully");
+	SSL_LOG(TRACE, "octet string encoded successfully");
 	return (SSL_OK);
 }
 
@@ -306,10 +306,10 @@ static int	__encode_bitstring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	uint8_t	num_unused_bits;
 
-	DER_LOG(TRACE, "encoding bit string, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding bit string, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
+		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
 
@@ -317,30 +317,30 @@ static int	__encode_bitstring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	num_unused_bits = ((uint8_t *)data->content)[0];
 
 	if (num_unused_bits > 7u) {
-		DER_LOG(ERROR, "invalid bitstring: bad first content octet");
+		SSL_LOG(ERROR, "invalid bitstring: bad first content octet");
 		return (SSL_ERR);
 	}
 	ft_ostr_append_ostr(encoded, data);
 
-	DER_LOG(TRACE, "bit string encoded successfully");
+	SSL_LOG(TRACE, "bit string encoded successfully");
 	return (SSL_OK);
 }
 
 static int	__encode_bool(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
-	DER_LOG(TRACE, "encoding boolean, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding boolean, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
+		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
 	if (data->size != 1) {
-		DER_LOG(ERROR, "invalid boolean type: bad content size");
+		SSL_LOG(ERROR, "invalid boolean type: bad content size");
 		return (SSL_ERR);
 	}
 	ft_ostr_append_ostr(encoded, data);
 
-	DER_LOG(TRACE, "boolean encoded successfully");
+	SSL_LOG(TRACE, "boolean encoded successfully");
 	return (SSL_OK);
 }
 
@@ -349,52 +349,52 @@ static int	__encode_sequence(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	t_node	*node;
 	t_iodes	temp_iodes;
 
-	DER_LOG(TRACE, "encoding sequence, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding sequence, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected construct");
+		SSL_LOG(ERROR, "invalid asn type tag: expected construct");
 		return (SSL_ERR);
 	}
 
 	node = (t_node *)data->content;
 
 	if (NULL == node) {
-		DER_LOG(ERROR, "invalid asn sequence: bad content");
+		SSL_LOG(ERROR, "invalid asn sequence: bad content");
 		return (SSL_ERR);
 	}
 
 	if (SSL_OK != io_osbuf(&temp_iodes, IO_WRITE|IO_OSBUF, encoded)) {
-		DER_LOG(ERROR, "i/o init error");
+		SSL_LOG(ERROR, "i/o init error");
 		return (SSL_ERR);
 	}
 
 	while (node) {
 		if (SSL_OK != __encode(node, &temp_iodes)) {
-			DER_LOG(TRACE, "sequence child encoding failed");
+			SSL_LOG(TRACE, "sequence child encoding failed");
 			return (SSL_ERR);
 		}
 		node = node->next;
 	}
 
-	DER_LOG(TRACE, "sequence encoded successfully");
+	SSL_LOG(TRACE, "sequence encoded successfully");
 	return (SSL_OK);
 }
 
 static int	__encode_null(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
-	DER_LOG(TRACE, "encoding null, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding null, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
+		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
 	if (data->size != 0) {
-		DER_LOG(ERROR, "invalid null type: bad content size");
+		SSL_LOG(ERROR, "invalid null type: bad content size");
 		return (SSL_ERR);
 	}
 	ft_ostr_append_ostr(encoded, data);
 
-	DER_LOG(TRACE, "null encoded successfully");
+	SSL_LOG(TRACE, "null encoded successfully");
 	return (SSL_OK);
 }
 
@@ -405,20 +405,20 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	size_t	size;
 	uint8_t	byte;
 
-	DER_LOG(TRACE, "encoding integer, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding integer, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
+		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
 	if (data->content == NULL) {
-		DER_LOG(ERROR, "invalid integer type: no content");
+		SSL_LOG(ERROR, "invalid integer type: no content");
 		return (SSL_ERR);
 	}
 	num = (t_num *)data->content;
 	if (num->sign == BNUM_NEG) {
 		// TODO: implement negative integer encoding
-		DER_LOG(ERROR, "invalid integer type: negative integer encoding is not implemented");
+		SSL_LOG(ERROR, "invalid integer type: negative integer encoding is not implemented");
 		return (SSL_ERR);
 	}
 	bnum_to_bytes_u(num, &buf, &size);
@@ -432,7 +432,7 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	ft_ostr_append(encoded, (char *)buf, size);
 	SSL_FREE(buf);
 
-	DER_LOG(TRACE, "integer encoded successfully");
+	SSL_LOG(TRACE, "integer encoded successfully");
 	return (SSL_OK);
 }
 
@@ -452,24 +452,24 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	uint32_t		sub_id;
 	ssize_t			idx;
 
-	DER_LOG(TRACE, "encoding object identifier, size: %zu", data->size);
+	SSL_LOG(TRACE, "encoding object identifier, size: %zu", data->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
-		DER_LOG(ERROR, "invalid asn type tag: expected primitive");
+		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
 	if (data->size == 0) {
-		DER_LOG(ERROR, "invalid oid type: bad content size");
+		SSL_LOG(ERROR, "invalid oid type: bad content size");
 		return (SSL_ERR);
 	}
 	obj_id_string = ft_ostr_to_cstr(data, 0, data->size);
-	DER_LOG(TRACE, "object identifier: %s", obj_id_string);
+	SSL_LOG(TRACE, "object identifier: %s", obj_id_string);
 
 	obj_name = asn_oid_tree_get_name(obj_id_string);
 	if (NULL == obj_name) {
-		DER_LOG(WARN, "invalid or unknown asn object id: %s", obj_id_string);
+		SSL_LOG(WARN, "invalid or unknown asn object id: %s", obj_id_string);
 	} else {
-		DER_LOG(TRACE, "object identifier matches: %s", obj_name);
+		SSL_LOG(TRACE, "object identifier matches: %s", obj_name);
 	}
 	SSL_FREE(obj_name);
 
@@ -480,17 +480,17 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	num_sub_id_strings = ft_2darray_len_null_terminated((void **)sub_id_strings);
 
 	if (num_sub_id_strings < 2 || NULL == sub_id_strings) {
-		DER_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		ft_2darray_del_null_terminated((void **)sub_id_strings);
 		return (SSL_ERR);
 	}
 
-	DER_LOG(TRACE, "parsed %d sub-identifiers", num_sub_id_strings);
+	SSL_LOG(TRACE, "parsed %d sub-identifiers", num_sub_id_strings);
 
 	// Validate that all sub-identifiers are digits
 	for (int i = 0; i < num_sub_id_strings; i++) {
 		if (!ft_str_isnum(sub_id_strings[i])) {
-			DER_LOG(ERROR, UNSPECIFIED_ERROR);
+			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 			ft_2darray_del_null_terminated((void **)sub_id_strings);
 			return (SSL_ERR);
 		}
@@ -504,7 +504,7 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		sub_ids[i] = ft_atoi(sub_id_strings[i + 1]);
 	}
 
-	DER_LOG(TRACE, "converted to %d integer sub-identifiers", num_sub_ids);
+	SSL_LOG(TRACE, "converted to %d integer sub-identifiers", num_sub_ids);
 
 	// Encode sub-identifiers into octets
 	id_octets_size = NBITS_TO_NWORDS(8 * sizeof(*sub_ids) * num_sub_ids, 7);
@@ -539,7 +539,7 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	SSL_FREE(id_octets);
 	ft_2darray_del_null_terminated((void **)sub_id_strings);
 
-	DER_LOG(TRACE, "object identifier encoded successfully, octets: %zu", id_octets_size);
+	SSL_LOG(TRACE, "object identifier encoded successfully, octets: %zu", id_octets_size);
 
 	return (SSL_OK);
 }

@@ -5,7 +5,7 @@
 ssize_t textutil_seek(const char *in, size_t inlen, const char *pat, size_t patlen)
 {
 	if (NULL == in || NULL == pat) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 	if (patlen == 0 || patlen > inlen) {
@@ -25,7 +25,7 @@ ssize_t textutil_seekf(const char *in, size_t inlen, const char *format, ...)
 	int		match;
 
 	if (NULL == in || NULL == format) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 	va_start(ap, format);
@@ -49,7 +49,7 @@ ssize_t textutil_bseekf(const char *in, size_t inlen, const char *format, ...)
 	int		match;
 
 	if (NULL == in || NULL == format) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 	va_start(ap, format);

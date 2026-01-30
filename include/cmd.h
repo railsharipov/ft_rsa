@@ -18,9 +18,6 @@
 # include <libft/htable.h>
 # include <libft/logger.h>
 
-# define CMD_LOGGER_NAME	"command"
-# define CMD_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, CMD_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define NONE	0
 
 struct s_cmd;
@@ -38,6 +35,5 @@ int     cmd_des_cbc(const struct s_cmd *cmd);
 int     cmd_rsa_gen(const struct s_cmd *cmd);
 int     cmd_rsa(const struct s_cmd *cmd);
 int     cmd_rsa_utl(const struct s_cmd *cmd);
-int     cmd_test(const struct s_cmd *cmd);
 
 #endif

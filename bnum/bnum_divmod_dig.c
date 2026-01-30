@@ -8,7 +8,7 @@ void	bnum_divmod_dig(const t_num *a, uint64_t b, t_num *c, uint64_t *d)
 	int			idx;
 
 	if (b == 0) {
-		BNUM_LOG(ERROR, "division by zero");
+		SSL_LOG(ERROR, "division by zero");
 		return ;
     };
 

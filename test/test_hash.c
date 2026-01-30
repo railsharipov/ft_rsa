@@ -33,7 +33,7 @@ static const char	*__large_text_sha512_hash_hex = "a4ea60088ba626a8bcbe47891ca25
 int	test_hash(void)
 {
 	if (SSL_OK != __test_hash_setup()) {
-		TEST_LOG(ERROR, "failed to setup test");
+		SSL_LOG(ERROR, "failed to setup test");
 		TEST_FAIL();
 	}
 
@@ -56,7 +56,7 @@ static int	__test_hash_md5(void)
 	t_iodes	iodes;
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_md5_init(&md5);
@@ -68,7 +68,7 @@ static int	__test_hash_md5(void)
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(md5.hash, MD5_HASH_SIZE), __small_text_md5_hash_hex, MD5_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_md5_init(&md5);
@@ -87,7 +87,7 @@ static int	__test_hash_sha1(void)
 	t_iodes	iodes;
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha1_init(&sha1);
@@ -99,7 +99,7 @@ static int	__test_hash_sha1(void)
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(sha1.hash, SHA1_HASH_SIZE), __small_text_sha1_hash_hex, SHA1_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha1_init(&sha1);
@@ -118,7 +118,7 @@ static int	__test_hash_sha224(void)
 	t_iodes	iodes;
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha224_init(&sha224);
@@ -130,7 +130,7 @@ static int	__test_hash_sha224(void)
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(sha224.hash, SHA224_HASH_SIZE), __small_text_sha224_hash_hex, SHA224_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha224_init(&sha224);
@@ -149,7 +149,7 @@ static int	__test_hash_sha256(void)
 	t_iodes	iodes;
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha256_init(&sha256);
@@ -161,7 +161,7 @@ static int	__test_hash_sha256(void)
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(sha256.hash, SHA256_HASH_SIZE), __small_text_sha256_hash_hex, SHA256_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha256_init(&sha256);
@@ -180,7 +180,7 @@ static int	__test_hash_sha384(void)
 	t_iodes	iodes;
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha384_init(&sha384);
@@ -192,7 +192,7 @@ static int	__test_hash_sha384(void)
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(sha384.hash, SHA384_HASH_SIZE), __small_text_sha384_hash_hex, SHA384_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha384_init(&sha384);
@@ -211,7 +211,7 @@ static int	__test_hash_sha512(void)
 	t_iodes	iodes;
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha512_init(&sha512);
@@ -223,7 +223,7 @@ static int	__test_hash_sha512(void)
 	TEST_ASSERT(ft_strneq(ft_bytes_to_hex(sha512.hash, SHA512_HASH_SIZE), __small_text_sha512_hash_hex, SHA512_HASH_SIZE * 2));
 
 	if (SSL_OK != io_fopen(&iodes, IO_READ|IO_FILE, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	hash_sha512_init(&sha512);

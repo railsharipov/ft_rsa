@@ -23,9 +23,9 @@ int textutil_bnscanf(const char *in, size_t inlen, const char *format, ...)
 	va_list	ap;
 	int		matches;
 
-	TEXTUTIL_LOG(TRACE, "Scanning in: mode=buffered");
+	SSL_LOG(TRACE, "Scanning in: mode=buffered");
 	if (NULL == in || inlen == 0 || NULL == format) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 
@@ -41,9 +41,9 @@ int textutil_sscanf(const char *in, size_t inlen, const char *format, ...)
 	va_list	ap;
 	int		matches;
 
-	TEXTUTIL_LOG(TRACE, "Scanning in: mode=default");
+	SSL_LOG(TRACE, "Scanning in: mode=default");
 	if (NULL == in || inlen == 0 || NULL == format) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (0);
 	}
 
@@ -62,7 +62,7 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 	void	*arg;
 	int		matches = 0;
 
-	TEXTUTIL_LOG(TRACE, "Scanning using format string: '%s'", format);
+	SSL_LOG(TRACE, "Scanning using format string: '%s'", format);
 
 	while (format[fpos] != '\0' && inpos < inlen) {
 		if (ft_iseolws(format[fpos])) {
@@ -76,12 +76,12 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 		}
 
 		if (format[fpos] == '%') {
-			TEXTUTIL_LOG(TRACE, "Parsing format token");
+			SSL_LOG(TRACE, "Parsing format token");
 			arg = NULL;
 			fpos++;
 
 			if (format[fpos] == '%') {
-				TEXTUTIL_LOG(TRACE, "Found double %% token");
+				SSL_LOG(TRACE, "Found double %% token");
 				if (in[inpos] == '%') {
 					fpos++;
 					inpos++;
@@ -93,37 +93,37 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 				if (mode == SCANF_MODE_BUFFERED) {
 					char	*buf;
 					size_t	buf_size;
-					TEXTUTIL_LOG(TRACE, "Found %%s token");
+					SSL_LOG(TRACE, "Found %%s token");
 					fpos++;
 					buf = va_arg(ap, char *);
 					buf_size = va_arg(ap, size_t);
-					TEXTUTIL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
+					SSL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
 					if (buf != NULL && buf_size > 0) {
 						if ((nbytes = __parse_string_b(in, inlen, inpos, buf, buf_size)) == 0) {
-							TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", in);
+							SSL_LOG(TRACE, "No match for %%s in input string: '%s'", in);
 							buf[0] = '\0';
 							break;
 						}
 						inpos += nbytes;
-						TEXTUTIL_LOG(TRACE, "String match: %s", buf);
+						SSL_LOG(TRACE, "String match: %s", buf);
 					} else {
-						TEXTUTIL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
+						SSL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
 						break;
 					}
 				} else {
 					char	*str;
-					TEXTUTIL_LOG(TRACE, "Found %%s token");
+					SSL_LOG(TRACE, "Found %%s token");
 					fpos++;
 					if ((nbytes = __parse_string(in, inlen, inpos, &str)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for %%s in input string: '%s'", in);
+						SSL_LOG(TRACE, "No match for %%s in input string: '%s'", in);
 						break;
 					}
 					inpos += nbytes;
 					arg = va_arg(ap, char **);
-					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+					SSL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(char **)arg = str;
-						TEXTUTIL_LOG(TRACE, "String match: v='%s'", *(char **)arg);
+						SSL_LOG(TRACE, "String match: v='%s'", *(char **)arg);
 					} else {
 						SSL_FREE(str);
 					}
@@ -132,91 +132,91 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 			}
 			else if (format[fpos] == 'd') {
 				ssize_t	num;
-				TEXTUTIL_LOG(TRACE, "Found %%d token");
+				SSL_LOG(TRACE, "Found %%d token");
 				fpos++;
 				if ((nbytes = __parse_number(in, inlen, inpos, &num)) == 0) {
-					TEXTUTIL_LOG(TRACE, "No match for %%d in input string: '%s'", in);
+					SSL_LOG(TRACE, "No match for %%d in input string: '%s'", in);
 					break;
 				}
 				inpos += nbytes;
 				arg = va_arg(ap, int *);
-				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+				SSL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(int *)arg = (int)num;
-					TEXTUTIL_LOG(TRACE, "Number match: v=%d", *(int *)arg);
+					SSL_LOG(TRACE, "Number match: v=%d", *(int *)arg);
 				}
 				matches++;
 			}
 			else if (format[fpos] == 'u') {
 				size_t	num;
-				TEXTUTIL_LOG(TRACE, "Found %%u token");
+				SSL_LOG(TRACE, "Found %%u token");
 				fpos++;
 				if ((nbytes = __parse_number_u(in, inlen, inpos, &num)) == 0) {
-					TEXTUTIL_LOG(TRACE, "No match for %%u in input string: '%s'", in);
+					SSL_LOG(TRACE, "No match for %%u in input string: '%s'", in);
 					break;
 				}
 				inpos += nbytes;
 				arg = va_arg(ap, unsigned int *);
-				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+				SSL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(unsigned int *)arg = (unsigned int)num;
-					TEXTUTIL_LOG(TRACE, "Number match: v=%u", *(unsigned int *)arg);
+					SSL_LOG(TRACE, "Number match: v=%u", *(unsigned int *)arg);
 				}
 				matches++;
 			}
 			else if (format[fpos] == 'c') {
-				TEXTUTIL_LOG(TRACE, "Found %%c token");
+				SSL_LOG(TRACE, "Found %%c token");
 				fpos++;
 				arg = va_arg(ap, char *);
-				TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+				SSL_LOG(TRACE, "Arg: p=%p", arg);
 				if (arg != NULL) {
 					*(char *)arg = in[inpos];
-					TEXTUTIL_LOG(TRACE, "Char match: v=%c", *(char *)arg);
+					SSL_LOG(TRACE, "Char match: v=%c", *(char *)arg);
 				}
 				inpos++;
 				matches++;
 			}
 			else if (format[fpos] == 'z') {
 				ssize_t	num;
-				TEXTUTIL_LOG(TRACE, "Found %%z token");
+				SSL_LOG(TRACE, "Found %%z token");
 				fpos++;
 				if (format[fpos] == 'd') {
-					TEXTUTIL_LOG(TRACE, "Found %%zd token");
+					SSL_LOG(TRACE, "Found %%zd token");
 					fpos++;
 					if ((nbytes = __parse_number(in, inlen, inpos, &num)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for %%zd in input string: '%s'", in);
+						SSL_LOG(TRACE, "No match for %%zd in input string: '%s'", in);
 						break;
 					}
 					arg = va_arg(ap, ssize_t *);
-					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+					SSL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(ssize_t *)arg = (ssize_t)num;
-						TEXTUTIL_LOG(TRACE, "Number match: v=%zd", *(ssize_t *)arg);
+						SSL_LOG(TRACE, "Number match: v=%zd", *(ssize_t *)arg);
 					}
 					matches++;
 				}
 				else if (format[fpos] == 'u') {
 					size_t	num;
-					TEXTUTIL_LOG(TRACE, "Found %%zu token");
+					SSL_LOG(TRACE, "Found %%zu token");
 					fpos++;
 					if ((nbytes = __parse_number_u(in, inlen, inpos, &num)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for %%zu in input string: '%s'", in);
+						SSL_LOG(TRACE, "No match for %%zu in input string: '%s'", in);
 						break;
 					}
 					arg = va_arg(ap, size_t *);
-					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+					SSL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(size_t *)arg = num;
-						TEXTUTIL_LOG(TRACE, "Number match: v=%zu", *(size_t *)arg);
+						SSL_LOG(TRACE, "Number match: v=%zu", *(size_t *)arg);
 					}
 					matches++;
 				}
 			}
 			else if (format[fpos] == '[') {
 				char	charset[256] = {0};
-				TEXTUTIL_LOG(TRACE, "Found charset '%%[...]' token");
+				SSL_LOG(TRACE, "Found charset '%%[...]' token");
 				if ((nbytes = __parse_charset(format, fpos, charset)) == 0) {
-					TEXTUTIL_LOG(ERROR, "Failed to parse charset '%%[...]' from format string: '%s'", format);
+					SSL_LOG(ERROR, "Failed to parse charset '%%[...]' from format string: '%s'", format);
 					break;
 				}
 				fpos += nbytes;
@@ -225,30 +225,30 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 					size_t	buf_size;
 					buf = va_arg(ap, char *);
 					buf_size = va_arg(ap, size_t);
-					TEXTUTIL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
+					SSL_LOG(TRACE, "Buffer: p=%p, size=%zu", buf, buf_size);
 					if (buf != NULL && buf_size > 0) {
 						if ((nbytes = __parse_scanset_b(in, inlen, inpos, buf, buf_size, charset)) == 0) {
-							TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", in);
+							SSL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", in);
 							break;
 						}
 						inpos += nbytes;
-						TEXTUTIL_LOG(TRACE, "Scanset match: string: %s", buf);
+						SSL_LOG(TRACE, "Scanset match: string: %s", buf);
 					} else {
-						TEXTUTIL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
+						SSL_LOG(ERROR, "Invalid buffer for %%s: p=%p, size=%zu", buf, buf_size);
 						break;
 					}
 				} else {
 					char	*str;
 					if ((nbytes = __parse_scanset(in, inlen, inpos, &str, charset)) == 0) {
-						TEXTUTIL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", in);
+						SSL_LOG(TRACE, "No match for scanset '%%[...]' in input string: '%s'", in);
 						break;
 					}
 					inpos += nbytes;
 					arg = va_arg(ap, char **);
-					TEXTUTIL_LOG(TRACE, "Arg: p=%p", arg);
+					SSL_LOG(TRACE, "Arg: p=%p", arg);
 					if (arg != NULL) {
 						*(char **)arg = str;
-						TEXTUTIL_LOG(TRACE, "Scanset match: string: v='%s'", *(char **)arg);
+						SSL_LOG(TRACE, "Scanset match: string: v='%s'", *(char **)arg);
 					} else {
 						SSL_FREE(str);
 					}
@@ -256,7 +256,7 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 				matches++;
 			}
 			else {
-				TEXTUTIL_LOG(ERROR, "Invalid specifier: '%%%c'", format[fpos]);
+				SSL_LOG(ERROR, "Invalid specifier: '%%%c'", format[fpos]);
 				break;
 			}
 		}
@@ -265,7 +265,7 @@ static int __sscanf(const char *in, size_t inlen, const char *format, va_list ap
 			inpos++;
 		}
 		else {
-			TEXTUTIL_LOG(TRACE, "Mismatch: format='%c', in='%c'", format[fpos], in[inpos]);
+			SSL_LOG(TRACE, "Mismatch: format='%c', in='%c'", format[fpos], in[inpos]);
 			break;
 		}
 	}
@@ -283,7 +283,7 @@ static size_t __parse_string(const char *in, size_t inlen, size_t inpos, char **
 	while (end < inlen && in[end] && !ft_iseolws(in[end])) {
 		end++;
 	}
-	TEXTUTIL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, end - start);
+	SSL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, end - start);
 	*res = ft_strndup(in + start, end - start);
 
 	return (end - start);
@@ -299,7 +299,7 @@ static size_t __parse_string_b(const char *in, size_t inlen, size_t inpos, char 
 		end++;
 	}
 	len = MIN(end - start, buf_size - 1);
-	TEXTUTIL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, len);
+	SSL_LOG(TRACE, "String: start=%zu, end=%zu, len=%zu", start, end, len);
 	ft_memcpy(buf, in + start, len);
 	buf[len] = '\0';
 
@@ -353,18 +353,18 @@ static size_t __parse_charset(const char *format, size_t fpos, char *charset)
 
 	fpos++;
 	if (format[fpos] == '^') {
-		TEXTUTIL_LOG(TRACE, "Found negation in charset");
+		SSL_LOG(TRACE, "Found negation in charset");
 		negate = 1;
 		fpos++;
 	}
 	if (format[fpos] == '[') {
-		TEXTUTIL_LOG(TRACE, "Found opening bracket in charset");
+		SSL_LOG(TRACE, "Found opening bracket in charset");
 		charset['['] = 1;
 		fpos++;
 	}
 	while (format[fpos] != '\0' && format[fpos] != ']') {
 		if (format[fpos+1] == '-' && format[fpos+2] != '\0' && format[fpos+2] != ']') {
-			TEXTUTIL_LOG(TRACE, "Found range in charset: '%c-%c'", format[fpos], format[fpos+2]);
+			SSL_LOG(TRACE, "Found range in charset: '%c-%c'", format[fpos], format[fpos+2]);
 			for (char c = format[fpos]; c <= format[fpos+2]; c++) {
 				charset[(int)c] = 1;
 			}
@@ -377,7 +377,7 @@ static size_t __parse_charset(const char *format, size_t fpos, char *charset)
 	if (format[fpos] == ']') {
 		fpos++;
 	} else {
-		TEXTUTIL_LOG(ERROR, "Unterminated charset '%%[...]' in format string: '%s' at pos %zu, char: '%c'", format, fpos, format[fpos]);
+		SSL_LOG(ERROR, "Unterminated charset '%%[...]' in format string: '%s' at pos %zu, char: '%c'", format, fpos, format[fpos]);
 		return (0);
 	}
 	if (negate) {
@@ -396,13 +396,13 @@ static size_t __parse_scanset(const char *in, size_t inlen, size_t inpos, char *
 	*res = NULL;
 	while (end < inlen) {
 		if (!charset[(int)in[end]]) {
-			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, in[end]);
+			SSL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, in[end]);
 			break;
 		}
 		end++;
 	}
 	if (end == start) {
-		TEXTUTIL_LOG(TRACE, "No matching characters for scanset");
+		SSL_LOG(TRACE, "No matching characters for scanset");
 		return (0);
 	}
 	*res = ft_strndup(in + start, end - start);
@@ -418,13 +418,13 @@ static size_t __parse_scanset_b(const char *in, size_t inlen, size_t inpos, char
 
 	while (end < inlen) {
 		if (!charset[(int)in[end]]) {
-			TEXTUTIL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, in[end]);
+			SSL_LOG(TRACE, "Stop matching scanset at pos %zu, char: '%c'", end, in[end]);
 			break;
 		}
 		end++;
 	}
 	if (end == start) {
-		TEXTUTIL_LOG(TRACE, "No matching characters for scanset");
+		SSL_LOG(TRACE, "No matching characters for scanset");
 		return (0);
 	}
 	len = MIN(end - start, buf_size - 1);

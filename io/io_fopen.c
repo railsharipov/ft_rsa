@@ -25,19 +25,19 @@ static t_io_param	*__get_param(uint32_t);
 
 int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 {
-	IO_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "");
+	SSL_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "");
 	
 	t_io_param	*param;
 
 	if (NULL == iodes) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 
 	ft_bzero(iodes, sizeof(t_iodes));
 
 	if (NULL == (param = __get_param(flags))) {
-		IO_LOG(ERROR, "invalid flags %#x", flags);
+		SSL_LOG(ERROR, "invalid flags %#x", flags);
 		return (-1);
 	}
 
@@ -45,27 +45,27 @@ int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 
 	if (SSL_FLAG(IO_FILE, flags)) {
 		if (NULL == filename) {
-			IO_LOG(ERROR, "filename is not specified");
+			SSL_LOG(ERROR, "filename is not specified");
 			return (-1);
 		}
 
-		IO_LOG(TRACE, "opening file '%s' with flags 0x%x", filename, flags);
+		SSL_LOG(TRACE, "opening file '%s' with flags 0x%x", filename, flags);
 		if (SSL_FLAG(IO_READ, flags)) {
 			iodes->fd = open(filename, O_RDONLY, 0644);
-			IO_LOG(TRACE, "opened file for reading, fd=%d", iodes->fd);
+			SSL_LOG(TRACE, "opened file for reading, fd=%d", iodes->fd);
 		}
 		else if (SSL_FLAG(IO_WRITE, flags)) {
 			iodes->fd = open(filename, O_TRUNC|O_RDWR|O_CREAT, 0644);
-			IO_LOG(TRACE, "opened file for writing, fd=%d", iodes->fd);
+			SSL_LOG(TRACE, "opened file for writing, fd=%d", iodes->fd);
 		}
 		else {
-			IO_LOG(ERROR, "invalid flags combination");
+			SSL_LOG(ERROR, "invalid flags combination");
 			return (-1);
 		}
 	}
 
 	if (iodes->fd < 0) {
-		IO_LOG(ERROR, "file open failed, fd=%d", iodes->fd);
+		SSL_LOG(ERROR, "file open failed, fd=%d", iodes->fd);
 		return (-1);
 	}
 

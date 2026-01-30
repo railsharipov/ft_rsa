@@ -4,9 +4,6 @@
 #include <common.h>
 #include <libft/string.h>
 
-# define PEM_LOGGER_NAME	"pem"
-# define PEM_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, PEM_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 typedef enum e_pem_proc {
     PEM_PROC_TYPE_NONE = 0,        // No Proc-Type header (unencrypted)
     PEM_PROC_TYPE_ENCRYPTED = 4    // Proc-Type: 4,ENCRYPTED

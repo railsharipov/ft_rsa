@@ -5,13 +5,13 @@ t_ostring *der_init(void)
 {
     t_ostring *der;
 
-    DER_LOG(TRACE, "initializing DER structure");
+    SSL_LOG(TRACE, "initializing DER structure");
 
     SSL_ALLOC(der, sizeof(t_ostring));
     der->content = NULL;
     der->size = 0;
 
-    DER_LOG(TRACE, "DER structure initialized successfully");
+    SSL_LOG(TRACE, "DER structure initialized successfully");
 
     return (der);
 }
@@ -22,13 +22,13 @@ void  der_clear(t_ostring *der)
 		return ;
 	}
 
-	DER_LOG(TRACE, "clearing DER structure");
+	SSL_LOG(TRACE, "clearing DER structure");
 
 	SSL_FREE(der->content);
 	der->content = NULL;
 	der->size = 0;
 
-	DER_LOG(TRACE, "DER structure cleared");
+	SSL_LOG(TRACE, "DER structure cleared");
 }
 
 void  der_del(t_ostring *der)
@@ -37,12 +37,12 @@ void  der_del(t_ostring *der)
 		return ;
 	}
 
-	DER_LOG(TRACE, "deleting DER structure");
+	SSL_LOG(TRACE, "deleting DER structure");
 
 	SSL_FREE(der->content);
 	der->content = NULL;
 	der->size = 0;
 	SSL_FREE(der);
 
-	DER_LOG(TRACE, "DER structure deleted");
+	SSL_LOG(TRACE, "DER structure deleted");
 }

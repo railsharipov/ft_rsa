@@ -13,11 +13,11 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 	int		ret;
 
 	if (NULL == asn_key || NULL == rsa_key) {
-		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (NULL == (asn_items = asn_tree_items(asn_key))) {
-		RSA_LOG(ERROR, "failed to asn decode rsa key");
+		SSL_LOG(ERROR, "failed to asn decode rsa key");
 		return (SSL_ERR);
 	}
 
@@ -26,7 +26,7 @@ int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
 	} else if (!ft_strcmp(asn_key->key, "sequence:PUBLIC_KEY")) {
 		ret = __public_key_items(asn_items, rsa_key);
 	} else {
-		ret = RSA_LOG(ERROR, "invalid asn key: %s", asn_key->key);
+		ret = SSL_LOG(ERROR, "invalid asn key: %s", asn_key->key);
 	}
 	asn_tree_items_del(asn_items);
 
@@ -52,39 +52,39 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	key->coeff = __asn_int(asn_items, "int:coefficient");
 
 	if (NULL == key->version) {
-		RSA_LOG(ERROR, "invalid rsa key: version is missing");
+		SSL_LOG(ERROR, "invalid rsa key: version is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->modulus) {
-		RSA_LOG(ERROR, "invalid rsa key: modulus is missing");
+		SSL_LOG(ERROR, "invalid rsa key: modulus is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->pubexp) {
-		RSA_LOG(ERROR, "invalid rsa key: public exponent is missing");
+		SSL_LOG(ERROR, "invalid rsa key: public exponent is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->privexp) {
-		RSA_LOG(ERROR, "invalid rsa key: private exponent is missing");
+		SSL_LOG(ERROR, "invalid rsa key: private exponent is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->prime1) {
-		RSA_LOG(ERROR, "invalid rsa key: prime1 is missing");
+		SSL_LOG(ERROR, "invalid rsa key: prime1 is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->prime2) {
-		RSA_LOG(ERROR, "invalid rsa key: prime2 is missing");
+		SSL_LOG(ERROR, "invalid rsa key: prime2 is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->exponent1) {
-		RSA_LOG(ERROR, "invalid rsa key: exponent1 is missing");
+		SSL_LOG(ERROR, "invalid rsa key: exponent1 is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->exponent2) {
-		RSA_LOG(ERROR, "invalid rsa key: exponent2 is missing");
+		SSL_LOG(ERROR, "invalid rsa key: exponent2 is missing");
 		ret = SSL_ERR;
 	}
 	if (NULL == key->coeff) {
-		RSA_LOG(ERROR, "invalid rsa key: coefficient is missing");
+		SSL_LOG(ERROR, "invalid rsa key: coefficient is missing");
 		ret = SSL_ERR;
 	}
 
@@ -135,7 +135,7 @@ static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 
 	if ((NULL == key->modulus) || (NULL == key->pubexp)) {
 		SSL_FREE(key);
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	*rsa_key = key;

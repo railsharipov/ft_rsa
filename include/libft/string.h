@@ -59,6 +59,7 @@ char		*ft_strsub(char const *s, unsigned int start, size_t len);
 char		*ft_strjoin(char const *s1, char const *s2);
 char		*ft_strjoin_multi(int n, ...);
 char		**ft_strsplit(char const *s, char c);
+char		*ft_str_strip(const char *s);
 char		*ft_strup(const char *s);
 char		*ft_strnup(const char *s, size_t n);
 char		*ft_strlow(const char *s);

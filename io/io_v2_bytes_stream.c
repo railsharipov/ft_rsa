@@ -18,11 +18,11 @@ int io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
     t_io_v2_bytes_ctx *ctx;
 
     if (NULL == stream) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (NULL == ostring) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_bytes_ctx));
@@ -30,7 +30,7 @@ int io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
     ctx->seek = 0;
 
 	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE), ctx)) {
-		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
     return (SSL_OK);
@@ -45,11 +45,11 @@ int io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
     t_io_v2_bytes_ctx *ctx;
 
     if (NULL == stream) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     if (NULL == ostring) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_bytes_ctx));
@@ -57,7 +57,7 @@ int io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
     ctx->seek = 0;
 
 	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_WRITE | IO_V2_FLAG_CLOSE), ctx)) {
-		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
     return (SSL_OK);
@@ -68,27 +68,27 @@ static ssize_t __io_v2_bytes_read(void *vctx, void *buf, size_t nbytes)
 	t_io_v2_bytes_ctx *ctx;
     ssize_t rbytes;
 
-    IO_LOG(TRACE, "reading %zu bytes from bytes stream", nbytes);
+    SSL_LOG(TRACE, "reading %zu bytes from bytes stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     if (nbytes == 0) {
-		IO_LOG(TRACE, "buffer size is 0");
+		SSL_LOG(TRACE, "buffer size is 0");
         return (0);
     }
 	ctx = (t_io_v2_bytes_ctx *)vctx;
 
     if (ctx->seek >= ctx->ostring->size) {
-        IO_LOG(TRACE, "EOF reached");
+        SSL_LOG(TRACE, "EOF reached");
         return (IO_V2_STATUS_EOF);
     }
     rbytes = MIN(nbytes, ctx->ostring->size - ctx->seek);
     ft_memcpy(buf, ctx->ostring->content + ctx->seek, rbytes);
     ctx->seek += rbytes;
 
-    IO_LOG(TRACE, "read %zu bytes from bytes stream", rbytes);
+    SSL_LOG(TRACE, "read %zu bytes from bytes stream", rbytes);
 
     return (rbytes);
 }
@@ -97,25 +97,25 @@ static ssize_t __io_v2_bytes_write(void *vctx, const void *buf, size_t nbytes)
 {
     t_io_v2_bytes_ctx *ctx;
 
-	IO_LOG(TRACE, "writing %zu bytes to bytes stream", nbytes);
+	SSL_LOG(TRACE, "writing %zu bytes to bytes stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     if (nbytes == 0) {
-        IO_LOG(TRACE, "buffer size is 0");
+        SSL_LOG(TRACE, "buffer size is 0");
         return (0);
     }
     ctx = (t_io_v2_bytes_ctx *)vctx;
 
     if (NULL == ft_ostr_append(ctx->ostring, (void *)buf, nbytes)) {
-        IO_LOG(ERROR, "failed to append bytes to ostring");
+        SSL_LOG(ERROR, "failed to append bytes to ostring");
         return (IO_V2_STATUS_ERROR);
     }
     ctx->seek += nbytes;
 
-    IO_LOG(TRACE, "wrote %zu bytes to bytes stream", nbytes);
+    SSL_LOG(TRACE, "wrote %zu bytes to bytes stream", nbytes);
 
     return (nbytes);
 }
@@ -124,15 +124,15 @@ static ssize_t __io_v2_bytes_close(void *vctx)
 {
     t_io_v2_bytes_ctx *ctx;
 
-    IO_LOG(TRACE, "closing bytes stream");
+    SSL_LOG(TRACE, "closing bytes stream");
 
     if (NULL == vctx) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     ctx = (t_io_v2_bytes_ctx *)vctx;
     SSL_FREE(ctx);
-    IO_LOG(TRACE, "bytes stream closed");
+    SSL_LOG(TRACE, "bytes stream closed");
 
     return (IO_V2_STATUS_OK);
 }

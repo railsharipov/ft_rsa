@@ -20,7 +20,7 @@ int textutil_del_empty_lines(const char *in, size_t inlen, char **out, size_t *o
   	size_t   ix, iy;
 
 	if (NULL == in || NULL == out || NULL == outlen) {
-		TEXTUTIL_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	SSL_ALLOC(res, inlen + 1);

@@ -60,19 +60,19 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	int	ret;
 
 // 	if (NULL == opt) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (NULL == (__des_htable = cli_task_htable(T, sizeof(T)/sizeof(T[0])))) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != io_fopen(&__in, IO_READ|IO_STDIN, NULL)) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != io_fopen(&__out, IO_WRITE|IO_STDOUT, NULL)) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	__gflag = DES_E;
@@ -86,7 +86,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	cli_task_htable_del(__des_htable);
 
 // 	if (SSL_OK != ret) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	return (SSL_OK);
@@ -100,7 +100,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	// dynamically setup task
 // 	while (NULL != *opt) {
 // 		if (NULL == (task = ft_htbl_get(__des_htable, *opt))) {
-// 			CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+// 			SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 // 			return (SSL_ERR);
 // 		}
 // 		__gflag |= task->gflag;
@@ -108,13 +108,13 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 		// if option flag is required
 // 		if (task->val) {
 // 			if (NULL == * ++opt) {
-// 				CLI_LOG(ERROR, "expected option flag");
+// 				SSL_LOG(ERROR, "expected option flag");
 // 				return (SSL_ERR);
 // 			}
 // 		}
 // 		if (NULL != (f_setup = task->ptr)) {
 // 			if (SSL_OK != f_setup(*opt, task)) {
-// 				CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 				SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 				return (SSL_ERR);
 // 			}
 // 		}
@@ -143,13 +143,13 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	}
 
 // 	if (SSL_OK != __get_input((char **)&input.content, &input.size)) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 
 // 	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
 // 		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
-// 			CLI_LOG(ERROR, "invalid salted format");
+// 			SSL_LOG(ERROR, "invalid salted format");
 // 			return SSL_ERR;
 // 		}
 // 		ft_memcpy(__salt, input.content + 8, 8);
@@ -159,7 +159,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 	
 // 	if (__pass) {
 // 		if (SSL_OK != rand_openssl_kdf(__key, __salt, NULL, __pass)) {
-// 			CLI_LOG(ERROR, "kdf failed");
+// 			SSL_LOG(ERROR, "kdf failed");
 // 			return (SSL_ERR);
 // 		}
 // 	}
@@ -201,7 +201,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	if (rbytes < 0) {
 // 		SSL_FREE(*input);
 // 		*insize = 0;
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	return (SSL_OK);
@@ -216,12 +216,12 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 		__out.delim = '\n';
 // 	}
 // 	if (io_write(&__out, output, outsize) < 0) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
 // 		if (io_write(&__out, "\n", 1) < 0) {
-// 			CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 			return (SSL_ERR);
 // 		}
 // 	}
@@ -250,7 +250,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // static int	__get_vector(const char *opt, const t_task *task)
 // {
 // 	if (!ft_str_ishex(opt)) {
-// 		CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+// 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 // 		return (SSL_ERR);
 // 	}
 
@@ -259,7 +259,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	} else if (DES_S == task->tflag) {
 // 		__salthex = (char *)opt;
 // 	} else {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	return (SSL_OK);
@@ -313,11 +313,11 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	ret = SSL_OK;
 
 // 	if (SSL_OK != __enc(mes, ciph)) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != base64_encode(ciph->content, ciph->size, &b64.content, &b64.size)) {
-// 		ret = (CLI_LOG(ERROR, UNSPECIFIED_ERROR));
+// 		ret = (SSL_LOG(ERROR, UNSPECIFIED_ERROR));
 // 	}
 
 // 	SSL_FREE(ciph->content);
@@ -337,12 +337,12 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 	t_ostring	cipher;
 
 // 	if (SSL_OK != base64_decode(b64->content, b64->size, &cipher.content, &cipher.size)) {
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_OK != des_ecb_decrypt(__key, &cipher, mes)) {
 // 		SSL_FREE(cipher.content);
-// 		CLI_LOG(ERROR, UNSPECIFIED_ERROR);
+// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	SSL_FREE(cipher.content);

@@ -49,9 +49,6 @@
 # define ASN_TYPE_NAME_BOOL			"bool"
 # define ASN_TYPE_NAME_UNKNOWN		"unknown"
 
-# define ASN_LOGGER_NAME	"asn"
-# define ASN_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, ASN_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 typedef struct		s_iasn
 {
 	uint8_t			tag;

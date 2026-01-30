@@ -55,7 +55,7 @@ int	test_der(void)
 	int ret;
 
 	if (SSL_OK != __test_der_setup()) {
-		TEST_LOG(ERROR, "failed to setup test");
+		SSL_LOG(ERROR, "failed to setup test");
 		TEST_FAIL();
 	}
 
@@ -76,19 +76,19 @@ int	test_der(void)
 static int	__test_der_setup(void)
 {
     if (SSL_OK != file_read_all(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs1_rsaPrivateKey_der_file_path, &__pkcs1_rsaPrivateKey_der)) {
-        TEST_LOG(ERROR, FILE_READ_ERROR);
+        SSL_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }
     if (SSL_OK != file_read_all(__pkcs1_rsaPublicKey_der_file_path, &__pkcs1_rsaPublicKey_der)) {
-        TEST_LOG(ERROR, FILE_READ_ERROR);
+        SSL_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }
 

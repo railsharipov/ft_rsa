@@ -9,9 +9,6 @@
 # define RK_PRIME 101
 # define RK_ALPHA 256
 
-# define TEXTUTIL_LOGGER_NAME	"textutil"
-# define TEXTUTIL_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, TEXTUTIL_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 ssize_t	textutil_find(const char *octets, size_t olen, const char *pattern, size_t patlen);
 ssize_t	textutil_findf(const char *octets, size_t olen, const char *format, ...);
 int		textutil_del_blank(const char *in, size_t inlen, char **out, size_t *outlen);

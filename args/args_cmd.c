@@ -35,7 +35,7 @@ t_arg_cmd	*args_new_cmd(const char *name, const char *desc, void *func)
 void	args_del_cmd(t_arg_cmd *cmd_arg)
 {
 	if (cmd_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return;
 	}
 	ft_htbl_del(cmd_arg->sub_cmds);
@@ -51,7 +51,7 @@ t_arg_cmd	*args_copy_cmd(const t_arg_cmd *cmd_arg)
 	t_arg_cmd *copy;
 
 	if (cmd_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (NULL);
 	}
 	copy = args_new_cmd(cmd_arg->name, cmd_arg->desc, cmd_arg->func);
@@ -66,7 +66,7 @@ t_arg_cmd	*args_copy_cmd(const t_arg_cmd *cmd_arg)
 int	args_add_sub_cmd(t_arg_cmd *cmd_arg, const t_arg_cmd *sub_cmd_arg)
 {
 	if (cmd_arg == NULL || sub_cmd_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ft_htbl_add_with_f_del(cmd_arg->sub_cmds, (void *)sub_cmd_arg, sub_cmd_arg->name, __func_del_cmd);
@@ -77,7 +77,7 @@ int	args_add_sub_cmd(t_arg_cmd *cmd_arg, const t_arg_cmd *sub_cmd_arg)
 int	args_add_cmd_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg)
 {
 	if (cmd_arg == NULL || opt_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ft_htbl_add_with_f_del(cmd_arg->opts, (void *)opt_arg, opt_arg->name, __func_del_opt);
@@ -88,7 +88,7 @@ int	args_add_cmd_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg)
 int	args_add_global_cmd_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg)
 {
 	if (cmd_arg == NULL || opt_arg == NULL) {
-		ARGP_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ft_htbl_add_with_f_del(cmd_arg->global_opts, (void *)opt_arg, opt_arg->name, __func_del_opt);

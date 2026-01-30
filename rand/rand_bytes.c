@@ -6,7 +6,7 @@ int	rand_bytes(uint64_t seed, void *buf, size_t nbytes)
 	uint64_t	tmp;
 
 	if (nbytes <= 0) {
-		RAND_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 

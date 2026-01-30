@@ -26,7 +26,7 @@ static size_t		__mock_data_size_seed;
 int	test_io(void)
 {
 	if (SSL_OK != __test_io_setup()) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		TEST_FAIL();
 	}
 
@@ -48,7 +48,7 @@ static int	__test_io_setup(void)
 		uint64_t	seed;
 
 		if (SSL_OK != rand_useed(&seed, sizeof(size_t))) {
-			TEST_LOG(ERROR, "failed to get random seed");
+			SSL_LOG(ERROR, "failed to get random seed");
 			return (SSL_ERR);
 		}
 		__mock_data_size_seed = (size_t)seed;
@@ -392,7 +392,7 @@ static int	__test_io_file_reader(void)
 
 	// Small file
 	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	bufsize = ref_content.size;
@@ -430,7 +430,7 @@ static int	__test_io_file_reader(void)
 
 	// Large file
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	bufsize = 1024 * 1024;
@@ -474,7 +474,7 @@ static int	__test_io_file_writer(void)
 
 	// Small file
 	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 
@@ -498,7 +498,7 @@ static int	__test_io_file_writer(void)
 	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	if (SSL_OK != file_read_all(__test_text_file_path, &test_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(test_content.size == ref_content.size);
@@ -509,7 +509,7 @@ static int	__test_io_file_writer(void)
 
 	// Large file
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 
@@ -536,7 +536,7 @@ static int	__test_io_file_writer(void)
 	TEST_ASSERT(stream->status == IO_V2_STATUS_CLOSED);
 
 	if (SSL_OK != file_read_all(__test_text_file_path, &test_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(test_content.size == ref_content.size);
@@ -558,7 +558,7 @@ static int	__test_io_bytes_reader(void)
 	int				ret;
 
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	bufsize = 10 * 1024;
@@ -623,7 +623,7 @@ static int	__test_io_bytes_writer(void)
 	int				ret;
 
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(ref_content.size > write_size);
@@ -691,11 +691,11 @@ static int	__test_io_buffered_reader(void)
 	SSL_ALLOC(buf, bufsize);
 
 	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	if (SSL_OK != io_v2_file_reader(&upstream, __small_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 
@@ -759,11 +759,11 @@ static int	__test_io_buffered_reader(void)
 	SSL_ALLOC(buf, bufsize);
 
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	if (SSL_OK != io_v2_file_reader(&upstream, __large_text_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	ret = io_v2_buffered_reader(&buffered_stream, upstream, capacity);
@@ -829,11 +829,11 @@ static int	__test_io_buffered_writer(void)
 	SSL_ALLOC(buf, bufsize);
 
 	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	if (SSL_OK != io_v2_file_writer(&downstream, __test_text_file_path)) {
-		TEST_LOG(ERROR, FILE_WRITE_ERROR);
+		SSL_LOG(ERROR, FILE_WRITE_ERROR);
 		TEST_FAIL();
 	}
 
@@ -887,7 +887,7 @@ static int	__test_io_buffered_writer(void)
 
 	// read the content of the test file
 	if (SSL_OK != file_read_all(__test_text_file_path, &test_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(test_content.size == ref_content.size);
@@ -907,11 +907,11 @@ static int	__test_io_buffered_writer(void)
 	SSL_ALLOC(buf, bufsize);
 
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	if (SSL_OK != io_v2_file_writer(&downstream, __test_text_file_path)) {
-		TEST_LOG(ERROR, FILE_WRITE_ERROR);
+		SSL_LOG(ERROR, FILE_WRITE_ERROR);
 		TEST_FAIL();
 	}
 
@@ -958,7 +958,7 @@ static int	__test_io_buffered_writer(void)
 
 	// read the content of the test file
 	if (SSL_OK != file_read_all(__test_text_file_path, &test_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(test_content.size == ref_content.size);
@@ -983,17 +983,17 @@ static int	__test_io_pipe_unidir(void)
 	ft_ostr_init(&ref_content);
 
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		SSL_LOG(ERROR, FILE_READ_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(ref_content.size > capacity);
 
 	if (SSL_OK != io_v2_bytes_reader(&upstream, &ref_content)) {
-		TEST_LOG(ERROR, "failed to create bytes reader");
+		SSL_LOG(ERROR, "failed to create bytes reader");
 		TEST_FAIL();
 	}
 	if (SSL_OK != io_v2_bytes_writer(&downstream, &test_content)) {
-		TEST_LOG(ERROR, "failed to create bytes writer");
+		SSL_LOG(ERROR, "failed to create bytes writer");
 		TEST_FAIL();
 	}
 

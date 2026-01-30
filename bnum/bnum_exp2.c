@@ -3,7 +3,7 @@
 void	bnum_exp2(t_num *res, int n)
 {
 	if (n < 0) {
-		BNUM_LOG(ERROR, "negative exponent is not supported");
+		SSL_LOG(ERROR, "negative exponent is not supported");
 		return ;
     };
 

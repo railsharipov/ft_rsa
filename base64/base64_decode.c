@@ -34,13 +34,13 @@ int	base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes,
 	unsigned char	*oenc;
 
 	if ((NULL == enc) || (NULL == mes) || (NULL == messize)) {
-		B64_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	*mes = NULL;
 
 	if ((encsize % B64_BLOCK_SIZE != 0) || (SSL_OK != base64_check(enc, encsize))) {
-		B64_LOG(ERROR, "invalid base64 encoding");
+		SSL_LOG(ERROR, "invalid base64 encoding");
 		return (SSL_ERR);
 	}
 

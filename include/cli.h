@@ -18,9 +18,6 @@
 # include <libft/htable.h>
 # include <libft/logger.h>
 
-# define CLI_LOGGER_NAME	"cli"
-# define CLI_LOG(LEVEL, MES, ...)	ft_logger_log(__func__, __FILE__, __LINE__, NULL, CLI_LOGGER_NAME, LIBFT_LOG_LEVEL_##LEVEL, MES __VA_OPT__(,) __VA_ARGS__)
-
 # define NONE	0
 
 typedef int		(*t_func_comm)(const char **, const char *);

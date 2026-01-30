@@ -22,7 +22,7 @@ int	json_clone(t_node *json, t_node **ret_json)
 	t_node	*node;
 
 	if (json == NULL || ret_json == NULL) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -48,11 +48,11 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 	int		ret;
 
 	if (NULL == src || NULL == dst) {
-		JSON_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (src->type != type) {
-		JSON_LOG(ERROR, "expected %s, got %s", json_get_type_name(type), json_get_type_name(src->type));
+		SSL_LOG(ERROR, "expected %s, got %s", json_get_type_name(type), json_get_type_name(src->type));
 		return (SSL_ERR);
 	}
 
@@ -82,7 +82,7 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 			ret = __copy_bytes(src, dst);
 			break;
 		default:
-			JSON_LOG(ERROR, "cannot clone type: %s", json_get_type_name(src->type));
+			SSL_LOG(ERROR, "cannot clone type: %s", json_get_type_name(src->type));
 			return (SSL_ERR);
 	}
 
@@ -97,7 +97,7 @@ static int	__copy_object(t_node *src, t_node *dst)
 	t_node	*value_node;
 	t_node	*dst_value_node;
 
-	JSON_LOG(TRACE, "cloning object node");
+	SSL_LOG(TRACE, "cloning object node");
 
 	htbl = src->content;
 	dst_htbl = ft_htbl_create(0);
@@ -129,7 +129,7 @@ static int	__copy_array(t_node *src, t_node *dst)
 	t_node	*dst_list;
 	t_node	*item;
 
-	JSON_LOG(TRACE, "cloning array with %d items", src->size);
+	SSL_LOG(TRACE, "cloning array with %d items", src->size);
 
 	dst_list = NULL;
 	src_list = (t_node *)src->content;
@@ -158,7 +158,7 @@ static int	__copy_array(t_node *src, t_node *dst)
 
 static int	__copy_string(t_node *src, t_node *dst)
 {
-	JSON_LOG(TRACE, "cloning string: %s", src->content);
+	SSL_LOG(TRACE, "cloning string: %s", src->content);
 
 	dst->type = JSON_TYPE_STRING;
 	dst->content = ft_strdup(src->content);
@@ -172,7 +172,7 @@ static int	__copy_number(t_node *src, t_node *dst)
 {
 	t_num	*num;
 
-	JSON_LOG(TRACE, "cloning number");
+	SSL_LOG(TRACE, "cloning number");
 
 	num = bnum_create();
 	bnum_copy((t_num *)src->content, num);
@@ -187,7 +187,7 @@ static int	__copy_number(t_node *src, t_node *dst)
 
 static int	__copy_boolean(t_node *src, t_node *dst)
 {
-	JSON_LOG(TRACE, "cloning boolean: %s", src->content);
+	SSL_LOG(TRACE, "cloning boolean: %s", src->content);
 
 	dst->type = src->type;
 	dst->content = NULL;
@@ -199,7 +199,7 @@ static int	__copy_boolean(t_node *src, t_node *dst)
 
 static int	__copy_null(t_node *src, t_node *dst)
 {
-	JSON_LOG(TRACE, "cloning null");
+	SSL_LOG(TRACE, "cloning null");
 
 	(void)src;
 
@@ -213,7 +213,7 @@ static int	__copy_null(t_node *src, t_node *dst)
 
 static int	__copy_bytes(t_node *src, t_node *dst)
 {
-	JSON_LOG(TRACE, "cloning bytes");
+	SSL_LOG(TRACE, "cloning bytes");
 
 	dst->type = JSON_TYPE_BYTES;
 	dst->content = ft_memdup(src->content, src->size);

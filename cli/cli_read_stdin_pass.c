@@ -15,12 +15,12 @@ int	cli_read_stdin_pass(char *buf, size_t bufsize)
 	inlen = ft_strlen(input);
 
 	if (inlen > bufsize) {
-		ret = CLI_LOG(ERROR, INVALID_INPUT_ERROR);
+		ret = SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 	} else {
 		ft_memzcpy(buf, input, bufsize, inlen);
 		input = getpass("confirm password:");
 		if (ft_strcmp(buf, input)) {
-			ret = CLI_LOG(ERROR, "passwords don't match");
+			ret = SSL_LOG(ERROR, "passwords don't match");
 		}
 	}
 	ft_bzero(input, _PASSWORD_LEN);

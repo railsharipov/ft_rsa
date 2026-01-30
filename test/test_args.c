@@ -8,7 +8,7 @@ static int	__test_args_parse(void);
 int	test_args(void)
 {
 	if (SSL_OK != __test_args_setup()) {
-		TEST_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		TEST_FAIL();
 	}
 

@@ -13,7 +13,7 @@ static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 	delim = (uint32_t)iodes->delim;
 	rbytes = 0;
 	
-	IO_LOG(TRACE, "reading %zu bytes, osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
+	SSL_LOG(TRACE, "reading %zu bytes, osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
 
 	while ((rbytes < nbytes) && (iodes->seek < osbuf->size)) {
 		buf[rbytes] = osbuf->content[iodes->seek++];
@@ -32,7 +32,7 @@ static ssize_t __sread(t_iodes *iodes, char *buf, size_t nbytes)
 	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
 	rbytes = 0;
 	
-	IO_LOG(TRACE, "reading %zu bytes, osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
+	SSL_LOG(TRACE, "reading %zu bytes, osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
 
 	while (nbytes-- > 0)
 		buf[rbytes++] = osbuf->content[iodes->seek++];
@@ -44,27 +44,27 @@ ssize_t	io_sread(t_iodes *iodes, char *buf, size_t nbytes)
 {
 	size_t	rbytes;
 
-	IO_LOG(TRACE, "io sread with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
+	SSL_LOG(TRACE, "io sread with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
 
 	if (NULL == iodes || NULL == buf) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (-1);
 	}
 	if (NULL == iodes->osbuf || NULL == iodes->osbuf->content) {
-		IO_LOG(ERROR, "osbuf is not set or not initialized");
+		SSL_LOG(ERROR, "osbuf is not set or not initialized");
 		return (-1);
 	}
 	if (nbytes == 0) {
-		IO_LOG(TRACE, "buffer size is 0, nothing to read");
+		SSL_LOG(TRACE, "buffer size is 0, nothing to read");
 		return (0);
 	}
 
 	if (iodes->delim) {
-		IO_LOG(TRACE, "using delimiter-based read, delim=%d", iodes->delim);
+		SSL_LOG(TRACE, "using delimiter-based read, delim=%d", iodes->delim);
 		rbytes = __sread_delim(iodes, buf, nbytes);
 	}
 	else {
-		IO_LOG(TRACE, "using read without delimiter");
+		SSL_LOG(TRACE, "using read without delimiter");
 		rbytes = __sread(iodes, buf, nbytes);
 	}
 

@@ -8,7 +8,7 @@ void	bnum_montgomery_setup(const t_num *num, uint64_t *rho)
 	b = num->val[0];
 
 	if (!(b & 1u)) {
-		BNUM_LOG(ERROR, "montogemy reduction requires odd modulo");
+		SSL_LOG(ERROR, "montogemy reduction requires odd modulo");
 		return ;
     };
 

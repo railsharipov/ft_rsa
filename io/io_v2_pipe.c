@@ -14,19 +14,19 @@ int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_str
 	t_io_v2_pipe_ctx *ctx;
 
     if (NULL == pipe || NULL == upstream || NULL == downstream) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
 	if (capacity == 0) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
     if (!SSL_FLAG(IO_V2_FLAG_READ, upstream->flags)) {
-        IO_LOG(ERROR, "upstream stream is not readable");
+        SSL_LOG(ERROR, "upstream stream is not readable");
         return (SSL_ERR);
     }
     if (!SSL_FLAG(IO_V2_FLAG_WRITE, downstream->flags)) {
-        IO_LOG(ERROR, "downstream stream is not writable");
+        SSL_LOG(ERROR, "downstream stream is not writable");
         return (SSL_ERR);
     }
     SSL_ALLOC((*pipe), sizeof(t_io_v2_pipe));
@@ -43,14 +43,14 @@ int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_str
 int io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream, size_t capacity)
 {
 	if (NULL == pipe || NULL == upstream || NULL == downstream) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (capacity == 0) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-    IO_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+    SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
 
     return (SSL_ERR);
 }
@@ -78,26 +78,26 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
     ssize_t rbytes, wbytes;
     t_buffer *buffer;
 
-    IO_LOG(TRACE, "pumping %zu bytes through pipe", nbytes);
+    SSL_LOG(TRACE, "pumping %zu bytes through pipe", nbytes);
 
     if (NULL == pipe) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
     switch (pipe->status) {
         case IO_V2_STATUS_OK:
             break;
         case IO_V2_STATUS_ERROR:
-			IO_LOG(ERROR, "pipe is in error state");
+			SSL_LOG(ERROR, "pipe is in error state");
 			return (-1);
         case IO_V2_STATUS_EOF:
-			IO_LOG(ERROR, "pipe is in EOF state");
+			SSL_LOG(ERROR, "pipe is in EOF state");
 			return (-1);
         case IO_V2_STATUS_CLOSED:
-			IO_LOG(ERROR, "pipe is in closed state");
+			SSL_LOG(ERROR, "pipe is in closed state");
 			return (-1);
         default:
-            IO_LOG(ERROR, "invalid pipe status");
+            SSL_LOG(ERROR, "invalid pipe status");
             return (-1);
     }
 	ctx = (t_io_v2_pipe_ctx *)pipe->ctx;
@@ -106,61 +106,61 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
     downstream = ctx->downstream;
 
     if (nbytes > buffer->capacity) {
-        IO_LOG(ERROR, "not enough buffer capacity");
+        SSL_LOG(ERROR, "not enough buffer capacity");
         return (-1);
     }
     if (nbytes == 0) {
-        IO_LOG(DEBUG, "nothing to pump");
+        SSL_LOG(DEBUG, "nothing to pump");
         return (0);
     }
     if (upstream->status == IO_V2_STATUS_EOF) {
-        IO_LOG(TRACE, "source is at EOF");
+        SSL_LOG(TRACE, "source is at EOF");
         return (-1);
     }
     if (downstream->status == IO_V2_STATUS_EOF) {
-        IO_LOG(TRACE, "downstream is at EOF");
+        SSL_LOG(TRACE, "downstream is at EOF");
         return (-1);
     }
 
 	/* Read from upstream into internal buffer */
-    IO_LOG(TRACE, "reading from upstream");
+    SSL_LOG(TRACE, "reading from upstream");
     rbytes = ft_buffer_write_with_func(buffer, __io_v2_read_adapter, upstream, nbytes);
     if (rbytes < 0) {
 		if (upstream->status == IO_V2_STATUS_EOF) {
 			if (ft_buffer_is_empty(buffer)) {
-				IO_LOG(TRACE, "upstream is at EOF and internal buffer is empty");
+				SSL_LOG(TRACE, "upstream is at EOF and internal buffer is empty");
 				pipe->status = IO_V2_STATUS_EOF;
 				return (-1);
 			} else {
-				IO_LOG(TRACE, "upstream is at EOF but internal buffer is not empty");
+				SSL_LOG(TRACE, "upstream is at EOF but internal buffer is not empty");
 				// Not error, just continue to write to downstream
 			}
 		}
 		else {
-			IO_LOG(ERROR, "read from upstream failed");
+			SSL_LOG(ERROR, "read from upstream failed");
 			pipe->status = IO_V2_STATUS_ERROR;
 			return (-1);
 		}
     }
 	else {
-    	IO_LOG(TRACE, "read %zu bytes from upstream", rbytes);
+    	SSL_LOG(TRACE, "read %zu bytes from upstream", rbytes);
 	}
 
 	/* Write from internal buffer to downstream */
 	if (ft_buffer_is_empty(buffer)) {
-		IO_LOG(TRACE, "internal buffer is empty, nothing to write to downstream");
+		SSL_LOG(TRACE, "internal buffer is empty, nothing to write to downstream");
 		return (0);
 	}
 	else {
-		IO_LOG(TRACE, "writing to downstream");
+		SSL_LOG(TRACE, "writing to downstream");
 		wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, nbytes);
 		if (wbytes < 0) {
-			IO_LOG(ERROR, "write to downstream failed");
+			SSL_LOG(ERROR, "write to downstream failed");
 			pipe->status = IO_V2_STATUS_ERROR;
 			return (-1);
 		}
 		else {
-			IO_LOG(TRACE, "wrote %zu bytes to downstream", wbytes);
+			SSL_LOG(TRACE, "wrote %zu bytes to downstream", wbytes);
 		}
 	}
     return (wbytes);
@@ -173,10 +173,10 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
 	t_buffer *buffer;
 	ssize_t wbytes;
 
-	IO_LOG(TRACE, "flushing pipe");
+	SSL_LOG(TRACE, "flushing pipe");
 
     if (NULL == pipe) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
     switch (pipe->status) {
@@ -184,13 +184,13 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
         case IO_V2_STATUS_EOF:
             break;
         case IO_V2_STATUS_ERROR:
-            IO_LOG(ERROR, "pipe is in error state");
+            SSL_LOG(ERROR, "pipe is in error state");
             return (-1);
         case IO_V2_STATUS_CLOSED:
-            IO_LOG(ERROR, "pipe is in closed state");
+            SSL_LOG(ERROR, "pipe is in closed state");
             return (-1);
         default:
-            IO_LOG(ERROR, "invalid pipe status");
+            SSL_LOG(ERROR, "invalid pipe status");
             return (-1);
     }
 	ctx = (t_io_v2_pipe_ctx *)pipe->ctx;
@@ -198,23 +198,23 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
     buffer = ctx->buffer;
 
     if (downstream->status != IO_V2_STATUS_OK) {
-        IO_LOG(ERROR, "downstream is not OK, status=%#x", downstream->status);
+        SSL_LOG(ERROR, "downstream is not OK, status=%#x", downstream->status);
 		pipe->status = IO_V2_STATUS_ERROR;
         return (-1);
     }
 	if (ft_buffer_is_empty(buffer)) {
-		IO_LOG(TRACE, "internal buffer is empty, nothing to flush");
+		SSL_LOG(TRACE, "internal buffer is empty, nothing to flush");
 		return (0);
 	}
 	else {
-		IO_LOG(TRACE, "flushing %zu bytes to downstream", ft_buffer_used(buffer));
+		SSL_LOG(TRACE, "flushing %zu bytes to downstream", ft_buffer_used(buffer));
 		wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, ft_buffer_used(buffer));
 		if (wbytes < 0) {
-			IO_LOG(ERROR, "flush to downstream failed");
+			SSL_LOG(ERROR, "flush to downstream failed");
 			pipe->status = IO_V2_STATUS_ERROR;
 			return (-1);
 		}
-		IO_LOG(TRACE, "flushed %zu bytes to downstream", wbytes);
+		SSL_LOG(TRACE, "flushed %zu bytes to downstream", wbytes);
 	}
     return (wbytes);
 }
@@ -230,10 +230,10 @@ ssize_t io_v2_pipe_close(t_io_v2_pipe *pipe)
 {
 	t_io_v2_pipe_ctx *ctx;
 
-	IO_LOG(TRACE, "closing pipe");
+	SSL_LOG(TRACE, "closing pipe");
 
     if (NULL == pipe) {
-        IO_LOG(ERROR, INVALID_INPUT_ERROR);
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
     switch (pipe->status) {
@@ -241,13 +241,13 @@ ssize_t io_v2_pipe_close(t_io_v2_pipe *pipe)
         case IO_V2_STATUS_EOF:
             break;
         case IO_V2_STATUS_ERROR:
-            IO_LOG(ERROR, "pipe is in error state");
+            SSL_LOG(ERROR, "pipe is in error state");
             return (-1);
         case IO_V2_STATUS_CLOSED:
-            IO_LOG(ERROR, "pipe is in closed state");
+            SSL_LOG(ERROR, "pipe is in closed state");
             return (-1);
         default:
-            IO_LOG(ERROR, "invalid pipe status");
+            SSL_LOG(ERROR, "invalid pipe status");
             return (-1);
     }
 	ctx = (t_io_v2_pipe_ctx *)pipe->ctx;
@@ -256,7 +256,7 @@ ssize_t io_v2_pipe_close(t_io_v2_pipe *pipe)
 	pipe->ctx = NULL;
 	pipe->status = IO_V2_STATUS_CLOSED;
 
-	IO_LOG(TRACE, "closed pipe");
+	SSL_LOG(TRACE, "closed pipe");
 
     return (0);
 }

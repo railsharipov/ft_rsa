@@ -21,7 +21,7 @@ void    bnum_set_rand(t_num *num, int bits)
 	fd = open("/dev/random", O_RDONLY);
 
 	if (fd < 0) {
-		BNUM_LOG(ERROR, NULL);
+		SSL_LOG(ERROR, NULL);
 		return ;
     };
 

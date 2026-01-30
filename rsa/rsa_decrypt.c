@@ -21,7 +21,7 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 	ix = 0;
 
 	if ((optr[ix++] != 0x00) || (optr[ix++] != 0x02)) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	check = 0;
@@ -33,7 +33,7 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 		}
 	}
 	if (check != 1) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 	messize = *osize - ix;
@@ -69,7 +69,7 @@ static int	__eme_pkcs1_v1_5_split(unsigned char **octets, int *osize)
 static int	__decrypt_prim(t_num *ciph_rep, t_num *mes_rep)
 {
 	if (bnum_cmp_u(ciph_rep, __items->modulus) >= 0) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -117,7 +117,7 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char *
 	SSL_FREE(octets);
 
 	if (SSL_OK != res) {
-		RSA_LOG(ERROR, UNSPECIFIED_ERROR);
+		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);
 	}
 
@@ -127,22 +127,22 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char *
 int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key)
 {
 	if ((NULL == ciph) || (NULL == ciph->content) || (NULL == mes) || (NULL == asn_key)) {
-		RSA_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	mes->content = NULL;
 
 	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY")) {
-		RSA_LOG(ERROR, "invalid rsa key type");
+		SSL_LOG(ERROR, "invalid rsa key type");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
-		RSA_LOG(ERROR, "invalid rsa key");
+		SSL_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __decrypt(ciph->content, ciph->size, &(mes->content), &(mes->size)))
 	{
-		RSA_LOG(ERROR, "invalid rsa key");
+		SSL_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

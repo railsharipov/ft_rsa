@@ -3,27 +3,27 @@
 int io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, t_io_v2_flag flags, void *ctx)
 {
 	if (NULL == stream) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (NULL == ctx) {
-		IO_LOG(ERROR, INVALID_INPUT_ERROR);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_FLAG(IO_V2_FLAG_READ, flags) && NULL == interface.read) {
-		IO_LOG(ERROR, "no read interface");
+		SSL_LOG(ERROR, "no read interface");
 		return (SSL_ERR);
 	}
 	if (SSL_FLAG(IO_V2_FLAG_WRITE, flags) && NULL == interface.write) {
-		IO_LOG(ERROR, "no write interface");
+		SSL_LOG(ERROR, "no write interface");
 		return (SSL_ERR);
 	}
 	if (SSL_FLAG(IO_V2_FLAG_FLUSH, flags) && NULL == interface.flush) {
-		IO_LOG(ERROR, "no flush interface");
+		SSL_LOG(ERROR, "no flush interface");
 		return (SSL_ERR);
 	}
 	if (SSL_FLAG(IO_V2_FLAG_CLOSE, flags) && NULL == interface.close) {
-		IO_LOG(ERROR, "no close interface");
+		SSL_LOG(ERROR, "no close interface");
 		return (SSL_ERR);
 	}
 	SSL_ALLOC((*stream), sizeof(t_io_v2_stream));
