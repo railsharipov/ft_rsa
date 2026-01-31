@@ -10,8 +10,10 @@
 #define FT_LOGGER_INFO_LOG_PREFIX	"[info ] "
 #define FT_LOGGER_DEBUG_LOG_PREFIX	"[debug] "
 #define FT_LOGGER_TRACE_LOG_PREFIX	"[trace] "
+#define FT_LOGGER_ALL_LOG_PREFIX	""
 
 static const char *__lvl_prefixes[] = {
+	[LIBFT_LOG_LEVEL_ALWAYS] = FT_LOGGER_ALL_LOG_PREFIX,
 	[LIBFT_LOG_LEVEL_CRIT] = FT_LOGGER_CRIT_LOG_PREFIX,
 	[LIBFT_LOG_LEVEL_ERROR] = FT_LOGGER_ERROR_LOG_PREFIX,
 	[LIBFT_LOG_LEVEL_WARN] = FT_LOGGER_WARN_LOG_PREFIX,
@@ -22,12 +24,13 @@ static const char *__lvl_prefixes[] = {
 static const size_t __lvl_prefixes_size = sizeof(__lvl_prefixes) / sizeof(__lvl_prefixes[0]);
 
 static const char *__colored_lvl_prefixes[] = {
+	[LIBFT_LOG_LEVEL_ALWAYS] = TXT_B_WHITE(FT_LOGGER_ALL_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_CRIT] = TXT_MAGEN(FT_LOGGER_CRIT_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_ERROR] = TXT_B_RED(FT_LOGGER_ERROR_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_WARN] = TXT_YELL(FT_LOGGER_WARN_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_INFO] = TXT_BLUE(FT_LOGGER_INFO_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_DEBUG] = TXT_CYAN(FT_LOGGER_DEBUG_LOG_PREFIX),
-	[LIBFT_LOG_LEVEL_TRACE] = TXT_CYAN(FT_LOGGER_TRACE_LOG_PREFIX),
+	[LIBFT_LOG_LEVEL_TRACE] = TXT_B_GRAY(FT_LOGGER_TRACE_LOG_PREFIX),
 };
 static const size_t __colored_lvl_prefixes_size = sizeof(__colored_lvl_prefixes) / sizeof(__colored_lvl_prefixes[0]);
 

@@ -5,7 +5,7 @@
 #include <der.h>
 #include <bnum.h>
 #include <rand.h>
-#include <test.h>
+#include "test.h"
 #include <textutil.h>
 #include <base64.h>
 #include <json.h>
@@ -23,17 +23,17 @@ static int	__test_pem_encode_pkcs1_encrypted(void);
 static int	__test_pem_decode_pkcs1_unencrypted(void);
 static int	__test_pem_encode_pkcs1_unencrypted(void);
 
-static const char	*__pkcs8_privateKeyInfo_pem_file_path = "test/files/keys/pkcs8-privateKeyInfo.pem";
-static const char	*__pkcs8_privateKeyInfo_der_file_path = "test/files/keys/pkcs8-privateKeyInfo.der";
-static const char	*__pkcs8_encryptedPrivateKeyInfo_pem_file_path = "test/files/keys/pkcs8-encryptedPrivateKeyInfo.pem";
-static const char	*__pkcs8_encryptedPrivateKeyInfo_der_file_path = "test/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
-static const char	*__pkcs8_subjectPublicKeyInfo_pem_file_path = "test/files/keys/pkcs8-subjectPublicKeyInfo.pem";
-static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "test/files/keys/pkcs8-subjectPublicKeyInfo.der";
+static const char	*__pkcs8_privateKeyInfo_pem_file_path = "tests/files/keys/pkcs8-privateKeyInfo.pem";
+static const char	*__pkcs8_privateKeyInfo_der_file_path = "tests/files/keys/pkcs8-privateKeyInfo.der";
+static const char	*__pkcs8_encryptedPrivateKeyInfo_pem_file_path = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.pem";
+static const char	*__pkcs8_encryptedPrivateKeyInfo_der_file_path = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
+static const char	*__pkcs8_subjectPublicKeyInfo_pem_file_path = "tests/files/keys/pkcs8-subjectPublicKeyInfo.pem";
+static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "tests/files/keys/pkcs8-subjectPublicKeyInfo.der";
 static const char	*__pkcs8_privateKeyInfo_schema_json_file_path = "resources/asn/schema-pkcs8-privateKeyInfo.json";
 
-static const char	*__pkcs1_encrypted_rsaPrivateKey_pem_file_path = "test/files/keys/pkcs1-encrypted-rsaPrivateKey.pem";
-static const char	*__pkcs1_rsaPrivateKey_pem_file_path = "test/files/keys/pkcs1-rsaPrivateKey.pem";
-static const char	*__pkcs1_rsaPrivateKey_der_file_path = "test/files/keys/pkcs1-rsaPrivateKey.der";
+static const char	*__pkcs1_encrypted_rsaPrivateKey_pem_file_path = "tests/files/keys/pkcs1-encrypted-rsaPrivateKey.pem";
+static const char	*__pkcs1_rsaPrivateKey_pem_file_path = "tests/files/keys/pkcs1-rsaPrivateKey.pem";
+static const char	*__pkcs1_rsaPrivateKey_der_file_path = "tests/files/keys/pkcs1-rsaPrivateKey.der";
 
 static t_ostring	__pkcs8_privateKeyInfo_der;
 static t_ostring	__pkcs8_privateKeyInfo_pem;
@@ -54,7 +54,7 @@ int	test_pem(void)
 	int	ret;
 
 	if (SSL_OK != __test_pem_setup()) {
-		SSL_LOG(ERROR, "failed to setup test");
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
@@ -75,43 +75,43 @@ int	test_pem(void)
 static int	__test_pem_setup(void)
 {
     if (SSL_OK != file_read_all(__pkcs8_privateKeyInfo_pem_file_path, &__pkcs8_privateKeyInfo_pem)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_encryptedPrivateKeyInfo_pem_file_path, &__pkcs8_encryptedPrivateKeyInfo_pem)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_encryptedPrivateKeyInfo_der_file_path, &__pkcs8_encryptedPrivateKeyInfo_der)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_subjectPublicKeyInfo_pem_file_path, &__pkcs8_subjectPublicKeyInfo_pem)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__pkcs8_privateKeyInfo_schema_json_file_path, &__pkcs8_privateKeyInfo_schema_json_ostr)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs1_encrypted_rsaPrivateKey_pem_file_path, &__pkcs1_encrypted_rsaPrivateKey_pem)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs1_rsaPrivateKey_pem_file_path, &__pkcs1_rsaPrivateKey_pem)) {
-        SSL_LOG(ERROR, FILE_READ_ERROR);
+        TEST_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }
 	if (SSL_OK != file_read_all(__pkcs1_rsaPrivateKey_der_file_path, &__pkcs1_rsaPrivateKey_der)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	return (SSL_OK);

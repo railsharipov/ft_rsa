@@ -3,7 +3,7 @@
 #include <der.h>
 #include <bnum.h>
 #include <rand.h>
-#include <test.h>
+#include "test.h"
 #include <file.h>
 #include <io.h>
 
@@ -19,10 +19,10 @@ static int	__test_der_encode_pkcs1_rsaPrivateKey(void);
 static int	__test_der_decode_pkcs1_rsaPublicKey(void);
 static int	__test_der_encode_pkcs1_rsaPublicKey(void);
 
-static const char	*__pkcs8_privateKeyInfo_der_file_path = "test/files/keys/pkcs8-privateKeyInfo.der";
-static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "test/files/keys/pkcs8-subjectPublicKeyInfo.der";
-static const char	*__pkcs1_rsaPrivateKey_der_file_path = "test/files/keys/pkcs1-rsaPrivateKey.der";
-static const char	*__pkcs1_rsaPublicKey_der_file_path = "test/files/keys/pkcs1-rsaPublicKey.der";
+static const char	*__pkcs8_privateKeyInfo_der_file_path = "tests/files/keys/pkcs8-privateKeyInfo.der";
+static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "tests/files/keys/pkcs8-subjectPublicKeyInfo.der";
+static const char	*__pkcs1_rsaPrivateKey_der_file_path = "tests/files/keys/pkcs1-rsaPrivateKey.der";
+static const char	*__pkcs1_rsaPublicKey_der_file_path = "tests/files/keys/pkcs1-rsaPublicKey.der";
 
 static const char	*__modulus = "0090c698de843004925c02940780296d103900047942d8c784309b6f37935b9327de6d45c06fb6257daa65b9fbbb2895afa54677b750bba37ad56ea5fd78a5439b5a7452e139cdedfc65ba52bbd9dbe8d9cd0a0c27e2a6bed45e81b3efb25512fb85dec6e7c0c789c58536aa747b006bfb3b5ab24dd237b689dc91786de2d0fd97f798abb51a433989c24414722aef236835beb0db8de65c2d6665e8fb3024f35a95cbc5490d56183af8c0ad16ffbd4212f55eb730ea3fbffcdad593c7acfe4430d825747ca1c860d248495c1d8a675bb1bd3f4089f125730ba2a41026e92c8b7da92a1f8026f46a688019c98d7ba64aa91aaa84e20317064f9f07e1cc5e5fb993";
 static const char	*__publicExponent = "10001";
@@ -55,7 +55,7 @@ int	test_der(void)
 	int ret;
 
 	if (SSL_OK != __test_der_setup()) {
-		SSL_LOG(ERROR, "failed to setup test");
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
@@ -76,19 +76,19 @@ int	test_der(void)
 static int	__test_der_setup(void)
 {
     if (SSL_OK != file_read_all(__pkcs8_privateKeyInfo_der_file_path, &__pkcs8_privateKeyInfo_der)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs8_subjectPublicKeyInfo_der_file_path, &__pkcs8_subjectPublicKeyInfo_der)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
     if (SSL_OK != file_read_all(__pkcs1_rsaPrivateKey_der_file_path, &__pkcs1_rsaPrivateKey_der)) {
-        SSL_LOG(ERROR, FILE_READ_ERROR);
+        TEST_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }
     if (SSL_OK != file_read_all(__pkcs1_rsaPublicKey_der_file_path, &__pkcs1_rsaPublicKey_der)) {
-        SSL_LOG(ERROR, FILE_READ_ERROR);
+        TEST_LOG(ERROR, FILE_READ_ERROR);
         return (SSL_ERR);
     }
 

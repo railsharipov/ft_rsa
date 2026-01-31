@@ -19,7 +19,6 @@
 # include <libft/common.h>
 # include <libft/logger.h>
 
-# define SSL_LOG(LEVEL, FMT, ...)	logger_log(__func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__)
 # define SSL_FLAG(FLAG, FLAGS)		((int)(((FLAGS)&(FLAG))==(FLAG)))
 
 # define INVALID_INPUT_ERROR	"invalid input"
@@ -46,7 +45,13 @@ enum	e_ssl_status
 typedef uint32_t	t_bool;
 typedef __uint128_t	uint128_t;
 
-int			logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
-t_logger	*logger_get_logger(void);
+# define SSL_LOG(LEVEL, FMT, ...)	logger_log(NULL, __func__, __FILE__, __LINE__, LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__)
+
+int			logger_log(const char *logger_name, const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
+int			logger_va_log(const char *logger_name, const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, va_list va_arg);
+t_logger	*logger_add_logger(const char *logger_name, t_logger *logger);
+t_logger	*logger_get_logger(const char *logger_name);
+t_logger	*logger_get_default_logger(void);
+int 		logger_set_default_logger(t_logger *logger);
 
 #endif

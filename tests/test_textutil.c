@@ -1,6 +1,8 @@
 #include <common.h>
 #include <textutil.h>
-#include <test.h>
+#include "test.h"
+
+static int	__test_textutil_setup(void);
 
 static int	__test_textutil_find(void);
 static int	__test_textutil_findf(void);
@@ -28,7 +30,11 @@ Laboris enim constias doctrina. Elit nostrud in multos sint.";
 
 int	test_textutil(void)
 {
-	return (SSL_OK);
+	if (SSL_OK != __test_textutil_setup()) {
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
+		TEST_FAIL();
+	}
+
 	return (
 		__test_textutil_find()
 		| __test_textutil_findf()
@@ -43,6 +49,11 @@ int	test_textutil(void)
 		| __test_textutil_scanf()
 		| __test_textutil_bnscanf()
 	);
+}
+
+static int	__test_textutil_setup(void)
+{
+	return (SSL_OK);
 }
 
 static int	__test_textutil_find(void)

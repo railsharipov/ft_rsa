@@ -1,6 +1,6 @@
 #include <common.h>
 #include <args.h>
-#include <test.h>
+#include "test.h"
 
 static int	__test_args_setup(void);
 static int	__test_args_parse(void);
@@ -8,7 +8,7 @@ static int	__test_args_parse(void);
 int	test_args(void)
 {
 	if (SSL_OK != __test_args_setup()) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 

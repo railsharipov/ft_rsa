@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <common.h>
-#include <test.h>
+#include "test.h"
 #include <libft/std.h>
 #include <libft/node.h>
 #include <libft/list.h>
@@ -80,7 +80,7 @@ int test_libft(void)
 	int		ret;
 
 	if (SSL_OK != __test_libft_setup()) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
@@ -1150,7 +1150,7 @@ static int __test_get_next_line(void)
 {
 	int fd;
 	FILE *ref_stream;
-	const char *file = "test/files/libft/lines.txt";
+	const char *file = "tests/files/libft/lines.txt";
 	char *line = NULL;
 	char *ref_line = NULL;
 	ssize_t rbytes;

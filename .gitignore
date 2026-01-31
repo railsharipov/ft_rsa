@@ -1,4 +1,7 @@
 dep/
+dep_test/
 obj/
+obj_test/
 ft_ssl
+test
 .vscode

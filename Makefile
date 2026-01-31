@@ -1,12 +1,18 @@
 NAME := ft_ssl
+TEST_NAME := test
 
-SRCS := main.c $(sort $(wildcard */*.c))
+SRCS := main.c $(filter-out tests/%,$(sort $(wildcard */*.c)))
+TEST_SRCS := $(filter-out main.c,$(sort $(wildcard */*.c)))
 
 OBJ_DIR := obj
 DEP_DIR := dep
+TEST_OBJ_DIR := obj_test
+TEST_DEP_DIR := dep_test
 
 OBJS := $(SRCS:%.c=$(OBJ_DIR)/%.o)
 DEPS := $(SRCS:%.c=$(DEP_DIR)/%.d)
+TEST_OBJS := $(TEST_SRCS:%.c=$(TEST_OBJ_DIR)/%.o)
+TEST_DEPS := $(TEST_SRCS:%.c=$(TEST_DEP_DIR)/%.d)
 
 CC := gcc
 CFLAGS := -O3 -std=c11 -I./include
@@ -23,9 +29,6 @@ sanitize: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=addr
 sanitize: LDFLAGS := -fsanitize=address
 sanitize: $(NAME)
 
-test: CFLAGS := -Og -g -std=c11 -Wall -Wextra -I./include
-test: $(NAME)
-
 $(NAME): $(OBJS)
 	@echo linking: $(NAME)
 	@$(CC) $(LDFLAGS) -o $@ $(OBJS)
@@ -35,15 +38,33 @@ $(OBJ_DIR)/%.o: %.c | $(DEP_DIR)/%.d
 	@echo compiling: $<
 	@$(CC) $(DEPFLAGS) $(CFLAGS) -c $< -o $@
 
+$(TEST_OBJ_DIR)/%.o: %.c | $(TEST_DEP_DIR)/%.d
+	@mkdir -p $(dir $@) $(dir $(TEST_DEP_DIR)/$*.d)
+	@echo compiling test: $<
+	@$(CC) -MT $@ -MMD -MP -MF $(TEST_DEP_DIR)/$*.d $(CFLAGS) -c $< -o $@
+
 $(DEPS):
+$(TEST_DEPS):
 -include $(DEPS)
+-include $(TEST_DEPS)
+
+sanitize_test: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include
+sanitize_test: LDFLAGS := -fsanitize=address
+sanitize_test: $(TEST_NAME)
+
+test: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -I./include
+test: $(TEST_NAME)
+
+$(TEST_NAME): $(TEST_OBJS)
+	@echo linking: $(TEST_NAME)
+	@$(CC) $(LDFLAGS) -o $@ $(TEST_OBJS)
 
 clean:
 	@echo cleaning
-	@rm -rf $(OBJ_DIR) $(DEP_DIR)
+	@rm -rf $(OBJ_DIR) $(DEP_DIR) $(TEST_OBJ_DIR) $(TEST_DEP_DIR)
 
 fclean: clean
-	@echo removing $(NAME)
-	@rm -f $(NAME)
+	@echo removing $(NAME) $(TEST_NAME)
+	@rm -f $(NAME) $(TEST_NAME)
 
 re: fclean all

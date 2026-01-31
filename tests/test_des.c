@@ -1,6 +1,6 @@
 #include <common.h>
 #include <des.h>
-#include <test.h>
+#include "test.h"
 #include <rand.h>
 #include <io.h>
 #include <file.h>
@@ -17,13 +17,13 @@ static int	__test_des_cbc_decrypt(void);
 static ssize_t	__helper_des_update(t_des *des, const t_ostring *in, t_ostring *out);
 static ssize_t	__helper_des_final(t_des *des, t_ostring *out);
 
-static const char	*__small_text_file_path = "test/files/text/small.txt";
-static const char	*__large_text_file_path = "test/files/text/large.txt";
+static const char	*__small_text_file_path = "tests/files/text/small.txt";
+static const char	*__large_text_file_path = "tests/files/text/large.txt";
 
-static const char	*__des_ecb_small_cipher_file_path = "test/files/des/des-ecb-small-cipher";
-static const char	*__des_ecb_large_cipher_file_path = "test/files/des/des-ecb-large-cipher";
-static const char	*__des_cbc_small_cipher_file_path = "test/files/des/des-cbc-small-cipher";
-static const char	*__des_cbc_large_cipher_file_path = "test/files/des/des-cbc-large-cipher";
+static const char	*__des_ecb_small_cipher_file_path = "tests/files/des/des-ecb-small-cipher";
+static const char	*__des_ecb_large_cipher_file_path = "tests/files/des/des-ecb-large-cipher";
+static const char	*__des_cbc_small_cipher_file_path = "tests/files/des/des-cbc-small-cipher";
+static const char	*__des_cbc_large_cipher_file_path = "tests/files/des/des-cbc-large-cipher";
 
 static t_ostring	*__small_text;
 static t_ostring	*__large_text;
@@ -43,7 +43,7 @@ int	test_des(void)
 	int ret;
 
 	if (SSL_OK != __test_des_setup()) {
-		SSL_LOG(ERROR, "failed to setup test");
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
@@ -67,27 +67,27 @@ static int	__test_des_setup(void)
 	__des_cbc_large_cipher = ft_ostr_new();
 
 	if (SSL_OK != file_read_all(__small_text_file_path, __small_text)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_ecb_small_cipher_file_path, __des_ecb_small_cipher)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_cbc_small_cipher_file_path, __des_cbc_small_cipher)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__large_text_file_path, __large_text)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_ecb_large_cipher_file_path, __des_ecb_large_cipher)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__des_cbc_large_cipher_file_path, __des_cbc_large_cipher)) {
-		SSL_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	ft_hex_to_bytes(__key, __keyhex, 16);

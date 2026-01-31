@@ -7,12 +7,23 @@
 #include <args.h>
 #include <libft/string.h>
 
+static int __log_writer(const char *mes) {
+	return (ft_printf("%@%s\n", mes));
+}
+static t_logger __logger = {
+	.log_writer = __log_writer,
+	.log_level_thres = LIBFT_LOG_LEVEL_INFO,
+	.debug_info_thres = LIBFT_LOG_LEVEL_DEBUG,
+	.is_ansi_colored = 1,
+};
+
 int	main(int ac, const char **av)
 {
 	t_arg_cmd	*cmd_arg, *sub_cmd_arg;
 	t_cmd		cmd;
 	t_func_cmd	f_cmd;
-	t_logger	*logger;
+
+	logger_set_default_logger(&__logger);
 
 	// default command
 	cmd_arg = args_new_cmd(av[0], "SSL-ish command line tool", NULL);
@@ -97,10 +108,6 @@ int	main(int ac, const char **av)
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-hexdump", "hexdump output", AP_OPT_TYPE_FLAG));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
-	// // test command
-	// sub_cmd_arg = args_new_cmd("test", "Run tests", cmd_test);
-	// args_add_sub_cmd(cmd_arg, sub_cmd_arg);
-
 	// parse arguments
 	if (SSL_OK != args_parse(&cmd, cmd_arg, av, ac)) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -112,32 +119,32 @@ int	main(int ac, const char **av)
 		return (1);
 	}
 
-	logger = logger_get_logger();
-
 	// handle global options
+	if (ft_htbl_has(cmd.opts, "--debug")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_DEBUG;
+	}
+	if (ft_htbl_has(cmd.opts, "--trace")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_TRACE;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_TRACE;
+	}
+	if (ft_htbl_has(cmd.opts, "--warn")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_WARN;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_WARN;
+	}
+	if (ft_htbl_has(cmd.opts, "--info")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_INFO;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_INFO;
+	}
+	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_ERROR;
+		__logger.debug_info_thres = LIBFT_LOG_LEVEL_ERROR;
+	}
+
+	// handle help option
 	if (ft_htbl_has(cmd.opts, "-h")) {
 		args_dump_help(cmd.arg_ref);
 		return (0);
-	}
-	if (ft_htbl_has(cmd.opts, "--debug")) {
-		logger->log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
-		logger->debug_info_thres = LIBFT_LOG_LEVEL_DEBUG;
-	}
-	if (ft_htbl_has(cmd.opts, "--trace")) {
-		logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
-		logger->debug_info_thres = LIBFT_LOG_LEVEL_TRACE;
-	}
-	if (ft_htbl_has(cmd.opts, "--warn")) {
-		logger->log_level_thres = LIBFT_LOG_LEVEL_WARN;
-		logger->debug_info_thres = LIBFT_LOG_LEVEL_WARN;
-	}
-	if (ft_htbl_has(cmd.opts, "--info")) {
-		logger->log_level_thres = LIBFT_LOG_LEVEL_INFO;
-		logger->debug_info_thres = LIBFT_LOG_LEVEL_INFO;
-	}
-	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
-		logger->log_level_thres = LIBFT_LOG_LEVEL_ERROR;
-		logger->debug_info_thres = LIBFT_LOG_LEVEL_ERROR;
 	}
 
 	// call command function

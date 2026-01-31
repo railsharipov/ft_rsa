@@ -1,7 +1,7 @@
 #include <libft/list.h>
 #include <libft/tuple.h>
 #include <common.h>
-#include <test.h>
+#include "test.h"
 #include <json.h>
 #include <io.h>
 #include <file.h>
@@ -19,14 +19,14 @@ static int	__test_json_query_complex_object(void);
 static int	__test_json_clone_complex_object(void);
 static int	__test_json_map(void);
 
-static const char	*__simple_null_json_file_path = "test/files/json/simple-null.json";
-static const char	*__simple_false_json_file_path = "test/files/json/simple-false.json";
-static const char	*__simple_true_json_file_path = "test/files/json/simple-true.json";
-static const char	*__simple_number_json_file_path = "test/files/json/simple-number.json";
-static const char	*__simple_string_json_file_path = "test/files/json/simple-string.json";
-static const char	*__complex_object_json_file_path = "test/files/json/complex-object.json";
-static const char	*__complex_object_no_ws_json_file_path = "test/files/json/complex-object-no-ws.json";
-static const char	*__complex_array_json_file_path = "test/files/json/complex-array.json";
+static const char	*__simple_null_json_file_path = "tests/files/json/simple-null.json";
+static const char	*__simple_false_json_file_path = "tests/files/json/simple-false.json";
+static const char	*__simple_true_json_file_path = "tests/files/json/simple-true.json";
+static const char	*__simple_number_json_file_path = "tests/files/json/simple-number.json";
+static const char	*__simple_string_json_file_path = "tests/files/json/simple-string.json";
+static const char	*__complex_object_json_file_path = "tests/files/json/complex-object.json";
+static const char	*__complex_object_no_ws_json_file_path = "tests/files/json/complex-object-no-ws.json";
+static const char	*__complex_array_json_file_path = "tests/files/json/complex-array.json";
 
 static t_ostring	__simple_null_json;
 static t_ostring	__simple_false_json;
@@ -42,7 +42,7 @@ int	test_json(void)
 	int		ret;
 
 	if (SSL_OK != __test_json_setup()) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
@@ -63,35 +63,35 @@ int	test_json(void)
 static int	__test_json_setup(void)
 {
 	if (SSL_OK != file_read_all(__simple_null_json_file_path, &__simple_null_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__simple_false_json_file_path, &__simple_false_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__simple_true_json_file_path, &__simple_true_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__simple_number_json_file_path, &__simple_number_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__simple_string_json_file_path, &__simple_string_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__complex_object_json_file_path, &__complex_object_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__complex_array_json_file_path, &__complex_array_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__complex_object_no_ws_json_file_path, &__complex_object_no_ws_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 

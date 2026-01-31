@@ -1,7 +1,7 @@
 #include <common.h>
 #include <rand.h>
 #include <bnum.h>
-#include <test.h>
+#include "test.h"
 #include <printnl.h>
 #include <libft/bytes.h>
 
@@ -54,7 +54,7 @@ int	test_bnum(void)
 	int		ret;
 
 	if (SSL_OK != __test_bnum_setup()) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 

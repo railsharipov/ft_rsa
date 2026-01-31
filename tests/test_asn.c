@@ -1,13 +1,13 @@
 #include <libft/list.h>
 #include <libft/tuple.h>
 #include <common.h>
-#include <test.h>
+#include "test.h"
 #include <json.h>
 #include <io.h>
 #include <bnum.h>
 #include <asn.h>
 #include <file.h>
-#include <test.h>
+#include "test.h"
 
 static int	__test_asn_setup(void);
 static void	__test_asn_cleanup(void);
@@ -33,7 +33,7 @@ int	test_asn(void)
 	int		ret;
 
 	if (SSL_OK != __test_asn_setup()) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
@@ -50,19 +50,19 @@ int	test_asn(void)
 static int	__test_asn_setup(void)
 {
 	if (SSL_OK != file_read_all(__schema_pkcs8_subjectPublicKeyInfo_path, &__schema_subjectPublicKeyInfo_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__schema_pkcs1_rsaPublicKey_path, &__schema_rsaPublicKey_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__schema_pkcs8_privateKeyInfo_path, &__schema_pkcs8_privateKeyInfo_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 	if (SSL_OK != file_read_all(__schema_pkcs1_rsaPrivateKey_path, &__schema_pkcs1_rsaPrivateKey_json)) {
-		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
+		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
 

@@ -23,7 +23,8 @@ typedef int	(*t_func_log)(const char *mes);
 
 enum	e_logger_level
 {
-	LIBFT_LOG_LEVEL_CRIT = 0,
+	LIBFT_LOG_LEVEL_ALWAYS = 0,
+	LIBFT_LOG_LEVEL_CRIT,
 	LIBFT_LOG_LEVEL_ERROR,
 	LIBFT_LOG_LEVEL_WARN,
 	LIBFT_LOG_LEVEL_INFO,
