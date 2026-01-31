@@ -33,6 +33,8 @@ int	base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes,
 	unsigned char	*omes;
 	unsigned char	*oenc;
 
+	SSL_LOG(TRACE, "decoding %zu bytes of message", encsize);
+
 	if ((NULL == enc) || (NULL == mes) || (NULL == messize)) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
@@ -57,11 +59,13 @@ int	base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes,
 		oenc += B64_BLOCK_SIZE;
 		encsize -= B64_BLOCK_SIZE;
 	}
-
-	while (*--oenc == '=')
+	while (*--oenc == '=') {
 		if (*--omes == 0) {
 			*messize -= 1;
 		}
+	}
+
+	SSL_LOG(TRACE, "decoded %zu bytes of message", *messize);
 
 	return (SSL_OK);
 }

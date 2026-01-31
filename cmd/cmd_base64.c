@@ -20,7 +20,7 @@ int	cmd_base64(const t_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	if (ft_htbl_get(cmd->opts, "-i")) {
+	if (ft_htbl_has(cmd->opts, "-i")) {
 		ret = io_fopen(&in, IO_READ|IO_FILE, ft_htbl_get(cmd->opts, "-i"));
 	} else {
 		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
@@ -30,7 +30,7 @@ int	cmd_base64(const t_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	if (ft_htbl_get(cmd->opts, "-o")) {
+	if (ft_htbl_has(cmd->opts, "-o")) {
 		ret = io_fopen(&out, IO_WRITE|IO_FILE, ft_htbl_get(cmd->opts, "-o"));
 	} else {
 		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
@@ -40,7 +40,7 @@ int	cmd_base64(const t_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	if (ft_htbl_get(cmd->opts, "-d")) {
+	if (ft_htbl_has(cmd->opts, "-d")) {
 		f_b64 = base64_decode;
 		in.delim = '\n';
 		out.delim = 0;
@@ -48,7 +48,7 @@ int	cmd_base64(const t_cmd *cmd)
 		f_b64 = base64_encode;
 	}
 
-	if (ft_htbl_get(cmd->opts, "-b")) {
+	if (ft_htbl_has(cmd->opts, "-b")) {
 		out.lwidth = ft_atoi(ft_htbl_get(cmd->opts, "-b"));
 		out.lwidth = MAX(0, out.lwidth);
 		out.delim = '\n';

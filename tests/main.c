@@ -17,6 +17,8 @@
 #define __TEST_TYPE_PASS	SSL_OK
 #define __TEST_TYPE_FAIL	SSL_ERR
 
+#define TEST_PRINT(FMT, ...)	ft_printf(TXT_B_GRAY("test: ") FMT "\n" __VA_OPT__(, ) __VA_ARGS__)
+
 static int __app_log_writer(const char *mes) {
 	return (ft_printf("%@    %s\n", mes));
 }
@@ -144,7 +146,7 @@ int	main(int ac, const char **av)
 	int num_passed = 0;
 
 	for (t_node *test_node = tests_list; test_node != NULL; test_node = test_node->next) {
-		TEST_LOG(ALWAYS, TXT_CYAN("testing %s"), test_node->key);
+		TEST_PRINT(TXT_CYAN("testing %s"), test_node->key);
 		t_func_test f_test = test_node->content;
 		f_test();
 
@@ -159,24 +161,24 @@ int	main(int ac, const char **av)
 
 	// print summary
 	if (!ft_htbl_has(cmd.opts, "--no-summary")) {
-		TEST_LOG(ALWAYS, __TEST_LINE_BREAK);
+		TEST_PRINT(__TEST_LINE_BREAK);
 
 		if (num_passed == num_tests) {
-			TEST_LOG(ALWAYS, "SUMMARY: " TXT_B_GREEN("ALL PASS"));
+			TEST_PRINT("SUMMARY: " TXT_B_GREEN("ALL PASS"));
 		} else {
-			TEST_LOG(ALWAYS, "SUMMARY: " TXT_B_RED("FAIL"));
+			TEST_PRINT("SUMMARY: " TXT_B_RED("FAIL"));
 		}
-		TEST_LOG(ALWAYS, "tested: %d, pass: %d, fail: %d", num_tests, num_passed, num_tests - num_passed);
-		TEST_LOG(ALWAYS, __TEST_LINE_BREAK);
+		TEST_PRINT("tested: %d, pass: %d, fail: %d", num_tests, num_passed, num_tests - num_passed);
+		TEST_PRINT(__TEST_LINE_BREAK);
 
 		for (t_node *test_node = tests_list; test_node != NULL; test_node = test_node->next) {
 			if (SSL_OK == test_node->type) {
-				TEST_LOG(ALWAYS, TXT_B_GREEN("PASS") TXT_CYAN(" %s"), test_node->key);
+				TEST_PRINT(TXT_B_GREEN("PASS") TXT_CYAN(" %s"), test_node->key);
 			} else {
-				TEST_LOG(ALWAYS, TXT_B_RED("FAIL") TXT_CYAN(" %s"), test_node->key);
+				TEST_PRINT(TXT_B_RED("FAIL") TXT_CYAN(" %s"), test_node->key);
 			}
 		}
-		TEST_LOG(ALWAYS, __TEST_LINE_BREAK);
+		TEST_PRINT(__TEST_LINE_BREAK);
 	}
 
 	return (SSL_OK);

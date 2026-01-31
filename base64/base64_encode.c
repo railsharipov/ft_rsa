@@ -54,6 +54,8 @@ int	base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc,
 	unsigned char	*omes;
 	unsigned char	*oenc;
 
+	SSL_LOG(TRACE, "encoding %zu bytes of message", messize);
+
 	if ((NULL == mes) || (NULL == enc) || (NULL == encsize)) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
@@ -73,6 +75,8 @@ int	base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc,
 		messize -= MES_BLOCK_SIZE;
 	}
 	__last_block(omes, messize, oenc);
+
+	SSL_LOG(TRACE, "encoded %zu bytes of message", *encsize);
 
 	return (SSL_OK);
 }

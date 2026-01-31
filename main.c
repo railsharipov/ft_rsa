@@ -120,25 +120,20 @@ int	main(int ac, const char **av)
 	}
 
 	// handle global options
-	if (ft_htbl_has(cmd.opts, "--debug")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
-		__logger.debug_info_thres = LIBFT_LOG_LEVEL_DEBUG;
-	}
-	if (ft_htbl_has(cmd.opts, "--trace")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_TRACE;
-		__logger.debug_info_thres = LIBFT_LOG_LEVEL_TRACE;
-	}
 	if (ft_htbl_has(cmd.opts, "--warn")) {
 		__logger.log_level_thres = LIBFT_LOG_LEVEL_WARN;
-		__logger.debug_info_thres = LIBFT_LOG_LEVEL_WARN;
 	}
 	if (ft_htbl_has(cmd.opts, "--info")) {
 		__logger.log_level_thres = LIBFT_LOG_LEVEL_INFO;
-		__logger.debug_info_thres = LIBFT_LOG_LEVEL_INFO;
+	}
+	if (ft_htbl_has(cmd.opts, "--debug")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
+	}
+	if (ft_htbl_has(cmd.opts, "--trace")) {
+		__logger.log_level_thres = LIBFT_LOG_LEVEL_TRACE;
 	}
 	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
 		__logger.log_level_thres = LIBFT_LOG_LEVEL_ERROR;
-		__logger.debug_info_thres = LIBFT_LOG_LEVEL_ERROR;
 	}
 
 	// handle help option

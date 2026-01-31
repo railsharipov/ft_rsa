@@ -223,9 +223,6 @@ ssize_t ft_buffer_read_advance(t_buffer *buffer, size_t nbytes)
 	if (NULL == buffer) {
 		return (-1);
 	}
-	if (!__is_valid_buffer(buffer)) {
-		return (-1);
-	}
 	if (nbytes > buffer->capacity - buffer->read_pos) {
 		return (-1);
 	}
@@ -242,9 +239,6 @@ ssize_t ft_buffer_read_backtrack(t_buffer *buffer, size_t nbytes)
 	if (NULL == buffer) {
 		return (-1);
 	}
-	if (!__is_valid_buffer(buffer)) {
-		return (-1);
-	}
 	if (nbytes > buffer->read_pos) {
 		return (-1);
 	}
@@ -258,9 +252,6 @@ ssize_t ft_buffer_write_advance(t_buffer *buffer, size_t nbytes)
 	if (NULL == buffer) {
 		return (-1);
 	}
-	if (!__is_valid_buffer(buffer)) {
-		return (-1);
-	}
 	if (nbytes > buffer->capacity - buffer->write_pos) {
 		return (-1);
 	}
@@ -272,9 +263,6 @@ ssize_t ft_buffer_write_advance(t_buffer *buffer, size_t nbytes)
 ssize_t ft_buffer_write_backtrack(t_buffer *buffer, size_t nbytes)
 {
 	if (NULL == buffer) {
-		return (-1);
-	}
-	if (!__is_valid_buffer(buffer)) {
 		return (-1);
 	}
 	if (nbytes > buffer->write_pos) {
