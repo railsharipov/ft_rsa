@@ -49,7 +49,7 @@ const char *ft_buffer_view(t_buffer *buffer)
 	if (NULL == buffer) {
 		return (NULL);
 	}
-	if (buffer->read_pos >= buffer->write_pos) {
+	if (!__is_valid_buffer(buffer)) {
 		return (NULL);
 	}
 	return ((const char *)buffer->arr + buffer->read_pos);
@@ -216,64 +216,6 @@ ssize_t ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, v
 	buffer->write_pos += wbytes;
 
 	return (wbytes);
-}
-
-ssize_t ft_buffer_read_advance(t_buffer *buffer, size_t nbytes)
-{
-	if (NULL == buffer) {
-		return (-1);
-	}
-	if (nbytes > buffer->capacity - buffer->read_pos) {
-		return (-1);
-	}
-	buffer->read_pos += nbytes;
-
-	if (buffer->read_pos >= buffer->write_pos) {
-		ft_buffer_reset(buffer);
-	}
-	return (nbytes);
-}
-
-ssize_t ft_buffer_read_backtrack(t_buffer *buffer, size_t nbytes)
-{
-	if (NULL == buffer) {
-		return (-1);
-	}
-	if (nbytes > buffer->read_pos) {
-		return (-1);
-	}
-	buffer->read_pos -= nbytes;
-
-	return (nbytes);
-}
-
-ssize_t ft_buffer_write_advance(t_buffer *buffer, size_t nbytes)
-{
-	if (NULL == buffer) {
-		return (-1);
-	}
-	if (nbytes > buffer->capacity - buffer->write_pos) {
-		return (-1);
-	}
-	buffer->write_pos += nbytes;
-
-	return (nbytes);
-}
-
-ssize_t ft_buffer_write_backtrack(t_buffer *buffer, size_t nbytes)
-{
-	if (NULL == buffer) {
-		return (-1);
-	}
-	if (nbytes > buffer->write_pos) {
-		return (-1);
-	}
-	buffer->write_pos -= nbytes;
-
-	if (buffer->write_pos < buffer->read_pos) {
-		ft_buffer_reset(buffer);
-	}
-	return (nbytes);
 }
 
 static int	__is_valid_buffer(t_buffer *buffer)

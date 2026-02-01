@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <common.h>
+#include <file.h>
 #include "test.h"
 #include <libft/std.h>
 #include <libft/node.h>
@@ -2154,14 +2155,231 @@ static int __test_ft_ntree(void)
 	TEST_PASS();
 }
 
+struct s_mock_adapter_ctx {
+	void	*source;
+	void	*sink;
+};
+
+static ssize_t __mock_read_adapter(void *vctx, const void *buf, size_t bufsize)
+{
+	struct s_mock_adapter_ctx *ctx;
+
+	ctx = vctx;
+	ft_memcpy((void *)buf, ctx->sink, bufsize);
+
+	return ((ssize_t)bufsize);
+}
+
+static ssize_t __mock_write_adapter(void *vctx, void *buf, size_t bufsize)
+{
+	struct s_mock_adapter_ctx *ctx;
+
+	ctx = vctx;
+	ft_memcpy(ctx->source, buf, bufsize);
+
+	return ((ssize_t)bufsize);
+}
+
 static int __test_ft_buffer(void)
 {
+	t_ostring ref_content;
 	t_buffer *buffer;
+	const size_t buf_capacity = 1024;
+	char buf[buf_capacity], sink[buf_capacity], source[buf_capacity];
+	struct s_mock_adapter_ctx ctx = {.source = source, .sink = sink};
+	ssize_t wbytes, rbytes;
 
-	buffer = ft_buffer_new(1024);
+	if (SSL_OK != file_read_all("tests/files/text/large.txt", &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	buffer = ft_buffer_new(buf_capacity);
 	TEST_ASSERT(buffer != NULL);
 	TEST_ASSERT(ft_buffer_is_empty(buffer));
-	TEST_ASSERT(ft_buffer_available(buffer) == 1024);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity);
+
+	// write to empty buffer
+	wbytes = ft_buffer_write(buffer, ref_content.content, 128);
+	TEST_ASSERT(wbytes == 128);
+	TEST_ASSERT(!ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 128);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity - 128);
+	TEST_ASSERT(ft_memcmp(buffer->arr, ref_content.content, 128) == 0);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+
+	// read from buffer
+	rbytes = ft_buffer_read(buffer, buf, 128);
+	TEST_ASSERT(rbytes == 128);
+	TEST_ASSERT(ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 0);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity);
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, 128) == 0);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+
+	ft_buffer_reset(buffer);
+
+	// write to buffer with adapter
+	wbytes = ft_buffer_write_with_func(buffer, __mock_write_adapter, &ctx, 128);
+	TEST_ASSERT(wbytes == 128);
+	TEST_ASSERT(!ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 128);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity - 128);
+	TEST_ASSERT(ft_memcmp(buffer->arr, ref_content.content, 128) == 0);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+
+	// read from buffer with adapter
+	rbytes = ft_buffer_read_with_func(buffer, __mock_read_adapter, &ctx, 128);
+	TEST_ASSERT(rbytes == 128);
+	TEST_ASSERT(ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 0);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity);
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, 128) == 0);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+
+	ft_buffer_reset(buffer);
+
+	// multiple writes
+	wbytes = ft_buffer_write(buffer, ref_content.content, 128);
+	TEST_ASSERT(wbytes == 128);
+	TEST_ASSERT(!ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+
+	wbytes = ft_buffer_write(buffer, ref_content.content + 128, 128);
+	TEST_ASSERT(wbytes == 128);
+	TEST_ASSERT(ft_memcmp(buffer->arr, ref_content.content, 2 * 128) == 0);
+	TEST_ASSERT(!ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 2 * 128);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity - 2 * 128);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+
+	// multiple reads
+	rbytes = ft_buffer_read(buffer, buf, 128);
+	TEST_ASSERT(rbytes == 128);
+	TEST_ASSERT(!ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 128);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity - 128);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr + 128);
+
+	rbytes = ft_buffer_read(buffer, buf, 128);
+	TEST_ASSERT(rbytes == 128);
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content + 128, 128) == 0);
+	TEST_ASSERT(ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 0);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+
+	// try to write more than capacity
+	wbytes = ft_buffer_write(buffer, ref_content.content, 2 * buf_capacity);
+	TEST_ASSERT(wbytes == buf_capacity);
+	TEST_ASSERT(!ft_buffer_is_empty(buffer));
+	TEST_ASSERT(ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == buf_capacity);
+	TEST_ASSERT(ft_buffer_available(buffer) == 0);
+
+	// try to read more than used
+	rbytes = ft_buffer_read(buffer, buf, 2 * buf_capacity);
+	TEST_ASSERT(rbytes == buf_capacity);
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, buf_capacity) == 0);
+	TEST_ASSERT(ft_buffer_is_empty(buffer));
+	TEST_ASSERT(!ft_buffer_is_full(buffer));
+	TEST_ASSERT(ft_buffer_used(buffer) == 0);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity);
+
+	// partially filled buffer, left pad = 128, right pad = cap - 256
+	ssize_t trbytes = 0;
+	ssize_t twbytes = 0;
+	ssize_t left_pad = 0;
+	ssize_t right_pad = buf_capacity;
+
+	wbytes = ft_buffer_write(buffer, ref_content.content, 256);
+	TEST_ASSERT(wbytes == 256);
+	twbytes += wbytes;
+	right_pad -= wbytes;
+	rbytes = ft_buffer_read(buffer, buf, 128);
+	TEST_ASSERT(rbytes == 128);
+	trbytes += rbytes;
+	left_pad += rbytes;
+
+	// write size is less than right pad size
+	wbytes = ft_buffer_write(buffer, ref_content.content + twbytes, 256);
+	TEST_ASSERT(wbytes == 256);
+	twbytes += wbytes;
+	right_pad -= wbytes;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
+
+	// read from partially filled buffer
+	rbytes = ft_buffer_read(buffer, buf + trbytes, 128);
+	TEST_ASSERT(rbytes == 128);
+	trbytes += rbytes;
+	left_pad += rbytes;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
+
+	// write size is greater than right pad size but less than available
+	const void *view_before = ft_buffer_view(buffer);
+	wbytes = ft_buffer_write(buffer, ref_content.content + twbytes, buf_capacity - right_pad + 128);
+	TEST_ASSERT(wbytes == buf_capacity - right_pad + 128);
+	twbytes += wbytes;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
+	// must have left aligned buffer -> left pad = 0, right pad = buf_capacity - 128
+	TEST_ASSERT(view_before == ft_buffer_view(buffer) + left_pad);
+	// content of buffer must be as expected
+	TEST_ASSERT(ft_memcmp(ft_buffer_view(buffer), ref_content.content + trbytes, twbytes - trbytes) == 0);
+	// content of buf must be as expected
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, trbytes) == 0);
+
+	// write size is greater than right pad size and more than available
+	ft_buffer_reset(buffer);
+	trbytes = 0;
+	twbytes = 0;
+	left_pad = 0;
+	right_pad = buf_capacity;
+	wbytes = ft_buffer_write(buffer, ref_content.content + twbytes, buf_capacity);
+	TEST_ASSERT(wbytes == buf_capacity);
+	twbytes += wbytes;
+	right_pad -= wbytes;
+	rbytes = ft_buffer_read(buffer, buf + trbytes, 512);
+	TEST_ASSERT(rbytes == 512);
+	trbytes += rbytes;
+	left_pad += rbytes;
+	// try to write more than available
+	view_before = ft_buffer_view(buffer);
+	wbytes = ft_buffer_write(buffer, ref_content.content + twbytes, right_pad + buf_capacity);
+	TEST_ASSERT(wbytes == right_pad + left_pad);
+	twbytes += wbytes;
+	TEST_ASSERT(ft_buffer_is_full(buffer));
+	// must have left aligned buffer
+	TEST_ASSERT(view_before == ft_buffer_view(buffer) + left_pad);
+	// content of buffer must be as expected
+	TEST_ASSERT(ft_memcmp(ft_buffer_view(buffer), ref_content.content + trbytes, twbytes - trbytes) == 0);
+	// content of buf must be as expected
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, trbytes) == 0);
+
+	// try to read more than used
+	ft_buffer_reset(buffer);
+	trbytes = 0;
+	twbytes = 0;
+	wbytes = ft_buffer_write(buffer, ref_content.content + twbytes, 512);
+	TEST_ASSERT(wbytes == 512);
+	twbytes += wbytes;
+	rbytes = ft_buffer_read(buffer, buf + trbytes, 128);
+	TEST_ASSERT(rbytes == 128);
+	trbytes += rbytes;
+	rbytes = ft_buffer_read(buffer, buf + trbytes, 512);
+	TEST_ASSERT(rbytes == twbytes - trbytes);
+	TEST_ASSERT(ft_buffer_is_empty(buffer));
+	// must have reset the buffer
+	TEST_ASSERT(ft_buffer_used(buffer) == 0);
+	TEST_ASSERT(ft_buffer_available(buffer) == buf_capacity);
+	TEST_ASSERT(ft_buffer_view(buffer) == (const char *)buffer->arr);
+	// content of buf must be as expected
+	TEST_ASSERT(ft_memcmp(buf, ref_content.content, trbytes) == 0);
 
 	ft_buffer_del(buffer);
 

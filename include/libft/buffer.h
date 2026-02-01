@@ -13,10 +13,6 @@ typedef struct s_buffer {
 t_buffer	*ft_buffer_new(size_t capacity);
 void		ft_buffer_del(t_buffer *buffer);
 const char	*ft_buffer_view(t_buffer *buffer);
-ssize_t 	ft_buffer_read_advance(t_buffer *buffer, size_t nbytes);
-ssize_t 	ft_buffer_write_advance(t_buffer *buffer, size_t nbytes);
-ssize_t 	ft_buffer_read_backtrack(t_buffer *buffer, size_t nbytes);
-ssize_t 	ft_buffer_write_backtrack(t_buffer *buffer, size_t nbytes);
 size_t		ft_buffer_used(t_buffer *buffer);
 size_t		ft_buffer_available(t_buffer *buffer);
 void		ft_buffer_reset(t_buffer *buffer);

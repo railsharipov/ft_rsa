@@ -148,13 +148,11 @@ int	main(int ac, const char **av)
 	for (t_node *test_node = tests_list; test_node != NULL; test_node = test_node->next) {
 		TEST_PRINT(TXT_CYAN("testing %s"), test_node->key);
 		t_func_test f_test = test_node->content;
-		f_test();
 
 		if (SSL_OK == f_test()) {
 			test_node->type = __TEST_TYPE_PASS;
 			num_passed++;
 		} else {
-			TEST_LOG(ERROR, "test failed");
 			test_node->type = __TEST_TYPE_FAIL;
 		}
 	}
