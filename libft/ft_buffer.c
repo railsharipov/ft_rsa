@@ -144,7 +144,7 @@ ssize_t ft_buffer_write(t_buffer *buffer, const void *buf, size_t nbytes)
 	return (wbytes);
 }
 
-ssize_t ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, const void *buf, size_t nbytes), void *ctx, size_t nbytes)
+ssize_t ft_buffer_read_with_func(t_buffer *buffer, t_func_buffer_read read, void *vctx, size_t nbytes)
 {
 	ssize_t rbytes;
 	size_t	used;
@@ -155,7 +155,7 @@ ssize_t ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, co
 	if (!__is_valid_buffer(buffer)) {
 		return (-1);
 	}
-	if (NULL == func) {
+	if (NULL == read) {
 		return (-1);
 	}
 	if (nbytes == 0) {
@@ -165,7 +165,7 @@ ssize_t ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, co
 	if (used == 0) {
 		return (0);
 	}
-	rbytes = func(ctx, (char *)buffer->arr + buffer->read_pos, MIN(nbytes, used));
+	rbytes = read(vctx, (char *)buffer->arr + buffer->read_pos, MIN(nbytes, used));
 	if (rbytes < 0) {
 		return (-1);
 	}
@@ -177,7 +177,7 @@ ssize_t ft_buffer_read_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, co
 	return (rbytes);
 }
 
-ssize_t ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, void *buf, size_t nbytes), void *ctx, size_t nbytes)
+ssize_t ft_buffer_write_with_func(t_buffer *buffer, t_func_buffer_write write, void *vctx, size_t nbytes)
 {
 	ssize_t wbytes;
 	size_t available;
@@ -188,7 +188,7 @@ ssize_t ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, v
 	if (!__is_valid_buffer(buffer)) {
 		return (-1);
 	}
-	if (NULL == func) {
+	if (NULL == write) {
 		return (-1);
 	}
 	if (nbytes == 0) {
@@ -203,7 +203,7 @@ ssize_t ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, v
 	if (wbytes > __right_pad_size(buffer)) {
 		__left_align(buffer);
 	}
-	wbytes = func(ctx, (char *)buffer->arr + buffer->write_pos, wbytes);
+	wbytes = write(vctx, (char *)buffer->arr + buffer->write_pos, wbytes);
 	if (wbytes < 0) {
 		return (-1);
 	}

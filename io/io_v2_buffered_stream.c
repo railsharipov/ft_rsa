@@ -10,8 +10,8 @@ static ssize_t  __io_v2_buffered_write(void *vctx, const void *buf, size_t nbyte
 static ssize_t  __io_v2_buffered_flush(void *vctx);
 static ssize_t  __io_v2_buffered_close(void *vctx);
 
-static ssize_t  __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes);
-static ssize_t	__io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes);
+static ssize_t  __read_from_upstream(void *ctx, void *buf, size_t nbytes);
+static ssize_t	__write_to_downstream(void *ctx, const void *buf, size_t nbytes);
 
 int io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity)
 {
@@ -76,7 +76,7 @@ int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, s
     return (SSL_OK);
 }
 
-static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
+static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes)
 {
 	t_io_v2_stream *upstream;
 
@@ -84,7 +84,7 @@ static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
 	return (io_v2_read(upstream, buf, nbytes));
 }
 
-static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
+static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes)
 {
 	t_io_v2_stream *downstream;
 
@@ -128,7 +128,7 @@ static ssize_t	__io_v2_buffered_read(void *vctx, void *buf, size_t nbytes)
 					return (IO_V2_STATUS_ERROR);
 			}
 			SSL_LOG(TRACE, "buffer is empty, writing %zu bytes to buffer from stream", ctx->buffer->capacity);
-			wbytes = ft_buffer_write_with_func(ctx->buffer, __io_v2_read_adapter, upstream, ctx->buffer->capacity);
+			wbytes = ft_buffer_write_with_func(ctx->buffer, __read_from_upstream, upstream, ctx->buffer->capacity);
 			if (wbytes < 0) {
 				SSL_LOG(ERROR, "failed to write to buffer from stream");
 			} else {
@@ -179,7 +179,7 @@ static ssize_t __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes
 					return (IO_V2_STATUS_ERROR);
 			}
 			SSL_LOG(TRACE, "buffer is full, reading %zd bytes from buffer to stream", ft_buffer_used(ctx->buffer));
-			rbytes = ft_buffer_read_with_func(ctx->buffer, __io_v2_write_adapter, downstream, ft_buffer_used(ctx->buffer));
+			rbytes = ft_buffer_read_with_func(ctx->buffer, __write_to_downstream, downstream, ft_buffer_used(ctx->buffer));
 			if (rbytes < 0) {
 				SSL_LOG(ERROR, "failed to read from buffer to stream");
 			} else {
@@ -214,7 +214,7 @@ static ssize_t __io_v2_buffered_flush(void *vctx)
 
     SSL_LOG(TRACE, "flushing buffered stream with downstream=%p, buffer=%p, capacity=%zu", downstream, buffer, buffer->capacity);
 
-    wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, ft_buffer_used(buffer));
+    wbytes = ft_buffer_read_with_func(buffer, __write_to_downstream, downstream, ft_buffer_used(buffer));
     if (wbytes < 0) {
 		SSL_LOG(ERROR, "failed to flush buffered stream");
 		switch (downstream->status) {

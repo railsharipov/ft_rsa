@@ -89,7 +89,7 @@ typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const void *buf, size_t nbytes)
 typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
 typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
 
-typedef int	(*t_func_io_v2_filter)(const void *input, size_t insize, void *output, size_t outsize, ssize_t *bytes_read, ssize_t *bytes_written);
+typedef int	(*t_func_io_v2_filter)(const void *input, size_t insize, void *output, size_t outsize, size_t *consumed, size_t *produced);
 
 typedef struct s_io_v2_interface {
 	t_func_io_v2_read	read;

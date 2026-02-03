@@ -1,7 +1,7 @@
 #include <io.h>
 
-static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes);
-static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes);
+static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes);
+static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes);
 
 typedef struct s_io_v2_pipe_ctx {
 	t_io_v2_stream *upstream;
@@ -55,7 +55,7 @@ int io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stre
     return (SSL_ERR);
 }
 
-static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
+static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes)
 {
 	t_io_v2_stream *upstream;
 
@@ -63,7 +63,7 @@ static ssize_t __io_v2_read_adapter(void *ctx, void *buf, size_t nbytes)
 	return (io_v2_read(upstream, buf, nbytes));
 }
 
-static ssize_t __io_v2_write_adapter(void *ctx, const void *buf, size_t nbytes)
+static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes)
 {
 	t_io_v2_stream *downstream;
 
@@ -124,7 +124,7 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
 
 	/* Read from upstream into internal buffer */
     SSL_LOG(TRACE, "reading from upstream");
-    rbytes = ft_buffer_write_with_func(buffer, __io_v2_read_adapter, upstream, nbytes);
+    rbytes = ft_buffer_write_with_func(buffer, __read_from_upstream, upstream, nbytes);
     if (rbytes < 0) {
 		if (upstream->status == IO_V2_STATUS_EOF) {
 			if (ft_buffer_is_empty(buffer)) {
@@ -153,7 +153,7 @@ ssize_t io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes)
 	}
 	else {
 		SSL_LOG(TRACE, "writing to downstream");
-		wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, nbytes);
+		wbytes = ft_buffer_read_with_func(buffer, __write_to_downstream, downstream, nbytes);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, "write to downstream failed");
 			pipe->status = IO_V2_STATUS_ERROR;
@@ -208,7 +208,7 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
 	}
 	else {
 		SSL_LOG(TRACE, "flushing %zu bytes to downstream", ft_buffer_used(buffer));
-		wbytes = ft_buffer_read_with_func(buffer, __io_v2_write_adapter, downstream, ft_buffer_used(buffer));
+		wbytes = ft_buffer_read_with_func(buffer, __write_to_downstream, downstream, ft_buffer_used(buffer));
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, "flush to downstream failed");
 			pipe->status = IO_V2_STATUS_ERROR;

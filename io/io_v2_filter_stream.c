@@ -1,17 +1,9 @@
 #include <io.h>
 
-typedef struct s_filter_operation {
-	void	*user_buf;
-	size_t	user_bufsize;
-	ssize_t	bytes_consumed;
-	ssize_t	bytes_produced;
-} t_filter_operation;
-
 typedef struct s_io_v2_filter_ctx {
 	t_io_v2_stream		*stream;
 	t_buffer			*buffer;
 	t_func_io_v2_filter	filter;
-	t_filter_operation	op;
 } t_io_v2_filter_ctx;
 
 static ssize_t __io_v2_filter_read(void *ctx, void *buf, size_t nbytes);
@@ -21,44 +13,20 @@ static ssize_t __io_v2_filter_close(void *ctx);
 
 static ssize_t __read_from_upstream(void *vctx, void *buf, size_t bufsize)
 {
-	t_io_v2_filter_ctx *ctx;
+	t_io_v2_stream *upstream;
 
-	ctx = (t_io_v2_filter_ctx *)vctx;
+	upstream = (t_io_v2_stream *)vctx;
 	// Reads data from upstream into the internal buffer
-	return (io_v2_read(ctx->stream, buf, bufsize));
+	return (io_v2_read(upstream, buf, bufsize));
 }
 
 static ssize_t __write_to_downstream(void *vctx, const void *buf, size_t bufsize)
 {
-	t_io_v2_filter_ctx *ctx;
+	t_io_v2_stream *downstream;
 
-	ctx = (t_io_v2_filter_ctx *)vctx;
+	downstream = (t_io_v2_stream *)vctx;
 	// Writes data from internal buffer to downstream
-	return (io_v2_write(ctx->stream, buf, bufsize));
-}
-
-static ssize_t __filter_input(void *vctx, void *buf, size_t bufsize)
-{
-	t_io_v2_filter_ctx *ctx;
-
-	ctx = (t_io_v2_filter_ctx *)vctx;
-	// Filters data from user buffer into internal buffer
-	if (SSL_OK != ctx->filter(ctx->op.user_buf, ctx->op.user_bufsize, buf, bufsize, &ctx->op.bytes_consumed, &ctx->op.bytes_produced)) {
-		return (-1);
-	}
-	return (ctx->op.bytes_produced);
-}
-
-static ssize_t __filter_output(void *vctx, const void *buf, size_t bufsize)
-{
-	t_io_v2_filter_ctx *ctx;
-
-	ctx = (t_io_v2_filter_ctx *)vctx;
-	// Filters data from internal buffer to user buffer
-	if (SSL_OK != ctx->filter(buf, bufsize, ctx->op.user_buf, ctx->op.user_bufsize, &ctx->op.bytes_consumed, &ctx->op.bytes_produced)) {
-		return (-1);
-	}
-	return (ctx->op.bytes_consumed);
+	return (io_v2_write(downstream, buf, bufsize));
 }
 
 int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, t_func_io_v2_filter filter)
@@ -122,23 +90,19 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 {
 	t_io_v2_filter_ctx *ctx;
 	t_io_v2_stream *upstream;
-	t_buffer *buffer;
+	size_t consumed, produced;
 	ssize_t wbytes;
 
 	ctx = (t_io_v2_filter_ctx *)vctx;
 	upstream = ctx->stream;
-	buffer = ctx->buffer;
-
-	ctx->op.user_buf = buf;
-	ctx->op.user_bufsize = nbytes;
 
 	// Fill internal buffer with raw data from upstream if needed
-	if (ft_buffer_used(buffer) < nbytes) {
+	if (ft_buffer_used(ctx->buffer) < nbytes) {
 		SSL_LOG(TRACE, "reading at most %zu bytes from upstream to internal buffer", nbytes);
-		wbytes = ft_buffer_write_with_func(buffer, __read_from_upstream, vctx, nbytes - ft_buffer_used(buffer));
+		wbytes = ft_buffer_write_with_func(ctx->buffer, __read_from_upstream, ctx->stream, nbytes - ft_buffer_used(ctx->buffer));
 		if (wbytes < 0) {
 			if (upstream->status == IO_V2_STATUS_EOF) {
-				if (ft_buffer_is_empty(buffer)) {
+				if (ft_buffer_is_empty(ctx->buffer)) {
 					SSL_LOG(TRACE, "upstream reached EOF and internal buffer is empty");
 					return (IO_V2_STATUS_EOF);
 				} else {
@@ -154,15 +118,15 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 	}
 
 	// Filter data from internal buffer to user buffer
-	if (!ft_buffer_is_empty(buffer)) {
+	if (!ft_buffer_is_empty(ctx->buffer)) {
 		SSL_LOG(TRACE, "filtering at most %zu bytes from internal buffer", nbytes);
 
-		if (ft_buffer_read_with_func(buffer, __filter_output, vctx, nbytes) < 0) {
+		if (ft_buffer_transform_read(ctx->buffer, ctx->filter, buf, nbytes, &consumed, &produced) < 0) {
 			SSL_LOG(ERROR, "failed to filter data from internal buffer");
 			return (IO_V2_STATUS_ERROR);
 		}
-		SSL_LOG(TRACE, "filter consumed %zu bytes and produced %zu bytes", ctx->op.bytes_consumed, ctx->op.bytes_produced);
-		return (ctx->op.bytes_produced);
+		SSL_LOG(TRACE, "filter consumed %zu bytes and produced %zu bytes", consumed, produced);
+		return (produced);
 	}
 	else {
 		SSL_LOG(TRACE, "internal buffer is empty, nothing to filter");
@@ -173,26 +137,27 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 {
 	t_io_v2_filter_ctx *ctx;
+	t_io_v2_stream *downstream;
+	size_t consumed, produced;
 	ssize_t wbytes;
 
 	ctx = (t_io_v2_filter_ctx *)vctx;
-	ctx->op.user_buf = (void *)buf;
-	ctx->op.user_bufsize = nbytes;
+	downstream = ctx->stream;
 
 	// Filter input data into internal buffer
 	if (ft_buffer_used(ctx->buffer) < nbytes) {
 		SSL_LOG(TRACE, "filtering at most %zu bytes from user buffer to internal buffer", nbytes);
 
-		if (ft_buffer_write_with_func(ctx->buffer, __filter_input, vctx, nbytes - ft_buffer_used(ctx->buffer)) < 0) {
+		if (ft_buffer_transform_write(ctx->buffer, ctx->filter, buf, nbytes, &consumed, &produced) < 0) {
 			SSL_LOG(ERROR, "failed to filter data from user buffer to internal buffer");
 			return (IO_V2_STATUS_ERROR);
 		}
-		SSL_LOG(TRACE, "filtered %zu bytes (consumed) and produced %zu bytes to internal buffer", ctx->op.bytes_consumed, ctx->op.bytes_produced);
+		SSL_LOG(TRACE, "filtered %zu bytes (consumed) and produced %zu bytes to internal buffer", consumed, produced);
 	}
 
 	// Write filtered data from internal buffer to downstream
 	if (!ft_buffer_is_empty(ctx->buffer)) {
-		wbytes = ft_buffer_read_with_func(ctx->buffer, __write_to_downstream, vctx, ft_buffer_used(ctx->buffer));
+		wbytes = ft_buffer_read_with_func(ctx->buffer, __write_to_downstream, downstream, produced);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, "failed to write from internal buffer to downstream");
 			return (IO_V2_STATUS_ERROR);
