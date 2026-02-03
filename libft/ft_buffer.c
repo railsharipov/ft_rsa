@@ -87,28 +87,25 @@ int ft_buffer_is_full(t_buffer *buffer)
 	return (ft_buffer_available(buffer) == 0);
 }
 
-ssize_t ft_buffer_read(t_buffer *buffer, void *buf, size_t size)
+ssize_t ft_buffer_read(t_buffer *buffer, void *buf, size_t nbytes)
 {
 	size_t	used;
 	ssize_t rbytes;
 
-	if (NULL == buffer) {
+	if (NULL == buffer || NULL == buf) {
 		return (-1);
 	}
 	if (!__is_valid_buffer(buffer)) {
 		return (-1);
 	}
-	if (NULL == buf) {
-		return (-1);
-	}
-	if (size == 0) {
+	if (nbytes == 0) {
 		return (0);
 	}
 	used = ft_buffer_used(buffer);
 	if (used == 0) {
 		return (0);
 	}
-	rbytes = MIN(size, used);
+	rbytes = MIN(nbytes, used);
 	ft_memcpy(buf, (char *)buffer->arr + buffer->read_pos, rbytes);
 	buffer->read_pos += rbytes;
 
@@ -118,28 +115,25 @@ ssize_t ft_buffer_read(t_buffer *buffer, void *buf, size_t size)
 	return (rbytes);
 }
 
-ssize_t ft_buffer_write(t_buffer *buffer, const void *buf, size_t size)
+ssize_t ft_buffer_write(t_buffer *buffer, const void *buf, size_t nbytes)
 {
 	ssize_t wbytes;
 	size_t	available;
 
-	if (NULL == buffer) {
+	if (NULL == buffer || NULL == buf) {
 		return (-1);
 	}
 	if (!__is_valid_buffer(buffer)) {
 		return (-1);
 	}
-	if (NULL == buf) {
-		return (-1);
-	}
-	if (size == 0) {
+	if (nbytes == 0) {
 		return (0);
 	}
 	available = ft_buffer_available(buffer);
 	if (available == 0) {
 		return (0);
 	}
-	wbytes = (size > available) ? available : size;
+	wbytes = (nbytes > available) ? available : nbytes;
 
 	if (wbytes > __right_pad_size(buffer)) {
 		__left_align(buffer);
@@ -216,6 +210,61 @@ ssize_t ft_buffer_write_with_func(t_buffer *buffer, ssize_t (*func)(void *ctx, v
 	buffer->write_pos += wbytes;
 
 	return (wbytes);
+}
+
+int ft_buffer_transform_read(t_buffer *buffer, t_func_buffer_transform transform, void *buf, size_t nbytes, size_t *consumed, size_t *produced)
+{
+	size_t	used;
+
+	if (NULL == buffer || NULL == transform || NULL == consumed || NULL == produced) {
+		return (-1);
+	}
+	if (!__is_valid_buffer(buffer)) {
+		return (-1);
+	}
+	if (nbytes == 0) {
+		return (0);
+	}
+	used = ft_buffer_used(buffer);
+	if (used == 0) {
+		return (0);
+	}
+	if (transform(buffer->arr + buffer->read_pos, used, buf, nbytes, consumed, produced) < 0) {
+		return (-1);
+	}
+	buffer->read_pos += *consumed;
+
+	if (buffer->read_pos >= buffer->write_pos) {
+		ft_buffer_reset(buffer);
+	}
+	return (0);
+}
+
+int ft_buffer_transform_write(t_buffer *buffer, t_func_buffer_transform transform, const void *buf, size_t nbytes, size_t *consumed, size_t *produced)
+{
+	size_t	right_padsize;
+	size_t	shifted;
+
+	if (NULL == buffer || NULL == transform || NULL == consumed || NULL == produced) {
+		return (-1);
+	}
+	if (!__is_valid_buffer(buffer)) {
+		return (-1);
+	}
+	if (nbytes == 0) {
+		return (0);
+	}
+	right_padsize = __right_pad_size(buffer);
+	if (nbytes > right_padsize) {
+		shifted = __left_align(buffer);
+		right_padsize += shifted;
+	}
+	if (transform(buf, nbytes, buffer->arr + buffer->write_pos, right_padsize, consumed, produced) < 0) {
+		return (-1);
+	}
+	buffer->write_pos += *produced;
+
+	return (0);
 }
 
 static int	__is_valid_buffer(t_buffer *buffer)

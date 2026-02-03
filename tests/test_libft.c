@@ -2180,6 +2180,38 @@ static ssize_t __mock_write_adapter(void *vctx, void *buf, size_t bufsize)
 	return ((ssize_t)bufsize);
 }
 
+static int __mock_transform_ok(const void *src, size_t srcsize, void *dst, size_t dstsize, size_t *consumed, size_t *produced)
+{
+	const size_t read_block_size = 12;
+	const size_t write_block_size = 15;
+	size_t factor;
+	size_t read, written;
+
+	factor = MIN(srcsize / read_block_size, dstsize / write_block_size);
+
+	read = factor * read_block_size;
+	written = factor * write_block_size;
+
+	ft_memset(dst, '=', written);
+
+	*consumed = read;
+	*produced = written;
+
+	return (0);
+}
+
+static int __mock_transform_error(const void *src, size_t srcsize, void *dst, size_t dstsize, size_t *read, size_t *written)
+{
+	(void)src;
+	(void)srcsize;
+	(void)dst;
+	(void)dstsize;
+	(void)read;
+	(void)written;
+
+	return (-1);
+}
+
 static int __test_ft_buffer(void)
 {
 	t_ostring ref_content;
@@ -2381,7 +2413,58 @@ static int __test_ft_buffer(void)
 	// content of buf must be as expected
 	TEST_ASSERT(ft_memcmp(buf, ref_content.content, trbytes) == 0);
 
-	ft_buffer_del(buffer);
+	// test transform read
+	size_t consumed, produced;
+	int ret;
+
+	ft_buffer_reset(buffer);
+	twbytes = 0;
+	trbytes = 0;
+	// write to buffer with transform, bytes written to buffer must be greater than consumed
+	ret = ft_buffer_transform_write(buffer, __mock_transform_ok, ref_content.content, 512, &consumed, &produced);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(consumed > 0);
+	TEST_ASSERT(produced > 0);
+	TEST_ASSERT(consumed * 15 == produced * 12); // see __mock_transform_ok, ratio of consumed to produced is 12:15
+	twbytes += produced;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes);
+
+	ret = ft_buffer_transform_write(buffer, __mock_transform_ok, ref_content.content, ref_content.size, &consumed, &produced);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(consumed > 0);
+	TEST_ASSERT(produced > 0);
+	TEST_ASSERT(consumed * 15 == produced * 12); // see __mock_transform_ok, ratio of consumed to produced is 12:15
+	twbytes += produced;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes);
+
+	// read from buffer with transform, bytes read from buffer must be less than produced
+	ret = ft_buffer_transform_read(buffer, __mock_transform_ok, buf, 512, &consumed, &produced);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(consumed > 0);
+	TEST_ASSERT(produced > 0);
+	TEST_ASSERT(consumed < produced);
+	trbytes += consumed;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
+
+	ret = ft_buffer_transform_read(buffer, __mock_transform_ok, buf, buf_capacity, &consumed, &produced);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(consumed > 0);
+	TEST_ASSERT(produced > 0);
+	TEST_ASSERT(consumed * 15 == produced * 12); // see __mock_transform_ok, ratio of consumed to produced is 12:15
+	trbytes += consumed;
+	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
+
+	ft_buffer_reset(buffer);
+	// read from buffer with transform, fails
+	TEST_ASSERT(ft_buffer_write(buffer, ref_content.content, 512) == 512);
+	ret = ft_buffer_transform_read(buffer, __mock_transform_error, buf, 512, &consumed, &produced);
+	TEST_ASSERT(ret == -1);
+	TEST_ASSERT(ft_buffer_used(buffer) == 512);
+
+	// write to buffer with transform, fails
+	ret = ft_buffer_transform_write(buffer, __mock_transform_error, ref_content.content, 512, &consumed, &produced);
+	TEST_ASSERT(ret == -1);
+	TEST_ASSERT(ft_buffer_used(buffer) == 512);
 
 	TEST_PASS();
 }
