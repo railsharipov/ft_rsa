@@ -18,7 +18,7 @@ CC := gcc
 CFLAGS := -O3 -std=c11 -I./include
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 
-.PHONY: all debug sanitize test clean fclean re
+.PHONY: all debug sanitize test sanitize_test test_bin clean fclean re
 
 all: $(NAME)
 
@@ -43,21 +43,22 @@ $(TEST_OBJ_DIR)/%.o: %.c | $(TEST_DEP_DIR)/%.d
 	@echo compiling test: $<
 	@$(CC) -MT $@ -MMD -MP -MF $(TEST_DEP_DIR)/$*.d $(CFLAGS) -c $< -o $@
 
-$(DEPS):
-$(TEST_DEPS):
 -include $(DEPS)
 -include $(TEST_DEPS)
 
+$(DEPS):
+$(TEST_DEPS):
+
 sanitize_test: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include
 sanitize_test: LDFLAGS := -fsanitize=address
-sanitize_test: $(TEST_NAME)
+sanitize_test: test_bin
 
 test: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -I./include
-test: $(TEST_NAME)
+test: test_bin
 
-$(TEST_NAME): $(TEST_OBJS)
+test_bin: $(TEST_OBJS)
 	@echo linking: $(TEST_NAME)
-	@$(CC) $(LDFLAGS) -o $@ $(TEST_OBJS)
+	@$(CC) $(LDFLAGS) -o $(TEST_NAME) $(TEST_OBJS)
 
 clean:
 	@echo cleaning
