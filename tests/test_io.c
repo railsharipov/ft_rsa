@@ -13,6 +13,8 @@ static int	__test_io_bytes_reader(void);
 static int	__test_io_bytes_writer(void);
 static int	__test_io_buffered_reader(void);
 static int	__test_io_buffered_writer(void);
+static int	__test_io_filter_reader(void);
+static int	__test_io_filter_writer(void);
 static int	__test_io_pipe_unidir(void);
 
 static const char	*__small_text_file_path = "tests/files/text/small.txt";
@@ -38,6 +40,8 @@ int	test_io(void)
 		| __test_io_bytes_writer()
 		| __test_io_buffered_reader()
 		| __test_io_buffered_writer()
+		| __test_io_filter_reader()
+		| __test_io_filter_writer()
 		| __test_io_pipe_unidir()
 	);
 }
@@ -966,6 +970,18 @@ static int	__test_io_buffered_writer(void)
 
 	ft_ostr_clear(&ref_content);
 	ft_ostr_clear(&test_content);
+
+	TEST_PASS();
+}
+
+static int	__test_io_filter_reader(void)
+{
+
+	TEST_PASS();
+}
+
+static int	__test_io_filter_writer(void)
+{
 
 	TEST_PASS();
 }

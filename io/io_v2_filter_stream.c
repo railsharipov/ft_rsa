@@ -11,23 +11,8 @@ static ssize_t __io_v2_filter_write(void *ctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_filter_flush(void *ctx);
 static ssize_t __io_v2_filter_close(void *ctx);
 
-static ssize_t __read_from_upstream(void *vctx, void *buf, size_t bufsize)
-{
-	t_io_v2_stream *upstream;
-
-	upstream = (t_io_v2_stream *)vctx;
-	// Reads data from upstream into the internal buffer
-	return (io_v2_read(upstream, buf, bufsize));
-}
-
-static ssize_t __write_to_downstream(void *vctx, const void *buf, size_t bufsize)
-{
-	t_io_v2_stream *downstream;
-
-	downstream = (t_io_v2_stream *)vctx;
-	// Writes data from internal buffer to downstream
-	return (io_v2_write(downstream, buf, bufsize));
-}
+static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes);
+static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes);
 
 int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, t_func_io_v2_filter filter)
 {
@@ -84,6 +69,24 @@ int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, t_f
 		return (SSL_ERR);
 	}
 	return (SSL_OK);
+}
+
+static ssize_t __read_from_upstream(void *vctx, void *buf, size_t bufsize)
+{
+	t_io_v2_stream *upstream;
+
+	upstream = (t_io_v2_stream *)vctx;
+	// Reads data from upstream into the internal buffer
+	return (io_v2_read(upstream, buf, bufsize));
+}
+
+static ssize_t __write_to_downstream(void *vctx, const void *buf, size_t bufsize)
+{
+	t_io_v2_stream *downstream;
+
+	downstream = (t_io_v2_stream *)vctx;
+	// Writes data from internal buffer to downstream
+	return (io_v2_write(downstream, buf, bufsize));
 }
 
 static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
@@ -173,9 +176,29 @@ static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 
 static ssize_t __io_v2_filter_flush(void *vctx)
 {
-	// TODO: Implement flush
-	(void)vctx;
-	return (IO_V2_STATUS_OK);
+	t_io_v2_filter_ctx *ctx;
+	t_io_v2_stream *downstream;
+	ssize_t wbytes, tbytes;
+
+	SSL_LOG(TRACE, "flushing filter stream");
+
+	ctx = (t_io_v2_filter_ctx *)vctx;
+	downstream = ctx->stream;
+
+	tbytes = 0;
+	while (!ft_buffer_is_empty(ctx->buffer)) {
+		SSL_LOG(TRACE, "writing %zu bytes from internal buffer to downstream", ft_buffer_used(ctx->buffer));
+		wbytes = ft_buffer_read_with_func(ctx->buffer, __write_to_downstream, downstream, ft_buffer_used(ctx->buffer));
+		if (wbytes < 0) {
+			SSL_LOG(ERROR, "failed to write from internal buffer to downstream");
+			return (IO_V2_STATUS_ERROR);
+		}
+		SSL_LOG(TRACE, "wrote %zu bytes from internal buffer to downstream", wbytes);
+		tbytes += wbytes;
+	}
+	SSL_LOG(TRACE, "flushed %zu bytes from internal buffer to downstream", tbytes);
+
+	return (tbytes);
 }
 
 static ssize_t __io_v2_filter_close(void *vctx)
@@ -187,10 +210,10 @@ static ssize_t __io_v2_filter_close(void *vctx)
 	SSL_LOG(TRACE, "closing filter stream");
 
 	if (io_v2_close(ctx->stream) < 0) {
-		SSL_LOG(ERROR, "failed to close upstream");
+		SSL_LOG(ERROR, "failed to close wrapped stream");
 		return (IO_V2_STATUS_ERROR);
 	}
-	SSL_LOG(TRACE, "closed upstream");
+	SSL_LOG(TRACE, "closed wrapped stream");
 
 	ft_buffer_del(ctx->buffer);
 	ctx->buffer = NULL;
