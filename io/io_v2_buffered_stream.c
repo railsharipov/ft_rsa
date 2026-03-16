@@ -37,7 +37,7 @@ int io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, siz
     ctx->stream = upstream;
     ctx->buffer = ft_buffer_new(capacity);
 
-	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE), ctx)) {
+	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
@@ -69,7 +69,7 @@ int io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, s
 	ctx->stream = downstream;
     ctx->buffer = ft_buffer_new(capacity);
 
-	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE), ctx)) {
+	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}

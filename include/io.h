@@ -137,7 +137,7 @@ ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
 ssize_t	io_v2_flush(t_io_v2_stream *stream);
 ssize_t	io_v2_close(t_io_v2_stream *stream);
 
-int		io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, t_io_v2_flag flags, void *ctx);
+int		io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, void *ctx);
 
 int		io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity);
 int		io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);

@@ -37,7 +37,7 @@ int io_v2_file_reader(t_io_v2_stream **stream, const char *file_path)
     ctx->fd = fd;
     ctx->seek = 0;
 
-	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE), ctx)) {
+	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
@@ -70,7 +70,7 @@ int io_v2_file_writer(t_io_v2_stream **stream, const char *file_path)
     ctx->fd = fd;
     ctx->seek = 0;
 
-	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_WRITE | IO_V2_FLAG_CLOSE), ctx)) {
+	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}

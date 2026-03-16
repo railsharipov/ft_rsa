@@ -35,7 +35,7 @@ int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, t_fun
 	ctx->filter = filter;
 	ctx->buffer = ft_buffer_new(IO_BUFSIZE);
 
-	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE), ctx)) {
+	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
@@ -64,7 +64,7 @@ int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, t_f
 	ctx->filter = filter;
 	ctx->buffer = ft_buffer_new(IO_BUFSIZE);
 
-	if (SSL_OK != io_v2_stream(stream, interface, (IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE), ctx)) {
+	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return (SSL_ERR);
 	}
