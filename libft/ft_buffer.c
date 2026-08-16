@@ -212,7 +212,8 @@ ssize_t ft_buffer_write_with_func(t_buffer *buffer, t_func_buffer_write write, v
 	return (wbytes);
 }
 
-int ft_buffer_transform_read(t_buffer *buffer, t_func_buffer_transform transform, void *buf, size_t nbytes, size_t *consumed, size_t *produced)
+int ft_buffer_transform_read(t_buffer *buffer, t_func_buffer_transform transform,
+		void *transform_ctx, void *buf, size_t nbytes, size_t *consumed, size_t *produced)
 {
 	size_t	used;
 
@@ -229,7 +230,7 @@ int ft_buffer_transform_read(t_buffer *buffer, t_func_buffer_transform transform
 	if (used == 0) {
 		return (0);
 	}
-	if (transform(buffer->arr + buffer->read_pos, used, buf, nbytes, consumed, produced) < 0) {
+	if (transform(transform_ctx, buffer->arr + buffer->read_pos, used, buf, nbytes, consumed, produced) < 0) {
 		return (-1);
 	}
 	buffer->read_pos += *consumed;
@@ -240,7 +241,8 @@ int ft_buffer_transform_read(t_buffer *buffer, t_func_buffer_transform transform
 	return (0);
 }
 
-int ft_buffer_transform_write(t_buffer *buffer, t_func_buffer_transform transform, const void *buf, size_t nbytes, size_t *consumed, size_t *produced)
+int ft_buffer_transform_write(t_buffer *buffer, t_func_buffer_transform transform,
+		void *transform_ctx, const void *buf, size_t nbytes, size_t *consumed, size_t *produced)
 {
 	size_t	right_padsize;
 	size_t	shifted;
@@ -259,7 +261,7 @@ int ft_buffer_transform_write(t_buffer *buffer, t_func_buffer_transform transfor
 		shifted = __left_align(buffer);
 		right_padsize += shifted;
 	}
-	if (transform(buf, nbytes, buffer->arr + buffer->write_pos, right_padsize, consumed, produced) < 0) {
+	if (transform(transform_ctx, buf, nbytes, buffer->arr + buffer->write_pos, right_padsize, consumed, produced) < 0) {
 		return (-1);
 	}
 	buffer->write_pos += *produced;

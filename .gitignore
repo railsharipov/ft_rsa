@@ -6,3 +6,6 @@ ft_ssl
 test
 .vscode
 .zed
+.clangd
+.cache
+compile_commands.json

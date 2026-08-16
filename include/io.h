@@ -89,8 +89,6 @@ typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const void *buf, size_t nbytes)
 typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
 typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
 
-typedef int	(*t_func_io_v2_filter)(const void *input, size_t insize, void *output, size_t outsize, size_t *consumed, size_t *produced);
-
 typedef struct s_io_v2_interface {
 	t_func_io_v2_read	read;
 	t_func_io_v2_write	write;
@@ -147,6 +145,9 @@ int		io_v2_file_writer(t_io_v2_stream **stream, const char *file_path);
 
 int		io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
 int		io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
+
+int 	io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, t_func_buffer_transform filter, void *filter_ctx);
+int 	io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, t_func_buffer_transform filter, void *filter_ctx);
 
 int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
 int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);

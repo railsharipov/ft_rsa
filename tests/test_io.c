@@ -34,15 +34,15 @@ int	test_io(void)
 
 	return (
 		__test_io_interface()
-		| __test_io_file_reader()
-		| __test_io_file_writer()
-		| __test_io_bytes_reader()
-		| __test_io_bytes_writer()
-		| __test_io_buffered_reader()
-		| __test_io_buffered_writer()
-		| __test_io_filter_reader()
-		| __test_io_filter_writer()
-		| __test_io_pipe_unidir()
+		|| __test_io_file_reader()
+		|| __test_io_file_writer()
+		|| __test_io_bytes_reader()
+		|| __test_io_bytes_writer()
+		|| __test_io_buffered_reader()
+		|| __test_io_buffered_writer()
+		|| __test_io_filter_reader()
+		|| __test_io_filter_writer()
+		|| __test_io_pipe_unidir()
 	);
 }
 
@@ -759,7 +759,7 @@ static int	__test_io_buffered_reader(void)
 	ft_ostr_init(&test_content);
 	ft_ostr_init(&ref_content);
 
-	bufsize = 10 * 1024;
+	bufsize = 10 * capacity;
 	SSL_ALLOC(buf, bufsize);
 
 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
@@ -974,14 +974,146 @@ static int	__test_io_buffered_writer(void)
 	TEST_PASS();
 }
 
+static void	__encode_block(const char in, size_t insize, char out, size_t outsize)
+{
+	size_t i;
+
+	for (i = 0; i < insize && i < outsize; i++) {
+		out[i] = in[i];
+	}
+	for (; i < outsize; i++) {
+		out[i] = '=';
+	}
+}
+
+typedef struct __s_filter_ctx {
+	int isFinal;
+} __t_filter_ctx;
+
+static int	__filter(void *vctx, const void *input, size_t insize, void *output, size_t outsize, size_t *consumed, size_t *produced)
+{
+	const size_t in_blocksize = 2;
+	const size_t out_blocksize = in_blocksize + 1;
+
+	__t_filter_ctx *ctx = vctx;
+	char *in = input;
+	chat *out = output;
+	size_t i = 0;
+	size_t j = 0;
+
+	*consumed = 0;
+	*produced = 0;
+	while (i + in_blocksize < insize && j + out_blocksize < outsize) {
+		while (i < in_blocksize && j < out_blocksize) {
+			out[j++] = in[i++];
+		}
+		while (j < out_blocksize) {
+			out[j++] = '=';
+		}
+	}
+	if (ctx->isFinal) {
+		while (i < insize && j < outsize) {
+			out[j++] = in[i++];
+		}
+	}
+	*consumed = i;
+	*produced = j;
+	return (0);
+}
+
 static int	__test_io_filter_reader(void)
 {
+	t_io_v2_stream	*filter_reader, *upstream;
+	t_ostring		test_content, ref_content, enc_content;
+	ssize_t			rbytes, tbytes;
+	size_t			consumed, produced;
+	char 			*buf;
+	size_t			bufsize;
+	int				ret;
+
+	ft_ostr_init(&test_content);
+	ft_ostr_init(&ref_content);
+	ft_ostr_init(&enc_content);
+
+	ret = 0;
+	rbytes = 0;
+	tbytes = 0;
+	bufsize = 1024;
+	SSL_ALLOC(buf, bufsize);
+
+	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	enc_content.capacity = ref_content.size*2;
+	SSL_ALLOC(enc_content.content, enc_content.capacity);
+	__filter((__t_filter_ctx *)&{.isFinal = 0}, ref_content.content, ref_content.size,
+			enc_content.content, enc_content.capacity, &consumed, &produced);
+	enc_content.size = produced;
+	__filter((__t_filter_ctx *)&{.isFinal = 1}, ref_content.content + consumed, ref_content.size - consumed,
+			enc_content.content + produced, enc_content.capacity - produced, &consumed, &produced);
+	enc_content.size += produced;
+
+	if (SSL_OK != io_v2_file_reader(&upstream, __small_text_file_path)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	if (SSL_OK != io_v2_filter_reader(&filter_reader, upstream, __filter)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	TEST_ASSERT(filter_reader->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(filter_reader->interface.read != NULL);
+	TEST_ASSERT(filter_reader->interface.write == NULL);
+	TEST_ASSERT(filter_reader->interface.close != NULL);
+	TEST_ASSERT(filter_reader->interface.flush == NULL);
+	TEST_ASSERT(filter_reader->ctx != NULL);
+	TEST_ASSERT(filter_reader->flags == (IO_V2_FLAG_READ | IO_V2_FLAG_CLOSE));
+
+	// read is successful
+	while (1) {
+		rbytes = io_v2_read(filter_reader, buf, bufsize);
+		if (rbytes < 0) {
+			break ;
+		}
+		ft_ostr_append(&test_content, buf, rbytes);
+		tbytes += rbytes;
+	}
+	TEST_ASSERT(filter_reader->status == IO_V2_STATUS_EOF);
 
 	TEST_PASS();
 }
 
 static int	__test_io_filter_writer(void)
 {
+	t_io_v2_stream	*filter_stream, *downstream;
+	t_ostring		test_content, ref_content;
+	ssize_t			rbytes, tbytes;
+	char 			*buf;
+	size_t			bufsize;
+	int				ret;
+
+	ft_ostr_init(&test_content);
+	ft_ostr_init(&ref_content);
+
+	ret = 0;
+	rbytes = 0;
+	tbytes = 0;
+	bufsize = 1024;
+	SSL_ALLOC(buf, bufsize);
+
+	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	if (SSL_OK != io_v2_file_writer(&downstream, __test_text_file_path)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	if (SSL_OK != io_v2_filter_writer(&filter_stream, downstream, __filter)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
 
 	TEST_PASS();
 }

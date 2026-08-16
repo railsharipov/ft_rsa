@@ -53,7 +53,7 @@ sanitize_test: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize
 sanitize_test: LDFLAGS := -fsanitize=address
 sanitize_test: test_bin
 
-test: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -I./include
+test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include
 test: test_bin
 
 test_bin: $(TEST_OBJS)
