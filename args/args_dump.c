@@ -70,7 +70,7 @@ char	*args_dump_helps(const t_arg_cmd *cmd_arg)
 		while (node != NULL) {
 			opt = (t_arg_opt *)node->content;
 			opt_info = __type_info(opt->name, opt->type);
-			ft_ostr_appendf(&ostring, "%s %-30s %s\n", indents, opt_info, opt->desc);
+			ft_ostr_appendf(&ostring, "%s %-10s %s\n", indents, opt_info, opt->desc);
 			ft_strdel(opt_info);
 			node = ft_htbl_node_next(cmd_arg->global_opts, node);
 		}
