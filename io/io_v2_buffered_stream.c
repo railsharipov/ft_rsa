@@ -267,6 +267,6 @@ static ssize_t __io_v2_buffered_close(void *vctx)
     if (flush_ret < 0 || close_ret < 0) {
     	return (IO_V2_STATUS_ERROR);
     } else {
-   		return (close_ret);
+   		return (IO_V2_STATUS_OK);
     }
 }

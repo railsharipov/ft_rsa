@@ -564,6 +564,6 @@ static ssize_t __io_v2_filter_write_close(void *vctx)
 	if (finish_ret < 0 || close_ret < 0) {
 		return (IO_V2_STATUS_ERROR);
 	} else {
-		return (close_ret);
+		return (IO_V2_STATUS_OK);
 	}
 }
