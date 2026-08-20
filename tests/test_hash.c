@@ -1,8 +1,9 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 #include "test.h"
 #include <io.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static int	__test_hash_setup(void);
 

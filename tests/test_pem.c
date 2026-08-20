@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <file.h>
 #include <asn.h>
 #include <pem.h>
@@ -9,7 +10,7 @@
 #include <textutil.h>
 #include <base64.h>
 #include <json.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static int	__test_pem_setup(void);
 static void	__test_pem_cleanup(void);

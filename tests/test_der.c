@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <der.h>
 #include <bnum.h>

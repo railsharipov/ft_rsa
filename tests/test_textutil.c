@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <textutil.h>
 #include "test.h"
 
@@ -333,13 +334,13 @@ static int	__test_textutil_insert_delim(void)
 static int	__test_textutil_scanf(void)
 {
 	int		matches;
-	
+
 	char	*s1;
 	matches = textutil_sscanf(__lorem, ft_strlen(__lorem), "%s", &s1);
 	TEST_ASSERT(matches == 1);
 	TEST_ASSERT(s1 != NULL);
 	TEST_ASSERT(ft_streq(s1, "Cernantur"));
-	
+
 	char	str2[] = "Test-string 10";
 	char	*s2;
 	int		i2;

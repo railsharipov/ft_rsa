@@ -1,6 +1,6 @@
-#include <libft/list.h>
-#include <libft/tuple.h>
+#include <libft.h>
 #include <common.h>
+#include <logger.h>
 #include "test.h"
 #include <json.h>
 #include <io.h>

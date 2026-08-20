@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include "test.h"
 
 int	test_assert(int bool, const char *expr)

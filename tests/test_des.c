@@ -1,10 +1,11 @@
 #include <common.h>
+#include <logger.h>
 #include <des.h>
 #include "test.h"
 #include <rand.h>
 #include <io.h>
 #include <file.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static int	__test_des_setup(void);
 static void	__test_des_cleanup(void);

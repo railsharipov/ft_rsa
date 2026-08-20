@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <base64.h>
 #include <file.h>
 #include "test.h"
