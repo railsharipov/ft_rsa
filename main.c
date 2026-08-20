@@ -1,11 +1,12 @@
 #include <common.h>
+#include <logger.h>
 #include <base64.h>
 #include <des.h>
 #include <hash.h>
 #include <rsa.h>
 #include <cmd.h>
 #include <args.h>
-#include <libft/string.h>
+#include <libft.h>
 
 static int __log_writer(const char *mes) {
 	return (ft_printf("%@%s\n", mes));

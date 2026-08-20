@@ -1,6 +1,7 @@
 #include <io.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
+#include <logger.h>
 
 typedef struct s_io_v2_file_ctx {
     int    		fd;

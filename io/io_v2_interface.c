@@ -1,4 +1,5 @@
 #include <io.h>
+#include <logger.h>
 
 # define __IO_INVALID_INTFC_ERROR	"interface is invalid"
 

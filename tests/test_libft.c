@@ -5,18 +5,10 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <common.h>
+#include <logger.h>
 #include <file.h>
 #include "test.h"
-#include <libft/std.h>
-#include <libft/node.h>
-#include <libft/list.h>
-#include <libft/stack.h>
-#include <libft/queue.h>
-#include <libft/tuple.h>
-#include <libft/ntree.h>
-#include <libft/2darray.h>
-#include <libft/bytes.h>
-#include <libft/buffer.h>
+#include <libft.h>
 
 static char 	*__s1;
 static char 	*__s2;
@@ -2094,7 +2086,7 @@ static int __test_ft_ntree(void)
 
 	//
 	// check topology of ntree nodes by matching the order of words
-	// in word array with order of words during DFS 
+	// in word array with order of words during DFS
 	//
 
 	char **tmp_ptr = words;
@@ -2180,36 +2172,97 @@ static ssize_t __mock_write_adapter(void *vctx, void *buf, size_t bufsize)
 	return ((ssize_t)bufsize);
 }
 
-static int __mock_transform_ok(const void *src, size_t srcsize, void *dst, size_t dstsize, size_t *consumed, size_t *produced)
+typedef struct __s_b64_transform_ctx {
+	int final;
+	int done;
+} __t_b64_transform_ctx;
+
+static t_transform_result __b64_transform(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
 {
-	const size_t read_block_size = 12;
-	const size_t write_block_size = 15;
-	size_t factor;
-	size_t read, written;
+	const size_t B64_IN_BLOCK_SIZE = 3;
+	const size_t B64_OUT_BLOCK_SIZE = 4;
+	const char	SM[64] = {
+		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+		'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+		'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+		'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+		'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+		'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+		'8', '9', '+', '/'
+	};
+	__t_b64_transform_ctx *b64_ctx = vctx;
 
-	factor = MIN(srcsize / read_block_size, dstsize / write_block_size);
+	if (NULL == in || NULL == out || NULL == b64_ctx) {
+		TEST_LOG(DEBUG, "transform validation: TRANSFORM_ERROR");
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (b64_ctx->done) {
+		TEST_LOG(DEBUG, "transform validation: already TRANSFORM_DONE");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
 
-	read = factor * read_block_size;
-	written = factor * write_block_size;
+	const uint8_t *mesblock = in;
+	uint8_t *encblock = out;
+	size_t i = 0;
+	size_t j = 0;
 
-	ft_memset(dst, '=', written);
+	while (i+2 < insize && j+3 < outsize) {
+		encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+		encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
+		encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )|( ( mesblock[i+2]>>6 )&0x3 )];
+		encblock[j+3] = SM[( mesblock[i+2]&0x3F )];
+		i += B64_IN_BLOCK_SIZE;
+		j += B64_OUT_BLOCK_SIZE;
+	}
 
-	*consumed = read;
-	*produced = written;
+	if (b64_ctx->final) {
+		if (j + B64_OUT_BLOCK_SIZE >= outsize) {
+			TEST_LOG(DEBUG, "transform final: TRANSFORM_NEED_OUTPUT");
+			return (t_transform_result){.status = TRANSFORM_NEED_OUTPUT};
+		}
+		if (i+2 < insize) {
+			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
+			encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )|( ( mesblock[i+2]>>6 )&0x3 )];
+			encblock[j+3] = SM[( mesblock[i+2]&0x3F )];
+			i += 3;
+		}
+		else if (i+1 < insize) {
+			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
+			encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )];
+			encblock[j+3] = '=';
+			i += 2;
+		}
+		else if (i < insize) {
+			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )];
+			encblock[j+2] = '=';
+			encblock[j+3] = '=';
+			i += 1;
+		}
+		else {
+			encblock[j+0] = '=';
+			encblock[j+1] = '=';
+			encblock[j+2] = '=';
+			encblock[j+3] = '=';
+		}
+		j += B64_OUT_BLOCK_SIZE;
+		b64_ctx->done = 1;
 
-	return (0);
-}
-
-static int __mock_transform_error(const void *src, size_t srcsize, void *dst, size_t dstsize, size_t *read, size_t *written)
-{
-	(void)src;
-	(void)srcsize;
-	(void)dst;
-	(void)dstsize;
-	(void)read;
-	(void)written;
-
-	return (-1);
+		TEST_LOG(DEBUG, "transform final: TRANSFORM_DONE");
+		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_DONE};
+	}
+	else {
+		if (j + B64_OUT_BLOCK_SIZE >= outsize) {
+			TEST_LOG(DEBUG, "transform update: TRANSFORM_NEED_OUTPUT");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
+		}
+		else {
+			TEST_LOG(DEBUG, "transform update: TRANSFORM_NEED_INPUT");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_INPUT};
+		}
+	}
 }
 
 static int __test_ft_buffer(void)
@@ -2413,58 +2466,87 @@ static int __test_ft_buffer(void)
 	// content of buf must be as expected
 	TEST_ASSERT(ft_memcmp(buf, ref_content.content, trbytes) == 0);
 
-	// test transform read
-	size_t consumed, produced;
-	int ret;
+	// Test buffer transform, test transform using b64 encoder
+	__t_b64_transform_ctx b64_ctx = {0};
+	t_transform_result result = {0};
+	size_t expected_consumed = 0;
+	size_t expected_produced = 0;
 
-	ft_buffer_reset(buffer);
-	twbytes = 0;
-	trbytes = 0;
-	// write to buffer with transform, bytes written to buffer must be greater than consumed
-	ret = ft_buffer_transform_write(buffer, __mock_transform_ok, ref_content.content, 512, &consumed, &produced);
-	TEST_ASSERT(ret == 0);
-	TEST_ASSERT(consumed > 0);
-	TEST_ASSERT(produced > 0);
-	TEST_ASSERT(consumed * 15 == produced * 12); // see __mock_transform_ok, ratio of consumed to produced is 12:15
-	twbytes += produced;
-	TEST_ASSERT(ft_buffer_used(buffer) == twbytes);
+	// 1. Happy path
+	t_buffer *src = ft_buffer_new(ref_content.size);
+	t_buffer *dst = ft_buffer_new(2*ref_content.size);
+	rbytes = ft_buffer_write(src, ref_content.content, ref_content.size);
+	TEST_ASSERT(rbytes == ref_content.size);
+	expected_consumed = 3*(ref_content.size/3); // b64 consumes multiples of 3
+	expected_produced = 4*(ref_content.size/3); // b64 produces 4 per 3
+	// should consume as much as possible (multiples of 3) and then ask for input
+	result = ft_buffer_transform(src, dst, __b64_transform, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_NEED_INPUT);
+	TEST_LOG(DEBUG, "consumed=%zu, expected=%zu", result.consumed, expected_consumed);
+	TEST_LOG(DEBUG, "produced=%zu, expected=%zu", result.produced, expected_produced);
+	TEST_ASSERT(result.consumed == expected_consumed);
+	TEST_ASSERT(result.produced == expected_produced);
+	TEST_ASSERT(ft_buffer_used(src) == ref_content.size%3);
+	TEST_ASSERT(ft_buffer_used(dst) == expected_produced);
 
-	ret = ft_buffer_transform_write(buffer, __mock_transform_ok, ref_content.content, ref_content.size, &consumed, &produced);
-	TEST_ASSERT(ret == 0);
-	TEST_ASSERT(consumed > 0);
-	TEST_ASSERT(produced > 0);
-	TEST_ASSERT(consumed * 15 == produced * 12); // see __mock_transform_ok, ratio of consumed to produced is 12:15
-	twbytes += produced;
-	TEST_ASSERT(ft_buffer_used(buffer) == twbytes);
+	// finalize b64 encoding by consuming remaining bytes
+	// should consume everything and then report done
+	b64_ctx.final = 1;
+	expected_consumed = ref_content.size%3; // everything should be consumed
+	expected_produced = (ref_content.size%3)/4+4; // output should be multiple of 4
+	result = ft_buffer_transform(src, dst, __b64_transform, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_DONE);
+	TEST_LOG(DEBUG, "consumed=%zu, expected=%zu", result.consumed, expected_consumed);
+	TEST_LOG(DEBUG, "produced=%zu, expected=%zu", result.produced, expected_produced);
+	TEST_ASSERT(result.consumed == expected_consumed);
+	TEST_ASSERT(result.produced == expected_produced);
+	TEST_ASSERT(ft_buffer_used(src) == 0);
+	TEST_ASSERT(ft_buffer_used(dst) == (ref_content.size/3)*4 + (ref_content.size%3)/4 + 4);
 
-	// read from buffer with transform, bytes read from buffer must be less than produced
-	ret = ft_buffer_transform_read(buffer, __mock_transform_ok, buf, 512, &consumed, &produced);
-	TEST_ASSERT(ret == 0);
-	TEST_ASSERT(consumed > 0);
-	TEST_ASSERT(produced > 0);
-	TEST_ASSERT(consumed < produced);
-	trbytes += consumed;
-	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
+	// 2. Need output
+	b64_ctx = (__t_b64_transform_ctx){0};
+	src = ft_buffer_new(ref_content.size);
+	dst = ft_buffer_new(ref_content.size);
+	rbytes = ft_buffer_write(src, ref_content.content, ref_content.size);
+	TEST_ASSERT(rbytes == ref_content.size);
+	expected_consumed = 3*(dst->capacity/4);
+	expected_produced = 4*(dst->capacity/4);
+	// should ask for output since not enough capacity in output buffer
+	result = ft_buffer_transform(src, dst, __b64_transform, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_NEED_OUTPUT);
+	TEST_LOG(DEBUG, "consumed=%zu, expected=%zu", result.consumed, expected_consumed);
+	TEST_LOG(DEBUG, "produced=%zu, expected=%zu", result.produced, expected_produced);
+	TEST_ASSERT(result.consumed == expected_consumed);
+	TEST_ASSERT(result.produced == expected_produced);
+	TEST_ASSERT(ft_buffer_used(src) == ref_content.size - expected_consumed);
+	TEST_ASSERT(ft_buffer_used(dst) == expected_produced);
 
-	ret = ft_buffer_transform_read(buffer, __mock_transform_ok, buf, buf_capacity, &consumed, &produced);
-	TEST_ASSERT(ret == 0);
-	TEST_ASSERT(consumed > 0);
-	TEST_ASSERT(produced > 0);
-	TEST_ASSERT(consumed * 15 == produced * 12); // see __mock_transform_ok, ratio of consumed to produced is 12:15
-	trbytes += consumed;
-	TEST_ASSERT(ft_buffer_used(buffer) == twbytes - trbytes);
-
-	ft_buffer_reset(buffer);
-	// read from buffer with transform, fails
-	TEST_ASSERT(ft_buffer_write(buffer, ref_content.content, 512) == 512);
-	ret = ft_buffer_transform_read(buffer, __mock_transform_error, buf, 512, &consumed, &produced);
-	TEST_ASSERT(ret == -1);
-	TEST_ASSERT(ft_buffer_used(buffer) == 512);
-
-	// write to buffer with transform, fails
-	ret = ft_buffer_transform_write(buffer, __mock_transform_error, ref_content.content, 512, &consumed, &produced);
-	TEST_ASSERT(ret == -1);
-	TEST_ASSERT(ft_buffer_used(buffer) == 512);
+	// 3. Error path
+	b64_ctx = (__t_b64_transform_ctx){0};
+	src = ft_buffer_new(ref_content.size);
+	dst = ft_buffer_new(ref_content.size);
+	// invalid input
+	result = ft_buffer_transform(src, NULL, __b64_transform, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
+	result = ft_buffer_transform(NULL, dst, __b64_transform, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
+	result = ft_buffer_transform(src, dst, NULL, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
+	// malformed buffer
+	src->arr = NULL;
+	result = ft_buffer_transform(src, dst, NULL, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
+	src->read_pos = src->capacity + 1;
+	result = ft_buffer_transform(src, dst, NULL, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
+	src->read_pos = 0;
+	src->write_pos = src->capacity + 1;
+	result = ft_buffer_transform(src, dst, NULL, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
+	src->read_pos = 0;
+	src->write_pos = ref_content.size;
+	result = ft_buffer_transform(src, dst, NULL, &b64_ctx);
+	TEST_ASSERT(result.status == TRANSFORM_ERROR);
 
 	TEST_PASS();
 }

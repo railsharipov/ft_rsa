@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <args.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 t_arg_opt	*args_new_opt(const char *name, const char *desc, t_opt_type type)
 {

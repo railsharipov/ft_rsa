@@ -1,5 +1,6 @@
 #include <args.h>
-#include <libft/list.h>
+#include <logger.h>
+#include <libft.h>
 
 static int	__parse_opts(t_htbl *opts, t_htbl *global_opts, t_htbl *parsed_opts, const char **argv);
 static void	*__func_copy_opt(void *content);
@@ -9,6 +10,10 @@ int	args_parse(t_cmd *cmd, t_arg_cmd *cmd_arg, const char **argv, int argc)
 	t_htbl	*global_opts;
 	int		pos;
 
+	if (NULL == cmd) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
 	ft_bzero(cmd, sizeof(t_cmd));
 
 	if (cmd_arg == NULL || argv == NULL || argc <= 0) {

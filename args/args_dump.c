@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <args.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 static char *__type_info(const char *name, t_opt_type type);
 
@@ -44,7 +45,7 @@ char	*args_dump_helps(const t_arg_cmd *cmd_arg)
 		ft_ostr_appendf(&ostring, "SUB-COMMANDS:\n");
 		while (node != NULL) {
 			sub_cmd = (t_arg_cmd *)node->content;
-			ft_ostr_appendf(&ostring, "%s %-30s %s\n", indents, sub_cmd->name, sub_cmd->desc);
+			ft_ostr_appendf(&ostring, "%s %-10s %s\n", indents, sub_cmd->name, sub_cmd->desc);
 			node = ft_htbl_node_next(cmd_arg->sub_cmds, node);
 		}
 		ft_ostr_append_cstr(&ostring, "\n");
@@ -56,7 +57,7 @@ char	*args_dump_helps(const t_arg_cmd *cmd_arg)
 		while (node != NULL) {
 			opt = (t_arg_opt *)node->content;
 			opt_info = __type_info(opt->name, opt->type);
-			ft_ostr_appendf(&ostring, "%s %-30s %s\n", indents, opt_info, opt->desc);
+			ft_ostr_appendf(&ostring, "%s %-10s %s\n", indents, opt_info, opt->desc);
 			ft_strdel(opt_info);
 			node = ft_htbl_node_next(cmd_arg->opts, node);
 		}
@@ -104,4 +105,3 @@ static char *__type_info(const char *name, t_opt_type type)
 
 	return (type_info);
 }
-

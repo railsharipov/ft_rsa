@@ -1,4 +1,5 @@
 #include <io.h>
+#include <logger.h>
 
 typedef struct s_io_v2_bytes_ctx {
     t_ostring	*ostring;

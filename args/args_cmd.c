@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <args.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 static void	*__func_copy_cmd(void *content);
 static void	*__func_copy_opt(void *content);
@@ -67,6 +68,10 @@ int	args_add_sub_cmd(t_arg_cmd *cmd_arg, const t_arg_cmd *sub_cmd_arg)
 {
 	if (cmd_arg == NULL || sub_cmd_arg == NULL) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	if (ft_htbl_has(cmd_arg->sub_cmds, sub_cmd_arg->name)) {
+		SSL_LOG(ERROR, "subcommand `%s` already exists", sub_cmd_arg->name);
 		return (SSL_ERR);
 	}
 	ft_htbl_add_with_f_del(cmd_arg->sub_cmds, (void *)sub_cmd_arg, sub_cmd_arg->name, __func_del_cmd);

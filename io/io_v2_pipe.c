@@ -1,4 +1,5 @@
 #include <io.h>
+#include <logger.h>
 
 static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes);
 static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes);
