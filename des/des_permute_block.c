@@ -11,8 +11,9 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <des.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static const unsigned char	PMA[64] = {
 	58,	50,	42,	34,	26,	18,	10,	2,	60,	52,	44,	36,	28,	20,	12,	4,
@@ -122,14 +123,14 @@ static void	__permute_block(uint64_t *ksched, uint64_t *block)
 	for (ix = 0; ix < 16; ix++) {
 		pblock = 0;
 		tn = 0;
-	
+
 		for (iy = 0; iy < 48; iy++) {
 			tn <<= 1;
 			tn |= ((uint64_t)rblock >> (32 - PBA[iy])) & 1;
 		}
 		tn = tn ^ ksched[ix];
 		tn2 = 0;
-	
+
 		for (iy = 0; iy < 8; iy++) {
 			tn2 <<= 4;
 			tn2 |= SB[ 64*iy + ((tn >> (42-6*iy)) & 0x3F) ];

@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <args.h>
 #include <cmd.h>
 #include <base64.h>

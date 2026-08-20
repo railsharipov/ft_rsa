@@ -1,12 +1,13 @@
 // #include <common.h>
+#include <logger.h>
 // #include <io.h>
 // #include <des.h>
 // #include <base64.h>
 // #include <cmd.h>
 // #include <args.h>
 // #include <rand.h>
-// #include <libft/htable.h>
-// #include <libft/bytes.h>
+// #include <libft.h>
+// #include <libft.h>
 
 // static char	*__keyhex;
 // static char	*__salthex;
@@ -158,7 +159,7 @@
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-	
+
 // 	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
 // 		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
 // 			SSL_LOG(ERROR, "invalid salted format");

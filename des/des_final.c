@@ -11,10 +11,11 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <rand.h>
 #include <base64.h>
 #include <des.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static ssize_t __encrypt_final(t_des *des, char *out, size_t size);
 static ssize_t __decrypt_final(t_des *des, char *out, size_t size);

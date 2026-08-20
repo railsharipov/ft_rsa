@@ -1,6 +1,6 @@
 #include <des.h>
-#include <libft/std.h>
-#include <libft/bytes.h>
+#include <logger.h>
+#include <libft.h>
 
 static const unsigned char	CHA[DES_KSCHED_LEN] = {
 	1,  1,  2,  2,  2,  2,  2,  2,
@@ -66,7 +66,7 @@ int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt c
 
     des->crypt = crypt;
     des->mode = mode;
-    
+
     if (NULL != iv) {
         ft_memcpy(des->vect, iv, DES_BLOCK_SIZE);
     }
