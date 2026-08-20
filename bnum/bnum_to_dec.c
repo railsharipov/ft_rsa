@@ -1,6 +1,5 @@
 #include <bnum.h>
-#include <libft/list.h>
-#include <libft/string.h>
+#include <libft.h>
 
 /* Convert bignum to decimal number string */
 

@@ -1,4 +1,5 @@
 #include <bnum.h>
+#include <logger.h>
 
 void	bnum_montgomery_setup(const t_num *num, uint64_t *rho)
 {

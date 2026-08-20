@@ -1,4 +1,5 @@
 #include <bnum.h>
+#include <logger.h>
 
 void	bnum_invmod(const t_num *a, const t_num *b, t_num *res)
 {

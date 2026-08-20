@@ -1,4 +1,5 @@
 #include <bnum.h>
+#include <logger.h>
 #include <sys/fcntl.h>
 #include <unistd.h>
 

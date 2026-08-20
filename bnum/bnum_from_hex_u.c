@@ -1,5 +1,5 @@
 #include <bnum.h>
-#include <libft/string.h>
+#include <libft.h>
 
 static const int	A[128] = {
 	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,

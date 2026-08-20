@@ -1,4 +1,5 @@
 #include <bnum.h>
+#include <logger.h>
 
 void	bnum_exp2(t_num *res, int n)
 {

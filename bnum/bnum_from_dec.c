@@ -1,5 +1,5 @@
 #include <bnum.h>
-#include <libft/string.h>
+#include <libft.h>
 
 t_num	*bnum_from_dec(const char *dec)
 {

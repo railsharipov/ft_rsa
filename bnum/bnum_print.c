@@ -1,5 +1,6 @@
 #include <bnum.h>
-#include <libft/string.h>
+#include <logger.h>
+#include <libft.h>
 #include <unistd.h>
 
 static const char A[] = "0123456789abcdef";
