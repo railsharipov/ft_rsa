@@ -117,6 +117,8 @@ int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 static ssize_t __read_from_upstream(void *vctx, void *buf, size_t bufsize)
 {
 	t_io_v2_stream *upstream = vctx;
+
+	SSL_LOG(TRACE, "reading %zu bytes from filter upstream", bufsize);
 	// Reads data from upstream into the internal buffer
 	ssize_t ret = io_v2_read(upstream, buf, bufsize);
 	if (ret < 0 && upstream->status == IO_V2_STATUS_EOF) {
@@ -129,6 +131,7 @@ static ssize_t __write_to_downstream(void *vctx, const void *buf, size_t bufsize
 {
 	t_io_v2_stream *downstream = vctx;
 
+	SSL_LOG(TRACE, "writing %zu bytes to filter downstream", bufsize);
 	// Writes data from internal buffer to downstream
 	return (io_v2_write(downstream, buf, bufsize));
 }
@@ -239,12 +242,14 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 		}
 		SSL_LOG(TRACE, "filter transformer consumed %zu bytes and produced %zu bytes", result.consumed, result.produced);
 		break;
+
 	case FILTER_DONE:
 		if (ft_buffer_is_empty(ctx->out)) {
 			return (IO_V2_STATUS_EOF);
 		}
 		next_mode = FILTER_DONE;
 		break;
+
 	default:
 		SSL_LOG(ERROR, "invalid filter mode: %d", ctx->mode);
 		return (IO_V2_STATUS_ERROR);
@@ -303,11 +308,11 @@ static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 			break;
 		case TRANSFORM_NEED_INPUT:
 			SSL_LOG(TRACE, "transform needs input");
-			next_mode = FILTER_STREAM;
+			next_mode = FILTER_TRANSFORM_UPDATE;
 			break;
 		case TRANSFORM_NEED_OUTPUT:
 			SSL_LOG(TRACE, "transform needs output");
-			next_mode = FILTER_TRANSFORM_UPDATE;
+			next_mode = FILTER_STREAM;
 			break;
 		case TRANSFORM_DONE:
 		default:
@@ -323,13 +328,13 @@ static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 		switch (downstream->status) {
 		case IO_V2_STATUS_OK:
 			SSL_LOG(TRACE, "writing at most %zu bytes to downstream from output buffer", nbytes);
-			ssize_t wbytes = ft_buffer_read_with_func(ctx->in, __write_to_downstream, downstream, ft_buffer_available(ctx->out));
+			ssize_t wbytes = ft_buffer_read_with_func(ctx->out, __write_to_downstream, downstream, nbytes);
 			if (wbytes < 0) {
 				SSL_LOG(ERROR, "failed to write data to downstream from output buffer");
 				return (IO_V2_STATUS_ERROR);
 			}
 			SSL_LOG(TRACE, "wrote %zu bytes to downstream from output buffer", wbytes);
-			if (ft_buffer_available(ctx->out) > 0) {
+			if (ft_buffer_used(ctx->out) > 0) {
 				// Output buffer is not empty yet so keep dumping data from it.
 				next_mode = FILTER_STREAM;
 			} else {
@@ -370,6 +375,7 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 
 	ssize_t tbytes = 0;
 	while (ctx->mode != FILTER_DONE) {
+		SSL_LOG(DEBUG, "current filter mode = %d", ctx->mode);
 		switch (ctx->mode) {
 		case FILTER_TRANSFORM_UPDATE:
 			// We are in finishing filter mode so treat as FILTER_TRANSFORM_FINAL and fall though.
@@ -387,7 +393,7 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 				break;
 			case TRANSFORM_NEED_OUTPUT:
 				SSL_LOG(TRACE, "transform needs output");
-				next_mode = FILTER_TRANSFORM_FINAL;
+				next_mode = FILTER_STREAM;
 				break;
 			case TRANSFORM_DONE:
 				SSL_LOG(TRACE, "transform is done");
@@ -395,7 +401,11 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 					SSL_LOG(ERROR, "unexpected remaining data in the input buffer: data loss");
 					return (IO_V2_STATUS_ERROR);
 				}
-				next_mode = FILTER_DONE;
+				if (ft_buffer_used(ctx->out) > 0) {
+					next_mode = FILTER_STREAM;
+				} else {
+					next_mode = FILTER_DONE;
+				}
 				break;
 			case TRANSFORM_NEED_INPUT:
 			default:
@@ -410,15 +420,15 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 			SSL_LOG(TRACE, "filter is writing data to downstream");
 			switch (downstream->status) {
 			case IO_V2_STATUS_OK:
-				SSL_LOG(TRACE, "writing at most %zu bytes to downstream from output buffer", ft_buffer_available(ctx->out));
-				ssize_t wbytes = ft_buffer_read_with_func(ctx->out, __write_to_downstream, downstream, ft_buffer_available(ctx->out));
+				SSL_LOG(TRACE, "writing at most %zu bytes to downstream from output buffer", ft_buffer_used(ctx->out));
+				ssize_t wbytes = ft_buffer_read_with_func(ctx->out, __write_to_downstream, downstream, ft_buffer_used(ctx->out));
 				if (wbytes < 0) {
 					SSL_LOG(ERROR, "failed to write data to downstream from output buffer");
 					return (IO_V2_STATUS_ERROR);
 				}
 				tbytes += wbytes;
 				SSL_LOG(TRACE, "wrote %zu bytes to downstream from output buffer", wbytes);
-				if (ft_buffer_available(ctx->out) > 0) {
+				if (ft_buffer_used(ctx->out) > 0) {
 					// Output buffer is not empty yet so keep dumping data from it.
 					next_mode = FILTER_STREAM;
 				} else {
@@ -469,8 +479,8 @@ static ssize_t __io_v2_filter_write_flush(void *vctx)
 			SSL_LOG(TRACE, "filter is writing data to downstream");
 			switch (downstream->status) {
 			case IO_V2_STATUS_OK:
-				SSL_LOG(TRACE, "writing at most %zu bytes to downstream from output buffer", ft_buffer_available(ctx->out));
-				ssize_t wbytes = ft_buffer_read_with_func(ctx->out, __write_to_downstream, downstream, ft_buffer_available(ctx->out));
+				SSL_LOG(TRACE, "writing at most %zu bytes to downstream from output buffer", ft_buffer_used(ctx->out));
+				ssize_t wbytes = ft_buffer_read_with_func(ctx->out, __write_to_downstream, downstream, ft_buffer_used(ctx->out));
 				if (wbytes < 0) {
 					SSL_LOG(ERROR, "failed to write data to downstream from output buffer");
 					return (IO_V2_STATUS_ERROR);

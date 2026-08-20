@@ -43,7 +43,7 @@ int	test_io(void)
 		|| __test_io_buffered_writer()
 		|| __test_io_filter_reader()
 		|| __test_io_filter_writer()
-		// || __test_io_pipe_unidir()
+		|| __test_io_pipe_unidir()
 	);
 }
 
@@ -1009,62 +1009,73 @@ static t_transform_result __b64_transform(void *vctx, const void *in, size_t ins
 	size_t i = 0;
 	size_t j = 0;
 
-	while (i+2 < insize && j+3 < outsize) {
-		encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
-		encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
-		encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )|( ( mesblock[i+2]>>6 )&0x3 )];
-		encblock[j+3] = SM[( mesblock[i+2]&0x3F )];
-		i += B64_IN_BLOCK_SIZE;
-		j += B64_OUT_BLOCK_SIZE;
-	}
-
-	if (b64_ctx->final) {
-		if (j + B64_OUT_BLOCK_SIZE >= outsize) {
-			TEST_LOG(DEBUG, "transform final: TRANSFORM_NEED_OUTPUT");
-			return (t_transform_result){.status = TRANSFORM_NEED_OUTPUT};
+	if (!b64_ctx->final) {
+		if (insize < B64_IN_BLOCK_SIZE) {
+			TEST_LOG(DEBUG, "transform update: TRANSFORM_NEED_INPUT");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_INPUT};
 		}
-		if (i+2 < insize) {
+		if (outsize < B64_OUT_BLOCK_SIZE) {
+			TEST_LOG(DEBUG, "transform update: TRANSFORM_NEED_OUTPUT");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
+		}
+		while (i+2 < insize && j+3 < outsize) {
 			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
 			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
 			encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )|( ( mesblock[i+2]>>6 )&0x3 )];
 			encblock[j+3] = SM[( mesblock[i+2]&0x3F )];
-			i += 3;
+			i += B64_IN_BLOCK_SIZE;
+			j += B64_OUT_BLOCK_SIZE;
 		}
-		else if (i+1 < insize) {
-			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
-			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
-			encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )];
-			encblock[j+3] = '=';
-			i += 2;
-		}
-		else if (i < insize) {
-			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
-			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )];
-			encblock[j+2] = '=';
-			encblock[j+3] = '=';
-			i += 1;
-		}
-		else {
-			encblock[j+0] = '=';
-			encblock[j+1] = '=';
-			encblock[j+2] = '=';
-			encblock[j+3] = '=';
-		}
-		j += B64_OUT_BLOCK_SIZE;
-		b64_ctx->done = 1;
-
-		TEST_LOG(DEBUG, "transform final: TRANSFORM_DONE");
-		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_DONE};
+		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
 	}
 	else {
-		if (j + B64_OUT_BLOCK_SIZE >= outsize) {
+		if (outsize < B64_OUT_BLOCK_SIZE) {
 			TEST_LOG(DEBUG, "transform update: TRANSFORM_NEED_OUTPUT");
 			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
 		}
-		else {
-			TEST_LOG(DEBUG, "transform update: TRANSFORM_NEED_INPUT");
-			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_INPUT};
+		while (i+2 < insize && j+3 < outsize) {
+			encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+			encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
+			encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )|( ( mesblock[i+2]>>6 )&0x3 )];
+			encblock[j+3] = SM[( mesblock[i+2]&0x3F )];
+			i += B64_IN_BLOCK_SIZE;
+			j += B64_OUT_BLOCK_SIZE;
 		}
+		if (j + B64_OUT_BLOCK_SIZE < outsize) {
+			if (i+2 < insize) {
+				encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+				encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
+				encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )|( ( mesblock[i+2]>>6 )&0x3 )];
+				encblock[j+3] = SM[( mesblock[i+2]&0x3F )];
+				i += 3;
+			}
+			else if (i+1 < insize) {
+				encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+				encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )|( ( mesblock[i+1]>>4 )&0xF )];
+				encblock[j+2] = SM[( ( mesblock[i+1]<<2 )&0x3C )];
+				encblock[j+3] = '=';
+				i += 2;
+			}
+			else if (i < insize) {
+				encblock[j+0] = SM[( ( mesblock[i+0]>>2 )&0x3F )];
+				encblock[j+1] = SM[( ( mesblock[i+0]<<4 )&0x30 )];
+				encblock[j+2] = '=';
+				encblock[j+3] = '=';
+				i += 1;
+			}
+			else {
+				encblock[j+0] = '=';
+				encblock[j+1] = '=';
+				encblock[j+2] = '=';
+				encblock[j+3] = '=';
+			}
+			j += B64_OUT_BLOCK_SIZE;
+			b64_ctx->done = 1;
+
+			TEST_LOG(DEBUG, "transform final: TRANSFORM_DONE");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_DONE};
+		}
+		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
 	}
 }
 
@@ -1110,13 +1121,13 @@ static int	__test_io_filter_reader(void)
 
 	// 1. read is successful
 	if (SSL_OK != io_v2_file_reader(&upstream, __bin_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, IO_INIT_ERROR);
 		TEST_FAIL();
 	}
 	__t_b64_transform_ctx b64_ctx = {0};
 
 	if (SSL_OK != io_v2_filter_reader(&filter_reader, upstream, __b64_transform_update, __b64_transform_final, &b64_ctx)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, IO_INIT_ERROR);
 		TEST_FAIL();
 	}
 	TEST_ASSERT(filter_reader->status == IO_V2_STATUS_OK);
@@ -1127,14 +1138,12 @@ static int	__test_io_filter_reader(void)
 	TEST_ASSERT(filter_reader->ctx != NULL);
 
 	ssize_t	rbytes = 0;
-	ssize_t	tbytes = 0;
 	while (1) {
 		rbytes = io_v2_read(filter_reader, buf, bufsize);
 		if (rbytes < 0) {
 			break ;
 		}
 		ft_ostr_append(&test_content, buf, rbytes);
-		tbytes += rbytes;
 	}
 	TEST_ASSERT(filter_reader->status == IO_V2_STATUS_EOF);
 	TEST_ASSERT(test_content.size == ref_content.size);
@@ -1154,24 +1163,22 @@ static int	__test_io_filter_reader(void)
 
 	// 3. read error
 	if (SSL_OK != io_v2_file_reader(&upstream, __bin_file_path)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, IO_INIT_ERROR);
 		TEST_FAIL();
 	}
 	b64_ctx = (__t_b64_transform_ctx){0};
 
 	if (SSL_OK != io_v2_filter_reader(&filter_reader, upstream, __transform_mock_error, __transform_mock_error, &b64_ctx)) {
-		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_LOG(ERROR, IO_INIT_ERROR);
 		TEST_FAIL();
 	}
 	rbytes = 0;
-	tbytes = 0;
 	while (1) {
 		rbytes = io_v2_read(filter_reader, buf, bufsize);
 		if (rbytes < 0) {
 			break ;
 		}
 		ft_ostr_append(&test_content, buf, rbytes);
-		tbytes += rbytes;
 	}
 	TEST_ASSERT(filter_reader->status == IO_V2_STATUS_ERROR);
 	// read should error since stream is in error
@@ -1183,42 +1190,119 @@ static int	__test_io_filter_reader(void)
 
 static int	__test_io_filter_writer(void)
 {
-	TEST_TODO("filter writer");
+	t_io_v2_stream	*filter_writer, *downstream;
+	t_ostring		test_content, ref_content, enc_content;
 
-// 	t_io_v2_stream	*filter_stream, *downstream;
-// 	t_ostring		test_content, ref_content;
-// 	ssize_t			rbytes, tbytes;
-// 	char 			*buf;
-// 	size_t			bufsize;
-// 	int				ret;
+	ft_ostr_init(&test_content);
+	ft_ostr_init(&ref_content);
+	ft_ostr_init(&enc_content);
 
-// 	ft_ostr_init(&test_content);
-// 	ft_ostr_init(&ref_content);
+	const char *__bin_file_path = "tests/files/base64/message.bin";
+	const char *__b64_file_path = "tests/files/base64/message.txt";
 
-// 	ret = 0;
-// 	rbytes = 0;
-// 	tbytes = 0;
-// 	bufsize = 1024;
-// 	SSL_ALLOC(buf, bufsize);
+	if (SSL_OK != file_read_all(__b64_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
+	if (SSL_OK != file_read_all(__bin_file_path, &test_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
 
-// 	if (SSL_OK != file_read_all(__small_text_file_path, &ref_content)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		TEST_FAIL();
-// 	}
-// 	if (SSL_OK != io_v2_file_writer(&downstream, __test_text_file_path)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		TEST_FAIL();
-// 	}
-// 	if (SSL_OK != io_v2_filter_writer(&filter_stream, downstream, __filter)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		TEST_FAIL();
-// 	}
+	// 1. write is successful
+	if (SSL_OK != io_v2_bytes_writer(&downstream, &enc_content)) {
+		TEST_LOG(ERROR, IO_INIT_ERROR);
+		TEST_FAIL();
+	}
+	__t_b64_transform_ctx b64_ctx = {0};
 
-// 	TEST_PASS();
-// }
+	if (SSL_OK != io_v2_filter_writer(&filter_writer, downstream, __b64_transform_update, __b64_transform_final, &b64_ctx)) {
+		TEST_LOG(ERROR, IO_INIT_ERROR);
+		TEST_FAIL();
+	}
+	TEST_ASSERT(filter_writer->status == IO_V2_STATUS_OK);
+	TEST_ASSERT(filter_writer->interface.read == NULL);
+	TEST_ASSERT(filter_writer->interface.write != NULL);
+	TEST_ASSERT(filter_writer->interface.finish != NULL);
+	TEST_ASSERT(filter_writer->interface.close != NULL);
+	TEST_ASSERT(filter_writer->interface.flush != NULL);
+	TEST_ASSERT(filter_writer->ctx != NULL);
 
-// static int	__test_io_pipe_unidir(void)
-// {
+	const size_t B64_IN_BLOCK_SIZE = 3;
+
+	ssize_t	wbytes = 0;
+	uint8_t *buf = test_content.content;
+	size_t bufsize = test_content.size;
+	while (bufsize >= B64_IN_BLOCK_SIZE) {
+		wbytes = io_v2_write(filter_writer, buf, bufsize);
+		if (wbytes < 0) {
+			break ;
+		}
+		if (wbytes > bufsize) {
+			TEST_LOG(ERROR, UNEXPECTED_ERROR);
+			TEST_FAIL();
+		}
+		buf += wbytes;
+		bufsize -= wbytes;
+	}
+	TEST_ASSERT(filter_writer->status == IO_V2_STATUS_OK);
+	// TEST_LOG(DEBUG, "filter write update: enc_content.size = %zu", enc_content.size);
+	// TEST_LOG(DEBUG, "filter write update: enc_content.content = `%s`", ft_ostr_to_cstr(&enc_content, 0, enc_content.size));
+
+	wbytes = io_v2_finish(filter_writer);
+	TEST_ASSERT(wbytes > 0);
+	TEST_ASSERT(filter_writer->status == IO_V2_STATUS_FINISHED);
+	// TEST_LOG(DEBUG, "filter write finish: enc_content.size = %zu", enc_content.size);
+	// TEST_LOG(DEBUG, "filter write finish: ref_content.size = %zu", ref_content.size);
+	// TEST_LOG(DEBUG, "filter write finish: enc_content.content = `%s`", ft_ostr_to_cstr(&enc_content, 0, enc_content.size));
+	// TEST_LOG(DEBUG, "filter write finish: ref_content.content = `%s`", ft_ostr_to_cstr(&ref_content, 0, ref_content.size));
+	TEST_ASSERT(enc_content.size == ref_content.size);
+	TEST_ASSERT(ft_memcmp(enc_content.content, ref_content.content, ref_content.size) == 0);
+	// // read should error since stream is at EOF
+	// rbytes = io_v2_write(filter_writer, buf, bufsize);
+	// TEST_ASSERT(rbytes < 0);
+
+	// // 2. close ok
+	// ssize_t ret = io_v2_close(filter_writer);
+	// TEST_ASSERT(ret == 0);
+	// TEST_ASSERT(filter_writer->status == IO_V2_STATUS_CLOSED);
+	// TEST_ASSERT(downstream->status == IO_V2_STATUS_CLOSED);
+	// // read should error since stream is closed
+	// rbytes = io_v2_write(filter_writer, buf, bufsize);
+	// TEST_ASSERT(rbytes < 0);
+
+	// // 3. read error
+	// if (SSL_OK != io_v2_file_reader(&downstream, __bin_file_path)) {
+	// 	TEST_LOG(ERROR, IO_INIT_ERROR);
+	// 	TEST_FAIL();
+	// }
+	// b64_ctx = (__t_b64_transform_ctx){0};
+
+	// if (SSL_OK != io_v2_filter_writer(&filter_writer, downstream, __transform_mock_error, __transform_mock_error, &b64_ctx)) {
+	// 	TEST_LOG(ERROR, IO_INIT_ERROR);
+	// 	TEST_FAIL();
+	// }
+	// rbytes = 0;
+	// tbytes = 0;
+	// while (1) {
+	// 	rbytes = io_v2_write(filter_writer, buf, bufsize);
+	// 	if (rbytes < 0) {
+	// 		break ;
+	// 	}
+	// 	ft_ostr_append(&test_content, buf, rbytes);
+	// 	tbytes += rbytes;
+	// }
+	// TEST_ASSERT(filter_writer->status == IO_V2_STATUS_ERROR);
+	// // read should error since stream is in error
+	// rbytes = io_v2_write(filter_writer, buf, bufsize);
+	// TEST_ASSERT(rbytes < 0);
+
+	TEST_PASS();
+}
+
+static int	__test_io_pipe_unidir(void)
+{
+	TEST_TODO("__test_io_pipe_unidir");
 // 	t_io_v2_pipe	*pipe;
 // 	t_io_v2_stream	*upstream, *downstream;
 // 	t_ostring		test_content, ref_content;
