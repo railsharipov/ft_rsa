@@ -5,7 +5,7 @@
 # include <common.h>
 #include <libft.h>
 
-# define IO_BUFSIZE 512
+# define IO_BUFSIZE 1024
 
 # define IO_INIT_ERROR		"i/o init error"
 # define IO_READ_ERROR		"i/o read error"
@@ -112,25 +112,12 @@ typedef enum e_io_v2_status {
 	IO_V2_STATUS_CLOSED	  = -4,
 } t_io_v2_status;
 
-struct s_io_v2_pipe;
-
 typedef struct s_io_v2_stream {
 	t_io_v2_interface	interface;
 	t_io_v2_flag		flags;
 	t_io_v2_status		status;
 	void				*ctx;
 } t_io_v2_stream;
-
-typedef enum e_io_v2_pipe_type {
-	IO_V2_PIPE_TYPE_UNIDIR,
-	IO_V2_PIPE_TYPE_BIDIR,
-} t_io_v2_pipe_type;
-
-typedef struct s_io_v2_pipe {
-	t_io_v2_pipe_type	type;
-	t_io_v2_status		status;
-	void				*ctx;
-} t_io_v2_pipe;
 
 ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
 ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
@@ -150,15 +137,31 @@ int		io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
 int		io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
 
 int 	io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
-	t_func_transform filter_update, t_func_transform filter_final, void *filter_ctx);
+							t_func_transform update, t_func_transform final, void *filter_ctx);
 
 int 	io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
-	t_func_transform filter_update, t_func_transform filter_final, void *filter_ctx);
+							t_func_transform update, t_func_transform final, void *filter_ctx);
 
-int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
-int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *source, t_io_v2_stream *destination, size_t capacity);
-ssize_t	io_v2_pipe_pump(t_io_v2_pipe *pipe, size_t nbytes);
-ssize_t	io_v2_pipe_flush(t_io_v2_pipe *pipe);
-ssize_t	io_v2_pipe_close(t_io_v2_pipe *pipe);
+typedef enum e_io_v2_pipe_status {
+    IO_V2_STATUS_PIPE_OK,
+    IO_V2_STATUS_PIPE_END,
+    IO_V2_STATUS_PIPE_ERROR
+} t_io_v2_pipe_status;
+
+typedef enum e_io_v2_pipe_type {
+	IO_V2_PIPE_TYPE_UNIDIR,
+	IO_V2_PIPE_TYPE_BIDIR,
+} t_io_v2_pipe_type;
+
+typedef struct s_io_v2_pipe {
+	t_io_v2_pipe_type	type;
+	t_io_v2_pipe_status	status;
+	void				*ctx;
+} t_io_v2_pipe;
+
+int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
+int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
+int		io_v2_pipe_del(t_io_v2_pipe *pipe);
+int		io_v2_pipe_pump(t_io_v2_pipe *pipe);
 
 #endif
