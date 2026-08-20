@@ -105,10 +105,11 @@ typedef enum e_io_v2_flag {
 } t_io_v2_flag;
 
 typedef enum e_io_v2_status {
-	IO_V2_STATUS_OK		= 0,
-	IO_V2_STATUS_ERROR	= -1,
-	IO_V2_STATUS_EOF	= -2,
-	IO_V2_STATUS_CLOSED	= -3,
+	IO_V2_STATUS_OK		  = 0,
+	IO_V2_STATUS_ERROR	  = -1,
+	IO_V2_STATUS_EOF	  = -2,
+	IO_V2_STATUS_FINISHED = -3,
+	IO_V2_STATUS_CLOSED	  = -4,
 } t_io_v2_status;
 
 struct s_io_v2_pipe;
@@ -133,6 +134,7 @@ typedef struct s_io_v2_pipe {
 
 ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
 ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
+ssize_t	io_v2_finish(t_io_v2_stream *stream);
 ssize_t	io_v2_flush(t_io_v2_stream *stream);
 ssize_t	io_v2_close(t_io_v2_stream *stream);
 

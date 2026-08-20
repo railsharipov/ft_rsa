@@ -4,6 +4,7 @@
 # define __IO_INVALID_INTFC_ERROR	"interface is invalid"
 
 # define __IO_CLOSED_STATUS_ERROR	"stream is closed"
+# define __IO_CLOSED_FINISHED_ERROR	"stream is finished"
 # define __IO_ERROR_STATUS_ERROR	"stream is in error state"
 # define __IO_EOF_STATUS_ERROR		"stream is at EOF"
 # define __IO_INVALID_STATUS_ERROR	"stream has invalid status"
@@ -82,6 +83,9 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
         case IO_V2_STATUS_CLOSED:
 			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
             return (-1);
+        case IO_V2_STATUS_FINISHED:
+			SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
+            return (-1);
         default:
             SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
             return (-1);
@@ -102,6 +106,54 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
     return (result);
 }
 
+ssize_t io_v2_finish(t_io_v2_stream *stream)
+{
+    ssize_t result;
+
+    SSL_LOG(TRACE, "finishing stream %p", stream);
+
+    if (NULL == stream) {
+        SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+        return (-1);
+    }
+    if (!SSL_FLAG(IO_V2_FLAG_FINISH, stream->flags)) {
+        SSL_LOG(ERROR, "stream is not finishable");
+        return (-1);
+    }
+    switch (stream->status) {
+        case IO_V2_STATUS_OK:
+            break;
+        case IO_V2_STATUS_ERROR:
+			SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
+            return (-1);
+        case IO_V2_STATUS_CLOSED:
+			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
+            return (-1);
+        case IO_V2_STATUS_FINISHED:
+			SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
+            return (-1);
+        default:
+            SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
+            return (-1);
+    }
+    if (NULL == stream->interface.finish) {
+        stream->status = IO_V2_STATUS_ERROR;
+        SSL_LOG(ERROR, __IO_INVALID_INTFC_ERROR);
+        return (-1);
+    }
+    result = stream->interface.finish(stream->ctx);
+    if (result < 0) {
+        SSL_LOG(ERROR, "interface finish error");
+        stream->status = IO_V2_STATUS_ERROR;
+        return (-1);
+    }
+	SSL_LOG(TRACE, "wrote %zu bytes", result);
+	stream->status = IO_V2_STATUS_FINISHED;
+	SSL_LOG(TRACE, "finished stream");
+
+    return (result);
+}
+
 ssize_t io_v2_flush(t_io_v2_stream *stream)
 {
     ssize_t result;
@@ -114,10 +166,6 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
     }
     if (!SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
         SSL_LOG(ERROR, "stream is not flushable");
-        return (-1);
-    }
-    if (!SSL_FLAG(IO_V2_FLAG_WRITE, stream->flags)) {
-        SSL_LOG(ERROR, "stream is not writable");
         return (-1);
     }
     switch (stream->status) {
