@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <rsa.h>
 
 void	rsa_key_items_del(t_rsa *key)

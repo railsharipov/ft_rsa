@@ -1,6 +1,7 @@
-#include <libft/list.h>
+#include <libft.h>
 #include <json.h>
 #include <bnum.h>
+#include <logger.h>
 
 static void __delete_array(void *content);
 static void __delete_object(void *content);
@@ -85,4 +86,3 @@ static void __delete_bytes(void *content)
 	SSL_LOG(TRACE, "deleting bytes");
 	LIBFT_FREE(content);
 }
-

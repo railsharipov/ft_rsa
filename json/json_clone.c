@@ -1,10 +1,8 @@
 #include <common.h>
+#include <logger.h>
 #include <json.h>
 #include <bnum.h>
-#include <libft/node.h>
-#include <libft/string.h>
-#include <libft/tuple.h>
-#include <libft/list.h>
+#include <libft.h>
 
 static int	__copy_node(t_node *src, t_node *dst);
 static int	__copy_node_of_type(t_node *src, t_node *dst, int type);

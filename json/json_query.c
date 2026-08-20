@@ -1,11 +1,7 @@
 #include <json.h>
 #include <bnum.h>
-#include <libft/htable.h>
-#include <libft/alloc.h>
-#include <libft/logger.h>
-#include <libft/string.h>
-#include <libft/list.h>
-#include <libft/tuple.h>
+#include <logger.h>
+#include <libft.h>
 
 /*
 **	QUERY ::= SEQUENCE {

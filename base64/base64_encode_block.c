@@ -1,6 +1,6 @@
 #include <common.h>
+#include <logger.h>
 #include <base64.h>
-#include <bnum.h>
 
 static const char	SM[64] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',

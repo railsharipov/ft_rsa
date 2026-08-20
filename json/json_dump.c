@@ -1,7 +1,7 @@
 #include <json.h>
 #include <bnum.h>
-#include <libft/string.h>
-#include <libft/htable.h>
+#include <logger.h>
+#include <libft.h>
 
 static int	__f_default_dumper(t_node *node, t_ostring *ostring);
 static int	__dumps_object(t_node *node, t_ostring *ostring);

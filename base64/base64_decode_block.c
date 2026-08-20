@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <base64.h>
 
 static const unsigned char	BM[128] = {

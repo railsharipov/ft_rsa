@@ -1,10 +1,8 @@
 #include <common.h>
+#include <logger.h>
 #include <json.h>
 #include <bnum.h>
-#include <libft/node.h>
-#include <libft/string.h>
-#include <libft/tuple.h>
-#include <libft/list.h>
+#include <libft.h>
 
 #define __JSON_INVALID_JSON_ERROR	"invalid json"
 #define __JSON_INVALID_NODE_ERROR	"invalid json node"

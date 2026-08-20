@@ -1,7 +1,8 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <rsa.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 static t_num	*__asn_int(t_htbl *htbl, const char *key);
 static int		__private_key_items(t_htbl *asn_items, t_rsa **rsa_key);

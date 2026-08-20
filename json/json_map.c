@@ -1,10 +1,8 @@
 #include <common.h>
+#include <logger.h>
 #include <json.h>
 #include <bnum.h>
-#include <libft/node.h>
-#include <libft/string.h>
-#include <libft/tuple.h>
-#include <libft/list.h>
+#include <libft.h>
 
 static int	__map_node(t_node *node, int type, t_func_json_map f, t_node **ret_node);
 
