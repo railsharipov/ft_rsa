@@ -1,9 +1,8 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <map.h>
-#include <libft/node.h>
-#include <libft/string.h>
-#include <libft/ntree.h>
+#include <libft.h>
 
 static t_node	*__oid_tree;
 

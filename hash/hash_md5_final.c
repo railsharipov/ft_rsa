@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 void	hash_md5_final(t_hash *ctx)

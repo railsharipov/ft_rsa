@@ -1,5 +1,6 @@
 #include <common.h>
-#include <libft/htable.h>
+#include <logger.h>
+#include <libft.h>
 
 int	rand_mseed(uint64_t *seed, int n)
 {

@@ -1,11 +1,8 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <json.h>
-#include <libft/node.h>
-#include <libft/ntree.h>
-#include <libft/2darray.h>
-#include <libft/string.h>
-#include <libft/list.h>
+#include <libft.h>
 #include <bnum.h>
 
 #define __ASNQ_BAD_QUERY_ERROR "bad query"

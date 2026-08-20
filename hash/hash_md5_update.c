@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 static const t_md5_word	SCHED[] = {
@@ -89,7 +90,7 @@ void	hash_md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 static void	__rotate(t_md5_word *var, t_md5_word *t1, t_md5_word *t2, t_md5_word *i, t_md5_word *word)
 {
 	*t1 = *t1 + var[0] + K[*i] + word[*t2];
-	var[0] = var[3];	
+	var[0] = var[3];
 	var[3] = var[2];
 	var[2] = var[1];
 	var[1] = var[1] + LROT(*t1, SCHED[*i]);

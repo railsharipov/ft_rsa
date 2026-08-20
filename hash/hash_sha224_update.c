@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 void	hash_sha224_update_stream(t_hash *ctx, t_iodes *iodes)

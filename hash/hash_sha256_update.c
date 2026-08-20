@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static t_sha256_word	sched[64];
 

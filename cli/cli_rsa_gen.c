@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <cli.h>
 #include <rsa.h>
 #include <asn.h>
@@ -6,8 +7,7 @@
 #include <pem.h>
 #include <rand.h>
 #include <io.h>
-#include <libft/node.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 static t_htbl		*__rsa_htable;
 
@@ -81,7 +81,7 @@ static int __run_task(void)
 	int		ret;
 
 	SSL_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
-	
+
 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand)) {
 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 		return (SSL_ERR);

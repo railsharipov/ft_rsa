@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <cli.h>
 #include <rand.h>
 #include <map.h>
@@ -7,8 +8,7 @@
 #include <der.h>
 #include <rsa.h>
 #include <des.h>
-#include <libft/node.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 static char			*TYPE_RSA_PRIVATE_KEY = "PRIVATE KEY";
 static char			*TYPE_X509_PUBLIC_KEY = "PUBLIC KEY";
@@ -315,7 +315,7 @@ static int	__decode_key(t_node **asn_key)
 
 	ret = SSL_ERR;
 	pem_init(&pem);
-	
+
 	if (RSA_PEM == __inform) {
 		der_key = ft_ostr_new();
 		if (SSL_OK != pem_decode(&pem, &__inkey, der_key, __passin)) {

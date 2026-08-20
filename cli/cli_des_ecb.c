@@ -1,11 +1,12 @@
 #include <common.h>
+#include <logger.h>
 // #include <io.h>
 // #include <des.h>
 // #include <base64.h>
 // #include <cli.h>
 // #include <rand.h>
-// #include <libft/htable.h>
-// #include <libft/bytes.h>
+// #include <libft.h>
+// #include <libft.h>
 
 // static unsigned char	__key[8];
 // static unsigned char	__salt[8];
@@ -156,7 +157,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 		input.content = (unsigned char *)input.content + 16;
 // 		input.size -= 16;
 // 	}
-	
+
 // 	if (__pass) {
 // 		if (SSL_OK != rand_openssl_kdf(__key, __salt, NULL, __pass)) {
 // 			SSL_LOG(ERROR, "kdf failed");

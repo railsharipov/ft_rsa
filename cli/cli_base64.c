@@ -11,9 +11,10 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <cli.h>
 #include <base64.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 static int	__get_task(const char **opt);
 static int	__run_task(void);

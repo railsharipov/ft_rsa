@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 void	hash_sha512_224_update_stream(t_hash *ctx, t_iodes *iodes)

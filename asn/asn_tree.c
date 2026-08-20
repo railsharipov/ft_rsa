@@ -1,13 +1,10 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <der.h>
 #include <json.h>
 #include <io.h>
-#include <libft/node.h>
-#include <libft/ntree.h>
-#include <libft/2darray.h>
-#include <libft/string.h>
-#include <libft/list.h>
+#include <libft.h>
 #include <bnum.h>
 
 // temporary
@@ -36,7 +33,7 @@ void	asn_tree_items_del(t_htbl *items)
 	return ;
 }
 
-// 
+//
 
 t_node	*asn_tree_create(t_node *json_schema)
 {
@@ -145,7 +142,7 @@ t_node	*asn_tree_create(t_node *json_schema)
 			for (t_node *child = data->content; child != NULL; child = child->next) {
 				SSL_LOG(TRACE, "creating asn node from json array item: %p", child);
 				child_asn_node = asn_tree_create(child);
-				
+
 				if (NULL == child_asn_node) {
 					SSL_LOG(ERROR, "failed to create asn node for asn sequence");
 					goto label_error;
@@ -162,7 +159,7 @@ t_node	*asn_tree_create(t_node *json_schema)
 
 		} else {
 			SSL_LOG(TRACE, "data type is json %s", json_get_type_name(data->type));
-			
+
 			switch (asn_item->tagnum) {
 				case ASN_TAGNUM_INT:
 					SSL_LOG(TRACE, "creating asn node from json number: %p, size: %zu", data->content, data->size);

@@ -1,11 +1,11 @@
 #include <common.h>
+#include <logger.h>
 #include <rand.h>
 #include <base64.h>
 #include <pem.h>
 #include <des.h>
 #include <textutil.h>
-#include <libft/2darray.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 // Encrypted PEM format:
 //

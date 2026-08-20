@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <cli.h>
 #include <io.h>
 #include <rand.h>
@@ -7,9 +8,7 @@
 #include <asn.h>
 #include <pem.h>
 #include <der.h>
-#include <libft/node.h>
-#include <libft/htable.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static char		*TYPE_RSA_PRIVATE_KEY = "PRIVATE KEY";
 static char		*TYPE_X509_PUBLIC_KEY = "PUBLIC KEY";

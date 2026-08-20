@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static void	__swap_bytes_32(uint32_t *arr, size_t size);
 

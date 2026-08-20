@@ -1,15 +1,11 @@
 #include <common.h>
+#include <logger.h>
 #include <io.h>
 #include <asn.h>
 #include <bnum.h>
 #include <der.h>
 #include <json.h>
-#include <libft/list.h>
-#include <libft/node.h>
-#include <libft/htable.h>
-#include <libft/2darray.h>
-#include <libft/bytes.h>
-#include <libft/string.h>
+#include <libft.h>
 #include <unistd.h>
 
 static int		__decode(t_node **node, t_iodes *in);

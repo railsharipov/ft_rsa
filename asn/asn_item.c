@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 
 t_iasn *asn_item_create(void)

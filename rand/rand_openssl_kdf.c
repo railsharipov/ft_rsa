@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <des.h>
 #include <hash.h>
 #include <rand.h>

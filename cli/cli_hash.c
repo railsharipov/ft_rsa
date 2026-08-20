@@ -12,10 +12,10 @@
 
 #include <unistd.h>
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 #include <cli.h>
-#include <libft/htable.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 # undef __HASH_FUNCS
 # define __HASH_FUNCS(S)	hash_ ## S ## _init ,\

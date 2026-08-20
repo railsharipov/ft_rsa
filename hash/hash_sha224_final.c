@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 void	hash_sha224_final(t_hash *ctx)

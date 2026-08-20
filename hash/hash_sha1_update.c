@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static t_sha1_word		sched[80];
 

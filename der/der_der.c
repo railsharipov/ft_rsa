@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <der.h>
 
 t_ostring *der_init(void)

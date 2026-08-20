@@ -1,12 +1,10 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <bnum.h>
 #include <der.h>
 #include <io.h>
-#include <libft/node.h>
-#include <libft/htable.h>
-#include <libft/2darray.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static int	__encode(t_node *node, t_iodes *out);
 
@@ -28,9 +26,9 @@ typedef int	(*t_func_der_encode)(uint8_t tag, t_ostring *encoded, t_ostring *dat
 int	der_encode(t_node *tree, t_ostring *encoded)
 {
 	t_iodes	iodes;
-	
+
 	SSL_LOG(TRACE, "starting DER encode octet string");
-	
+
 	if (NULL == tree || NULL == encoded) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);

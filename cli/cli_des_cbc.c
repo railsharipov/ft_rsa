@@ -1,11 +1,12 @@
 #include <common.h>
+#include <logger.h>
 // #include <io.h>
 // #include <des.h>
 // #include <base64.h>
 // #include <cli.h>
 // #include <rand.h>
-// #include <libft/htable.h>
-// #include <libft/bytes.h>
+// #include <libft.h>
+// #include <libft.h>
 
 // static unsigned char	__key[8];
 // static unsigned char	__salt[8];
@@ -148,7 +149,7 @@ int	cli_des_cbc(const char **opt, const char *name_comm)
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-	
+
 // 	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
 // 		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
 // 			SSL_LOG(ERROR, "invalid salted format");

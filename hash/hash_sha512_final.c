@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static void __swap_bytes_64(t_sha512_word *arr, size_t size);
 

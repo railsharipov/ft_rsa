@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 void	hash_sha512_224_final(t_hash *ctx)

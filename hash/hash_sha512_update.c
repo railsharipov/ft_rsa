@@ -1,6 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static t_sha512_word	sched[80];
 
@@ -155,4 +156,3 @@ static void	__update_hash(t_sha512_word *var, t_sha512_word *hash)
 	var[6] = hash[6];
 	var[7] = hash[7];
 }
-

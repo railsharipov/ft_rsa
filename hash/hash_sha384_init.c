@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <hash.h>
 
 static const t_sha384_word	HASH_INIT_VECT[] = {

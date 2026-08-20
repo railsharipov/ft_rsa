@@ -1,8 +1,7 @@
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
-#include <libft/ntree.h>
-#include <libft/list.h>
-#include <libft/string.h>
+#include <libft.h>
 
 int	asn_transform(t_node *src_tree, t_node *dest_tree)
 {

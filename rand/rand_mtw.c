@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <rand.h>
 
 static uint64_t	MT[MT_N];

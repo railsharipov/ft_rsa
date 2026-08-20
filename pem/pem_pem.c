@@ -1,4 +1,5 @@
 #include <common.h>
+#include <logger.h>
 #include <pem.h>
 
 t_pem	*pem_create(const char *label, const uint8_t salt[8], t_pem_proc proc, t_pem_cipher cipher)

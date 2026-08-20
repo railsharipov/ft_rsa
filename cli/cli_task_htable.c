@@ -11,8 +11,9 @@
 /* ************************************************************************** */
 
 #include <common.h>
+#include <logger.h>
 #include <cli.h>
-#include <libft/htable.h>
+#include <libft.h>
 
 t_htbl  *cli_task_htable(const t_task *task, int size)
 {

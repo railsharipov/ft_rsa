@@ -1,9 +1,9 @@
 #include <unistd.h>
 #include <common.h>
+#include <logger.h>
 #include <asn.h>
 #include <bnum.h>
-#include <libft/ntree.h>
-#include <libft/bytes.h>
+#include <libft.h>
 
 static const int	INDENT_SPACE_CNT = 4;
 
