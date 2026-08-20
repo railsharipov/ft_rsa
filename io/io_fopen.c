@@ -1,7 +1,8 @@
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <io.h>
-#include <libft/std.h>
+#include <libft.h>
+#include <logger.h>
 
 typedef struct	s_io_param
 {
@@ -26,7 +27,7 @@ static t_io_param	*__get_param(uint32_t);
 int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 {
 	SSL_LOG(TRACE, "io fopen with flags=0x%x, filename=%s", flags, filename ? filename : "");
-	
+
 	t_io_param	*param;
 
 	if (NULL == iodes) {
@@ -87,4 +88,3 @@ static t_io_param	*__get_param(uint32_t flags)
 
 	return (NULL);
 }
-

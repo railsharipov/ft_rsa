@@ -2,11 +2,12 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <io.h>
+#include <logger.h>
 
 void	io_fclose_multi(t_iodes *iodes, ...)
 {
 	va_list	ap;
-	
+
 	SSL_LOG(TRACE, "closing multiple file descriptors");
 	io_fclose(iodes);
 

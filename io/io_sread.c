@@ -1,6 +1,7 @@
 #include <stdint.h>
-#include <libft/string.h>
+#include <libft.h>
 #include <io.h>
+#include <logger.h>
 
 static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {
@@ -12,7 +13,7 @@ static ssize_t __sread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
 	delim = (uint32_t)iodes->delim;
 	rbytes = 0;
-	
+
 	SSL_LOG(TRACE, "reading %zu bytes, osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
 
 	while ((rbytes < nbytes) && (iodes->seek < osbuf->size)) {
@@ -31,7 +32,7 @@ static ssize_t __sread(t_iodes *iodes, char *buf, size_t nbytes)
 	osbuf = iodes->osbuf;
 	nbytes = MIN(nbytes, MAX(0, osbuf->size - iodes->seek));
 	rbytes = 0;
-	
+
 	SSL_LOG(TRACE, "reading %zu bytes, osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
 
 	while (nbytes-- > 0)

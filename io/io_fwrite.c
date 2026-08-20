@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <io.h>
+#include <logger.h>
 
 static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 {
@@ -17,7 +18,7 @@ static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 	width = (size_t)iodes->lwidth;
 	offset = MIN(nbytes, (iodes->seek % width));
 	wbytes = 0;
-	
+
 	SSL_LOG(TRACE, "width=%zd, offset=%zd", width, offset);
 
 	/* Finish last line if it's not [width] bytes long */
@@ -60,7 +61,7 @@ static ssize_t	__fwrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 static ssize_t __fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
 	ssize_t	wbytes;
-	
+
 	SSL_LOG(TRACE, "writing %zu bytes to fd %d", nbytes, iodes->fd);
 	wbytes = write(iodes->fd, buf, nbytes);
 
@@ -81,7 +82,7 @@ static ssize_t __fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
 ssize_t	io_fwrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
 	ssize_t	wbytes;
-	
+
 	SSL_LOG(TRACE, "io fwrite with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
 
 	if (NULL == buf || NULL == iodes) {

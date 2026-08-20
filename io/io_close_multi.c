@@ -2,11 +2,12 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <io.h>
+#include <logger.h>
 
 void	io_close_multi(t_iodes *iodes, ...)
 {
 	SSL_LOG(TRACE, "entering function with first iodes=%p", iodes);
-	
+
 	va_list	ap;
 	int		closed_count = 0;
 
@@ -33,6 +34,6 @@ void	io_close_multi(t_iodes *iodes, ...)
 	}
 
 	va_end(ap);
-	
+
 	SSL_LOG(TRACE, "function completed, closed %d file descriptors", closed_count);
 }

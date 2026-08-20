@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <io.h>
-#include <libft/string.h>
-#include <libft/std.h>
+#include <libft.h>
+#include <logger.h>
 
 int	io_osbuf(t_iodes *iodes, uint32_t flags, t_ostring *osbuf)
 {
@@ -30,7 +30,7 @@ int	io_osbuf(t_iodes *iodes, uint32_t flags, t_ostring *osbuf)
 		}
 		SSL_LOG(TRACE, "osbuf content=%p, size=%zu", osbuf->content, osbuf->size);
 	}
-	
+
 	iodes->osbuf = osbuf;
 	iodes->mode = IO_MODE_OSBUF;
 

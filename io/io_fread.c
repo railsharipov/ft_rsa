@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <io.h>
+#include <logger.h>
 
 static ssize_t __fread_delim(t_iodes *iodes, char *buf, size_t nbytes)
 {
@@ -65,7 +66,7 @@ static ssize_t __fread(t_iodes *iodes, char *buf, size_t nbytes)
 ssize_t io_fread(t_iodes *iodes, char *buf, size_t nbytes)
 {
 	SSL_LOG(TRACE, "io fread with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
-	
+
 	ssize_t	rbytes;
 
 	if (NULL == buf || NULL == iodes) {

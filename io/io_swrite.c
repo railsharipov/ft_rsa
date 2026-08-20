@@ -1,6 +1,6 @@
-#include <libft/string.h>
-#include <libft/alloc.h>
+#include <libft.h>
 #include <io.h>
+#include <logger.h>
 
 static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 {
@@ -21,7 +21,7 @@ static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 	width = (size_t)iodes->lwidth;
 	offset = MIN(nbytes, (iodes->seek % width));
 	wbytes = 0;
-	
+
 	SSL_LOG(TRACE, "width=%zd, offset=%zd, current osbuf size=%zu, seek=%zd", width, offset, osbuf->size, iodes->seek);
 
 	/* Finish last line if it's not [width] bytes long */
@@ -47,7 +47,7 @@ static ssize_t	__swrite_delim(t_iodes *iodes, const char *buf, size_t nbytes)
 
 	ft_ostr_append(osbuf, wbuf, wbytes);
 	iodes->seek += wbytes;
-	
+
 	SSL_LOG(TRACE, "wrote %zd bytes, new osbuf size=%zu, seek=%zd", wbytes, osbuf->size, iodes->seek);
 	return (wbytes);
 }
@@ -61,7 +61,7 @@ static ssize_t __swrite(t_iodes *iodes, const char *buf, size_t nbytes)
 	SSL_LOG(TRACE, "writing %zd bytes to osbuf, current osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
 	ft_ostr_append(osbuf, (char *)buf, nbytes);
 	iodes->seek += nbytes;
-	
+
 	SSL_LOG(TRACE, "wrote %zd bytes, new osbuf size=%zu, seek=%zd", nbytes, osbuf->size, iodes->seek);
 	return (nbytes);
 }
@@ -69,7 +69,7 @@ static ssize_t __swrite(t_iodes *iodes, const char *buf, size_t nbytes)
 ssize_t	io_swrite(t_iodes *iodes, const char *buf, size_t nbytes)
 {
 	SSL_LOG(TRACE, "io swrite with iodes=%p, buf=%p, nbytes=%zu", iodes, buf, nbytes);
-	
+
 	ssize_t	wbytes;
 
 	if (NULL == buf || NULL == iodes) {

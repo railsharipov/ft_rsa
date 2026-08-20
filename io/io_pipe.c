@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <io.h>
-#include <libft/string.h>
-#include <libft/std.h>
+#include <libft.h>
+#include <logger.h>
 
 int io_pipe(t_iodes *iodes, uint32_t flags, t_iodes *iodes_in, t_iodes *iodes_out)
 {

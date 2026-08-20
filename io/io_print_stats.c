@@ -1,5 +1,5 @@
 #include <io.h>
-#include <libft/std.h>
+#include <libft.h>
 
 static const struct {
 	int		mode;
