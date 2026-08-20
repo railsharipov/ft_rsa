@@ -228,6 +228,7 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
 			break;
 		case IO_V2_STATUS_EOF:
         case IO_V2_STATUS_ERROR:
+        case IO_V2_STATUS_FINISHED:
             break;
         case IO_V2_STATUS_CLOSED:
 			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);

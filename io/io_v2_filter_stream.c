@@ -59,7 +59,7 @@ int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 	ctx->f_update = f_update;
 	ctx->f_final = f_final;
 	ctx->filter_ctx = filter_ctx;
-	ctx->mode = FILTER_STREAM;
+	ctx->mode = FILTER_TRANSFORM_UPDATE;
 	ctx->in = ft_buffer_new(IO_BUFSIZE);
 	ctx->out = ft_buffer_new(IO_BUFSIZE);
 
@@ -103,7 +103,7 @@ int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 	ctx->f_update = f_update;
 	ctx->f_final = f_final;
 	ctx->filter_ctx = filter_ctx;
-	ctx->mode = FILTER_STREAM;
+	ctx->mode = FILTER_TRANSFORM_UPDATE;
 	ctx->in = ft_buffer_new(IO_BUFSIZE);
 	ctx->out = ft_buffer_new(IO_BUFSIZE);
 

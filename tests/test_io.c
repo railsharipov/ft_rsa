@@ -1258,44 +1258,51 @@ static int	__test_io_filter_writer(void)
 	// TEST_LOG(DEBUG, "filter write finish: ref_content.content = `%s`", ft_ostr_to_cstr(&ref_content, 0, ref_content.size));
 	TEST_ASSERT(enc_content.size == ref_content.size);
 	TEST_ASSERT(ft_memcmp(enc_content.content, ref_content.content, ref_content.size) == 0);
-	// // read should error since stream is at EOF
-	// rbytes = io_v2_write(filter_writer, buf, bufsize);
-	// TEST_ASSERT(rbytes < 0);
+	// write should error since stream is at FINISHED
+	wbytes = io_v2_write(filter_writer, "banana", 6);
+	TEST_LOG(DEBUG, "filter write close: wbytes = %zd", wbytes);
+	TEST_ASSERT(wbytes < 0);
+	TEST_ASSERT(filter_writer->status == IO_V2_STATUS_FINISHED);
 
-	// // 2. close ok
-	// ssize_t ret = io_v2_close(filter_writer);
-	// TEST_ASSERT(ret == 0);
-	// TEST_ASSERT(filter_writer->status == IO_V2_STATUS_CLOSED);
-	// TEST_ASSERT(downstream->status == IO_V2_STATUS_CLOSED);
-	// // read should error since stream is closed
-	// rbytes = io_v2_write(filter_writer, buf, bufsize);
-	// TEST_ASSERT(rbytes < 0);
+	// 2. close ok
+	ssize_t ret = io_v2_close(filter_writer);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(filter_writer->status == IO_V2_STATUS_CLOSED);
+	TEST_ASSERT(downstream->status == IO_V2_STATUS_CLOSED);
+	// write should error since stream is closed
+	wbytes = io_v2_write(filter_writer, "banana", 6);
+	TEST_ASSERT(wbytes < 0);
 
-	// // 3. read error
-	// if (SSL_OK != io_v2_file_reader(&downstream, __bin_file_path)) {
-	// 	TEST_LOG(ERROR, IO_INIT_ERROR);
-	// 	TEST_FAIL();
-	// }
-	// b64_ctx = (__t_b64_transform_ctx){0};
+	// 3. write error
+	ft_ostr_init(&enc_content);
+	if (SSL_OK != io_v2_bytes_writer(&downstream, &enc_content)) {
+		TEST_LOG(ERROR, IO_INIT_ERROR);
+		TEST_FAIL();
+	}
+	b64_ctx = (__t_b64_transform_ctx){0};
 
-	// if (SSL_OK != io_v2_filter_writer(&filter_writer, downstream, __transform_mock_error, __transform_mock_error, &b64_ctx)) {
-	// 	TEST_LOG(ERROR, IO_INIT_ERROR);
-	// 	TEST_FAIL();
-	// }
-	// rbytes = 0;
-	// tbytes = 0;
-	// while (1) {
-	// 	rbytes = io_v2_write(filter_writer, buf, bufsize);
-	// 	if (rbytes < 0) {
-	// 		break ;
-	// 	}
-	// 	ft_ostr_append(&test_content, buf, rbytes);
-	// 	tbytes += rbytes;
-	// }
-	// TEST_ASSERT(filter_writer->status == IO_V2_STATUS_ERROR);
-	// // read should error since stream is in error
-	// rbytes = io_v2_write(filter_writer, buf, bufsize);
-	// TEST_ASSERT(rbytes < 0);
+	if (SSL_OK != io_v2_filter_writer(&filter_writer, downstream, __transform_mock_error, __transform_mock_error, &b64_ctx)) {
+		TEST_LOG(ERROR, IO_INIT_ERROR);
+		TEST_FAIL();
+	}
+	buf = test_content.content;
+	bufsize = test_content.size;
+	while (bufsize >= B64_IN_BLOCK_SIZE) {
+		wbytes = io_v2_write(filter_writer, buf, bufsize);
+		if (wbytes < 0) {
+			break ;
+		}
+		if (wbytes > bufsize) {
+			TEST_LOG(ERROR, UNEXPECTED_ERROR);
+			TEST_FAIL();
+		}
+		buf += wbytes;
+		bufsize -= wbytes;
+	}
+	TEST_ASSERT(filter_writer->status == IO_V2_STATUS_ERROR);
+	// read should error since stream is in error
+	wbytes = io_v2_write(filter_writer, buf, bufsize);
+	TEST_ASSERT(wbytes < 0);
 
 	TEST_PASS();
 }
