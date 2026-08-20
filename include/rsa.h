@@ -4,9 +4,7 @@
 # include <common.h>
 # include <io.h>
 # include <bnum.h>
-# include <libft/string.h>
-# include <libft/logger.h>
-# include <libft/node.h>
+#include <libft.h>
 
 # define RSA_EXPPUB 65537ULL
 # define RM_TRIALS  20

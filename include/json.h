@@ -2,9 +2,7 @@
 # define SSL_JSON_H
 
 # include <common.h>
-# include <libft/node.h>
-# include <libft/std.h>
-# include <libft/logger.h>
+#include <libft.h>
 
 enum	e_json_type {
     JSON_TYPE_BYTES = 1,

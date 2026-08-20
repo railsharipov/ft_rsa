@@ -3,8 +3,7 @@
 
 # include <common.h>
 # include <alloc.h>
-# include <libft/htable.h>
-# include <libft/logger.h>
+#include <libft.h>
 
 # define DEFAULT_CMD	"default"
 

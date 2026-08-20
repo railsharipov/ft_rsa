@@ -3,8 +3,7 @@
 
 # include <common.h>
 # include <io.h>
-# include <libft/string.h>
-# include <libft/logger.h>
+#include <libft.h>
 
 typedef struct s_file {
     char *path;

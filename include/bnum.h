@@ -5,9 +5,7 @@
 # include <inttypes.h>
 # include <stddef.h>
 # include <sys/errno.h>
-# include <libft/std.h>
-# include <libft/alloc.h>
-# include <libft/logger.h>
+#include <libft.h>
 # include <printnl.h>
 
 # define SSL_PRIME_TEST

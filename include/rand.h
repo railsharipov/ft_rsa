@@ -2,7 +2,7 @@
 # define SSL_RAND_H
 
 # include <common.h>
-# include <libft/logger.h>
+#include <libft.h>
 
 # define RAND_DEV	"/dev/random"
 

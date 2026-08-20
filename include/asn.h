@@ -2,9 +2,7 @@
 # define ASN_SPECIFIC_H
 
 # include <common.h>
-# include <libft/node.h>
-# include <libft/htable.h>
-# include <libft/logger.h>
+#include <libft.h>
 
 // ASN.1 - Abstract Syntax Notation One
 // Refer to X.208, X.209, X.608

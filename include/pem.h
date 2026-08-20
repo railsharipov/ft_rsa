@@ -2,7 +2,8 @@
 # define SSL_PEM_H
 
 #include <common.h>
-#include <libft/string.h>
+#include <logger.h>
+#include <libft.h>
 
 typedef enum e_pem_proc {
     PEM_PROC_TYPE_NONE = 0,        // No Proc-Type header (unencrypted)

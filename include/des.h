@@ -3,8 +3,7 @@
 
 # include <common.h>
 # include <io.h>
-# include <libft/string.h>
-# include <libft/logger.h>
+#include <libft.h>
 
 # define DES_BLOCK_SIZE	8
 # define DES_KSCHED_LEN	16
