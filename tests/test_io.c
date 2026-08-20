@@ -19,6 +19,7 @@ static int	__test_io_filter_writer(void);
 static int	__test_io_pipe_unidir(void);
 
 static const char	*__small_text_file_path = "tests/files/text/small.txt";
+static const char	*__medium_text_file_path = "tests/files/text/medium.txt";
 static const char	*__large_text_file_path = "tests/files/text/large.txt";
 
 static const char	*__test_text_file_path = "tests/files/text/test.txt";
@@ -1352,64 +1353,99 @@ static int	__test_io_filter_writer(void)
 
 static int	__test_io_pipe_unidir(void)
 {
-	TEST_TODO("__test_io_pipe_unidir");
-// 	t_io_v2_pipe	*pipe;
-// 	t_io_v2_stream	*upstream, *downstream;
-// 	t_ostring		test_content, ref_content;
-// 	size_t			capacity = 10 * 1024;
-// 	ssize_t			result;
-// 	int				ret;
+	t_io_v2_pipe	*pipe;
+	t_io_v2_stream	*upstream, *downstream;
+	t_ostring		test_content, ref_content;
+	int				ret;
 
-// 	ft_ostr_init(&test_content);
-// 	ft_ostr_init(&ref_content);
+	ft_ostr_init_with_capacity(&test_content, IO_BUFSIZE * 128);
+	ft_ostr_init_with_capacity(&ref_content, IO_BUFSIZE * 128);
 
-// 	if (SSL_OK != file_read_all(__large_text_file_path, &ref_content)) {
-// 		TEST_LOG(ERROR, FILE_READ_ERROR);
-// 		TEST_FAIL();
-// 	}
-// 	TEST_ASSERT(ref_content.size > capacity);
+	if (SSL_OK != file_read_all(__medium_text_file_path, &ref_content)) {
+		TEST_LOG(ERROR, FILE_READ_ERROR);
+		TEST_FAIL();
+	}
 
-// 	if (SSL_OK != io_v2_bytes_reader(&upstream, &ref_content)) {
-// 		TEST_LOG(ERROR, "failed to create bytes reader");
-// 		TEST_FAIL();
-// 	}
-// 	if (SSL_OK != io_v2_bytes_writer(&downstream, &test_content)) {
-// 		TEST_LOG(ERROR, "failed to create bytes writer");
-// 		TEST_FAIL();
-// 	}
+	// 1. Happy path
+	if (SSL_OK != io_v2_bytes_reader(&upstream, &ref_content)) {
+		TEST_LOG(ERROR, "failed to create bytes reader");
+		TEST_FAIL();
+	}
+	if (SSL_OK != io_v2_bytes_writer(&downstream, &test_content)) {
+		TEST_LOG(ERROR, "failed to create bytes writer");
+		TEST_FAIL();
+	}
+	ret = io_v2_pipe_unidir(&pipe, upstream, downstream);
+	TEST_ASSERT(SSL_OK == ret);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_OK);
+	TEST_ASSERT(pipe->type == IO_V2_PIPE_TYPE_UNIDIR);
+	TEST_ASSERT(pipe->ctx != NULL);
+	// pump must be successful
+	ret = io_v2_pipe_pump(pipe);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_OK);
+	// consecutive pumps must be successful
+	while (pipe->status == IO_V2_STATUS_PIPE_OK) {
+		if (io_v2_pipe_pump(pipe) < 0) {
+			break;
+		}
+	}
+	// pipe must be at END
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_END);
+	TEST_ASSERT(test_content.size == ref_content.size);
+	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, test_content.size) == 0);
+	// delete must be successful
+	ret = io_v2_pipe_del(pipe);
+	TEST_ASSERT(ret == 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_END);
+	TEST_ASSERT(pipe->ctx == NULL);
 
-// 	ret = io_v2_pipe_unidir(&pipe, upstream, downstream, capacity);
-// 	TEST_ASSERT(SSL_OK == ret);
-// 	TEST_ASSERT(pipe->status == IO_V2_STATUS_OK);
-// 	TEST_ASSERT(pipe->type == IO_V2_PIPE_TYPE_UNIDIR);
-// 	TEST_ASSERT(pipe->ctx != NULL);
+	// 2. Error path
+	if (SSL_OK != io_v2_bytes_reader(&upstream, &ref_content)) {
+		TEST_LOG(ERROR, "failed to create bytes reader");
+		TEST_FAIL();
+	}
+	if (SSL_OK != io_v2_bytes_writer(&downstream, &test_content)) {
+		TEST_LOG(ERROR, "failed to create bytes writer");
+		TEST_FAIL();
+	}
+	ret = io_v2_pipe_unidir(&pipe, upstream, downstream);
+	TEST_ASSERT(SSL_OK == ret);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_OK);
+	TEST_ASSERT(pipe->type == IO_V2_PIPE_TYPE_UNIDIR);
+	TEST_ASSERT(pipe->ctx != NULL);
+	// pump must fail
+	upstream->status = IO_V2_STATUS_ERROR;
+	ret = io_v2_pipe_pump(pipe);
+	TEST_ASSERT(ret < 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_ERROR);
+	// pump must fail
+	upstream->status = IO_V2_STATUS_CLOSED;
+	pipe->status = IO_V2_STATUS_PIPE_OK;
+	ret = io_v2_pipe_pump(pipe);
+	TEST_ASSERT(ret < 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_ERROR);
+	// pump must fail
+	upstream->status = IO_V2_STATUS_OK;
+	downstream->status = IO_V2_STATUS_ERROR;
+	pipe->status = IO_V2_STATUS_PIPE_OK;
+	ret = io_v2_pipe_pump(pipe);
+	TEST_ASSERT(ret < 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_ERROR);
+	// pump must fail
+	upstream->status = IO_V2_STATUS_OK;
+	downstream->status = IO_V2_STATUS_CLOSED;
+	pipe->status = IO_V2_STATUS_PIPE_OK;
+	ret = io_v2_pipe_pump(pipe);
+	TEST_ASSERT(ret < 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_ERROR);
+	// pump must fail
+	upstream->status = IO_V2_STATUS_OK;
+	downstream->status = IO_V2_STATUS_FINISHED;
+	pipe->status = IO_V2_STATUS_PIPE_OK;
+	ret = io_v2_pipe_pump(pipe);
+	TEST_ASSERT(ret < 0);
+	TEST_ASSERT(pipe->status == IO_V2_STATUS_PIPE_ERROR);
 
-// 	// pump must be successful
-// 	result = io_v2_pipe_pump(pipe, capacity);
-// 	TEST_ASSERT(result > 0);
-// 	TEST_ASSERT(result == capacity);
-// 	TEST_ASSERT(pipe->status == IO_V2_STATUS_OK);
-// 	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, result) == 0);
-
-// 	// consecutive pumps must be successful
-// 	while (pipe->status == IO_V2_STATUS_OK) {
-// 		result = io_v2_pipe_pump(pipe, capacity);
-// 		if (result < 0) {
-// 			break;
-// 		}
-// 	}
-// 	// EOF must be reached
-// 	TEST_ASSERT(pipe->status == IO_V2_STATUS_EOF);
-// 	// test content must be the same as the reference content
-// 	TEST_ASSERT(test_content.size == ref_content.size);
-// 	TEST_ASSERT(ft_memcmp(test_content.content, ref_content.content, test_content.size) == 0);
-
-// 	// close must be successful
-// 	result = io_v2_pipe_close(pipe);
-// 	TEST_ASSERT(result == 0);
-// 	TEST_ASSERT(pipe->status == IO_V2_STATUS_CLOSED);
-// 	TEST_ASSERT(pipe->ctx == NULL);
-
-// 	// close must be successful
-// 	TEST_PASS();
+	TEST_PASS();
 }

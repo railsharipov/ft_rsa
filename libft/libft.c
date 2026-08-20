@@ -3245,7 +3245,7 @@ t_ostring	*ft_ostr_new(void)
 	return (ostring);
 }
 
-t_ostring	*ft_ostr_create_from_cstr(const char *cstr)
+t_ostring	*ft_ostr_new_with_capacity(size_t capacity)
 {
 	t_ostring	*ostring;
 
@@ -3253,8 +3253,20 @@ t_ostring	*ft_ostr_create_from_cstr(const char *cstr)
 	if (NULL == ostring) {
 		return (NULL);
 	}
-	ft_ostr_init(ostring);
-	ft_ostr_append_cstr(ostring, cstr);
+	ft_ostr_init_with_capacity(ostring, capacity);
+
+	return (ostring);
+}
+
+t_ostring	*ft_ostr_create_from_cstr(const char *cstr)
+{
+	size_t slen = ft_strlen(cstr);
+	t_ostring *ostring = ft_ostr_new_with_capacity(slen);
+	if (NULL == ostring) {
+		return (NULL);
+	}
+	ft_memcpy(ostring->content, cstr, slen);
+	ostring->size = slen;
 
 	return (ostring);
 }
@@ -3264,9 +3276,19 @@ void 	ft_ostr_init(t_ostring *ostring)
 	if (NULL == ostring) {
 		return ;
 	}
-
 	ostring->content = NULL;
 	ostring->size = 0;
+	ostring->capacity = 0;
+}
+
+void 	ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity)
+{
+	if (NULL == ostring) {
+		return ;
+	}
+	LIBFT_ALLOC(ostring->content, capacity);
+	ostring->size = 0;
+	ostring->capacity = capacity;
 }
 
 void	ft_ostr_del(t_ostring *ostring)
@@ -3274,7 +3296,6 @@ void	ft_ostr_del(t_ostring *ostring)
 	if (NULL == ostring) {
 		return ;
 	}
-
 	LIBFT_FREE(ostring->content);
 	LIBFT_FREE(ostring);
 }
@@ -3284,34 +3305,28 @@ void	ft_ostr_clear(t_ostring *ostring)
 	if (NULL == ostring) {
 		return ;
 	}
-
 	LIBFT_FREE(ostring->content);
 	ostring->content = NULL;
 	ostring->size = 0;
+	ostring->capacity = 0;
 }
 
 t_ostring	*ft_ostr_dup(const t_ostring *ostring)
 {
-	t_ostring	*dup;
-
-	LIBFT_ALLOC(dup, sizeof(t_ostring));
+	t_ostring *dup = ft_ostr_new_with_capacity(ostring->size);
 	if (NULL == dup) {
 		return (NULL);
 	}
-	ft_ostr_init(dup);
-	dup->content = ft_memdup(ostring->content, ostring->size);
-	if (NULL == dup->content) {
-		LIBFT_FREE(dup);
-		return (NULL);
-	}
+	ft_memcpy(dup->content, ostring->content, ostring->size);
 	dup->size = ostring->size;
+	dup->capacity = dup->size;
 
 	return (dup);
 }
 
 t_ostring	*ft_ostr_appendf(t_ostring *ostring, const char *fmt, ...)
 {
-	char	*cstr;
+	char *cstr;
 	va_list	ap;
 
 	if (NULL == ostring) {
@@ -3352,15 +3367,20 @@ t_ostring	*ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 	if (NULL == ostring) {
 		return (NULL);
 	}
-
-	LIBFT_REALLOC(ostring->content, ostring->size, ostring->size + size);
-	if (NULL == ostring->content) {
-		return (NULL);
-	}
 	if (NULL != content) {
+		if (NULL == ostring->content) {
+			ft_ostr_init_with_capacity(ostring, size);
+		}
+		if (ostring->size + size > ostring->capacity) {
+			LIBFT_REALLOC(ostring->content, ostring->capacity, ostring->capacity + size);
+			if (NULL == ostring->content) {
+				return (NULL);
+			}
+			ostring->capacity += size;
+		}
 		ft_memcpy(ostring->content + ostring->size, content, size);
+		ostring->size += size;
 	}
-	ostring->size += size;
 
 	return (ostring);
 }
@@ -3370,32 +3390,41 @@ t_ostring	*ft_ostr_prepend(t_ostring *ostring, void *content, size_t size)
 	if (NULL == ostring) {
 		return (NULL);
 	}
-
-	LIBFT_REALLOC(ostring->content, ostring->size, ostring->size + size);
-	if (NULL == ostring->content) {
-		return (NULL);
-	}
-	ft_memcpy(ostring->content + size, ostring->content, ostring->size);
 	if (NULL != content) {
-		ft_memcpy(ostring->content, content, size);
+		if (NULL == ostring->content) {
+			ft_ostr_init_with_capacity(ostring, size);
+		}
+		if (ostring->size + size > ostring->capacity) {
+			void *new_content = NULL;
+			LIBFT_ALLOC(new_content, ostring->capacity + size);
+			if (NULL == new_content) {
+				return (NULL);
+			}
+			ft_memcpy(new_content, content, size);
+			ft_memcpy(new_content + size, ostring->content, ostring->size);
+			ostring->content = new_content;
+			ostring->size += size;
+			ostring->capacity += size;
+		}
+		else {
+			ft_memcpy(ostring->content + size, ostring->content, ostring->size);
+			ft_memcpy(ostring->content, content, size);
+			ostring->size += size;
+		}
 	}
-	ostring->size += size;
-
 	return (ostring);
 }
 
 char 	*ft_ostr_to_cstr(const t_ostring *ostring, size_t idx, size_t len)
 {
-	char	*str;
+	char *str;
 
 	if (NULL == ostring) {
 		return (NULL);
 	}
-
 	if (idx >= ostring->size) {
 		return (NULL);
 	}
-
 	len = MIN(len, ostring->size - idx);
 
 	LIBFT_ALLOC(str, len + 1);

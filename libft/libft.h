@@ -413,8 +413,10 @@ typedef	struct s_ostring {
 } t_ostring;
 
 t_ostring	*ft_ostr_new(void);
+t_ostring	*ft_ostr_new_with_capacity(size_t capacity);
 t_ostring	*ft_ostr_create_from_cstr(const char *init_str);
 void 		ft_ostr_init(t_ostring *ostring);
+void 		ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity);
 void		ft_ostr_clear(t_ostring *ostring);
 void		ft_ostr_del(t_ostring *ostring);
 t_ostring	*ft_ostr_dup(const t_ostring *ostring);
