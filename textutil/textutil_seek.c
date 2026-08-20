@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/std.h>
+#include <libft.h>
+#include <logger.h>
 
 ssize_t textutil_seek(const char *in, size_t inlen, const char *pat, size_t patlen)
 {

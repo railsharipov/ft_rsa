@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/std.h>
+#include <libft.h>
+#include <logger.h>
 
 int textutil_nreplace(const char *in, size_t inlen, char **out, size_t *outlen, const char *pat, size_t patlen, const char *rep, size_t replen)
 {

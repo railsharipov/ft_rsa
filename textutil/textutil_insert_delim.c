@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/alloc.h>
+#include <libft.h>
+#include <logger.h>
 
 int	textutil_insert_delim(const char *in, size_t inlen, char **out, size_t *outlen, int delim, int step)
 {

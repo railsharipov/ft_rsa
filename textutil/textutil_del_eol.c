@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/alloc.h>
+#include <libft.h>
+#include <logger.h>
 
 // Remove EOL in character array
 // EOL = LF / CR

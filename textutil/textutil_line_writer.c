@@ -1,5 +1,6 @@
 #include <textutil.h>
 #include <io.h>
+#include <logger.h>
 
 typedef struct s_textutil_line_writer_ctx {
 	t_io_v2_stream *buffered_downstream;

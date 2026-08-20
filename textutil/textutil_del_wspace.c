@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/alloc.h>
+#include <libft.h>
+#include <logger.h>
 
 // Remove wspace, excluding LF and CR, in character array
 // wspace = SP / HT / VT / FF

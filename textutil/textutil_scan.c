@@ -1,7 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/std.h>
-#include <libft/list.h>
+#include <libft.h>
+#include <logger.h>
 
 enum e_scanf_mode
 {

@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/alloc.h>
+#include <logger.h>
+#include <libft.h>
 
 // Remove blank in character array
 // blank = HT / SP

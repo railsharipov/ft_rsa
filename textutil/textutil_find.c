@@ -1,6 +1,5 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/std.h>
+#include <libft.h>
 
 ssize_t textutil_find(const char *octets, size_t olen, const char *pattern, size_t patlen)
 {

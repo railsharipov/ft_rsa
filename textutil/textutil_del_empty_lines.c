@@ -1,6 +1,6 @@
 #include <textutil.h>
-#include <libft/string.h>
-#include <libft/alloc.h>
+#include <libft.h>
+#include <logger.h>
 
 // Remove empty lines in character array.
 // Since, in linux enviroment, CR and LF are interpreted
