@@ -241,13 +241,20 @@ static ssize_t __io_v2_buffered_flush(void *vctx)
 static ssize_t __io_v2_buffered_close(void *vctx)
 {
     t_io_v2_buffered_ctx *ctx = vctx;
+    int flush_ret = IO_V2_STATUS_OK;
     int close_ret = IO_V2_STATUS_OK;
 
     SSL_LOG(TRACE, "closing buffered stream");
 
-    if (io_v2_close(ctx->stream) < 0) {
+    flush_ret = __io_v2_buffered_flush(vctx);
+    if (flush_ret < 0) {
+        SSL_LOG(ERROR, "failed to flush buffered stream on close");
+    } else {
+        SSL_LOG(TRACE, "flushed buffered stream on close");
+    }
+    close_ret = io_v2_close(ctx->stream);
+    if (close_ret < 0) {
         SSL_LOG(ERROR, "failed to close upstream");
-        close_ret = IO_V2_STATUS_ERROR;
     } else {
         SSL_LOG(TRACE, "closed upstream");
     }
@@ -257,5 +264,9 @@ static ssize_t __io_v2_buffered_close(void *vctx)
     SSL_FREE(ctx);
     SSL_LOG(TRACE, "buffered stream closed");
 
-    return (close_ret);
+    if (flush_ret < 0 || close_ret < 0) {
+    	return (IO_V2_STATUS_ERROR);
+    } else {
+   		return (close_ret);
+    }
 }

@@ -223,9 +223,8 @@ ssize_t io_v2_pipe_flush(t_io_v2_pipe *pipe)
 /*
  * io_v2_pipe_close: Closes and frees the pipe structure.
  *
- * NOTE: This function does NOT close the upstream or downstream streams.
+ * NOTE: This pipe close does NOT close the upstream and downstream.
  * The caller is responsible for closing those streams separately if needed.
- * The pipe does not own the streams - they may be shared or used elsewhere.
  */
 ssize_t io_v2_pipe_close(t_io_v2_pipe *pipe)
 {

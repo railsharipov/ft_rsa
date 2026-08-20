@@ -541,25 +541,29 @@ static ssize_t __io_v2_filter_write_close(void *vctx)
 	int close_ret = IO_V2_STATUS_OK;
 
 	SSL_LOG(TRACE, "closing filter stream");
-	if (__io_v2_filter_write_finish(vctx) < 0) {
-		SSL_LOG(ERROR, "failed to finish upstream/downstream");
-		finish_ret = IO_V2_STATUS_ERROR;
-	}
-	if (io_v2_close(ctx->stream) < 0) {
-		SSL_LOG(ERROR, "failed to close upstream/downstream");
-		close_ret = IO_V2_STATUS_ERROR;
-	}
-	SSL_LOG(TRACE, "closed upstream/downstream");
 
+	finish_ret = __io_v2_filter_write_finish(vctx);
+	if (finish_ret < 0) {
+		SSL_LOG(ERROR, "failed to finish write on downstream");
+	} else {
+		SSL_LOG(TRACE, "finished write on downstream");
+	}
+	close_ret = io_v2_close(ctx->stream);
+	if (close_ret < 0) {
+		SSL_LOG(ERROR, "failed to close downstream");
+	} else {
+		SSL_LOG(TRACE, "closed downstream");
+	}
 	ft_buffer_del(ctx->in);
 	ctx->in = NULL;
 	ft_buffer_del(ctx->out);
 	ctx->out = NULL;
 	SSL_FREE(ctx);
+	SSL_LOG(TRACE, "closed filter stream");
 
-	if (IO_V2_STATUS_OK == finish_ret && IO_V2_STATUS_OK == close_ret) {
-		return (IO_V2_STATUS_OK);
-	} else {
+	if (finish_ret < 0 || close_ret < 0) {
 		return (IO_V2_STATUS_ERROR);
+	} else {
+		return (close_ret);
 	}
 }

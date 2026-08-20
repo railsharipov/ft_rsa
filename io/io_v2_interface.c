@@ -24,20 +24,20 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
         return (-1);
     }
     switch (stream->status) {
-        case IO_V2_STATUS_OK:
-            break;
-        case IO_V2_STATUS_ERROR:
-			SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_CLOSED:
-			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_EOF:
-			SSL_LOG(ERROR, __IO_EOF_STATUS_ERROR);
-            return (-1);
-        default:
-            SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
-            return (-1);
+    case IO_V2_STATUS_OK:
+        break;
+    case IO_V2_STATUS_ERROR:
+		SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_CLOSED:
+		SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_EOF:
+		SSL_LOG(ERROR, __IO_EOF_STATUS_ERROR);
+        return (-1);
+    default:
+        SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
+        return (-1);
     }
     if (NULL == stream->interface.read) {
         stream->status = IO_V2_STATUS_ERROR;
@@ -75,20 +75,20 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
         return (-1);
     }
     switch (stream->status) {
-        case IO_V2_STATUS_OK:
-            break;
-        case IO_V2_STATUS_ERROR:
-			SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_CLOSED:
-			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_FINISHED:
-			SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
-            return (-1);
-        default:
-            SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
-            return (-1);
+    case IO_V2_STATUS_OK:
+        break;
+    case IO_V2_STATUS_ERROR:
+		SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_CLOSED:
+		SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_FINISHED:
+		SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
+        return (-1);
+    default:
+        SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
+        return (-1);
     }
     if (NULL == stream->interface.write) {
         stream->status = IO_V2_STATUS_ERROR;
@@ -121,20 +121,20 @@ ssize_t io_v2_finish(t_io_v2_stream *stream)
         return (-1);
     }
     switch (stream->status) {
-        case IO_V2_STATUS_OK:
-            break;
-        case IO_V2_STATUS_ERROR:
-			SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_CLOSED:
-			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_FINISHED:
-			SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
-            return (-1);
-        default:
-            SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
-            return (-1);
+    case IO_V2_STATUS_OK:
+        break;
+    case IO_V2_STATUS_ERROR:
+		SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_CLOSED:
+		SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_FINISHED:
+		SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
+        return (-1);
+    default:
+        SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
+        return (-1);
     }
     if (NULL == stream->interface.finish) {
         stream->status = IO_V2_STATUS_ERROR;
@@ -169,17 +169,17 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         return (-1);
     }
     switch (stream->status) {
-        case IO_V2_STATUS_OK:
-            break;
-        case IO_V2_STATUS_ERROR:
-			SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
-            return (-1);
-        case IO_V2_STATUS_CLOSED:
-			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
-            return (-1);
-        default:
-            SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
-            return (-1);
+    case IO_V2_STATUS_OK:
+        break;
+    case IO_V2_STATUS_ERROR:
+		SSL_LOG(ERROR, __IO_ERROR_STATUS_ERROR);
+        return (-1);
+    case IO_V2_STATUS_CLOSED:
+		SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
+        return (-1);
+    default:
+        SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
+        return (-1);
     }
     if (NULL == stream->interface.flush) {
         stream->status = IO_V2_STATUS_ERROR;
@@ -213,29 +213,17 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
     }
 	/* All known states are ok except closed state */
     switch (stream->status) {
-        case IO_V2_STATUS_OK:
-			// force flush to prevent data loss
-			if (SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
-				SSL_LOG(TRACE, "flushing stream on close");
-				result = io_v2_flush(stream);
-				if (result < 0) {
-					SSL_LOG(ERROR, "failed to flush stream on close");
-					stream->status = IO_V2_STATUS_ERROR;
-					return (-1);
-				}
-				SSL_LOG(TRACE, "flushed stream on close");
-			}
-			break;
-		case IO_V2_STATUS_EOF:
-        case IO_V2_STATUS_ERROR:
-        case IO_V2_STATUS_FINISHED:
-            break;
-        case IO_V2_STATUS_CLOSED:
-			SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
-            return (-1);
-        default:
-            SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
-            return (-1);
+   	case IO_V2_STATUS_OK:
+	case IO_V2_STATUS_EOF:
+    case IO_V2_STATUS_ERROR:
+    case IO_V2_STATUS_FINISHED:
+        break;
+    case IO_V2_STATUS_CLOSED:
+		SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
+        return (-1);
+    default:
+        SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
+        return (-1);
     }
     if (NULL == stream->interface.close) {
         stream->status = IO_V2_STATUS_ERROR;

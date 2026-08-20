@@ -66,6 +66,7 @@ struct s_mock_ctx {
 	size_t	bytes_read;
 	size_t	bytes_written;
 	size_t	bytes_flushed;
+	size_t	bytes_finished;
 };
 
 static ssize_t	__mock_interface_read_ok(void *ctx, void *buf, size_t nbytes)
@@ -96,6 +97,15 @@ static ssize_t	__mock_interface_write_ok(void *ctx, const void *buf, size_t nbyt
 	mock_ctx = (struct s_mock_ctx *)ctx;
 	mock_ctx->bytes_written += nbytes;
 	return (nbytes);
+}
+
+static ssize_t	__mock_interface_finish_ok(void *ctx)
+{
+	struct s_mock_ctx *mock_ctx;
+
+	mock_ctx = (struct s_mock_ctx *)ctx;
+	mock_ctx->bytes_finished += mock_ctx->data_size;
+	return (mock_ctx->data_size);
 }
 
 static ssize_t	__mock_interface_flush_ok(void *ctx)
@@ -153,15 +163,15 @@ static t_io_v2_stream	__mock_stream(t_io_v2_interface interface, t_io_v2_flag fl
 	};
 }
 
-static t_io_v2_stream	__mock_stream_with_ctx(t_io_v2_interface interface, t_io_v2_flag flags, void *ctx)
-{
-	return (t_io_v2_stream){
-		.interface = interface,
-		.flags = flags,
-		.status = IO_V2_STATUS_OK,
-		.ctx = ctx,
-	};
-}
+// static t_io_v2_stream	__mock_stream_with_ctx(t_io_v2_interface interface, t_io_v2_flag flags, void *ctx)
+// {
+// 	return (t_io_v2_stream){
+// 		.interface = interface,
+// 		.flags = flags,
+// 		.status = IO_V2_STATUS_OK,
+// 		.ctx = ctx,
+// 	};
+// }
 
 static int	__test_io_interface(void)
 {
@@ -182,6 +192,9 @@ static int	__test_io_interface(void)
 	TEST_ASSERT(result == -1);
 
 	result = io_v2_flush(NULL);
+	TEST_ASSERT(result == -1);
+
+	result = io_v2_finish(NULL);
 	TEST_ASSERT(result == -1);
 
 	result = io_v2_close(NULL);
@@ -211,6 +224,14 @@ static int	__test_io_interface(void)
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
 	result = io_v2_flush(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
+
+	interface = (t_io_v2_interface){
+		.read = (t_func_io_v2_read)__mock_interface_read_ok,
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
+	result = io_v2_finish(&stream);
 	TEST_ASSERT(result == -1);
 	TEST_ASSERT(stream.status == IO_V2_STATUS_OK);
 
@@ -273,6 +294,26 @@ static int	__test_io_interface(void)
 	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
 
 	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.finish = (t_func_io_v2_finish)__mock_interface_finish_ok
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FINISH);
+	stream.status = IO_V2_STATUS_ERROR;
+	result = io_v2_finish(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	stream.status = IO_V2_STATUS_FINISHED;
+	result = io_v2_finish(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_FINISHED);
+
+	stream.status = IO_V2_STATUS_CLOSED;
+	result = io_v2_finish(&stream);
+	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
+
+	interface = (t_io_v2_interface){
 		.close = (t_func_io_v2_close)__mock_interface_ok,
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_CLOSE);
@@ -306,6 +347,15 @@ static int	__test_io_interface(void)
 
 	interface = (t_io_v2_interface){
 		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.finish = (t_func_io_v2_finish)__mock_interface_finish_ok
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FINISH);
+	result = io_v2_finish(&stream);
+	TEST_ASSERT(result >= 0);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_FINISHED);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
 		.flush = (t_func_io_v2_flush)__mock_interface_flush_ok,
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH);
@@ -318,6 +368,7 @@ static int	__test_io_interface(void)
 	};
 	stream = __mock_stream(interface, IO_V2_FLAG_CLOSE);
 	result = io_v2_close(&stream);
+	TEST_LOG(INFO, "stream.status = %d", stream.status);
 	TEST_ASSERT(result == 0);
 	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
 
@@ -337,6 +388,15 @@ static int	__test_io_interface(void)
 	stream = __mock_stream(interface, IO_V2_FLAG_WRITE);
 	result = io_v2_write(&stream, buf, bufsize);
 	TEST_ASSERT(result == -1);
+	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
+
+	interface = (t_io_v2_interface){
+		.write = (t_func_io_v2_write)__mock_interface_write_ok,
+		.finish = (t_func_io_v2_finish)__mock_interface_error
+	};
+	stream = __mock_stream(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FINISH);
+	result = io_v2_finish(&stream);
+	TEST_ASSERT(result < 0);
 	TEST_ASSERT(stream.status == IO_V2_STATUS_ERROR);
 
 	interface = (t_io_v2_interface){
@@ -365,23 +425,6 @@ static int	__test_io_interface(void)
 	result = io_v2_read(&stream, buf, bufsize);
 	TEST_ASSERT(result == -1);
 	TEST_ASSERT(stream.status == IO_V2_STATUS_EOF);
-
-	// close must trigger flush
-
-	interface = (t_io_v2_interface){
-		.write = (t_func_io_v2_write)__mock_interface_write_ok,
-		.flush = (t_func_io_v2_flush)__mock_interface_flush_ok,
-		.close = (t_func_io_v2_close)__mock_interface_ok,
-	};
-	struct s_mock_ctx *ctx = __mock_stream_ctx();
-	size_t data_size = ctx->data_size;
-
-	stream = __mock_stream_with_ctx(interface, IO_V2_FLAG_WRITE | IO_V2_FLAG_FLUSH | IO_V2_FLAG_CLOSE, ctx);
-	result = io_v2_close(&stream);
-	TEST_ASSERT(result == 0);
-	TEST_ASSERT(ctx->bytes_flushed > 0);
-	TEST_ASSERT(ctx->bytes_flushed == data_size);
-	TEST_ASSERT(stream.status == IO_V2_STATUS_CLOSED);
 
 	TEST_PASS();
 }
