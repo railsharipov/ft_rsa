@@ -111,6 +111,11 @@ static int __cmd_run_tests(t_htbl *opts)
 		uint8_t log_level_thres = __get_log_level_by_name(log_level_name);
 		__test_logger->log_level_thres = log_level_thres;
 	}
+	if (ft_htbl_has(opts, "--no-color")) {
+		__app_logger->is_ansi_colored = 0;
+		__libft_logger->is_ansi_colored = 0;
+		__test_logger->is_ansi_colored = 0;
+	}
 	// define a list of tests to run
 	t_node *test_list = NULL;
 	if (ft_htbl_has(opts, "--tests")) {
@@ -187,6 +192,10 @@ static int __cmd_list_tests(t_htbl *opts)
 		.is_ansi_colored = 1,
 	};
 
+	if (ft_htbl_has(opts, "--no-color")) {
+		__test_logger->is_ansi_colored = 0;
+	}
+
 	TEST_LOG(ALWAYS, __TEST_LINE_BREAK);
 
 	for (int i = 0; i < __NUM_TESTS; i++) {
@@ -224,6 +233,7 @@ int	main(int ac, const char **av)
 	t_arg_cmd *list_cmd_arg = args_new_cmd("list", "list available tests", __cmd_list_tests);
 
 	t_arg_cmd *main_cmd_arg = args_new_cmd(av[0], "Tests", NULL);
+	args_add_global_cmd_opt(main_cmd_arg, args_new_opt("--no-color", "disable colored output", AP_OPT_TYPE_FLAG));
 	args_add_sub_cmd(main_cmd_arg, run_cmd_arg);
 	args_add_sub_cmd(main_cmd_arg, list_cmd_arg);
 
