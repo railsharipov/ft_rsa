@@ -9,3 +9,4 @@ test
 .clangd
 .cache
 compile_commands.json
+*.log
