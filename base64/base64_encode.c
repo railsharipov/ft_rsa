@@ -1,12 +1,9 @@
 #include <common.h>
 #include <logger.h>
 #include <base64.h>
-#include <bnum.h>
+#include <libft.h>
 
-static const unsigned char	MES_BLOCK_SIZE = 3;
-static const unsigned char	B64_BLOCK_SIZE = 4;
-
-static const char	B64[64] = {
+static const char	SM[64] = {
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 	'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
 	'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
@@ -16,56 +13,101 @@ static const char	B64[64] = {
 	'8', '9', '+', '/'
 };
 
-static void	__last_block(unsigned char *omes, size_t messize, unsigned char *oenc)
+static void	__encode_block(const uint8_t mesblock[3], uint8_t encblock[4])
 {
-	unsigned char	olast[B64_BLOCK_SIZE];
-	int		ix;
-
-	if (messize == 0) {
-		return ;
-	}
-
-	ft_memzcpy(olast, omes, MES_BLOCK_SIZE, messize);
-
-	oenc[0] = B64[( ( olast[0]>>2 )&0x3F )];
-	oenc[1] = B64[( ( olast[0]<<4 )&0x30 )|( ( olast[1]>>4 )&0xF )];
-	oenc[2] = B64[( ( olast[1]<<2 )&0x3C )|( ( olast[2]>>6 )&0x3 )];
-	oenc[3] = B64[( olast[2]&0x3F )];
-
-	ix = (CHAR_BIT * messize)/6 + 1;
-	while (ix < B64_BLOCK_SIZE)
-		oenc[ix++] = '=';
-
+	encblock[0] = SM[( ( mesblock[0]>>2 )&0x3F )];
+	encblock[1] = SM[( ( mesblock[0]<<4 )&0x30 )|( ( mesblock[1]>>4 )&0xF )];
+	encblock[2] = SM[( ( mesblock[1]<<2 )&0x3C )|( ( mesblock[2]>>6 )&0x3 )];
+	encblock[3] = SM[( mesblock[2]&0x3F )];
 }
 
-int	base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc, size_t *encsize)
+static void	__encode_final_block(const uint8_t *mesblock, size_t mesblock_size, uint8_t encblock[4])
 {
-	unsigned char	*omes;
-	unsigned char	*oenc;
-
-	SSL_LOG(TRACE, "encoding %zu bytes of message", messize);
-
-	if ((NULL == mes) || (NULL == enc) || (NULL == encsize)) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+	if (mesblock_size == 1) {
+		encblock[0] = SM[( ( mesblock[0]>>2 )&0x3F )];
+		encblock[1] = SM[( ( mesblock[0]<<4 )&0x30 )];
+		encblock[2] = '=';
+		encblock[3] = '=';
 	}
-	omes = (unsigned char *)mes;
-	*encsize = CEIL_TO_MULTIPLE(messize, MES_BLOCK_SIZE)/MES_BLOCK_SIZE * B64_BLOCK_SIZE;
-	SSL_ALLOC(*enc, *encsize);
-	oenc = *enc;
-
-	while (messize >= MES_BLOCK_SIZE) {
-		*oenc++ = B64[( ( omes[0]>>2 )&0x3F )];
-		*oenc++ = B64[( ( omes[0]<<4 )&0x30 )|( ( omes[1]>>4 )&0xF )];
-		*oenc++ = B64[( ( omes[1]<<2 )&0x3C )|( ( omes[2]>>6 )&0x3 )];
-		*oenc++ = B64[( omes[2]&0x3F )];
-
-		omes += MES_BLOCK_SIZE;
-		messize -= MES_BLOCK_SIZE;
+	else if (mesblock_size == 2) {
+		encblock[0] = SM[( ( mesblock[0]>>2 )&0x3F )];
+		encblock[1] = SM[( ( mesblock[0]<<4 )&0x30 )|( ( mesblock[1]>>4 )&0xF )];
+		encblock[2] = SM[( ( mesblock[1]<<2 )&0x3C )];
+		encblock[3] = '=';
 	}
-	__last_block(omes, messize, oenc);
+}
 
-	SSL_LOG(TRACE, "encoded %zu bytes of message", *encsize);
+t_transform_result base64_encode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_b64_ctx *ctx = vctx;
 
-	return (SSL_OK);
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(DEBUG, "transform validation: TRANSFORM_ERROR");
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(DEBUG, "transform validation: already TRANSFORM_DONE");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *mesblock = in;
+	uint8_t *encblock = out;
+	size_t i = 0;
+	size_t j = 0;
+
+	if (insize < B64_MES_BLOCK_SIZE) {
+		SSL_LOG(DEBUG, "transform update: TRANSFORM_NEED_INPUT");
+		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_INPUT};
+	}
+	if (outsize < B64_ENC_BLOCK_SIZE) {
+		SSL_LOG(DEBUG, "transform update: TRANSFORM_NEED_OUTPUT");
+		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
+	}
+	while (i+2 < insize && j+3 < outsize) {
+		__encode_block(mesblock + i, encblock + j);
+		i += B64_MES_BLOCK_SIZE;
+		j += B64_ENC_BLOCK_SIZE;
+	}
+	return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
+}
+
+t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_b64_ctx *ctx = vctx;
+
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(DEBUG, "transform validation: TRANSFORM_ERROR");
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(DEBUG, "transform validation: already TRANSFORM_DONE");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *mesblock = in;
+	uint8_t *encblock = out;
+	size_t i = 0;
+	size_t j = 0;
+
+	while (i+2 < insize && j+3 < outsize) {
+		__encode_block(mesblock + i, encblock + j);
+		i += B64_MES_BLOCK_SIZE;
+		j += B64_ENC_BLOCK_SIZE;
+	}
+	if (i + B64_MES_BLOCK_SIZE >= insize) {
+		if (j + B64_ENC_BLOCK_SIZE < outsize) {
+			__encode_final_block(mesblock + i, insize%B64_MES_BLOCK_SIZE, encblock + j);
+			i += insize%B64_MES_BLOCK_SIZE;
+			j += B64_ENC_BLOCK_SIZE;
+			ctx->done = 1;
+
+			SSL_LOG(DEBUG, "transform final: TRANSFORM_DONE");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_DONE};
+		}
+		else {
+			SSL_LOG(DEBUG, "transform update: TRANSFORM_NEED_OUTPUT");
+			return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
+		}
+	}
+	return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
 }

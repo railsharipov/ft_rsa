@@ -53,7 +53,7 @@ static int	__test_base64_encode(void)
 	size_t	outsize;
 	int		ret_val;
 
-	ret_val = base64_encode(__binary.content, __binary.size, &output, &outsize);
+	ret_val = base64_encode_all(__binary.content, __binary.size, &output, &outsize);
 
 	TEST_ASSERT(SSL_OK == ret_val);
 	TEST_ASSERT(NULL != output);
@@ -69,7 +69,7 @@ static int	__test_base64_decode(void)
 	size_t	outsize;
 	int		ret_val;
 
-	ret_val = base64_decode(__base64.content, __base64.size, &output, &outsize);
+	ret_val = base64_decode_all(__base64.content, __base64.size, &output, &outsize);
 
 	TEST_ASSERT(SSL_OK == ret_val);
 	TEST_ASSERT(NULL != output);

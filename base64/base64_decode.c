@@ -17,7 +17,7 @@ static const unsigned char	UB64[128] = {
 	41,	42,	43,	44,	45,	46,	47,	48,	49,	50,	51,	0,	0,	0,	0,	0
 };
 
-int	base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize)
+int	base64_decode_all(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize)
 {
 	unsigned char	*omes;
 	unsigned char	*oenc;

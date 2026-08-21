@@ -49,7 +49,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	if (pem->proc == PEM_PROC_TYPE_NONE) {
 		SSL_LOG(TRACE, "unencrypted pem");
 		SSL_LOG(TRACE, "base64 encoding data: content: %p, size: %d", data->content, data->size);
-		if (SSL_OK != base64_encode(data->content, data->size, &b64flat.content, &b64flat.size)) {
+		if (SSL_OK != base64_encode_all(data->content, data->size, &b64flat.content, &b64flat.size)) {
 			SSL_LOG(ERROR, "base64 encode failed");
 			goto label_exit;
 		}
@@ -116,7 +116,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 		}
 
 		SSL_LOG(TRACE, "base64 encoding cipher: content: %p, size: %d", cipher.content, cipher.size);
-		if (SSL_OK != base64_encode(cipher.content, cipher.size, &b64flat.content, &b64flat.size)) {
+		if (SSL_OK != base64_encode_all(cipher.content, cipher.size, &b64flat.content, &b64flat.size)) {
 			SSL_LOG(ERROR, "base64 encode failed");
 			goto label_exit;
 		}

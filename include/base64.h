@@ -35,11 +35,21 @@ enum	e_b64_flag
 	B64_D	= 1 << 1
 };
 
-int		base64_encode(const unsigned char *mes, size_t messize, unsigned char **enc, size_t *encsize);
-int		base64_decode(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize);
+int		base64_encode_all(const unsigned char *mes, size_t messize, unsigned char **enc, size_t *encsize);
+int		base64_decode_all(const unsigned char *enc, size_t encsize, unsigned char **mes, size_t *messize);
 int		base64_check(const unsigned char *b64enc, size_t size);
 
-void	base64_encode_block(uint8_t *mesblock, uint8_t *encblock);
+////////////////////////////////////////////////////////////////////
+
+typedef struct s_b64_ctx {
+	int final;
+	int done;
+} t_b64_ctx;
+
+void	base64_encode_block(const uint8_t mesblock[3], uint8_t encblock[4]);
 void	base64_decode_block(uint8_t *encblock, uint8_t *mesblock);
+
+t_transform_result base64_encode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 #endif

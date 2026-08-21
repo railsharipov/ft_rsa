@@ -317,7 +317,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_OK != base64_encode(ciph->content, ciph->size, &b64.content, &b64.size)) {
+// 	if (SSL_OK != base64_encode_all(ciph->content, ciph->size, &b64.content, &b64.size)) {
 // 		ret = (SSL_LOG(ERROR, UNSPECIFIED_ERROR));
 // 	}
 
@@ -337,7 +337,7 @@ int	cli_des_ecb(const char **opt, const char *name_comm)
 // {
 // 	t_ostring	cipher;
 
-// 	if (SSL_OK != base64_decode(b64->content, b64->size, &cipher.content, &cipher.size)) {
+// 	if (SSL_OK != base64_decode_all(b64->content, b64->size, &cipher.content, &cipher.size)) {
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}

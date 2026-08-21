@@ -104,7 +104,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	}
 
 	SSL_LOG(TRACE, "decoding base64 encoding: content: %p, size: %d", b64enc.content, b64enc.size);
-	if (SSL_OK != base64_decode(b64enc.content, b64enc.size, &b64dec.content, &b64dec.size)) {
+	if (SSL_OK != base64_decode_all(b64enc.content, b64enc.size, &b64dec.content, &b64dec.size)) {
 		SSL_LOG(ERROR, "bad base64 encoding");
 		goto label_exit;
 	}

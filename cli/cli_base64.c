@@ -57,7 +57,7 @@ int	cli_base64(const char **opt, const char *name_comm)
 	io_fopen(&__in, IO_READ|IO_STDIN, NULL);
 	io_fopen(&__out, IO_WRITE|IO_STDOUT, NULL);
 
-	__f_b64 = base64_encode;
+	__f_b64 = base64_encode_all;
 
 	if (SSL_OK == (ret = __get_task(opt))) {
 		ret = __run_task();
@@ -162,7 +162,7 @@ static int	__get_input(char **input, size_t *insize)
 
 static int	__write_output(const char *enc, size_t encsize)
 {
-	if (base64_decode == __f_b64) {
+	if (base64_decode_all == __f_b64) {
 		__out.delim = 0;
 	}
 
@@ -171,7 +171,7 @@ static int	__write_output(const char *enc, size_t encsize)
 		return (SSL_ERR);
 	}
 
-	if (base64_encode == __f_b64) {
+	if (base64_encode_all == __f_b64) {
 		if (io_write(&__out, "\n", 1) < 0) {
 	}
 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
@@ -186,7 +186,7 @@ static int	__set_op(const char *opt, const t_task *task)
 	(void)opt;
 
 	if (SSL_FLAG(B64_D, task->tflag)) {
-		__f_b64 = base64_decode;
+		__f_b64 = base64_decode_all;
 	}
 
 	return (SSL_OK);

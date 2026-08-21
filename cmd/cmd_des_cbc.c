@@ -108,7 +108,7 @@
 // 		} else {
 // 			ret = io_fopen(&in_b64, IO_READ|IO_STDIN, NULL);
 // 		}
-// 		if (SSL_OK != base64_decode(in.content, in.size, &os_in.content, &os_in.size)) {
+// 		if (SSL_OK != base64_decode_all(in.content, in.size, &os_in.content, &os_in.size)) {
 // 			SSL_LOG(ERROR, "base64 decode error");
 // 			return (SSL_ERR);
 // 		}
@@ -331,7 +331,7 @@
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_OK != base64_encode(ciph->content, ciph->size, &b64.content, &b64.size)) {
+// 	if (SSL_OK != base64_encode_all(ciph->content, ciph->size, &b64.content, &b64.size)) {
 // 		ret = (SSL_LOG(ERROR, UNSPECIFIED_ERROR));
 // 	}
 
@@ -351,7 +351,7 @@
 // {
 // 	t_ostring	cipher;
 
-// 	if (SSL_OK != base64_decode(b64->content, b64->size, &cipher.content, &cipher.size)) {
+// 	if (SSL_OK != base64_decode_all(b64->content, b64->size, &cipher.content, &cipher.size)) {
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}

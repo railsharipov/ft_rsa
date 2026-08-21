@@ -11,10 +11,7 @@ typedef int	(*t_func_b64)(const unsigned char *, size_t, unsigned char **, size_
 
 int	cmd_base64(const t_cmd *cmd)
 {
-	t_iodes		in, out;
-	t_ostring	os_in, os_out;
-	t_func_b64	f_b64;
-	int			ret;
+	t_io_v2_stream	*in, *out;
 
 	if (NULL == cmd) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -22,56 +19,84 @@ int	cmd_base64(const t_cmd *cmd)
 	}
 
 	if (ft_htbl_has(cmd->opts, "-i")) {
-		ret = io_fopen(&in, IO_READ|IO_FILE, ft_htbl_get(cmd->opts, "-i"));
+		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
 	} else {
-		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
-	}
-	if (SSL_OK != ret) {
-		SSL_LOG(ERROR, IO_INIT_ERROR);
-		return (SSL_ERR);
+		if (SSL_OK != io_v2_fd_reader(&in, 0)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
 	}
 
 	if (ft_htbl_has(cmd->opts, "-o")) {
-		ret = io_fopen(&out, IO_WRITE|IO_FILE, ft_htbl_get(cmd->opts, "-o"));
+		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
 	} else {
-		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
+		if (SSL_OK != io_v2_fd_writer(&out, 1)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
 	}
-	if (SSL_OK != ret) {
+
+	if (ft_htbl_has(cmd->opts, "-b")) {
+		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+		return (SSL_ERR);
+		// int line_width = ft_atoi(ft_htbl_get(cmd->opts, "-b"));
+		// line_width = MAX(0, line_width);
+	}
+
+	t_b64_ctx b64_ctx = {.final = 0, .done = 0};
+	t_io_v2_stream *b64_encoder = NULL;
+
+	if (ft_htbl_has(cmd->opts, "-d")) {
+		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+		return (SSL_ERR);
+	} else {
+		if (io_v2_filter_reader(&b64_encoder, in, base64_encode_update, base64_encode_final, &b64_ctx) < 0) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+	}
+
+	t_io_v2_pipe *pipe = NULL;
+	if (io_v2_pipe_unidir(&pipe, b64_encoder, out) < 0) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
 
-	if (ft_htbl_has(cmd->opts, "-d")) {
-		f_b64 = base64_decode;
-		in.delim = '\n';
-		out.delim = 0;
-	} else {
-		f_b64 = base64_encode;
+	while (pipe->status == IO_V2_STATUS_PIPE_OK) {
+		io_v2_pipe_pump(pipe);
 	}
-
-	if (ft_htbl_has(cmd->opts, "-b")) {
-		out.lwidth = ft_atoi(ft_htbl_get(cmd->opts, "-b"));
-		out.lwidth = MAX(0, out.lwidth);
-		out.delim = '\n';
-	}
-
-	if (SSL_OK != __get_input(&in, &os_in)) {
-		SSL_LOG(ERROR, "failed to get input");
+	if (pipe->status == IO_V2_STATUS_PIPE_ERROR) {
+		SSL_LOG(ERROR, "i/o operation failed");
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != f_b64(os_in.content, os_in.size, &os_out.content, &os_out.size)) {
-		SSL_LOG(ERROR, "base64 error");
+	// if (SSL_OK != __get_input(&in, &os_in)) {
+	// 	SSL_LOG(ERROR, "failed to get input");
+	// 	return (SSL_ERR);
+	// }
+	// if (SSL_OK != f_b64(os_in.content, os_in.size, &os_out.content, &os_out.size)) {
+	// 	SSL_LOG(ERROR, "base64 error");
+	// 	return (SSL_ERR);
+	// }
+	// if (SSL_OK != __write_output(&out, &os_out)) {
+	// 	SSL_LOG(ERROR, "failed to write output");
+	// 	return (SSL_ERR);
+	// }
+
+	if (io_v2_close(b64_encoder) < 0) {
+		SSL_LOG(ERROR, "base64 input stream close error");
 		return (SSL_ERR);
 	}
-
-	if (SSL_OK != __write_output(&out, &os_out)) {
-		SSL_LOG(ERROR, "failed to write output");
+	if (io_v2_close(out) < 0) {
+		SSL_LOG(ERROR, "base64 output stream close error");
 		return (SSL_ERR);
 	}
-
-	io_fclose_multi(&in, &out, NULL);
-
 	return (SSL_OK);
 }
 
