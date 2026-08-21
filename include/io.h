@@ -131,7 +131,9 @@ int		io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, si
 int		io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);
 
 int		io_v2_file_reader(t_io_v2_stream **stream, const char *file_path);
+int		io_v2_fd_reader(t_io_v2_stream **stream, int fd);
 int		io_v2_file_writer(t_io_v2_stream **stream, const char *file_path);
+int		io_v2_fd_writer(t_io_v2_stream **stream, int fd);
 
 int		io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
 int		io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
