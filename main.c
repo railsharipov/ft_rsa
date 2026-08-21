@@ -8,15 +8,9 @@
 #include <args.h>
 #include <libft.h>
 
-static int __log_writer(const char *mes) {
+static int __app_log_writer(const char *mes) {
 	return (ft_printf("%@%s\n", mes));
 }
-static t_logger __logger = {
-	.log_writer = __log_writer,
-	.log_level_thres = LIBFT_LOG_LEVEL_INFO,
-	.debug_info_thres = LIBFT_LOG_LEVEL_DEBUG,
-	.is_ansi_colored = 1,
-};
 
 int	main(int ac, const char **av)
 {
@@ -24,7 +18,13 @@ int	main(int ac, const char **av)
 	t_cmd		cmd;
 	t_func_cmd	f_cmd;
 
-	logger_set_default_logger(&__logger);
+	t_logger *__app_logger = logger_get_logger();
+	*__app_logger = (t_logger){
+		.log_writer = __app_log_writer,
+		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
+		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
+		.is_ansi_colored = 0,
+	};
 
 	// default command
 	cmd_arg = args_new_cmd(av[0], "SSL-ish command line tool", NULL);
@@ -122,19 +122,19 @@ int	main(int ac, const char **av)
 
 	// handle global options
 	if (ft_htbl_has(cmd.opts, "--warn")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_WARN;
+		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_WARN;
 	}
 	if (ft_htbl_has(cmd.opts, "--info")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_INFO;
+		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_INFO;
 	}
 	if (ft_htbl_has(cmd.opts, "--debug")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
+		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
 	}
 	if (ft_htbl_has(cmd.opts, "--trace")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_TRACE;
+		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
 	}
 	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
-		__logger.log_level_thres = LIBFT_LOG_LEVEL_ERROR;
+		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_ERROR;
 	}
 
 	// handle help option
