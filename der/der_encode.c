@@ -129,8 +129,9 @@ static int	__encode(t_node *node, t_iodes *out)
 			return (SSL_ERR);
 	}
 
+	SSL_LOG(TRACE, "writing der tag: %#x", tagnum);
 	if (__write_tag(tag, tagnum, out) < 0) {
-		SSL_LOG(ERROR, "der tag write error");
+		SSL_LOG(ERROR, "failed to write der tag");
 		return (SSL_ERR);
 	}
 
@@ -165,15 +166,24 @@ static ssize_t	__write_content_octets(char *content, size_t size, t_iodes *out)
 	SSL_LOG(TRACE, "writing content octets, size: %zu", size);
 
 	if (__write_len(size, out) < 0) {
-		SSL_LOG(ERROR, "der len write error");
+		SSL_LOG(ERROR, "failed to write length octets");
 		return (SSL_ERR);
 	}
+	SSL_LOG(TRACE, "length octets written");
 
-	wbytes = io_write(out, content, size);
-
-	SSL_LOG(TRACE, "content octets written, bytes: %zd", wbytes);
-
-	return (wbytes);
+	if (size > 0) {
+		wbytes = io_write(out, content, size);
+		if (wbytes < 0) {
+			SSL_LOG(ERROR, "failed to write content octets");
+			return (-1);
+		}
+		SSL_LOG(TRACE, "content octets written, bytes: %zd", wbytes);
+		return (wbytes);
+	}
+	else {
+		SSL_LOG(TRACE, "no content octets to write");
+		return (0);
+	}
 }
 
 static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_iodes *out)

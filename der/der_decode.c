@@ -304,18 +304,19 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
         }
 		SSL_LOG(TRACE, "indefinite length content read, total bytes: %zd", tbytes);
 	}
-	else {
-		ft_ostr_append(osbuf, NULL, len);
-
-		if ((rbytes = io_read(in, (char *)osbuf->content, len)) < 0) {
+	else if (len > 0) {
+		char buf[len];
+		if ((rbytes = io_read(in, buf, sizeof(buf))) < 0) {
 			SSL_LOG(ERROR, "read definite length content error: bad read");
 			goto label_error;
 		}
-		osbuf->size = rbytes;
-		SSL_LOG(TRACE, "definite length content read, bytes: %zd", rbytes);
+		ft_ostr_append(osbuf, buf, sizeof(buf));
+		tbytes += rbytes;
+		SSL_LOG(TRACE, "definite length content is read, bytes: %zd", rbytes);
 	}
-	tbytes += rbytes;
-
+	else {
+		SSL_LOG(TRACE, "no definite length content bytes");
+	}
 	return (tbytes);
 
 label_error:
