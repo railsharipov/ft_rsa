@@ -120,11 +120,6 @@ static int	__setup_task(const char **opt)
 		opt++;
 	}
 
-	if (!io_is_init(&__inkey)) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
-
 	return (SSL_OK);
 }
 
