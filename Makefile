@@ -20,12 +20,13 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 
 .PHONY: all debug sanitize test sanitize_test test_bin clean fclean re
 
+all: CFLAGS := -O3 -std=c11 -Wall -Wfatal-errors -I./include -I./libft
 all: $(NAME)
 
-debug: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -I./include -I./libft
+debug: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libft
 debug: $(NAME)
 
-sanitize: CFLAGS := -Og -g -std=c11 -Wall -Werror -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libft
+sanitize: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libft
 sanitize: LDFLAGS := -fsanitize=address
 sanitize: $(NAME)
 
