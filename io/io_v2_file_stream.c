@@ -117,7 +117,7 @@ static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
         return (rbytes);
     }
     else if (rbytes == 0) {
-        SSL_LOG(DEBUG, "EOF reached on fd=%d", ctx->fd);
+        SSL_LOG(TRACE, "EOF reached on fd=%d", ctx->fd);
         return (IO_V2_STATUS_EOF);
     }
     else {

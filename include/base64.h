@@ -42,6 +42,9 @@ int		base64_check(const unsigned char *b64enc, size_t size);
 ////////////////////////////////////////////////////////////////////
 
 typedef struct s_b64_ctx {
+	uint8_t	buf[4];
+	int size;
+	int used;
 	int final;
 	int done;
 } t_b64_ctx;
@@ -51,5 +54,7 @@ void	base64_decode_block(uint8_t *encblock, uint8_t *mesblock);
 
 t_transform_result base64_encode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_decode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_decode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 #endif

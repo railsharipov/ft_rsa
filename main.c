@@ -23,7 +23,7 @@ int	main(int ac, const char **av)
 		.log_writer = __app_log_writer,
 		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
 		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
-		.is_ansi_colored = 0,
+		.is_ansi_colored = 1,
 	};
 
 	// default command

@@ -50,20 +50,22 @@ int	cmd_base64(const t_cmd *cmd)
 	}
 
 	t_b64_ctx b64_ctx = {.final = 0, .done = 0};
-	t_io_v2_stream *b64_encoder = NULL;
+	t_io_v2_stream *b64_filter = NULL;
 
 	if (ft_htbl_has(cmd->opts, "-d")) {
-		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
-		return (SSL_ERR);
+		if (io_v2_filter_reader(&b64_filter, in, base64_decode_update, base64_decode_final, &b64_ctx) < 0) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
 	} else {
-		if (io_v2_filter_reader(&b64_encoder, in, base64_encode_update, base64_encode_final, &b64_ctx) < 0) {
+		if (io_v2_filter_reader(&b64_filter, in, base64_encode_update, base64_encode_final, &b64_ctx) < 0) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	}
 
 	t_io_v2_pipe *pipe = NULL;
-	if (io_v2_pipe_unidir(&pipe, b64_encoder, out) < 0) {
+	if (io_v2_pipe_unidir(&pipe, b64_filter, out) < 0) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
@@ -89,7 +91,7 @@ int	cmd_base64(const t_cmd *cmd)
 	// 	return (SSL_ERR);
 	// }
 
-	if (io_v2_close(b64_encoder) < 0) {
+	if (io_v2_close(b64_filter) < 0) {
 		SSL_LOG(ERROR, "base64 input stream close error");
 		return (SSL_ERR);
 	}
