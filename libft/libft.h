@@ -43,6 +43,9 @@
 /* Round X up to a multiple of Y */
 #define CEIL_TO_MULTIPLE(X,Y)	(((X)%(Y)==0)?(X):((X)+((Y)-((X)%(Y)))))
 
+/* Round up integer division of X by Y */
+#define CEIL_DIV(X,Y)	(((X)==0)?(0):(((X)+(Y)-1)/(Y)))
+
 #define MAX(A,B)	((A)>(B)?(A):(B))
 #define MIN(A,B)	((A)<(B)?(A):(B))
 #define ASC(X)		(X-48)

@@ -11,9 +11,10 @@ static t_ostring	__binary;
 static t_ostring	__base64;
 
 static int	__test_base64_setup(void);
-static int	__test_base64_encode(void);
-static int	__test_base64_decode(void);
-static int	__test_base64_check(void);
+static int	__test_base64_encode_all(void);
+static int	__test_base64_encode_transform(void);
+static int	__test_base64_decode_all(void);
+static int	__test_base64_decode_transform(void);
 
 int	test_base64(void)
 {
@@ -23,9 +24,10 @@ int	test_base64(void)
 	}
 
 	return (
-		__test_base64_encode()
-		| __test_base64_decode()
-		| __test_base64_check()
+		__test_base64_encode_all()
+		| __test_base64_encode_transform()
+		| __test_base64_decode_all()
+		| __test_base64_decode_transform()
 	);
 }
 
@@ -47,53 +49,141 @@ static int	__test_base64_setup(void)
 	return (SSL_OK);
 }
 
-static int	__test_base64_encode(void)
+static int	__test_base64_encode_all(void)
 {
-	unsigned char	*output;
+	uint8_t	*out;
 	size_t	outsize;
 	int		ret_val;
 
-	ret_val = base64_encode_all(__binary.content, __binary.size, &output, &outsize);
+	ret_val = base64_encode_all(__binary.content, __binary.size, &out, &outsize);
 
 	TEST_ASSERT(SSL_OK == ret_val);
-	TEST_ASSERT(NULL != output);
+	TEST_ASSERT(NULL != out);
 	TEST_ASSERT(outsize == __base64.size);
-	TEST_ASSERT(!ft_memcmp(output, __base64.content, outsize));
+	TEST_ASSERT(ft_memcmp(out, __base64.content, outsize) == 0);
 
 	TEST_PASS();
 }
 
-static int	__test_base64_decode(void)
+static int	__test_base64_encode_transform(void)
 {
-	unsigned char	*output;
+	size_t insize = __binary.size;
+	uint8_t *in = __binary.content;
+	size_t outsize = insize * 2;
+	uint8_t	*out = NULL;
+	SSL_ALLOC(out, outsize);
+	t_b64_ctx ctx = {0};
+
+	// base64 update
+	t_transform_result result = {0};
+	ssize_t tconsumed = 0, tproduced = 0;
+	while (1) {
+ 		result = base64_encode_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		if (result.status == TRANSFORM_ERROR) {
+   			break;
+   		}
+     	tconsumed += result.consumed;
+     	tproduced += result.produced;
+   		if (result.status != TRANSFORM_OK) {
+     		break;
+     	}
+	}
+	TEST_ASSERT(result.status != TRANSFORM_ERROR);
+	size_t expected_consumed = (insize/B64_MES_BLOCK_SIZE)*B64_MES_BLOCK_SIZE;
+	size_t expected_produced = (expected_consumed/B64_MES_BLOCK_SIZE)*B64_ENC_BLOCK_SIZE;
+	TEST_LOG(DEBUG, "tconsumed=%zu, expected=%zu", tconsumed, expected_consumed);
+	TEST_LOG(DEBUG, "tproduced=%zu, expected=%zu", tproduced, expected_produced);
+	TEST_ASSERT(tconsumed == expected_consumed);
+	TEST_ASSERT(tproduced == expected_produced);
+
+	// base64 final
+	while (1) {
+ 		result = base64_encode_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+   		if (result.status == TRANSFORM_ERROR) {
+     		break;
+     	}
+     	tconsumed += result.consumed;
+     	tproduced += result.produced;
+  		if (result.status != TRANSFORM_OK) {
+      		break;
+      	}
+	}
+	TEST_ASSERT(result.status == TRANSFORM_DONE);
+	TEST_ASSERT(tconsumed == insize);
+	TEST_ASSERT(tproduced == __base64.size);
+	TEST_ASSERT(ft_memcmp(out, __base64.content, __base64.size) == 0);
+
+	TEST_PASS();
+}
+
+static int	__test_base64_decode_all(void)
+{
+	uint8_t	*out;
 	size_t	outsize;
 	int		ret_val;
 
-	ret_val = base64_decode_all(__base64.content, __base64.size, &output, &outsize);
+	ret_val = base64_decode_all(__base64.content, __base64.size, &out, &outsize);
 
 	TEST_ASSERT(SSL_OK == ret_val);
-	TEST_ASSERT(NULL != output);
+	TEST_ASSERT(NULL != out);
 	TEST_ASSERT(outsize == __binary.size);
-	TEST_ASSERT(!ft_memcmp(output, __binary.content, outsize));
+	TEST_ASSERT(!ft_memcmp(out, __binary.content, outsize));
 
 	TEST_PASS();
 }
 
-static int	__test_base64_check(void)
+static int	__test_base64_decode_transform(void)
 {
-	const char	inval_chars[] = "#$%^&@";
-	t_ostring	inval_b64;
+	size_t insize = __base64.size;
+	uint8_t *in = __base64.content;
+	size_t outsize = insize * 2;
+	uint8_t *out = NULL;
+	SSL_ALLOC(out, outsize);
+	t_b64_ctx ctx = {0};
 
-	inval_b64.size = __base64.size + sizeof(inval_chars);
-	SSL_ALLOC(inval_b64.content, inval_b64.size);
+	// base64 update
+	t_transform_result result = {0};
+	ssize_t tconsumed = 0, tproduced = 0;
+	while (1) {
+ 		result = base64_decode_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		if (result.status == TRANSFORM_ERROR) {
+   			break;
+   		}
+     	tconsumed += result.consumed;
+     	tproduced += result.produced;
+   		if (result.status != TRANSFORM_OK) {
+     		break;
+     	}
+	}
+	TEST_ASSERT(result.status != TRANSFORM_ERROR);
+	size_t expected_consumed;
+	if (insize > 0 && insize%B64_ENC_BLOCK_SIZE == 0) {
+		expected_consumed = ((insize/B64_ENC_BLOCK_SIZE)-1)*B64_ENC_BLOCK_SIZE;
+	} else {
+		expected_consumed = (insize/B64_ENC_BLOCK_SIZE)*B64_ENC_BLOCK_SIZE;
+	}
+	size_t expected_produced = (expected_consumed/B64_ENC_BLOCK_SIZE)*B64_MES_BLOCK_SIZE;
+	TEST_LOG(DEBUG, "tconsumed=%zu, expected=%zu", tconsumed, expected_consumed);
+	TEST_LOG(DEBUG, "tproduced=%zu, expected=%zu", tproduced, expected_produced);
+	TEST_ASSERT(tconsumed == expected_consumed);
+	TEST_ASSERT(tproduced == expected_produced);
 
-	ft_memcpy(inval_b64.content, __base64.content, __base64.size);
-	ft_memcpy(inval_b64.content, inval_chars, sizeof(inval_chars));
-
-	TEST_ASSERT(SSL_OK == base64_check(__base64.content, __base64.size));
-	TEST_ASSERT(SSL_OK != base64_check(inval_b64.content, inval_b64.size));
-
-	SSL_FREE(inval_b64.content);
+	// base64 final
+	while (1) {
+ 		result = base64_decode_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+   		if (result.status == TRANSFORM_ERROR) {
+     		break;
+     	}
+     	tconsumed += result.consumed;
+     	tproduced += result.produced;
+  		if (result.status != TRANSFORM_OK) {
+      		break;
+      	}
+	}
+	TEST_ASSERT(result.status == TRANSFORM_DONE);
+	TEST_ASSERT(tconsumed == insize);
+	TEST_ASSERT(tproduced == __binary.size);
+	TEST_ASSERT(ft_memcmp(out, __binary.content, __binary.size) == 0);
 
 	TEST_PASS();
 }

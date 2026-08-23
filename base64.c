@@ -50,7 +50,7 @@ t_transform_result base64_encode_update(void *vctx, const void *in, size_t insiz
 {
 	t_b64_ctx *ctx = vctx;
 
-	SSL_LOG(TRACE, "update: input size %zu, output size %zu", insize, outsize);
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 
 	if (NULL == in || NULL == out || NULL == ctx) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -74,7 +74,7 @@ t_transform_result base64_encode_update(void *vctx, const void *in, size_t insiz
 		SSL_LOG(TRACE, "need output");
 		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
 	}
-	while (i+B64_MES_BLOCK_SIZE < insize && j+B64_ENC_BLOCK_SIZE < outsize) {
+	while (i+B64_MES_BLOCK_SIZE <= insize && j+B64_ENC_BLOCK_SIZE <= outsize) {
 		__encode_block(mesblock + i, encblock + j);
 		i += B64_MES_BLOCK_SIZE;
 		j += B64_ENC_BLOCK_SIZE;
@@ -87,7 +87,7 @@ t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize
 {
 	t_b64_ctx *ctx = vctx;
 
-	SSL_LOG(TRACE, "final update: input size %zu, output size %zu", insize, outsize);
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 
 	if (NULL == in || NULL == out || NULL == ctx) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -145,14 +145,15 @@ int	base64_encode_all(const uint8_t *mes, size_t messize, uint8_t **enc, size_t 
 	SSL_ALLOC(*enc, *encsize);
 	oenc = *enc;
 
-	while (messize >= B64_MES_BLOCK_SIZE) {
-		__encode_block(omes, oenc);
-		omes += B64_MES_BLOCK_SIZE;
-		oenc += B64_ENC_BLOCK_SIZE;
-		messize -= B64_MES_BLOCK_SIZE;
+	if (messize > 0) {
+		while (messize > B64_MES_BLOCK_SIZE) {
+			__encode_block(omes, oenc);
+			omes += B64_MES_BLOCK_SIZE;
+			oenc += B64_ENC_BLOCK_SIZE;
+			messize -= B64_MES_BLOCK_SIZE;
+		}
+		__encode_final_block(omes, messize, oenc);
 	}
-	__encode_final_block(omes, messize, oenc);
-
 	SSL_LOG(TRACE, "encoded %zu bytes of message", *encsize);
 
 	return (SSL_OK);
@@ -184,6 +185,7 @@ static const uint8_t	BM[128] = {
 
 static inline int	__is_valid_block(const uint8_t encblock[4])
 {
+	// SSL_LOG(DEBUG, "validated block content: %u %u %u %u", encblock[0], encblock[1], encblock[2], encblock[3]);
 	return UB[encblock[0]]+UB[encblock[1]]+UB[encblock[2]]+UB[encblock[3]] == 4;
 }
 
@@ -223,7 +225,7 @@ t_transform_result base64_decode_update(void *vctx, const void *in, size_t insiz
 {
 	t_b64_ctx *ctx = vctx;
 
-	SSL_LOG(TRACE, "update: input size %zu, output size %zu", insize, outsize);
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 
 	if (NULL == in || NULL == out || NULL == ctx) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -252,7 +254,7 @@ t_transform_result base64_decode_update(void *vctx, const void *in, size_t insiz
 		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_NEED_OUTPUT};
 	}
 
-	while (i+B64_ENC_BLOCK_SIZE < insize && j+B64_MES_BLOCK_SIZE < outsize) {
+	while (i+B64_ENC_BLOCK_SIZE <= insize && j+B64_MES_BLOCK_SIZE <= outsize) {
 		if (!__is_valid_block(encblock + i)) {
 			SSL_LOG(ERROR, "bad base64 encoding");
 			return (t_transform_result){.status = TRANSFORM_ERROR};
@@ -269,7 +271,7 @@ t_transform_result base64_decode_final(void *vctx, const void *in, size_t insize
 {
 	t_b64_ctx *ctx = vctx;
 
-	SSL_LOG(TRACE, "final update: input size %zu, output size %zu", insize, outsize);
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 
 	if (NULL == in || NULL == out || NULL == ctx) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -344,32 +346,35 @@ int	base64_decode_all(const uint8_t *enc, size_t encsize, uint8_t **mes, size_t 
 		SSL_LOG(ERROR, "bad base64 encoding");
 		return (SSL_ERR);
 	}
-
 	oenc = (uint8_t *)enc;
-	*messize = CEIL_TO_MULTIPLE(encsize, B64_ENC_BLOCK_SIZE)/B64_ENC_BLOCK_SIZE * B64_MES_BLOCK_SIZE;
+	*messize = CEIL_DIV(encsize, B64_ENC_BLOCK_SIZE) * B64_MES_BLOCK_SIZE;
 	SSL_ALLOC(*mes, *messize);
 	omes = *mes;
 
-	while (encsize >= B64_ENC_BLOCK_SIZE) {
-		if (!__is_valid_block(oenc)) {
+	if (encsize >= B64_ENC_BLOCK_SIZE) {
+		while (encsize > B64_ENC_BLOCK_SIZE) {
+			if (!__is_valid_block(oenc)) {
+				SSL_LOG(ERROR, "bad base64 encoding");
+				*messize = 0;
+				return (SSL_ERR);
+			}
+			__decode_block(oenc, omes);
+			oenc += B64_ENC_BLOCK_SIZE;
+			omes += B64_MES_BLOCK_SIZE;
+			encsize -= B64_ENC_BLOCK_SIZE;
+		}
+		if (!__is_valid_final_block(oenc, encsize)) {
 			SSL_LOG(ERROR, "bad base64 encoding");
 			*messize = 0;
 			return (SSL_ERR);
 		}
-		__decode_block(oenc, omes);
-		oenc += B64_ENC_BLOCK_SIZE;
-		omes += B64_MES_BLOCK_SIZE;
-		encsize -= B64_ENC_BLOCK_SIZE;
-	}
-	if (!__is_valid_final_block(oenc, encsize)) {
-		SSL_LOG(ERROR, "bad base64 encoding");
-		*messize = 0;
-		return (SSL_ERR);
-	}
-	if (oenc[2] == __B64_TAIL_CHAR && oenc[3] == __B64_TAIL_CHAR) {
-		*messize -= 2;
-	} else if (oenc[3] == __B64_TAIL_CHAR) {
-		*messize -= 1;
+		if (oenc[2] == __B64_TAIL_CHAR && oenc[3] == __B64_TAIL_CHAR) {
+			*messize -= 2;
+		} else if (oenc[3] == __B64_TAIL_CHAR) {
+			*messize -= 1;
+		}
+		size_t final_mesblock_size = (*messize%B64_MES_BLOCK_SIZE==0) ? (B64_MES_BLOCK_SIZE) : (*messize%B64_MES_BLOCK_SIZE);
+		__decode_final_block(oenc, omes, final_mesblock_size);
 	}
 	SSL_LOG(TRACE, "decoding is complete: message size: %zu", *messize);
 
