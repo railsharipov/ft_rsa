@@ -20,10 +20,14 @@ typedef struct s_io_v2_filter_ctx {
 
 static ssize_t __io_v2_filter_read(void *ctx, void *buf, size_t nbytes);
 static ssize_t __io_v2_filter_read_close(void *ctx);
+
 static ssize_t __io_v2_filter_write(void *ctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_filter_write_finish(void *ctx);
 static ssize_t __io_v2_filter_write_close(void *ctx);
 static ssize_t __io_v2_filter_write_flush(void *ctx);
+
+static ssize_t __io_v2_filter_passthrough_read(void *vctx, void *buf, size_t nbytes);
+static ssize_t __io_v2_filter_passthrough_write(void *vctx, const void *buf, size_t nbytes);
 
 static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes);
 static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes);
@@ -31,12 +35,6 @@ static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes);
 int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 	t_func_transform f_update, t_func_transform f_final, void *filter_ctx)
 {
-	const t_io_v2_interface interface = {
-		.read = __io_v2_filter_read,
-		.close = __io_v2_filter_read_close,
-	};
-	t_io_v2_filter_ctx *ctx;
-
 	if (NULL == stream) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
@@ -46,15 +44,16 @@ int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 		return (SSL_ERR);
 	}
 	if (NULL == f_update) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		SSL_LOG(DEBUG, "no update transform provided");
 	}
 	if (NULL == f_final) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
+	t_io_v2_filter_ctx *ctx;
 	SSL_ALLOC(ctx, sizeof(t_io_v2_filter_ctx));
+
 	ctx->stream = upstream;
 	ctx->f_update = f_update;
 	ctx->f_final = f_final;
@@ -62,6 +61,11 @@ int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 	ctx->mode = FILTER_TRANSFORM_UPDATE;
 	ctx->in = ft_buffer_new(IO_BUFSIZE);
 	ctx->out = ft_buffer_new(IO_BUFSIZE);
+
+	const t_io_v2_interface interface = {
+		.read = (ctx->f_update) ? __io_v2_filter_read : __io_v2_filter_passthrough_read,
+		.close = __io_v2_filter_read_close,
+	};
 
 	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
@@ -73,14 +77,6 @@ int io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 	t_func_transform f_update, t_func_transform f_final, void *filter_ctx)
 {
-	const t_io_v2_interface interface = {
-		.write = __io_v2_filter_write,
-		.flush = __io_v2_filter_write_flush,
-		.finish = __io_v2_filter_write_finish,
-		.close = __io_v2_filter_write_close,
-	};
-	t_io_v2_filter_ctx *ctx;
-
 	if (NULL == stream) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
@@ -90,15 +86,16 @@ int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 		return (SSL_ERR);
 	}
 	if (NULL == f_update) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		SSL_LOG(DEBUG, "no update transform provided");
 	}
 	if (NULL == f_final) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
+	t_io_v2_filter_ctx *ctx;
 	SSL_ALLOC(ctx, sizeof(t_io_v2_filter_ctx));
+
 	ctx->stream = downstream;
 	ctx->f_update = f_update;
 	ctx->f_final = f_final;
@@ -106,6 +103,13 @@ int io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 	ctx->mode = FILTER_TRANSFORM_UPDATE;
 	ctx->in = ft_buffer_new(IO_BUFSIZE);
 	ctx->out = ft_buffer_new(IO_BUFSIZE);
+
+	const t_io_v2_interface interface = {
+		.write = (ctx->f_update) ? __io_v2_filter_write : __io_v2_filter_passthrough_write,
+		.flush = __io_v2_filter_write_flush,
+		.finish = __io_v2_filter_write_finish,
+		.close = __io_v2_filter_write_close,
+	};
 
 	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
@@ -270,6 +274,122 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 	return (wbytes);
 }
 
+// Skip filtering and read directly from upstream.
+static ssize_t __io_v2_filter_passthrough_read(void *vctx, void *buf, size_t nbytes)
+{
+	t_io_v2_filter_ctx *ctx = vctx;
+	t_io_v2_stream *upstream = ctx->stream;
+	// We can not simply delegate read to upstream since we have to make decision when to call finalizer.
+	// Remember that calling finalizer on read path is our responsibility.
+	t_filter_mode next_mode = FILTER_STREAM;
+	t_transform_result result = {.status = TRANSFORM_ERROR};
+
+	if (nbytes == 0) {
+		return (0);
+	}
+	// Total number of bytes written: passthrough + transform.
+	ssize_t twbytes = 0;
+
+	switch (ctx->mode) {
+	case FILTER_TRANSFORM_UPDATE:
+		// Ignore filter update mode and fallback to stream mode.
+	case FILTER_STREAM:
+		// Passthrough: Upstream -> User buffer
+		// Skip filtering and just read from upstream to user buffer.
+		SSL_LOG(TRACE, "filter is passing through data from upstream to user buffer");
+		switch (upstream->status) {
+		case IO_V2_STATUS_OK:
+			SSL_LOG(TRACE, "reading at most %zu bytes from upstream to input buffer", nbytes);
+			ssize_t rbytes = __read_from_upstream(upstream, buf, nbytes);
+			if (rbytes < 0) {
+				SSL_LOG(ERROR, "failed to read data from upstream to user buffer");
+				return (IO_V2_STATUS_ERROR);
+			}
+			SSL_LOG(TRACE, "read %zu bytes from upstream to user buffer", rbytes);
+			next_mode = FILTER_STREAM;
+			// We need to keep track of number of bytes written directly to user buffer.
+			twbytes += rbytes;
+			break;
+		case IO_V2_STATUS_EOF:
+			SSL_LOG(TRACE, "upstream reached EOF: nothing to read into user buffer");
+			next_mode = FILTER_TRANSFORM_FINAL;
+			break ;
+		case IO_V2_STATUS_ERROR:
+			SSL_LOG(ERROR, "upstream is in error state");
+			return (IO_V2_STATUS_ERROR);
+		case IO_V2_STATUS_CLOSED:
+			SSL_LOG(ERROR, "upstream is closed");
+			return (IO_V2_STATUS_ERROR);
+		default:
+			SSL_LOG(ERROR, "invalid upstream status: %d", upstream->status);
+			return (IO_V2_STATUS_ERROR);
+		}
+		break;
+
+	case FILTER_TRANSFORM_FINAL:
+		// Input buffer -> Transform (final) -> Output buffer
+		// In passthrough read mode the input buffer is expected to be empty.
+		SSL_LOG(TRACE, "filter is finishing reading %zu remaining bytes", ft_buffer_used(ctx->in));
+		if (ft_buffer_used(ctx->in) > 0) {
+			SSL_LOG(ERROR, "unexpected remaining data in the input buffer during passthrough read");
+			return (IO_V2_STATUS_ERROR);
+		}
+		result = ft_buffer_transform(ctx->in, ctx->out, ctx->f_final, ctx->filter_ctx);
+
+		switch (result.status) {
+		case TRANSFORM_ERROR:
+			SSL_LOG(ERROR, "failed to transform data");
+			return (IO_V2_STATUS_ERROR);
+		case TRANSFORM_OK:
+			next_mode = FILTER_TRANSFORM_FINAL;
+			break;
+		case TRANSFORM_NEED_OUTPUT:
+			SSL_LOG(TRACE, "transform needs output");
+			next_mode = FILTER_TRANSFORM_FINAL;
+			break;
+		case TRANSFORM_DONE:
+			SSL_LOG(TRACE, "transform is done");
+			if (ft_buffer_used(ctx->in) > 0) {
+				SSL_LOG(ERROR, "unexpected remaining data in the input buffer");
+				return (IO_V2_STATUS_ERROR);
+			}
+			next_mode = FILTER_DONE;
+			break;
+		case TRANSFORM_NEED_INPUT:
+		default:
+			SSL_LOG(ERROR, "unexpected transform status %d", result.status);
+			return (IO_V2_STATUS_ERROR);
+		}
+		SSL_LOG(TRACE, "filter transformer consumed %zu bytes and produced %zu bytes", result.consumed, result.produced);
+		break;
+
+	case FILTER_DONE:
+		if (ft_buffer_is_empty(ctx->out)) {
+			return (IO_V2_STATUS_EOF);
+		}
+		next_mode = FILTER_DONE;
+		break;
+
+	default:
+		SSL_LOG(ERROR, "invalid filter mode: %d", ctx->mode);
+		return (IO_V2_STATUS_ERROR);
+	}
+	ctx->mode = next_mode;
+
+	// Output buffer -> User buffer
+	if (ft_buffer_used(ctx->out) > 0) {
+		SSL_LOG(TRACE, "filter is writing %zu bytes of transformed data to user buffer", nbytes);
+		ssize_t wbytes = ft_buffer_read(ctx->out, buf, nbytes);
+		if (wbytes < 0) {
+			SSL_LOG(ERROR, "filter failed to write transformed data to user buffer");
+			return (IO_V2_STATUS_ERROR);
+		}
+		SSL_LOG(TRACE, "filter wrote %zu bytes of transformed data", wbytes);
+		twbytes += wbytes;
+	}
+	return (twbytes);
+}
+
 static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 {
 	t_io_v2_filter_ctx *ctx = vctx;
@@ -363,6 +483,16 @@ static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 	ctx->mode = next_mode;
 
 	return (rbytes);
+}
+
+// Skip filtering and write directly to downstream.
+static ssize_t __io_v2_filter_passthrough_write(void *vctx, const void *buf, size_t nbytes)
+{
+	t_io_v2_filter_ctx *ctx = vctx;
+	t_io_v2_stream *downstream = ctx->stream;
+	// We can simply delegate write to downstream since we don't have to make decision when to call finalizer.
+	// Remember that calling finalizer on write path is user's responsibility.
+	return (io_v2_write(downstream, buf, nbytes));
 }
 
 static ssize_t __io_v2_filter_write_finish(void *vctx)
