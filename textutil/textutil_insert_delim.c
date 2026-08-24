@@ -128,8 +128,7 @@ t_transform_result textutil_insert_delim_final(void *vctx, const void *in, size_
 	}
 	ctx->offset = __get_new_offset(ctx->offset, ctx->line_width, i);
 
-	if (j < outsize) {
-		textout[j++] = ctx->delim;
+	if (i >= insize) {
 		SSL_LOG(TRACE, "processing is complete");
 		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_DONE};
 	}
