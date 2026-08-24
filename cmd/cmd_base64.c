@@ -14,6 +14,7 @@ int	cmd_base64(const t_cmd *cmd)
 		return (SSL_ERR);
 	}
 
+	// Source
 	if (ft_htbl_has(cmd->opts, "-i")) {
 		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
@@ -26,6 +27,7 @@ int	cmd_base64(const t_cmd *cmd)
 		}
 	}
 
+	// Sink
 	if (ft_htbl_has(cmd->opts, "-o")) {
 		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
@@ -38,9 +40,11 @@ int	cmd_base64(const t_cmd *cmd)
 		}
 	}
 
+	// Base64 transform
 	t_b64_ctx b64_ctx = {.final = 0, .done = 0};
 	t_io_v2_stream *b64_filter = NULL;
 
+	// Base64 mode: encode or decode
 	if (ft_htbl_has(cmd->opts, "-d")) {
 		// Remove whitespace from input before feeding into decoder
 		t_textutil_ctx *textutil_ctx = NULL;
@@ -60,7 +64,7 @@ int	cmd_base64(const t_cmd *cmd)
 		in = b64_filter;
 	}
 	else {
-		// Feed input into base64 decoder
+		// Feed input into base64 encoder
 		if (io_v2_filter_reader(&b64_filter, in, base64_encode_update, base64_encode_final, &b64_ctx) < 0) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
@@ -68,6 +72,7 @@ int	cmd_base64(const t_cmd *cmd)
 		in = b64_filter;
 	}
 
+	// Output line breaks
 	if (ft_htbl_has(cmd->opts, "-b")) {
 		if (ft_htbl_has(cmd->opts, "-d")) {
 			SSL_LOG(WARN, "ignoring line width option in decode mode");
@@ -91,12 +96,12 @@ int	cmd_base64(const t_cmd *cmd)
 		}
 	}
 
+	// Create and run the pipe
 	t_io_v2_pipe *pipe = NULL;
 	if (io_v2_pipe_unidir(&pipe, in, out) < 0) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
-
 	while (pipe->status == IO_V2_STATUS_PIPE_OK) {
 		io_v2_pipe_pump(pipe);
 	}
@@ -105,6 +110,7 @@ int	cmd_base64(const t_cmd *cmd)
 		return (SSL_ERR);
 	}
 
+	// Close all streams
 	if (io_v2_close(in) < 0) {
 		SSL_LOG(ERROR, IO_CLOSE_ERROR);
 		return (SSL_ERR);
