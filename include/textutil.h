@@ -13,6 +13,7 @@ typedef struct s_textutil_ctx {
 	uint8_t delim;
 	size_t offset;
 	size_t line_width;
+	int ends_with_delim;
 	int done;
 } t_textutil_ctx;
 
@@ -39,5 +40,7 @@ t_transform_result textutil_insert_delim_final(void *vctx, const void *in, size_
 
 t_transform_result textutil_del_eolws_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 t_transform_result textutil_del_eolws_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
+t_transform_result textutil_terminator_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 #endif

@@ -15,6 +15,7 @@ static int	__test_textutil_del_eolws(void);
 static int	__test_textutil_del_eol(void);
 static int	__test_textutil_del_empty_lines(void);
 static int	__test_textutil_insert_delim(void);
+static int	__test_textutil_insert_delim_transform(void);
 static int	__test_textutil_scanf(void);
 static int	__test_textutil_bnscanf(void);
 
@@ -47,6 +48,7 @@ int	test_textutil(void)
 		| __test_textutil_del_eol()
 		| __test_textutil_del_empty_lines()
 		| __test_textutil_insert_delim()
+		| __test_textutil_insert_delim_transform()
 		| __test_textutil_scanf()
 		| __test_textutil_bnscanf()
 	);
@@ -327,6 +329,77 @@ static int	__test_textutil_insert_delim(void)
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(len_with_delim == ft_strlen(buf));
 	TEST_ASSERT(ft_strncmp(str_with_delim, buf, len_with_delim) == 0);
+
+	TEST_PASS();
+}
+
+static int	__test_textutil_insert_delim_transform(void)
+{
+	char	ref[2048] = {0};
+	int		step = 16;
+	char 	*str_no_delim;
+	size_t	len_no_delim;
+	int		ret;
+
+	ret = textutil_del_eol(__lorem, ft_strlen(__lorem), &str_no_delim, &len_no_delim);
+	TEST_ASSERT(ret == SSL_OK);
+	TEST_ASSERT(sizeof(ref) > 2 * len_no_delim && "ref buffer can't be smaller than 2x the length of the original string");
+
+	size_t ref_len = 0;
+	for (size_t i = 0, j = 0; i < len_no_delim; i++) {
+		if (i != 0 && i % (size_t)step == 0) {
+			ref[j++] = '\n';
+			ref_len++;
+		}
+		ref[j++] = str_no_delim[i];
+		ref_len++;
+	}
+
+	size_t insize = len_no_delim;
+	uint8_t *in = (uint8_t *)str_no_delim;
+	size_t outsize = insize * 2;
+	uint8_t	*out = NULL;
+	SSL_ALLOC(out, outsize);
+
+	// text update
+	t_textutil_ctx ctx = (t_textutil_ctx){.line_width = step, .delim = '\n'};
+	t_transform_result result = {0};
+	ssize_t tconsumed = 0, tproduced = 0;
+	while (1) {
+ 		result = textutil_insert_delim_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		if (result.status == TRANSFORM_ERROR) {
+   			break;
+   		}
+     	tconsumed += result.consumed;
+     	tproduced += result.produced;
+   		if (result.status != TRANSFORM_OK) {
+     		break;
+     	}
+	}
+	TEST_ASSERT(result.status != TRANSFORM_ERROR);
+	size_t expected_consumed = insize;
+	size_t expected_produced = insize + insize/step;
+	TEST_LOG(DEBUG, "tconsumed=%zu, expected=%zu", tconsumed, expected_consumed);
+	TEST_LOG(DEBUG, "tproduced=%zu, expected=%zu", tproduced, expected_produced);
+	TEST_ASSERT(tconsumed == expected_consumed);
+	TEST_ASSERT(tproduced == expected_produced);
+
+	// base64 final
+	while (1) {
+ 		result = textutil_insert_delim_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+   		if (result.status == TRANSFORM_ERROR) {
+     		break;
+     	}
+     	tconsumed += result.consumed;
+     	tproduced += result.produced;
+  		if (result.status != TRANSFORM_OK) {
+      		break;
+      	}
+	}
+	TEST_ASSERT(result.status == TRANSFORM_DONE);
+	TEST_ASSERT(tconsumed == insize);
+	TEST_ASSERT(tproduced == insize + insize/step);
+	TEST_ASSERT(ft_memcmp(out, ref, ref_len) == 0);
 
 	TEST_PASS();
 }
