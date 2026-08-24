@@ -80,6 +80,7 @@ typedef struct	s_hash
 	uint8_t		hash[128];
 	uint8_t		buf[128];
 	uint8_t		bufsize;
+	int			done;
 }				t_hash;
 
 int		hash_logger_log(const char *func_name, const char *file_name, int line_number, uint8_t level, const char *fmt, ...);
@@ -88,6 +89,11 @@ void	hash_md5_init(t_hash *ctx);
 void	hash_md5_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_md5_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_md5_final(t_hash *ctx);
+void	md5_update_block(t_hash *ctx, const uint8_t mesblock[MD5_BLOCK_SIZE]);
+void	md5_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize);
+
+t_transform_result md5_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 void	hash_sha1_init(t_hash *ctx);
 void	hash_sha1_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
