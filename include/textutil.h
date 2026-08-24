@@ -9,6 +9,13 @@
 # define RK_PRIME 101
 # define RK_ALPHA 256
 
+typedef struct s_textutil_ctx {
+	uint8_t delim;
+	size_t offset;
+	size_t line_width;
+	int done;
+} t_textutil_ctx;
+
 ssize_t	textutil_find(const char *octets, size_t olen, const char *pattern, size_t patlen);
 ssize_t	textutil_findf(const char *octets, size_t olen, const char *format, ...);
 int		textutil_del_blank(const char *in, size_t inlen, char **out, size_t *outlen);
@@ -26,5 +33,8 @@ int		textutil_nreplace(const char *in, size_t inlen, char **out, size_t *outlen,
 
 int     textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t max_line_len);
 int     textutil_line_writer(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t line_len);
+
+t_transform_result textutil_insert_delim_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result textutil_insert_delim_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 #endif

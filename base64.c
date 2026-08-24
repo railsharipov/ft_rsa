@@ -94,7 +94,7 @@ t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize
 		return (t_transform_result){.status = TRANSFORM_ERROR};
 	}
 	if (ctx->done) {
-		SSL_LOG(TRACE, "encoding is already complete");
+		SSL_LOG(TRACE, "already complete");
 		return (t_transform_result){.status = TRANSFORM_DONE};
 	}
 	if (insize == 0) {
@@ -278,7 +278,7 @@ t_transform_result base64_decode_final(void *vctx, const void *in, size_t insize
 		return (t_transform_result){.status = TRANSFORM_ERROR};
 	}
 	if (ctx->done) {
-		SSL_LOG(TRACE, "decoding is already complete");
+		SSL_LOG(TRACE, "already complete");
 		return (t_transform_result){.status = TRANSFORM_DONE};
 	}
 	if (insize == 0) {

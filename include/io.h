@@ -10,6 +10,7 @@
 # define IO_INIT_ERROR		"i/o init error"
 # define IO_READ_ERROR		"i/o read error"
 # define IO_WRITE_ERROR		"i/o write error"
+# define IO_CLOSE_ERROR		"i/o close error"
 
 # define IO_CREATE_STREAM_ERROR	"i/o stream create error"
 
