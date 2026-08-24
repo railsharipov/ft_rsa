@@ -45,16 +45,14 @@ int	main(int ac, const char **av)
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// digest commands
-	const char *digest_commands[] = { "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "sha512/224", "sha512/256"};
-	for (int i = 0; i < sizeof(digest_commands) / sizeof(digest_commands[0]); i++) {
-		sub_cmd_arg = args_new_cmd(digest_commands[i], ft_strjoin(ft_strup(digest_commands[i]), " message digest"), cmd_hash);
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse output format", AP_OPT_TYPE_FLAG));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode", AP_OPT_TYPE_FLAG));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "read from string", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-f", "read from file", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "read from stdin", AP_OPT_TYPE_FLAG));
-		args_add_sub_cmd(cmd_arg, sub_cmd_arg);
-	}
+	// { "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "sha512/224", "sha512/256"};
+
+	sub_cmd_arg = args_new_cmd("md5", "MD5 message digest", cmd_md5);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// des commands
 	const char *des_commands[] = { "des-ecb", "des-cbc"};

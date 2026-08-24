@@ -28,7 +28,7 @@ int		cmd_read_stdin_pass(char *buf, size_t bufsize);
 
 int     cmd_default(const struct s_cmd *cmd);
 int     cmd_base64(const struct s_cmd *cmd);
-int     cmd_hash(const struct s_cmd *cmd);
+int     cmd_md5(const struct s_cmd *cmd);
 int     cmd_des_ecb(const struct s_cmd *cmd);
 int     cmd_des_cbc(const struct s_cmd *cmd);
 int     cmd_rsa_gen(const struct s_cmd *cmd);
