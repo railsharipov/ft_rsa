@@ -42,17 +42,31 @@ int	cmd_base64(const t_cmd *cmd)
 	t_io_v2_stream *b64_filter = NULL;
 
 	if (ft_htbl_has(cmd->opts, "-d")) {
+		// Remove whitespace from input before feeding into decoder
+		t_textutil_ctx *textutil_ctx = NULL;
+		t_io_v2_stream *textutil_filter = NULL;
+		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
+		*textutil_ctx = (t_textutil_ctx){0};
+		if (io_v2_filter_reader(&textutil_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, textutil_ctx) < 0) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		in = textutil_filter;
+		// Feed processed input into base64 decoder
 		if (io_v2_filter_reader(&b64_filter, in, base64_decode_update, base64_decode_final, &b64_ctx) < 0) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
-	} else {
+		in = b64_filter;
+	}
+	else {
+		// Feed input into base64 decoder
 		if (io_v2_filter_reader(&b64_filter, in, base64_encode_update, base64_encode_final, &b64_ctx) < 0) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
+		in = b64_filter;
 	}
-	in = b64_filter;
 
 	if (ft_htbl_has(cmd->opts, "-b")) {
 		if (ft_htbl_has(cmd->opts, "-d")) {
@@ -64,6 +78,7 @@ int	cmd_base64(const t_cmd *cmd)
 				SSL_LOG(ERROR, "invalid line width: %d", line_width);
 				return (SSL_ERR);
 			}
+			// Add newlines according to specified line width
 			t_textutil_ctx *textutil_ctx = NULL;
 			t_io_v2_stream *textutil_filter = NULL;
 			SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
