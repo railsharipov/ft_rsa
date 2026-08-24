@@ -737,7 +737,8 @@ static t_transform_result __del_update_with_f_search(void *vctx, const void *in,
 	return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
 }
 
-static t_transform_result __del_final_with_f_search(void *vctx, const void *in, size_t insize, void *out, size_t outsize, __t_search_func f)
+static t_transform_result __del_final_with_f_search(
+	void *vctx, const void *in, size_t insize, void *out, size_t outsize, __t_search_func f)
 {
 	t_textutil_ctx *ctx = vctx;
 
