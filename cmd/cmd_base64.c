@@ -70,6 +70,16 @@ int	cmd_base64(const t_cmd *cmd)
 			return (SSL_ERR);
 		}
 		in = b64_filter;
+		// Add newline terminator at the end of output
+		t_textutil_ctx *textutil_ctx = NULL;
+		t_io_v2_stream *textutil_filter = NULL;
+		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
+		*textutil_ctx = (t_textutil_ctx){.delim = '\n'};
+		if (io_v2_filter_reader(&textutil_filter, in, NULL, textutil_terminator_final, textutil_ctx) < 0) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		in = textutil_filter;
 	}
 
 	// Output line breaks
