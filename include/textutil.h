@@ -37,4 +37,7 @@ int     textutil_line_writer(t_io_v2_stream **stream, t_io_v2_stream *upstream, 
 t_transform_result textutil_insert_delim_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 t_transform_result textutil_insert_delim_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
+t_transform_result textutil_del_eolws_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result textutil_del_eolws_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
 #endif
