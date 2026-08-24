@@ -30,7 +30,7 @@ ssize_t	textutil_seekf(const char *in, size_t inlen, const char *format, ...);
 ssize_t	textutil_bseekf(const char *in, size_t inlen, const char *format, ...);
 int		textutil_sscanf(const char *in, size_t inlen, const char *format, ...);
 int		textutil_bnscanf(const char *in, size_t inlen, const char *format, ...);
-int		textutil_nreplace(const char *in, size_t inlen, char **out, size_t *outlen, const char *pat, size_t patlen, const char *rep, size_t replen);
+int		textutil_replace(const char *in, size_t inlen, char **out, size_t *outlen, const char *pat, size_t patlen, const char *rep, size_t replen);
 
 int     textutil_line_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t max_line_len);
 int     textutil_line_writer(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t line_len);
