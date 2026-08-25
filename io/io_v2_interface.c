@@ -106,6 +106,37 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
     return (result);
 }
 
+ssize_t io_v2_write_all(t_io_v2_stream *stream, const void *buf, size_t nbytes)
+{
+	// TODO: We need WOULD_BLOCK, etc. to correctly detect when no more output can be written.
+	// NOTE: This implementation treats 0 written bytes as "nothing more to write" break condition.
+	ssize_t twbytes = 0;
+	ssize_t wbytes = 0;
+	while (1) {
+		if (twbytes > nbytes) {
+			SSL_LOG(ERROR, UNEXPECTED_ERROR);
+			return (-1);
+		}
+		wbytes = io_v2_write(stream, buf + twbytes, nbytes - twbytes);
+		if (wbytes <= 0) {
+			break;
+		}
+		twbytes += wbytes;
+	}
+	if (stream->status != IO_V2_STATUS_OK) {
+		SSL_LOG(ERROR, "failed to write all");
+		return (-1);
+	}
+	wbytes = io_v2_finish(stream);
+	if (wbytes < 0) {
+		SSL_LOG(ERROR, "failed to write all");
+		return (-1);
+	}
+	twbytes += wbytes;
+
+	return (twbytes);
+}
+
 ssize_t io_v2_finish(t_io_v2_stream *stream)
 {
     ssize_t result;
