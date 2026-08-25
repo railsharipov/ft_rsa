@@ -505,7 +505,7 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 
 	ssize_t tbytes = 0;
 	while (ctx->mode != FILTER_DONE) {
-		SSL_LOG(DEBUG, "current filter mode = %d", ctx->mode);
+		SSL_LOG(TRACE, "current filter mode = %d", ctx->mode);
 		switch (ctx->mode) {
 		case FILTER_TRANSFORM_UPDATE:
 			// We are in finishing filter mode so treat as FILTER_TRANSFORM_FINAL and fall though.
