@@ -31,6 +31,7 @@ int     cmd_base64(const struct s_cmd *cmd);
 int     cmd_md5(const struct s_cmd *cmd);
 int     cmd_sha1(const struct s_cmd *cmd);
 int     cmd_sha256(const struct s_cmd *cmd);
+int     cmd_sha512(const struct s_cmd *cmd);
 int     cmd_des_ecb(const struct s_cmd *cmd);
 int     cmd_des_cbc(const struct s_cmd *cmd);
 int     cmd_rsa_gen(const struct s_cmd *cmd);

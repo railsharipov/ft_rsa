@@ -124,6 +124,11 @@ void	hash_sha512_init(t_hash *ctx);
 void	hash_sha512_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha512_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_sha512_final(t_hash *ctx);
+void	sha512_update_block(t_hash *ctx, const uint8_t mesblock[SHA512_BLOCK_SIZE]);
+void	sha512_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize);
+
+t_transform_result sha512_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result sha512_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 void	hash_sha384_init(t_hash *ctx);
 void	hash_sha384_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);

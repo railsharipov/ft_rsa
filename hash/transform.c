@@ -117,3 +117,15 @@ t_transform_result sha256_transform_final(void *vctx, const void *in, size_t ins
 	SSL_LOG(TRACE, "running SHA256 transform final");
 	return (__transform_final(vctx, sha256_update_block, sha256_final_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
 }
+
+t_transform_result sha512_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512 transform update");
+	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result sha512_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512 transform final");
+	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
