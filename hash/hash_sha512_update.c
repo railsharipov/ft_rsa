@@ -58,7 +58,7 @@ void	sha512_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 		uint8_t block[SHA512_BLOCK_SIZE] = {0};
 		ft_memcpy(block, mesblock, messize);
 		block[messize] = 0x80;
-		ft_memcpy(block + 112, (uint8_t *)&messize_bit_count, 8);
+		ft_memcpy(block + 112, (uint8_t *)&messize_bit_count, 16);
 
 		__rotate_hash((t_sha512_word *)ctx->var, (const t_sha512_word *)block);
 		__update_hash((t_sha512_word *)ctx->var, (t_sha512_word *)ctx->hash);
@@ -67,7 +67,7 @@ void	sha512_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 		uint8_t block[2*SHA512_BLOCK_SIZE] = {0};
 		ft_memcpy(block, mesblock, messize);
 		block[messize] = 0x80;
-		ft_memcpy(block + SHA512_BLOCK_SIZE+112, (uint8_t *)&messize_bit_count, 8);
+		ft_memcpy(block + SHA512_BLOCK_SIZE+112, (uint8_t *)&messize_bit_count, 16);
 
 		__rotate_hash((t_sha512_word *)ctx->var, (const t_sha512_word *)block);
 		__update_hash((t_sha512_word *)ctx->var, (t_sha512_word *)ctx->hash);
