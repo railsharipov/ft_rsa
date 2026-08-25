@@ -91,11 +91,7 @@ int	cmd_md5(const t_cmd *cmd)
 	out = textutil_filter;
 	// Write checksum in hex format
 	char *hexhash = ft_bytes_to_hex(md5_ctx.hash, md5_ctx.hashsize);
-	if (io_v2_write(out, hexhash, ft_strlen(hexhash)) < 0) {
-		SSL_LOG(ERROR, "failed to output digest checksum");
-		return (SSL_ERR);
-	}
-	if (io_v2_finish(out) < 0) {
+	if (io_v2_write_all(out, hexhash, ft_strlen(hexhash)) < 0) {
 		SSL_LOG(ERROR, "failed to output digest checksum");
 		return (SSL_ERR);
 	}
