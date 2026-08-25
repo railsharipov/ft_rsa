@@ -9,7 +9,7 @@ static const t_sha512_word	HASH_INIT_VECT[] = {
 	0xdb0c2e0d64f98fa7, 0x47b5481dbefa4fa4
 };
 
-void	hash_sha384_init(t_hash *ctx)
+void	sha384_init(t_hash *ctx)
 {
 	ft_bzero(ctx, sizeof(t_hash));
 	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
@@ -18,12 +18,12 @@ void	hash_sha384_init(t_hash *ctx)
 	ctx->hashsize = SHA384_HASH_SIZE;
 }
 
-void	hash_sha384_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha384_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
-	hash_sha512_update(ctx, mes, messize);
+	sha512_update(ctx, mes, messize);
 }
 
-void	hash_sha384_final(t_hash *sha384)
+void	sha384_final(t_hash *sha384)
 {
-	hash_sha512_final(sha384);
+	sha512_final(sha384);
 }

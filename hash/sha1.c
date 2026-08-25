@@ -16,7 +16,7 @@ static const t_sha1_word	HASH_INIT_VECT[] = {
 	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0
 };
 
-void	hash_sha1_init(t_hash *ctx)
+void	sha1_init(t_hash *ctx)
 {
 	ft_bzero(ctx, sizeof(t_hash));
 	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
@@ -70,7 +70,7 @@ void	sha1_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 # endif
 }
 
-void	hash_sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
 	t_sha1_word	*word;
 	size_t		offset;
@@ -108,7 +108,7 @@ void	hash_sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-void	hash_sha1_final(t_hash *ctx)
+void	sha1_final(t_hash *ctx)
 {
 	uint64_t	msize_nbits;
 	uint8_t		pad[SHA1_BLOCK_SIZE];
@@ -121,8 +121,8 @@ void	hash_sha1_final(t_hash *ctx)
 	pad_len = (ctx->bufsize < 56) ? (56 - ctx->bufsize) : (SHA1_BLOCK_SIZE + 56 - ctx->bufsize);
 	ft_bzero(pad, pad_len);
 	pad[0] = 0x80;
-	hash_sha1_update(ctx, pad, pad_len);
-	hash_sha1_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+	sha1_update(ctx, pad, pad_len);
+	sha1_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
 
 # if BYTE_ORDER == LITTLE_ENDIAN
 	__swap_bytes_32((uint32_t *)ctx->hash, SHA1_HASH_LEN);

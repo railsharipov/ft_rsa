@@ -44,7 +44,7 @@ int	cmd_sha512_224(const t_cmd *cmd)
 
 	// Digest transform
 	t_hash sha512_224_ctx = {0};
-	hash_sha512_224_init(&sha512_224_ctx);
+	sha512_224_init(&sha512_224_ctx);
 	t_io_v2_stream *sha512_224_filter = NULL;
 	if (io_v2_filter_reader(&sha512_224_filter, in, sha512_224_transform_update, sha512_224_transform_final, &sha512_224_ctx) < 0) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);

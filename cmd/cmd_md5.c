@@ -44,7 +44,7 @@ int	cmd_md5(const t_cmd *cmd)
 
 	// Digest transform
 	t_hash md5_ctx = {0};
-	hash_md5_init(&md5_ctx);
+	md5_init(&md5_ctx);
 	t_io_v2_stream *md5_filter = NULL;
 	if (io_v2_filter_reader(&md5_filter, in, md5_transform_update, md5_transform_final, &md5_ctx) < 0) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);

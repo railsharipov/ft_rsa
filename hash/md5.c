@@ -36,7 +36,7 @@ static const t_md5_word	HASH_INIT_VECT[] = {
 	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
-void	hash_md5_init(t_hash *ctx)
+void	md5_init(t_hash *ctx)
 {
 	ft_bzero(ctx, sizeof(t_hash));
 	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
@@ -84,7 +84,7 @@ void	md5_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 	}
 }
 
-void	hash_md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
 	t_md5_word	*word;
 	size_t		offset;
@@ -122,7 +122,7 @@ void	hash_md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-void	hash_md5_final(t_hash *ctx)
+void	md5_final(t_hash *ctx)
 {
 	uint64_t	msize_nbits;
 	uint8_t		pad[MD5_BLOCK_SIZE];
@@ -135,8 +135,8 @@ void	hash_md5_final(t_hash *ctx)
 	pad_len = (ctx->bufsize < 56) ? (56 - ctx->bufsize) : (MD5_BLOCK_SIZE + 56 - ctx->bufsize);
 	ft_bzero(pad, pad_len);
 	pad[0] = 0x80;
-	hash_md5_update(ctx, pad, pad_len);
-	hash_md5_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+	md5_update(ctx, pad, pad_len);
+	md5_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
 }
 
 static void	__rotate(t_md5_word *var, t_md5_word *t1, t_md5_word *t2, t_md5_word *i, const t_md5_word *word)

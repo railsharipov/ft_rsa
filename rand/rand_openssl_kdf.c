@@ -43,9 +43,9 @@ int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vec
 	ft_memcpy(buf, pass, pass_len);
 	ft_memcpy(buf + pass_len, salt, 8);
 
-	hash_md5_init(&md5);
-	hash_md5_update(&md5, (unsigned char *)buf, pass_len + 8);
-	hash_md5_final(&md5);
+	md5_init(&md5);
+	md5_update(&md5, (unsigned char *)buf, pass_len + 8);
+	md5_final(&md5);
 
 	ft_memcpy(key, md5.hash, 8);
 
