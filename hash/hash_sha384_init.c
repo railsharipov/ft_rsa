@@ -2,7 +2,7 @@
 #include <logger.h>
 #include <hash.h>
 
-static const t_sha384_word	HASH_INIT_VECT[] = {
+static const t_sha512_word	HASH_INIT_VECT[] = {
 	0xcbbb9d5dc1059ed8, 0x629a292a367cd507,
 	0x9159015a3070dd17, 0x152fecd8f70e5939,
 	0x67332667ffc00b31, 0x8eb44a8768581511,

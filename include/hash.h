@@ -7,39 +7,27 @@
 
 typedef uint32_t	t_md5_word;
 typedef uint32_t	t_sha1_word;
-typedef uint32_t	t_sha224_word;
 typedef uint32_t	t_sha256_word;
-typedef uint64_t	t_sha512_224_word;
-typedef uint64_t	t_sha512_256_word;
-typedef uint64_t	t_sha384_word;
 typedef uint64_t	t_sha512_word;
 
 # define MD5_BLOCK_SIZE			64
 # define SHA1_BLOCK_SIZE		64
-# define SHA224_BLOCK_SIZE		64
 # define SHA256_BLOCK_SIZE		64
-# define SHA384_BLOCK_SIZE		128
-# define SHA512_224_BLOCK_SIZE	128
-# define SHA512_256_BLOCK_SIZE	128
 # define SHA512_BLOCK_SIZE		128
 
-# define MD5_HASH_LEN			4
-# define SHA1_HASH_LEN			5
-# define SHA224_HASH_LEN		7
-# define SHA256_HASH_LEN		8
-# define SHA384_HASH_LEN		6
-# define SHA512_224_HASH_LEN	4
-# define SHA512_256_HASH_LEN	4
-# define SHA512_HASH_LEN		8
+# define MD5_HASH_SIZE			16
+# define SHA1_HASH_SIZE			20
+# define SHA224_HASH_SIZE		28
+# define SHA256_HASH_SIZE		32
+# define SHA384_HASH_SIZE		48
+# define SHA512_224_HASH_SIZE	28
+# define SHA512_256_HASH_SIZE	32
+# define SHA512_HASH_SIZE		64
 
-# define MD5_HASH_SIZE			MD5_HASH_LEN * sizeof(t_md5_word)
-# define SHA1_HASH_SIZE			SHA1_HASH_LEN * sizeof(t_sha1_word)
-# define SHA224_HASH_SIZE		SHA224_HASH_LEN * sizeof(t_sha224_word)
-# define SHA256_HASH_SIZE		SHA256_HASH_LEN * sizeof(t_sha256_word)
-# define SHA384_HASH_SIZE		SHA384_HASH_LEN * sizeof(t_sha384_word)
-# define SHA512_224_HASH_SIZE	SHA512_224_HASH_LEN * sizeof(t_sha512_224_word)
-# define SHA512_256_HASH_SIZE	SHA512_256_HASH_LEN * sizeof(t_sha512_256_word)
-# define SHA512_HASH_SIZE		SHA512_HASH_LEN * sizeof(t_sha512_word)
+# define MD5_HASH_LEN			MD5_HASH_SIZE/sizeof(t_md5_word)
+# define SHA1_HASH_LEN			SHA1_HASH_SIZE/sizeof(t_sha1_word)
+# define SHA256_HASH_LEN		SHA256_HASH_SIZE/sizeof(t_sha256_word)
+# define SHA512_HASH_LEN		SHA512_HASH_SIZE/sizeof(t_sha512_word)
 
 # define CH(X,Y,Z)		(((X)&(Y))^((~X)&(Z)))
 # define MAJ(X,Y,Z)		(((X)&(Y))^((X)&(Z))^((Y)&(Z)))
@@ -120,6 +108,9 @@ void	hash_sha224_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha224_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_sha224_final(t_hash *ctx);
 
+t_transform_result sha224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result sha224_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
 void	hash_sha512_init(t_hash *ctx);
 void	hash_sha512_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha512_update_stream(t_hash *ctx, t_iodes *iodes);
@@ -135,14 +126,23 @@ void	hash_sha384_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha384_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_sha384_final(t_hash *ctx);
 
+t_transform_result sha384_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result sha384_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
 void	hash_sha512_256_init(t_hash *ctx);
 void	hash_sha512_256_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha512_256_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_sha512_256_final(t_hash *ctx);
 
+t_transform_result sha512_224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result sha512_224_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
 void	hash_sha512_224_init(t_hash *ctx);
 void	hash_sha512_224_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha512_224_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_sha512_224_final(t_hash *ctx);
+
+t_transform_result sha512_256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result sha512_256_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 #endif
