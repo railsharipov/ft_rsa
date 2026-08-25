@@ -930,6 +930,7 @@ t_transform_result textutil_terminator_final(void *vctx, const void *in, size_t 
 	}
 	if (j < outsize) {
 		textout[j++] = ctx->delim;
+		ctx->done = 1;
 		SSL_LOG(TRACE, "processing is complete");
 		return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_DONE};
 	}
