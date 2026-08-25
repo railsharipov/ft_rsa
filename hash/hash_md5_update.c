@@ -71,19 +71,6 @@ void	md5_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 	}
 }
 
-void	hash_md5_update_stream(t_hash *ctx, t_iodes *iodes)
-{
-	char	buf[1024 * MD5_BLOCK_SIZE];
-	size_t	rbytes;
-
-	if (NULL == ctx || NULL == iodes) {
-		return ;
-	}
-	while ((rbytes = io_read(iodes, buf, sizeof(buf))) > 0) {
-		hash_md5_update(ctx, (uint8_t *)buf, rbytes);
-	}
-}
-
 void	hash_md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
 	t_md5_word	*word;

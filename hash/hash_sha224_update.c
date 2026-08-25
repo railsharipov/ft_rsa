@@ -14,11 +14,6 @@
 #include <logger.h>
 #include <hash.h>
 
-void	hash_sha224_update_stream(t_hash *ctx, t_iodes *iodes)
-{
-	hash_sha256_update_stream(ctx, iodes);
-}
-
 void	hash_sha224_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 {
 	hash_sha256_update(ctx, mes, messize);
