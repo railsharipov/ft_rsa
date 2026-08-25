@@ -2,7 +2,11 @@
 #include <logger.h>
 #include <hash.h>
 
-t_transform_result md5_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+typedef void (__t_func_update)(t_hash *ctx, const uint8_t *mesblock);
+typedef void (__t_func_final)(t_hash *ctx, const uint8_t *mesblock, size_t messsize);
+
+static t_transform_result __transform_update(void *vctx, __t_func_update f_update, size_t blocksize,
+	const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_hash *ctx = vctx;
 
@@ -21,24 +25,25 @@ t_transform_result md5_transform_update(void *vctx, const void *in, size_t insiz
 	const uint8_t *mesout = in;
 	size_t i = 0;
 
-	if (insize < MD5_BLOCK_SIZE) {
+	if (insize < blocksize) {
 		SSL_LOG(TRACE, "need input");
 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_INPUT};
 	}
-	if (outsize < MD5_BLOCK_SIZE) {
+	if (outsize < blocksize) {
 		SSL_LOG(TRACE, "need output");
 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
 	}
-	while (i+MD5_BLOCK_SIZE <= insize && i+MD5_BLOCK_SIZE <= outsize) {
-		md5_update_block(ctx, mesin + i);
-		ft_memcpy((uint8_t *)mesout + i, mesin + i, MD5_BLOCK_SIZE);
-		i += MD5_BLOCK_SIZE;
+	while (i+blocksize <= insize && i+blocksize <= outsize) {
+		f_update(ctx, mesin + i);
+		ft_memcpy((uint8_t *)mesout + i, mesin + i, blocksize);
+		i += blocksize;
 	}
 	SSL_LOG(TRACE, "update is ok");
 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
 }
 
-t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+t_transform_result __transform_final(void *vctx, __t_func_update f_update, __t_func_final f_final, size_t blocksize,
+	const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_hash *ctx = vctx;
 
@@ -57,16 +62,16 @@ t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize
 	const uint8_t *mesout = out;
 	size_t i = 0;
 
-	while (i+MD5_BLOCK_SIZE <= insize && i+MD5_BLOCK_SIZE <= outsize) {
-		md5_update_block(ctx, mesin + i);
-		ft_memcpy((uint8_t *)mesout + i, mesin + i, MD5_BLOCK_SIZE);
-		i += MD5_BLOCK_SIZE;
+	while (i+blocksize <= insize && i+blocksize <= outsize) {
+		f_update(ctx, mesin + i);
+		ft_memcpy((uint8_t *)mesout + i, mesin + i, blocksize);
+		i += blocksize;
 	}
 	if (insize <= outsize) {
-		md5_final_block(ctx, mesin + i, insize - i);
+		f_final(ctx, mesin + i, insize - i);
 		ft_memcpy((uint8_t *)mesout + i, mesin + i, insize - i);
 		i = insize;
-
+		ctx->done = 1;
 		SSL_LOG(TRACE, "processing is complete");
 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_DONE};
 	} else {
@@ -75,4 +80,28 @@ t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize
 	}
 	SSL_LOG(TRACE, "update is ok");
 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
+}
+
+t_transform_result md5_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running MD5 transform update");
+	return (__transform_update(vctx, md5_update_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running MD5 transform final");
+	return (__transform_final(vctx, md5_update_block, md5_final_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result sha1_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA1 transform update");
+	return (__transform_update(vctx, sha1_update_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result sha1_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA1 transform final");
+	return (__transform_final(vctx, sha1_update_block, sha1_final_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
 }
