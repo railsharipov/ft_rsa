@@ -68,7 +68,35 @@ int	main(int ac, const char **av)
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
+	sub_cmd_arg = args_new_cmd("sha224", "SHA224 message digest", cmd_sha224);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
 	sub_cmd_arg = args_new_cmd("sha512", "SHA512 message digest", cmd_sha512);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
+	sub_cmd_arg = args_new_cmd("sha384", "SHA384 message digest", cmd_sha384);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
+	sub_cmd_arg = args_new_cmd("sha512-224", "SHA512/224 message digest", cmd_sha512_224);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
+	sub_cmd_arg = args_new_cmd("sha512-256", "SHA512/256 message digest", cmd_sha512_256);
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
