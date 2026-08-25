@@ -24,6 +24,20 @@ static const t_sha256_word	K[] = {
 	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
+static const t_sha256_word	HASH_INIT_VECT[] = {
+	0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+	0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+};
+
+void	hash_sha256_init(t_hash *ctx)
+{
+	ft_bzero(ctx, sizeof(t_hash));
+	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ft_memcpy(ctx->hash, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ctx->blocksize = SHA256_BLOCK_SIZE;
+	ctx->hashsize = SHA256_HASH_SIZE;
+}
+
 static void	__update_sched(const t_sha256_word *word);
 static void	__rotate(t_sha256_word *var, t_sha256_word ix);
 static void	__rotate_hash(t_sha256_word *var, const t_sha256_word *word);
@@ -105,6 +119,27 @@ void	hash_sha256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	}
 	ft_memcpy(ctx->buf, mes + offset, messize - offset);
 	ctx->bufsize = messize - offset;
+}
+
+void	hash_sha256_final(t_hash *ctx)
+{
+	uint64_t	msize_nbits;
+	uint8_t		pad[SHA256_BLOCK_SIZE];
+	size_t		pad_len;
+
+	if (NULL == ctx) {
+		return ;
+	}
+	msize_nbits = ft_uint_bswap64(*(uint64_t *)ctx->messize * 8);
+	pad_len = (ctx->bufsize < 56) ? (56 - ctx->bufsize) : (SHA256_BLOCK_SIZE + 56 - ctx->bufsize);
+	ft_bzero(pad, pad_len);
+	pad[0] = 0x80;
+	hash_sha256_update(ctx, pad, pad_len);
+	hash_sha256_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+
+# if BYTE_ORDER == LITTLE_ENDIAN
+	__swap_bytes_32((uint32_t *)ctx->hash, SHA256_HASH_LEN);
+# endif
 }
 
 static void	__update_sched(const t_sha256_word *word)

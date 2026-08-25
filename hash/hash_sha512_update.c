@@ -35,6 +35,22 @@ static const t_sha512_word	K[] = {
 	0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 };
 
+static const t_sha512_word	HASH_INIT_VECT[] = {
+	0x6a09e667f3bcc908, 0xbb67ae8584caa73b,
+	0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1,
+	0x510e527fade682d1, 0x9b05688c2b3e6c1f,
+	0x1f83d9abfb41bd6b, 0x5be0cd19137e2179
+};
+
+void	hash_sha512_init(t_hash *ctx)
+{
+	ft_bzero(ctx, sizeof(t_hash));
+	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ft_memcpy(ctx->hash, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ctx->blocksize = SHA512_BLOCK_SIZE;
+	ctx->hashsize = SHA512_HASH_SIZE;
+}
+
 static void	__update_sched(const t_sha512_word *word);
 static void	__rotate(t_sha512_word *var, t_sha512_word ix);
 static void	__rotate_hash(t_sha512_word *var, const t_sha512_word *word);
@@ -117,6 +133,38 @@ void	hash_sha512_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ft_memcpy(ctx->buf, mes + offset, messize - offset);
 	ctx->bufsize = messize - offset;
 }
+
+void	hash_sha512_final(t_hash *ctx)
+{
+	uint8_t		pbuf[SHA512_BLOCK_SIZE * 2];
+	size_t		pbsize, offset;
+	uint128_t	msize_nbits;
+
+	if (NULL == ctx) {
+		return ;
+	}
+	msize_nbits = ft_uint_bswap128((*(uint128_t *)ctx->messize) * 8);
+
+	pbsize = (ctx->bufsize < 112) ? SHA512_BLOCK_SIZE : 2 * SHA512_BLOCK_SIZE;
+	offset = 0;
+
+	ft_memcpy(pbuf + offset, ctx->buf, ctx->bufsize);
+	offset += ctx->bufsize;
+	ctx->bufsize = 0;
+
+	pbuf[offset] = 0x80;
+	offset++;
+
+	ft_bzero(pbuf + offset, pbsize - offset - sizeof(msize_nbits));
+	ft_memcpy(pbuf + pbsize - sizeof(msize_nbits), &msize_nbits, sizeof(msize_nbits));
+
+	hash_sha512_update(ctx, pbuf, pbsize);
+
+# if BYTE_ORDER == LITTLE_ENDIAN
+	__swap_bytes_64((t_sha512_word *)ctx->hash, 8);
+# endif
+}
+
 static void	__update_sched(const t_sha512_word *word)
 {
 	int	i;

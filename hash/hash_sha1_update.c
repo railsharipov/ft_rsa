@@ -12,6 +12,19 @@ static const t_sha1_word	K[] = {
 	[60 ... 79] = 0xca62c1d6
 };
 
+static const t_sha1_word	HASH_INIT_VECT[] = {
+	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0
+};
+
+void	hash_sha1_init(t_hash *ctx)
+{
+	ft_bzero(ctx, sizeof(t_hash));
+	ft_memcpy(ctx->var, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ft_memcpy(ctx->hash, HASH_INIT_VECT, sizeof(HASH_INIT_VECT));
+	ctx->blocksize = SHA1_BLOCK_SIZE;
+	ctx->hashsize = SHA1_HASH_SIZE;
+}
+
 static void	__update_sched(const t_sha1_word *word);
 static void	__rotate(t_sha1_word *var, t_sha1_word *t1, t_sha1_word *t2, t_sha1_word ix);
 static void	__rotate_hash(t_sha1_word *var, const t_sha1_word *word);
@@ -93,6 +106,27 @@ void	hash_sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	}
 	ft_memcpy(ctx->buf, mes + offset, messize - offset);
 	ctx->bufsize = messize - offset;
+}
+
+void	hash_sha1_final(t_hash *ctx)
+{
+	uint64_t	msize_nbits;
+	uint8_t		pad[SHA1_BLOCK_SIZE];
+	size_t		pad_len;
+
+	if (NULL == ctx) {
+		return ;
+	}
+	msize_nbits = ft_uint_bswap64(*(uint64_t *)ctx->messize * 8);
+	pad_len = (ctx->bufsize < 56) ? (56 - ctx->bufsize) : (SHA1_BLOCK_SIZE + 56 - ctx->bufsize);
+	ft_bzero(pad, pad_len);
+	pad[0] = 0x80;
+	hash_sha1_update(ctx, pad, pad_len);
+	hash_sha1_update(ctx, (uint8_t *)&msize_nbits, sizeof(msize_nbits));
+
+# if BYTE_ORDER == LITTLE_ENDIAN
+	__swap_bytes_32((uint32_t *)ctx->hash, SHA1_HASH_LEN);
+# endif
 }
 
 static void	__update_sched(const t_sha1_word *word)
