@@ -1,8 +1,8 @@
 NAME := ft_ssl
 TEST_NAME := test
 
-SRCS := main.c base64.c textutil.c $(filter-out tests/%,$(sort $(wildcard */*.c)))
-TEST_SRCS := base64.c textutil.c $(filter-out main.c,$(sort $(wildcard */*.c)))
+SRCS := main.c $(filter-out tests/%,$(sort $(wildcard */*.c)))
+TEST_SRCS := $(filter-out main.c,$(sort $(wildcard */*.c)))
 
 OBJ_DIR := obj
 DEP_DIR := dep
