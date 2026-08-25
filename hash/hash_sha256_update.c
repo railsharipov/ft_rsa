@@ -24,10 +24,50 @@ static const t_sha256_word	K[] = {
 	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 };
 
-static void	__update_sched(t_sha256_word *word);
+static void	__update_sched(const t_sha256_word *word);
 static void	__rotate(t_sha256_word *var, t_sha256_word ix);
-static void	__rotate_hash(t_sha256_word *var, t_sha256_word *word);
+static void	__rotate_hash(t_sha256_word *var, const t_sha256_word *word);
 static void	__update_hash(t_sha256_word *var, t_sha256_word *hash);
+
+static void __swap_bytes_32(uint32_t *arr, size_t size);
+
+void	sha256_update_block(t_hash *ctx, const uint8_t mesblock[SHA256_BLOCK_SIZE])
+{
+	*(uint64_t *)ctx->messize += SHA256_BLOCK_SIZE;
+	__rotate_hash((t_sha256_word *)ctx->var, (const t_sha256_word *)mesblock);
+	__update_hash((t_sha256_word *)ctx->var, (t_sha256_word *)ctx->hash);
+}
+
+void	sha256_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
+{
+	*(uint64_t *)ctx->messize += messize;
+	uint64_t messize_bit_count = ft_uint_bswap64(*(uint64_t *)ctx->messize * 8);
+
+	if (messize < 56) {
+		uint8_t block[SHA256_BLOCK_SIZE] = {0};
+		ft_memcpy(block, mesblock, messize);
+		block[messize] = 0x80;
+		ft_memcpy(block + 56, (uint8_t *)&messize_bit_count, 8);
+
+		__rotate_hash((t_sha256_word *)ctx->var, (const t_sha256_word *)block);
+		__update_hash((t_sha256_word *)ctx->var, (t_sha256_word *)ctx->hash);
+	}
+	else {
+		uint8_t block[2*SHA256_BLOCK_SIZE] = {0};
+		ft_memcpy(block, mesblock, messize);
+		block[messize] = 0x80;
+		ft_memcpy(block + SHA256_BLOCK_SIZE+56, (uint8_t *)&messize_bit_count, 8);
+
+		__rotate_hash((t_sha256_word *)ctx->var, (const t_sha256_word *)block);
+		__update_hash((t_sha256_word *)ctx->var, (t_sha256_word *)ctx->hash);
+
+		__rotate_hash((t_sha256_word *)ctx->var, (const t_sha256_word *)(block + SHA256_BLOCK_SIZE));
+		__update_hash((t_sha256_word *)ctx->var, (t_sha256_word *)ctx->hash);
+	}
+# if BYTE_ORDER == LITTLE_ENDIAN
+	__swap_bytes_32((uint32_t *)ctx->hash, SHA256_HASH_LEN);
+# endif
+}
 
 void	hash_sha256_update_stream(t_hash *ctx, t_iodes *iodes)
 {
@@ -80,7 +120,7 @@ void	hash_sha256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-static void	__update_sched(t_sha256_word *word)
+static void	__update_sched(const t_sha256_word *word)
 {
 	int	i;
 
@@ -116,7 +156,7 @@ static void	__rotate(t_sha256_word *var, t_sha256_word ix)
 	var[0] = t1 + t2;
 }
 
-static void	__rotate_hash(t_sha256_word *var, t_sha256_word *word)
+static void	__rotate_hash(t_sha256_word *var, const t_sha256_word *word)
 {
 	t_sha256_word	ix;
 
@@ -145,4 +185,13 @@ static void	__update_hash(t_sha256_word *var, t_sha256_word *hash)
 	var[5] = hash[5];
 	var[6] = hash[6];
 	var[7] = hash[7];
+}
+
+static void __swap_bytes_32(uint32_t *arr, size_t size)
+{
+	size_t ix = 0;
+	while (ix < size) {
+		arr[ix] = ft_uint_bswap32(arr[ix]);
+		ix++;
+	}
 }
