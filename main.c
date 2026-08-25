@@ -54,6 +54,13 @@ int	main(int ac, const char **av)
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
+	sub_cmd_arg = args_new_cmd("sha1", "SHA1 message digest", cmd_sha1);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "print checksum of the given string", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "echo stdin to stdout and append the checksum to stdout", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
 	// des commands
 	const char *des_commands[] = { "des-ecb", "des-cbc"};
 	for (int i = 0; i < sizeof(des_commands) / sizeof(des_commands[0]); i++) {

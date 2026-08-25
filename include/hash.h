@@ -99,6 +99,11 @@ void	hash_sha1_init(t_hash *ctx);
 void	hash_sha1_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
 void	hash_sha1_update_stream(t_hash *ctx, t_iodes *iodes);
 void	hash_sha1_final(t_hash *ctx);
+void	sha1_update_block(t_hash *ctx, const uint8_t mesblock[SHA1_BLOCK_SIZE]);
+void	sha1_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize);
+
+t_transform_result sha1_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result sha1_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 void	hash_sha256_init(t_hash *ctx);
 void	hash_sha256_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
