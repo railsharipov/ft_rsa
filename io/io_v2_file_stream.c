@@ -148,6 +148,10 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
+    if (nbytes == 0) {
+    	return (0);
+    }
+
     ctx = (t_io_v2_file_ctx *)vctx;
     wbytes = write(ctx->fd, buf, nbytes);
     err = errno;
@@ -158,8 +162,8 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
         return (wbytes);
     }
     else if (wbytes == 0) {
-        SSL_LOG(ERROR, "write returned 0 (disk full?) on fd=%d", ctx->fd);
-        return (IO_V2_STATUS_ERROR);
+        SSL_LOG(TRACE, "write returned 0 on fd=%d", ctx->fd);
+        return (0);
     }
     else {
         if (err == EINTR) {
