@@ -65,6 +65,7 @@ t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize
 	if (insize <= outsize) {
 		md5_final_block(ctx, mesin + i, insize - i);
 		ft_memcpy((uint8_t *)mesout + i, mesin + i, insize - i);
+		i = insize;
 
 		SSL_LOG(TRACE, "processing is complete");
 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_DONE};
