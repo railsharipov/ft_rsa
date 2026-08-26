@@ -1,14 +1,9 @@
-#ifndef SSL_HASH_H
-# define SSL_HASH_H
+#ifndef DIGEST_H
+# define DIGEST_H
 
 # include <common.h>
-# include <io.h>
-#include <libft.h>
-
-typedef uint32_t	t_md5_word;
-typedef uint32_t	t_sha1_word;
-typedef uint32_t	t_sha256_word;
-typedef uint64_t	t_sha512_word;
+# include <logger.h>
+# include <libft.h>
 
 # define MD5_BLOCK_SIZE			64
 # define SHA1_BLOCK_SIZE		64
@@ -28,36 +23,6 @@ typedef uint64_t	t_sha512_word;
 # define SHA1_HASH_LEN			SHA1_HASH_SIZE/sizeof(t_sha1_word)
 # define SHA256_HASH_LEN		SHA256_HASH_SIZE/sizeof(t_sha256_word)
 # define SHA512_HASH_LEN		SHA512_HASH_SIZE/sizeof(t_sha512_word)
-
-# define CH(X,Y,Z)		(((X)&(Y))^((~X)&(Z)))
-# define MAJ(X,Y,Z)		(((X)&(Y))^((X)&(Z))^((Y)&(Z)))
-# define RROT(X,N)		(((X)>>(N))|((X)<<(32-(N))))
-# define LROT(X,N)		(((X)<<(N))|((X)>>(32-(N))))
-# define RROT64(X,N)	(((X)>>(N))|((X)<<(64-(N))))
-# define LROT64(X,N)	(((X)<<(N))|((X)>>(64-(N))))
-
-# define E0(X)			(RROT(X,2)^RROT(X,13)^RROT(X,22))
-# define E1(X)			(RROT(X,6)^RROT(X,11)^RROT(X,25))
-# define S0(X)			(RROT(X,7)^RROT(X,18)^((X)>>(3)))
-# define S1(X)			(RROT(X,17)^RROT(X,19)^((X)>>(10)))
-
-# define E2(X)			(RROT64(X,28)^RROT64(X,34)^RROT64(X,39))
-# define E3(X)			(RROT64(X,14)^RROT64(X,18)^RROT64(X,41))
-# define S2(X)			(RROT64(X,1)^RROT64(X,8)^((X)>>(7)))
-# define S3(X)			(RROT64(X,19)^RROT64(X,61)^((X)>>(6)))
-
-# define F0(X,Y,Z)		(((X)&(Y))|((~X)&(Z)))
-# define G0(X,Y,Z)		(((X)&(Z))|((Y)&(~Z)))
-# define H0(X,Y,Z)		((X)^(Y)^(Z))
-# define I0(X,Y,Z)		((Y)^((X)|(~Z)))
-
-enum  e_hash_flag
-{
-	HASH_P = 1UL << 1,
-	HASH_Q = 1UL << 2,
-	HASH_R = 1UL << 3,
-	HASH_S = 1UL << 4
-};
 
 typedef struct	s_hash
 {
@@ -125,7 +90,6 @@ t_transform_result sha384_transform_final(void *vctx, const void *in, size_t ins
 
 void	sha512_256_init(t_hash *ctx);
 void	sha512_256_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
-void	sha512_256_update_stream(t_hash *ctx, t_iodes *iodes);
 void	sha512_256_final(t_hash *ctx);
 
 t_transform_result sha512_224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
@@ -133,7 +97,6 @@ t_transform_result sha512_224_transform_final(void *vctx, const void *in, size_t
 
 void	sha512_224_init(t_hash *ctx);
 void	sha512_224_update(t_hash *ctx, const unsigned char *buf, size_t bufsize);
-void	sha512_224_update_stream(t_hash *ctx, t_iodes *iodes);
 void	sha512_224_final(t_hash *ctx);
 
 t_transform_result sha512_256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);

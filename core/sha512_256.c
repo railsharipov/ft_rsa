@@ -1,6 +1,8 @@
 #include <common.h>
 #include <logger.h>
-#include <hash.h>
+#include <digest.h>
+
+#include "__digest.h"
 
 static const t_sha512_word	HASH_INIT_VECT[] = {
 	0x22312194fc2bf72c, 0x9f555fa3c84c64c2,
@@ -26,4 +28,16 @@ void	sha512_256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 void	sha512_256_final(t_hash *ctx)
 {
 	sha512_final(ctx);
+}
+
+t_transform_result sha512_256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512/256 transform update");
+	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result sha512_256_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512/256 transform final");
+	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
 }

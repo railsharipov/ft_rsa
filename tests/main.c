@@ -2,7 +2,7 @@
 #include <logger.h>
 #include <base64.h>
 #include <des.h>
-#include <hash.h>
+#include <digest.h>
 #include <rsa.h>
 #include <cmd.h>
 #include <args.h>

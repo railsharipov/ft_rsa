@@ -20,13 +20,13 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 
 .PHONY: all debug sanitize test sanitize_test test_bin clean fclean re
 
-all: CFLAGS := -O3 -std=c11 -Wall -Wfatal-errors -I./include -I./libft
+all: CFLAGS := -O3 -std=c11 -Wall -Wfatal-errors -I./include -I./libs
 all: $(NAME)
 
-debug: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libft
+debug: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libs
 debug: $(NAME)
 
-sanitize: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libft
+sanitize: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
 sanitize: LDFLAGS := -fsanitize=address
 sanitize: $(NAME)
 
@@ -50,11 +50,11 @@ $(TEST_OBJ_DIR)/%.o: %.c | $(TEST_DEP_DIR)/%.d
 $(DEPS):
 $(TEST_DEPS):
 
-sanitize_test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libft
+sanitize_test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
 sanitize_test: LDFLAGS := -fsanitize=address
 sanitize_test: test_bin
 
-test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libft
+test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libs
 test: test_bin
 
 test_bin: $(TEST_OBJS)

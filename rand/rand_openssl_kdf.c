@@ -13,7 +13,7 @@
 #include <common.h>
 #include <logger.h>
 #include <des.h>
-#include <hash.h>
+#include <digest.h>
 #include <rand.h>
 #include <pwd.h>
 

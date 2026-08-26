@@ -1,6 +1,8 @@
 #include <common.h>
 #include <logger.h>
-#include <hash.h>
+#include <digest.h>
+
+#include "__digest.h"
 
 static const t_md5_word	SCHED[] = {
 	0x07, 0x0c, 0x11, 0x16, 0x07, 0x0c, 0x11, 0x16,
@@ -186,4 +188,16 @@ static void	__update_hash(t_md5_word *var, t_md5_word *hash)
 	var[1] = hash[1];
 	var[2] = hash[2];
 	var[3] = hash[3];
+}
+
+t_transform_result md5_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running MD5 transform update");
+	return (__transform_update(vctx, md5_update_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running MD5 transform final");
+	return (__transform_final(vctx, md5_update_block, md5_final_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
 }

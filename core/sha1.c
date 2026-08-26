@@ -1,7 +1,9 @@
 #include <common.h>
 #include <logger.h>
-#include <hash.h>
+#include <digest.h>
 #include <libft.h>
+
+#include "__digest.h"
 
 static t_sha1_word		sched[80];
 
@@ -206,4 +208,16 @@ static void __swap_bytes_32(uint32_t *arr, size_t size)
 		arr[ix] = ft_uint_bswap32(arr[ix]);
 		ix++;
 	}
+}
+
+t_transform_result sha1_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA1 transform update");
+	return (__transform_update(vctx, sha1_update_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+t_transform_result sha1_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA1 transform final");
+	return (__transform_final(vctx, sha1_update_block, sha1_final_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
 }

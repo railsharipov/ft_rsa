@@ -2,7 +2,7 @@
 #include <logger.h>
 #include <args.h>
 #include <cmd.h>
-#include <hash.h>
+#include <digest.h>
 #include <textutil.h>
 
 int	cmd_sha512(const t_cmd *cmd)

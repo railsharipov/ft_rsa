@@ -2,7 +2,7 @@
 #include <logger.h>
 #include <args.h>
 #include <cmd.h>
-#include <hash.h>
+#include <digest.h>
 #include <textutil.h>
 
 int	cmd_sha256(const t_cmd *cmd)

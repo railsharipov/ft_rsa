@@ -1,6 +1,6 @@
 #include <common.h>
 #include <logger.h>
-#include <hash.h>
+#include <digest.h>
 #include <io.h>
 #include <file.h>
 #include <libft.h>
