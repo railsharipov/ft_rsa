@@ -45,8 +45,6 @@ int	main(int ac, const char **av)
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// digest commands
-	// { "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "sha512/224", "sha512/256"};
-
 	sub_cmd_arg = args_new_cmd("md5", "MD5 message digest", cmd_md5);
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-r", "reverse the format of the output", AP_OPT_TYPE_FLAG));
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-q", "quiet mode, only the checksum is printed out", AP_OPT_TYPE_FLAG));
@@ -104,23 +102,30 @@ int	main(int ac, const char **av)
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// des commands
-	const char *des_commands[] = { "des-ecb", "des-cbc"};
-	for (int i = 0; i < sizeof(des_commands) / sizeof(des_commands[0]); i++) {
-		sub_cmd_arg = args_new_cmd(des_commands[i], ft_strjoin(ft_strup(des_commands[i]), " crypt"), cmd_des_ecb);
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-a", "base64-encoded input/output", AP_OPT_TYPE_FLAG));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-i", "read from file", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-o", "write to file", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-e", "des encryption mode", AP_OPT_TYPE_FLAG));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-d", "des decryption mode", AP_OPT_TYPE_FLAG));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-k", "hex key", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "hex salt", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "password", AP_OPT_TYPE_STRING));
-		args_add_cmd_opt(sub_cmd_arg, args_new_opt("-n", "dump vectors", AP_OPT_TYPE_FLAG));
-		if (ft_streq(des_commands[i], "des-cbc")) {
-			args_add_cmd_opt(sub_cmd_arg, args_new_opt("-v", "hex vector", AP_OPT_TYPE_STRING));
-		}
-		args_add_sub_cmd(cmd_arg, sub_cmd_arg);
-	}
+	sub_cmd_arg = args_new_cmd("des-ecb", "DES-ECB crypt", cmd_des_ecb);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-a", "base64-encoded input/output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-i", "read from file", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-o", "write to file", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-e", "des encryption mode", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-d", "des decryption mode", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-k", "hex key", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "hex salt", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "password", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-n", "dump vectors", AP_OPT_TYPE_FLAG));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
+	sub_cmd_arg = args_new_cmd("des-cbc", "DES-ECB crypt", cmd_des_cbc);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-a", "base64-encoded input/output", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-i", "read from file", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-o", "write to file", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-e", "des encryption mode", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-d", "des decryption mode", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-k", "hex key", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-s", "hex salt", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-p", "password", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-n", "dump vectors", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-v", "hex vector", AP_OPT_TYPE_STRING));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// genrsa command
 	sub_cmd_arg = args_new_cmd("genrsa", "Generate RSA private keys", cmd_rsa_gen);

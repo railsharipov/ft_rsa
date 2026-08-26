@@ -1,13 +1,16 @@
-// #include <common.h>
+#include <common.h>
 #include <logger.h>
-// #include <io.h>
-// #include <des.h>
-// #include <base64.h>
-// #include <cmd.h>
-// #include <args.h>
-// #include <rand.h>
-// #include <libft.h>
-// #include <libft.h>
+#include <args.h>
+#include <cmd.h>
+#include <des.h>
+#include <base64.h>
+#include <textutil.h>
+
+int	cmd_des_cbc(const t_cmd *cmd)
+{
+	SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+	return (SSL_ERR);
+}
 
 // static char	*__keyhex;
 // static char	*__salthex;

@@ -533,55 +533,82 @@ static void	__permute_block(uint64_t *ksched, uint64_t *block)
 # endif
 }
 
-// t_transform_result des_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-// {
-// 	t_des_ctx *ctx = vctx;
+t_transform_result des_ecb_encrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_des_ctx *ctx = vctx;
 
-// 	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 
-// 	if (NULL == in || NULL == out || NULL == ctx) {
-// 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-// 		return (t_transform_result){.status = TRANSFORM_ERROR};
-// 	}
-// 	if (ctx->done) {
-// 		SSL_LOG(TRACE, "digest is already done");
-// 		return (t_transform_result){.status = TRANSFORM_DONE};
-// 	}
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(TRACE, "already done");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
 
-// 	const uint8_t *mesin = in;
-// 	const uint8_t *mesout = in;
-// 	size_t i = 0;
+	const uint8_t *mes = in;
+	uint8_t *enc = out;
+	size_t i = 0;
 
-// 	if (insize < blocksize) {
-// 		SSL_LOG(TRACE, "need input");
-// 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_INPUT};
-// 	}
-// 	if (outsize < blocksize) {
-// 		SSL_LOG(TRACE, "need output");
-// 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
-// 	}
-// 	while (i+blocksize <= insize && i+blocksize <= outsize) {
-// 		f_update(ctx, mesin + i);
-// 		ft_memcpy((uint8_t *)mesout + i, mesin + i, blocksize);
-// 		i += blocksize;
-// 	}
-// 	SSL_LOG(TRACE, "update is ok");
-// 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
-// }
+	if (insize < DES_BLOCK_SIZE) {
+		SSL_LOG(TRACE, "need input");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_INPUT};
+	}
+	if (outsize < DES_BLOCK_SIZE) {
+		SSL_LOG(TRACE, "need output");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
+	}
+	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
+		ft_memcpy((uint8_t *)enc + i, mes + i, DES_BLOCK_SIZE);
+		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(enc + i));
+		i += DES_BLOCK_SIZE;
+	}
+	SSL_LOG(TRACE, "update is ok");
+	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
+}
 
-// ssize_t des_update(t_des_ctx *ctx, const char *in, char *out, size_t size)
-// {
-// 	SSL_LOG(TRACE, "update start");
-// 	if (NULL == ctx || NULL == in || NULL == out) {
-// 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-// 		return (-1);
-// 	}
-// 	if (ctx->mode == DES_MODE_DECRYPT) {
-// 		SSL_LOG(DEBUG, "update: decrypting cipher");
-// 		return (__decrypt_update(ctx, in, out, size));
-// 	}
-// 	else {
-// 		SSL_LOG(DEBUG, "update: encrypting plaintext");
-// 		return (__encrypt_update(ctx, in, out, size));
-// 	}
-// }
+t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_des_ctx *ctx = vctx;
+
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
+
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(TRACE, "already done");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *mes = in;
+	uint8_t *enc = out;
+	size_t i = 0;
+
+	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
+		ft_memcpy(enc + i, mes + i, DES_BLOCK_SIZE);
+		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(mes + i));
+		i += DES_BLOCK_SIZE;
+	}
+	if (i + DES_BLOCK_SIZE <= outsize) {
+		size_t tailsize = insize%DES_BLOCK_SIZE;
+		size_t padsize = DES_BLOCK_SIZE-tailsize;
+		SSL_LOG(TRACE, "using pad size: %zu", padsize);
+
+		ft_memcpy(enc + i, mes + i, tailsize);
+		ft_memset(enc + i+tailsize, (int)padsize, padsize);
+		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(enc + i));
+		i = insize;
+		ctx->done = 1;
+		SSL_LOG(TRACE, "processing is complete");
+		return (t_transform_result){.consumed = i, .produced = i + padsize, .status = TRANSFORM_DONE};
+	} else {
+		SSL_LOG(TRACE, "need output");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
+	}
+	SSL_LOG(TRACE, "update is ok");
+	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
+}
