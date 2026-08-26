@@ -17,19 +17,10 @@
 #include <des.h>
 #include <libft.h>
 
-static ssize_t __encrypt_final(t_des *des, char *out, size_t size);
-static ssize_t __decrypt_final(t_des *des, char *out, size_t size);
+static ssize_t __encrypt_final(t_des_ctx *des, char *out, size_t size);
+static ssize_t __decrypt_final(t_des_ctx *des, char *out, size_t size);
 
-/*
-* Finalize the DES context and write the final block to the output buffer.
-*
-* @param des The DES context.
-* @param out The output buffer.
-* @param size The size of the output buffer.
-*
-* @return The number of bytes written to the output buffer.
-*/
-ssize_t des_final(t_des *des, char *out, size_t size)
+ssize_t des_final(t_des_ctx *des, char *out, size_t size)
 {
 	SSL_LOG(TRACE, "final start");
 	if (NULL == des || NULL == out) {
@@ -44,7 +35,7 @@ ssize_t des_final(t_des *des, char *out, size_t size)
 	}
 }
 
-static ssize_t __encrypt_final(t_des *des, char *out, size_t size)
+static ssize_t __encrypt_final(t_des_ctx *des, char *out, size_t size)
 {
 	SSL_LOG(TRACE, "encrypt final start");
 	if (NULL == des || NULL == out) {
@@ -74,7 +65,7 @@ static ssize_t __encrypt_final(t_des *des, char *out, size_t size)
 	return (DES_BLOCK_SIZE);
 }
 
-static ssize_t __decrypt_final(t_des *des, char *out, size_t size)
+static ssize_t __decrypt_final(t_des_ctx *des, char *out, size_t size)
 {
 	size_t	to_write, padsize;
 

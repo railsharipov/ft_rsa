@@ -17,20 +17,10 @@
 #include <des.h>
 #include <libft.h>
 
-static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t size);
-static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t size);
+static ssize_t __encrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
+static ssize_t __decrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
 
-/*
-* Update the DES context with the given input and output buffers.
-*
-* @param des The DES context.
-* @param in The input buffer.
-* @param out The output buffer.
-* @param size The size of the input and output buffers.
-*
-* @return The number of bytes written to the output buffer.
-*/
-ssize_t des_update(t_des *des, const char *in, char *out, size_t size)
+ssize_t des_update(t_des_ctx *des, const char *in, char *out, size_t size)
 {
 	SSL_LOG(TRACE, "update start");
 	if (NULL == des || NULL == in || NULL == out) {
@@ -47,7 +37,7 @@ ssize_t des_update(t_des *des, const char *in, char *out, size_t size)
 	}
 }
 
-static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t size)
+static ssize_t __encrypt_update(t_des_ctx *des, const char *in, char *out, size_t size)
 {
 	size_t	in_pos, out_pos;
 
@@ -90,7 +80,7 @@ static ssize_t __encrypt_update(t_des *des, const char *in, char *out, size_t si
 	return (out_pos);
 }
 
-static ssize_t __decrypt_update(t_des *des, const char *in, char *out, size_t size)
+static ssize_t __decrypt_update(t_des_ctx *des, const char *in, char *out, size_t size)
 {
 	size_t	in_pos, out_pos;
 

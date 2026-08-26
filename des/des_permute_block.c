@@ -84,12 +84,12 @@ static const unsigned char	SB[8*4*16] = {
 
 static void	__permute_block(uint64_t *ksched, uint64_t *block);
 
-void des_permute_block_ecb(t_des *des, uint64_t *block)
+void des_permute_block_ecb(t_des_ctx *des, uint64_t *block)
 {
 	__permute_block(des->ksched, block);
 }
 
-void des_permute_block_cbc(t_des *des, uint64_t *block)
+void des_permute_block_cbc(t_des_ctx *des, uint64_t *block)
 {
 	if (des->mode == DES_MODE_DECRYPT) {
 		uint64_t vect = *block;

@@ -25,7 +25,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	char		buf[1024], *salthex;
 	uint8_t		key[8], iv[8], salt[8];
 	int			ret;
-	t_des		des;
+	t_des_ctx		des;
 
 	SSL_LOG(TRACE, "encoding pem: content: %p, size: %d", data->content, data->size);
 

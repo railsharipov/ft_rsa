@@ -15,8 +15,8 @@ static int	__test_des_ecb_decrypt(void);
 static int	__test_des_cbc_encrypt(void);
 static int	__test_des_cbc_decrypt(void);
 
-static ssize_t	__helper_des_update(t_des *des, const t_ostring *in, t_ostring *out);
-static ssize_t	__helper_des_final(t_des *des, t_ostring *out);
+static ssize_t	__helper_des_update(t_des_ctx *des, const t_ostring *in, t_ostring *out);
+static ssize_t	__helper_des_final(t_des_ctx *des, t_ostring *out);
 
 static const char	*__small_text_file_path = "tests/files/text/small.txt";
 static const char	*__large_text_file_path = "tests/files/text/large.txt";
@@ -109,7 +109,7 @@ static void	__test_des_cleanup(void)
 
 static int	__test_des_ecb_encrypt(void)
 {
-	t_des		des;
+	t_des_ctx		des;
 	t_ostring	cipher;
 	ssize_t		nbytes;
 
@@ -143,7 +143,7 @@ static int	__test_des_ecb_encrypt(void)
 
 static int	__test_des_ecb_decrypt(void)
 {
-	t_des		des;
+	t_des_ctx		des;
 	t_ostring	mes;
 	ssize_t		nbytes;
 
@@ -177,7 +177,7 @@ static int	__test_des_ecb_decrypt(void)
 
 static int	__test_des_cbc_encrypt(void)
 {
-	t_des		des;
+	t_des_ctx		des;
 	t_ostring	cipher;
 	ssize_t		nbytes;
 
@@ -211,7 +211,7 @@ static int	__test_des_cbc_encrypt(void)
 
 static int	__test_des_cbc_decrypt(void)
 {
-	t_des		des;
+	t_des_ctx		des;
 	t_ostring	mes;
 	ssize_t		nbytes;
 
@@ -245,7 +245,7 @@ static int	__test_des_cbc_decrypt(void)
 }
 
 
-static ssize_t	__helper_des_update(t_des *des, const t_ostring *in, t_ostring *out)
+static ssize_t	__helper_des_update(t_des_ctx *des, const t_ostring *in, t_ostring *out)
 {
 	char	*buf;
 	ssize_t wbytes;
@@ -262,7 +262,7 @@ static ssize_t	__helper_des_update(t_des *des, const t_ostring *in, t_ostring *o
 	return (wbytes);
 }
 
-static ssize_t	__helper_des_final(t_des *des, t_ostring *out)
+static ssize_t	__helper_des_final(t_des_ctx *des, t_ostring *out)
 {
 	char	buf[DES_BLOCK_SIZE];
 	ssize_t wbytes;

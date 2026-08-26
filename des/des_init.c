@@ -27,18 +27,18 @@ static const uint64_t	MASK56 = ((uint64_t)1 << 56) - 1;
 static void	__init_encrypt_schedule(uint64_t *kshed, const uint8_t *key);
 static void	__init_decrypt_schedule(uint64_t *kshed, const uint8_t *key);
 
-int    des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode)
+int    des_init(t_des_ctx *des, const uint8_t key[8], const uint8_t iv[8], t_des_crypt crypt, t_des_mode mode)
 {
 	SSL_LOG(TRACE, "init start");
-	SSL_LOG(DEBUG, "init: key: %s", ft_bytes_to_hex(key, 8));
+	SSL_LOG(DEBUG, "init: key: %x%x%x%x%x%x%x%x", key);
 	if (iv) {
-		SSL_LOG(DEBUG, "init: iv: %s", ft_bytes_to_hex(iv, 8));
+		SSL_LOG(DEBUG, "init: iv: %x%x%x%x%x%x%x%x", iv);
     }
     if (NULL == des || NULL == key) {
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
-    ft_bzero(des, sizeof(t_des));
+    ft_bzero(des, sizeof(t_des_ctx));
 
     switch (crypt) {
         case DES_CRYPT_ECB:

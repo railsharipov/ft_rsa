@@ -46,7 +46,7 @@
 
 // int	cmd_des_cbc(const t_args_cmd *cmd)
 // {
-// 	t_des		des;
+// 	t_des_ctx		des;
 // 	t_des_mode	mode;
 // 	uint8_t		key[8], salt[8], vect[8];
 // 	t_iodes		in, out;

@@ -8,9 +8,9 @@
 # define DES_BLOCK_SIZE	8
 # define DES_KSCHED_LEN	16
 
-struct s_des;
+struct s_des_ctx;
 
-typedef	void (*t_func_der_permute_block)(struct s_des *des, uint64_t *block);
+typedef	void (*t_func_der_permute_block)(struct s_des_ctx *des, uint64_t *block);
 
 typedef enum	e_des_mode
 {
@@ -24,7 +24,7 @@ typedef enum	e_des_crypt
 	DES_CRYPT_CBC,
 }				t_des_crypt;
 
-typedef struct	s_des
+typedef struct	s_des_ctx
 {
 	t_func_der_permute_block	f_permute_block;
 	t_des_crypt crypt;
@@ -34,7 +34,7 @@ typedef struct	s_des
 	uint8_t		buf[DES_BLOCK_SIZE];
 	size_t		bufsize;
 	size_t		messize;
-}				t_des;
+}				t_des_ctx;
 
 enum	e_des
 {
@@ -48,12 +48,12 @@ enum	e_des
 	DES_D = 1UL << 8
 };
 
-int		des_init(t_des *des, const uint8_t *key, const uint8_t *iv, t_des_crypt crypt, t_des_mode mode);
-ssize_t	des_update(t_des *des, const char *in, char *out, size_t size);
-ssize_t	des_final(t_des *des, char *out, size_t size);
+int		des_init(t_des_ctx *des, const uint8_t key[8], const uint8_t iv[8], t_des_crypt crypt, t_des_mode mode);
+ssize_t	des_update(t_des_ctx *des, const char *in, char *out, size_t size);
+ssize_t	des_final(t_des_ctx *des, char *out, size_t size);
 
 /* Low level functions */
-void	des_permute_block_ecb(t_des *des, uint64_t *block);
-void	des_permute_block_cbc(t_des *des, uint64_t *block);
+void	des_permute_block_ecb(t_des_ctx *des, uint64_t *block);
+void	des_permute_block_cbc(t_des_ctx *des, uint64_t *block);
 
 #endif
