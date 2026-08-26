@@ -78,7 +78,7 @@ static int	__test_base64_encode_transform(void)
 	t_transform_result result = {0};
 	ssize_t tconsumed = 0, tproduced = 0;
 	while (1) {
- 		result = base64_encode_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		result = base64_encode_transform_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
  		if (result.status == TRANSFORM_ERROR) {
    			break;
    		}
@@ -98,7 +98,7 @@ static int	__test_base64_encode_transform(void)
 
 	// base64 final
 	while (1) {
- 		result = base64_encode_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		result = base64_encode_transform_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
    		if (result.status == TRANSFORM_ERROR) {
      		break;
      	}
@@ -145,7 +145,7 @@ static int	__test_base64_decode_transform(void)
 	t_transform_result result = {0};
 	ssize_t tconsumed = 0, tproduced = 0;
 	while (1) {
- 		result = base64_decode_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		result = base64_decode_transform_update(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
  		if (result.status == TRANSFORM_ERROR) {
    			break;
    		}
@@ -170,7 +170,7 @@ static int	__test_base64_decode_transform(void)
 
 	// base64 final
 	while (1) {
- 		result = base64_decode_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
+ 		result = base64_decode_transform_final(&ctx, in+tconsumed, insize-tconsumed, out+tproduced, outsize-tproduced);
    		if (result.status == TRANSFORM_ERROR) {
      		break;
      	}

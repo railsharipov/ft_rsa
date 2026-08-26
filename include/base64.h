@@ -52,9 +52,9 @@ typedef struct s_b64_ctx {
 void	base64_encode_block(const uint8_t mesblock[3], uint8_t encblock[4]);
 void	base64_decode_block(uint8_t *encblock, uint8_t *mesblock);
 
-t_transform_result base64_encode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
-t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
-t_transform_result base64_decode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
-t_transform_result base64_decode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_encode_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_encode_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_decode_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result base64_decode_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
 #endif

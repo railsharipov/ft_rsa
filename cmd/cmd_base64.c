@@ -57,7 +57,7 @@ int	cmd_base64(const t_cmd *cmd)
 		}
 		in = textutil_filter;
 		// Feed processed input into base64 decoder
-		if (io_v2_filter_reader(&b64_filter, in, base64_decode_update, base64_decode_final, &b64_ctx) < 0) {
+		if (io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, &b64_ctx) < 0) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -65,7 +65,7 @@ int	cmd_base64(const t_cmd *cmd)
 	}
 	else {
 		// Feed input into base64 encoder
-		if (io_v2_filter_reader(&b64_filter, in, base64_encode_update, base64_encode_final, &b64_ctx) < 0) {
+		if (io_v2_filter_reader(&b64_filter, in, base64_encode_transform_update, base64_encode_transform_final, &b64_ctx) < 0) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}

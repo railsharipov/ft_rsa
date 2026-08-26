@@ -46,7 +46,7 @@ static inline void	__encode_final_block(const uint8_t *mesblock, size_t mesblock
 	}
 }
 
-t_transform_result base64_encode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+t_transform_result base64_encode_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_b64_ctx *ctx = vctx;
 
@@ -83,7 +83,7 @@ t_transform_result base64_encode_update(void *vctx, const void *in, size_t insiz
 	return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
 }
 
-t_transform_result base64_encode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+t_transform_result base64_encode_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_b64_ctx *ctx = vctx;
 
@@ -221,7 +221,7 @@ static void	__decode_final_block(const uint8_t encblock[4], uint8_t *mesblock, s
 	}
 }
 
-t_transform_result base64_decode_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+t_transform_result base64_decode_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_b64_ctx *ctx = vctx;
 
@@ -267,7 +267,7 @@ t_transform_result base64_decode_update(void *vctx, const void *in, size_t insiz
 	return (t_transform_result){.consumed = i, .produced = j, .status = TRANSFORM_OK};
 }
 
-t_transform_result base64_decode_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+t_transform_result base64_decode_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_b64_ctx *ctx = vctx;
 
