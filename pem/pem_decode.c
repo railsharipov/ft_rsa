@@ -120,19 +120,19 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		}
 		SSL_LOG(TRACE, "decrypting data: content: %p, size: %d", b64dec.content, b64dec.size);
 
-		if (SSL_OK != des_init(&des, key, iv, DES_CRYPT_CBC, DES_MODE_DECRYPT)) {
+		if (SSL_OK != des_cbc_decrypt_init(&des, key, iv)) {
 			SSL_LOG(ERROR, "des init error");
 			goto label_exit;
 		}
 		// Allocate output buffer (at most same size as input)
 		SSL_ALLOC(data->content, b64dec.size);
 
-		ssize_t update_written = des_update(&des, (char *)b64dec.content, (char *)data->content, b64dec.size);
+		ssize_t update_written = des_cbc_decrypt_update(&des, (char *)b64dec.content, (char *)data->content, b64dec.size);
 		if (update_written < 0) {
 			SSL_LOG(ERROR, "bad des decrypt");
 			goto label_exit;
 		}
-		ssize_t final_written = des_final(&des, (char *)data->content + update_written, b64dec.size - update_written);
+		ssize_t final_written = des_cbc_decrypt_final(&des, (char *)data->content + update_written, b64dec.size - update_written);
 		if (final_written < 0) {
 			SSL_LOG(ERROR, "bad des decrypt");
 			goto label_exit;

@@ -8,27 +8,8 @@
 # define DES_BLOCK_SIZE	8
 # define DES_KSCHED_LEN	16
 
-struct s_des_ctx;
-
-typedef	void (*t_func_der_permute_block)(struct s_des_ctx *des, uint64_t *block);
-
-typedef enum	e_des_mode
-{
-	DES_MODE_ENCRYPT = 0,
-	DES_MODE_DECRYPT,
-}				t_des_mode;
-
-typedef enum	e_des_crypt
-{
-	DES_CRYPT_ECB = 0,
-	DES_CRYPT_CBC,
-}				t_des_crypt;
-
 typedef struct	s_des_ctx
 {
-	t_func_der_permute_block	f_permute_block;
-	t_des_crypt crypt;
-	t_des_mode	mode;
 	uint64_t	ksched[DES_KSCHED_LEN];
 	uint8_t		vect[DES_BLOCK_SIZE];
 	uint8_t		buf[DES_BLOCK_SIZE];
@@ -48,12 +29,26 @@ enum	e_des
 	DES_D = 1UL << 8
 };
 
-int		des_init(t_des_ctx *des, const uint8_t key[8], const uint8_t iv[8], t_des_crypt crypt, t_des_mode mode);
-ssize_t	des_update(t_des_ctx *des, const char *in, char *out, size_t size);
-ssize_t	des_final(t_des_ctx *des, char *out, size_t size);
+void	des_ecb_encrypt_permute_block(t_des_ctx *des, uint64_t *block);
+void	des_ecb_decrypt_permute_block(t_des_ctx *des, uint64_t *block);
 
-/* Low level functions */
-void	des_permute_block_ecb(t_des_ctx *des, uint64_t *block);
-void	des_permute_block_cbc(t_des_ctx *des, uint64_t *block);
+int		des_ecb_encrypt_init(t_des_ctx *des, const uint8_t key[8]);
+ssize_t	des_ecb_encrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
+ssize_t	des_ecb_encrypt_final(t_des_ctx *des, char *out, size_t size);
+
+int		des_ecb_decrypt_init(t_des_ctx *des, const uint8_t key[8]);
+ssize_t	des_ecb_decrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
+ssize_t	des_ecb_decrypt_final(t_des_ctx *des, char *out, size_t size);
+
+void	des_cbc_encrypt_permute_block(t_des_ctx *des, uint64_t *block);
+void	des_cbc_decrypt_permute_block(t_des_ctx *des, uint64_t *block);
+
+int		des_cbc_encrypt_init(t_des_ctx *des, const uint8_t key[8], const uint8_t iv[8]);
+ssize_t	des_cbc_encrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
+ssize_t	des_cbc_encrypt_final(t_des_ctx *des, char *out, size_t size);
+
+int		des_cbc_decrypt_init(t_des_ctx *des, const uint8_t key[8], const uint8_t iv[8]);
+ssize_t	des_cbc_decrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
+ssize_t	des_cbc_decrypt_final(t_des_ctx *des, char *out, size_t size);
 
 #endif

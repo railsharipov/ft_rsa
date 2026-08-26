@@ -1,11 +1,12 @@
 #include <common.h>
 #include <logger.h>
 #include <des.h>
-#include "test.h"
 #include <rand.h>
 #include <io.h>
 #include <file.h>
 #include <libft.h>
+
+#include "test.h"
 
 static int	__test_des_setup(void);
 static void	__test_des_cleanup(void);
@@ -14,9 +15,6 @@ static int	__test_des_ecb_encrypt(void);
 static int	__test_des_ecb_decrypt(void);
 static int	__test_des_cbc_encrypt(void);
 static int	__test_des_cbc_decrypt(void);
-
-static ssize_t	__helper_des_update(t_des_ctx *des, const t_ostring *in, t_ostring *out);
-static ssize_t	__helper_des_final(t_des_ctx *des, t_ostring *out);
 
 static const char	*__small_text_file_path = "tests/files/text/small.txt";
 static const char	*__large_text_file_path = "tests/files/text/large.txt";
@@ -109,31 +107,43 @@ static void	__test_des_cleanup(void)
 
 static int	__test_des_ecb_encrypt(void)
 {
-	t_des_ctx		des;
+	t_des_ctx	ctx;
 	t_ostring	cipher;
 	ssize_t		nbytes;
+	char *buf;
+	char final_block[DES_BLOCK_SIZE];
 
 	// Small text file.
-	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
+	des_ecb_encrypt_init(&ctx, __key);
 	ft_ostr_init(&cipher);
 
-	nbytes = __helper_des_update(&des, __small_text, &cipher);
+	SSL_ALLOC(buf, __small_text->size);
+	nbytes = des_ecb_encrypt_update(&ctx, (char *)__small_text->content, buf, __small_text->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &cipher);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_ecb_encrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, final_block, nbytes);
+
 	TEST_ASSERT(cipher.size == __des_ecb_small_cipher->size);
 	TEST_ASSERT(ft_memcmp(cipher.content, __des_ecb_small_cipher->content, cipher.size) == 0);
 
 	// Large text file.
-	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_ENCRYPT);
+	des_ecb_encrypt_init(&ctx, __key);
 	ft_ostr_init(&cipher);
 
-	nbytes = __helper_des_update(&des, __large_text, &cipher);
+	SSL_ALLOC(buf, __large_text->size);
+	nbytes = des_ecb_encrypt_update(&ctx, (char *)__large_text->content, buf, __large_text->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &cipher);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_ecb_encrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, final_block, nbytes);
+
 	TEST_ASSERT(cipher.size == __des_ecb_large_cipher->size);
 	TEST_ASSERT(ft_memcmp(cipher.content, __des_ecb_large_cipher->content, cipher.size) == 0);
 	ft_ostr_clear(&cipher);
@@ -143,31 +153,43 @@ static int	__test_des_ecb_encrypt(void)
 
 static int	__test_des_ecb_decrypt(void)
 {
-	t_des_ctx		des;
+	t_des_ctx	ctx;
 	t_ostring	mes;
 	ssize_t		nbytes;
+	char *buf;
+	char final_block[DES_BLOCK_SIZE];
 
 	// Small cipher file.
-	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_DECRYPT);
+	des_ecb_decrypt_init(&ctx, __key);
 	ft_ostr_init(&mes);
 
-	nbytes = __helper_des_update(&des, __des_ecb_small_cipher, &mes);
+	SSL_ALLOC(buf, __des_ecb_small_cipher->size);
+	nbytes = des_ecb_decrypt_update(&ctx, (char *)__des_ecb_small_cipher->content, buf, __des_ecb_small_cipher->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&mes, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &mes);
-	TEST_ASSERT(nbytes >= 0);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_ecb_decrypt_final(&ctx, (char *)final_block, sizeof(final_block));
+	TEST_ASSERT(nbytes >=0);
+	ft_ostr_append(&mes, final_block, nbytes);
+
 	TEST_ASSERT(mes.size == __small_text->size);
 	TEST_ASSERT(ft_memcmp(mes.content, __small_text->content, mes.size) == 0);
 
 	// Large cipher file.
-	des_init(&des, __key, NULL, DES_CRYPT_ECB, DES_MODE_DECRYPT);
+	des_ecb_decrypt_init(&ctx, __key);
 	ft_ostr_init(&mes);
 
-	nbytes = __helper_des_update(&des, __des_ecb_large_cipher, &mes);
+	SSL_ALLOC(buf, __des_ecb_large_cipher->size);
+	nbytes = des_ecb_decrypt_update(&ctx, (char *)__des_ecb_large_cipher->content, buf, __des_ecb_large_cipher->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&mes, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &mes);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_ecb_decrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes >= 0);
+	ft_ostr_append(&mes, final_block, nbytes);
+
 	TEST_ASSERT(mes.size == __large_text->size);
 	TEST_ASSERT(ft_memcmp(mes.content, __large_text->content, mes.size) == 0);
 	ft_ostr_clear(&mes);
@@ -177,31 +199,43 @@ static int	__test_des_ecb_decrypt(void)
 
 static int	__test_des_cbc_encrypt(void)
 {
-	t_des_ctx		des;
+	t_des_ctx	ctx;
 	t_ostring	cipher;
 	ssize_t		nbytes;
+	char *buf;
+	char final_block[DES_BLOCK_SIZE];
 
 	// Small text file.
-	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT);
+	des_cbc_encrypt_init(&ctx, __key, __iv);
 	ft_ostr_init(&cipher);
 
-	nbytes = __helper_des_update(&des, __small_text, &cipher);
+	SSL_ALLOC(buf, __small_text->size);
+	nbytes = des_cbc_encrypt_update(&ctx, (char *)__small_text->content, buf, __small_text->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &cipher);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_cbc_encrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, final_block, nbytes);
+
 	TEST_ASSERT(cipher.size == __des_cbc_small_cipher->size);
 	TEST_ASSERT(ft_memcmp(cipher.content, __des_cbc_small_cipher->content, cipher.size) == 0);
 
 	// Large text file.
-	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT);
+	des_cbc_encrypt_init(&ctx, __key, __iv);
 	ft_ostr_init(&cipher);
 
-	nbytes = __helper_des_update(&des, __large_text, &cipher);
+	SSL_ALLOC(buf, __large_text->size);
+	nbytes = des_cbc_encrypt_update(&ctx, (char *)__large_text->content, buf, __large_text->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &cipher);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_cbc_encrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&cipher, final_block, nbytes);
+
 	TEST_ASSERT(cipher.size == __des_cbc_large_cipher->size);
 	TEST_ASSERT(ft_memcmp(cipher.content, __des_cbc_large_cipher->content, cipher.size) == 0);
 	ft_ostr_clear(&cipher);
@@ -211,67 +245,46 @@ static int	__test_des_cbc_encrypt(void)
 
 static int	__test_des_cbc_decrypt(void)
 {
-	t_des_ctx		des;
+	t_des_ctx	ctx;
 	t_ostring	mes;
 	ssize_t		nbytes;
+	char *buf;
+	char final_block[DES_BLOCK_SIZE];
 
 	// Small cipher file.
-	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_DECRYPT);
+	des_cbc_decrypt_init(&ctx, __key, __iv);
 	ft_ostr_init(&mes);
 
-	nbytes = __helper_des_update(&des, __des_cbc_small_cipher, &mes);
+	SSL_ALLOC(buf, __des_cbc_small_cipher->size);
+	nbytes = des_cbc_decrypt_update(&ctx, (char *)__des_cbc_small_cipher->content, buf, __des_cbc_small_cipher->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&mes, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &mes);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_cbc_decrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes >= 0);
+	ft_ostr_append(&mes, final_block, nbytes);
+
 	TEST_ASSERT(mes.size == __small_text->size);
 	TEST_ASSERT(ft_memcmp(mes.content, __small_text->content, mes.size) == 0);
 
 	// Large cipher file.
-	des_init(&des, __key, __iv, DES_CRYPT_CBC, DES_MODE_DECRYPT);
+	des_cbc_decrypt_init(&ctx, __key, __iv);
 	ft_ostr_init(&mes);
 
-	nbytes = __helper_des_update(&des, __des_cbc_large_cipher, &mes);
+	SSL_ALLOC(buf, __des_cbc_large_cipher->size);
+	nbytes = des_cbc_decrypt_update(&ctx, (char *)__des_cbc_large_cipher->content, buf, __des_cbc_large_cipher->size);
 	TEST_ASSERT(nbytes > 0);
+	ft_ostr_append(&mes, buf, nbytes);
 
-	nbytes = __helper_des_final(&des, &mes);
+	ft_memset(final_block, 0, sizeof(final_block));
+	nbytes = des_cbc_decrypt_final(&ctx, (char *)final_block, sizeof(final_block));
 	TEST_ASSERT(nbytes >= 0);
+	ft_ostr_append(&mes, final_block, nbytes);
 
 	TEST_ASSERT(mes.size == __large_text->size);
 	TEST_ASSERT(ft_memcmp(mes.content, __large_text->content, mes.size) == 0);
 	ft_ostr_clear(&mes);
 
 	TEST_PASS();
-}
-
-
-static ssize_t	__helper_des_update(t_des_ctx *des, const t_ostring *in, t_ostring *out)
-{
-	char	*buf;
-	ssize_t wbytes;
-
-	SSL_ALLOC(buf, in->size);
-	wbytes = des_update(des, (char *)in->content, buf, in->size);
-	if (wbytes < 0) {
-		SSL_FREE(buf);
-		return (-1);
-	}
-	ft_ostr_append(out, buf, wbytes);
-	SSL_FREE(buf);
-
-	return (wbytes);
-}
-
-static ssize_t	__helper_des_final(t_des_ctx *des, t_ostring *out)
-{
-	char	buf[DES_BLOCK_SIZE];
-	ssize_t wbytes;
-
-	wbytes = des_final(des, (char *)buf, sizeof(buf));
-	if (wbytes < 0) {
-		return (-1);
-	}
-	ft_ostr_append(out, buf, wbytes);
-
-	return (wbytes);
 }

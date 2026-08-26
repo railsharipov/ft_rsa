@@ -90,7 +90,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 
 			SSL_LOG(TRACE, "encrypting data: content: %p, size: %zu", data->content, data->size);
 
-			if (SSL_OK != des_init(&des, key, iv, DES_CRYPT_CBC, DES_MODE_ENCRYPT)) {
+			if (SSL_OK != des_cbc_encrypt_init(&des, key, iv)) {
 				SSL_LOG(ERROR, "des init error");
 				goto label_exit;
 			}
@@ -98,12 +98,12 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 			size_t max_cipher_size = data->size + DES_BLOCK_SIZE;
 			SSL_ALLOC(cipher.content, max_cipher_size);
 
-			ssize_t update_written = des_update(&des, (char *)data->content, (char *)cipher.content, data->size);
+			ssize_t update_written = des_cbc_encrypt_update(&des, (char *)data->content, (char *)cipher.content, data->size);
 			if (update_written < 0) {
 				SSL_LOG(ERROR, "bad des encrypt");
 				goto label_exit;
 			}
-			ssize_t final_written = des_final(&des, (char *)cipher.content + update_written, max_cipher_size - update_written);
+			ssize_t final_written = des_cbc_encrypt_final(&des, (char *)cipher.content + update_written, max_cipher_size - update_written);
 			if (final_written < 0) {
 				SSL_LOG(ERROR, "bad des encrypt");
 				goto label_exit;
