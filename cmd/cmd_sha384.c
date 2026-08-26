@@ -43,7 +43,7 @@ int	cmd_sha384(const t_cmd *cmd)
 	}
 
 	// Digest transform
-	t_hash sha384_ctx = {0};
+	t_digest_ctx sha384_ctx = {0};
 	sha384_init(&sha384_ctx);
 	t_io_v2_stream *sha384_filter = NULL;
 	if (io_v2_filter_reader(&sha384_filter, in, sha384_transform_update, sha384_transform_final, &sha384_ctx) < 0) {

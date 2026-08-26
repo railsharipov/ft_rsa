@@ -58,7 +58,7 @@ int		test_pem(void);
 int		test_bnum(void);
 int		test_json(void);
 int		test_asn(void);
-int		test_hash(void);
+int		test_digest(void);
 int		test_args(void);
 
 #endif

@@ -38,9 +38,9 @@ static const t_md5_word	MD5_INIT_VECT[] = {
 	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476
 };
 
-void	md5_init(t_hash *ctx)
+void	md5_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, MD5_INIT_VECT, sizeof(MD5_INIT_VECT));
 	ft_memcpy(ctx->hash, MD5_INIT_VECT, sizeof(MD5_INIT_VECT));
 	ctx->blocksize = MD5_BLOCK_SIZE;
@@ -51,14 +51,14 @@ static void	__md5_rotate(t_md5_word *var, t_md5_word *t1, t_md5_word *t2, t_md5_
 static void	__md5_rotate_hash(t_md5_word *var, const t_md5_word *word);
 static void	__md5_update_hash(t_md5_word *var, t_md5_word *hash);
 
-void	md5_update_block(t_hash *ctx, const uint8_t mesblock[MD5_BLOCK_SIZE])
+void	md5_update_block(t_digest_ctx *ctx, const uint8_t mesblock[MD5_BLOCK_SIZE])
 {
 	*(uint64_t *)ctx->messize += MD5_BLOCK_SIZE;
 	__md5_rotate_hash((t_md5_word *)ctx->var, (const t_md5_word *)mesblock);
 	__md5_update_hash((t_md5_word *)ctx->var, (t_md5_word *)ctx->hash);
 }
 
-void	md5_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
+void	md5_final_block(t_digest_ctx *ctx, const uint8_t *mesblock, size_t messize)
 {
 	*(uint64_t *)ctx->messize += messize;
 	uint64_t messize_bit_count = *(uint64_t *)ctx->messize * 8;
@@ -86,7 +86,7 @@ void	md5_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 	}
 }
 
-void	md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	md5_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	t_md5_word	*word;
 	size_t		offset;
@@ -124,7 +124,7 @@ void	md5_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-void	md5_final(t_hash *ctx)
+void	md5_final(t_digest_ctx *ctx)
 {
 	uint64_t	msize_nbits;
 	uint8_t		pad[MD5_BLOCK_SIZE];
@@ -215,9 +215,9 @@ static const t_sha1_word	SHA1_INIT_VECT[] = {
 	0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0
 };
 
-void	sha1_init(t_hash *ctx)
+void	sha1_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA1_INIT_VECT, sizeof(SHA1_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA1_INIT_VECT, sizeof(SHA1_INIT_VECT));
 	ctx->blocksize = SHA1_BLOCK_SIZE;
@@ -231,14 +231,14 @@ static void	__sha1_update_hash(t_sha1_word *var, t_sha1_word *hash);
 
 static void __swap_bytes_32(uint32_t *arr, size_t size);
 
-void	sha1_update_block(t_hash *ctx, const uint8_t mesblock[SHA1_BLOCK_SIZE])
+void	sha1_update_block(t_digest_ctx *ctx, const uint8_t mesblock[SHA1_BLOCK_SIZE])
 {
 	*(uint64_t *)ctx->messize += SHA1_BLOCK_SIZE;
 	__sha1_rotate_hash((t_sha1_word *)ctx->var, (const t_sha1_word *)mesblock);
 	__sha1_update_hash((t_sha1_word *)ctx->var, (t_sha1_word *)ctx->hash);
 }
 
-void	sha1_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
+void	sha1_final_block(t_digest_ctx *ctx, const uint8_t *mesblock, size_t messize)
 {
 	*(uint64_t *)ctx->messize += messize;
 	uint64_t messize_bit_count = ft_uint_bswap64(*(uint64_t *)ctx->messize * 8);
@@ -269,7 +269,7 @@ void	sha1_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 # endif
 }
 
-void	sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha1_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	t_sha1_word	*word;
 	size_t		offset;
@@ -307,7 +307,7 @@ void	sha1_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-void	sha1_final(t_hash *ctx)
+void	sha1_final(t_digest_ctx *ctx)
 {
 	uint64_t	msize_nbits;
 	uint8_t		pad[SHA1_BLOCK_SIZE];
@@ -416,21 +416,21 @@ static const t_sha256_word	SHA224_INIT_VECT[] = {
 	0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4
 };
 
-void	sha224_init(t_hash *ctx)
+void	sha224_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA224_INIT_VECT, sizeof(SHA224_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA224_INIT_VECT, sizeof(SHA224_INIT_VECT));
 	ctx->blocksize = SHA256_BLOCK_SIZE;
 	ctx->hashsize = SHA224_HASH_SIZE;
 }
 
-void	sha224_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha224_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	sha256_update(ctx, mes, messize);
 }
 
-void	sha224_final(t_hash *ctx)
+void	sha224_final(t_digest_ctx *ctx)
 {
 	sha256_final(ctx);
 }
@@ -474,9 +474,9 @@ static const t_sha256_word	SHA256_INIT_VECT[] = {
 	0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
 };
 
-void	sha256_init(t_hash *ctx)
+void	sha256_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA256_INIT_VECT, sizeof(SHA256_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA256_INIT_VECT, sizeof(SHA256_INIT_VECT));
 	ctx->blocksize = SHA256_BLOCK_SIZE;
@@ -488,14 +488,14 @@ static void	__sha256_rotate(t_sha256_word *var, t_sha256_word ix);
 static void	__sha256_rotate_hash(t_sha256_word *var, const t_sha256_word *word);
 static void	__sha256_update_hash(t_sha256_word *var, t_sha256_word *hash);
 
-void	sha256_update_block(t_hash *ctx, const uint8_t mesblock[SHA256_BLOCK_SIZE])
+void	sha256_update_block(t_digest_ctx *ctx, const uint8_t mesblock[SHA256_BLOCK_SIZE])
 {
 	*(uint64_t *)ctx->messize += SHA256_BLOCK_SIZE;
 	__sha256_rotate_hash((t_sha256_word *)ctx->var, (const t_sha256_word *)mesblock);
 	__sha256_update_hash((t_sha256_word *)ctx->var, (t_sha256_word *)ctx->hash);
 }
 
-void	sha256_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
+void	sha256_final_block(t_digest_ctx *ctx, const uint8_t *mesblock, size_t messize)
 {
 	*(uint64_t *)ctx->messize += messize;
 	uint64_t messize_bit_count = ft_uint_bswap64(*(uint64_t *)ctx->messize * 8);
@@ -526,7 +526,7 @@ void	sha256_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 # endif
 }
 
-void	sha256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha256_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	t_sha256_word	*word;
 	size_t			offset;
@@ -564,7 +564,7 @@ void	sha256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-void	sha256_final(t_hash *ctx)
+void	sha256_final(t_digest_ctx *ctx)
 {
 	uint64_t	msize_nbits;
 	uint8_t		pad[SHA256_BLOCK_SIZE];
@@ -672,21 +672,21 @@ static const t_sha512_word	SHA384_INIT_VECT[] = {
 	0xdb0c2e0d64f98fa7, 0x47b5481dbefa4fa4
 };
 
-void	sha384_init(t_hash *ctx)
+void	sha384_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA384_INIT_VECT, sizeof(SHA384_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA384_INIT_VECT, sizeof(SHA384_INIT_VECT));
 	ctx->blocksize = SHA512_BLOCK_SIZE;
 	ctx->hashsize = SHA384_HASH_SIZE;
 }
 
-void	sha384_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha384_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	sha512_update(ctx, mes, messize);
 }
 
-void	sha384_final(t_hash *sha384)
+void	sha384_final(t_digest_ctx *sha384)
 {
 	sha512_final(sha384);
 }
@@ -743,9 +743,9 @@ static const t_sha512_word	SHA512_INIT_VECT[] = {
 	0x1f83d9abfb41bd6b, 0x5be0cd19137e2179
 };
 
-void	sha512_init(t_hash *ctx)
+void	sha512_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA512_INIT_VECT, sizeof(SHA512_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA512_INIT_VECT, sizeof(SHA512_INIT_VECT));
 	ctx->blocksize = SHA512_BLOCK_SIZE;
@@ -759,14 +759,14 @@ static void	__sha512_update_hash(t_sha512_word *var, t_sha512_word *hash);
 
 static void __swap_bytes_64(t_sha512_word *arr, size_t size);
 
-void	sha512_update_block(t_hash *ctx, const uint8_t mesblock[SHA512_BLOCK_SIZE])
+void	sha512_update_block(t_digest_ctx *ctx, const uint8_t mesblock[SHA512_BLOCK_SIZE])
 {
 	*(uint128_t *)ctx->messize += SHA512_BLOCK_SIZE;
 	__sha512_rotate_hash((t_sha512_word *)ctx->var, (const t_sha512_word *)mesblock);
 	__sha512_update_hash((t_sha512_word *)ctx->var, (t_sha512_word *)ctx->hash);
 }
 
-void	sha512_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
+void	sha512_final_block(t_digest_ctx *ctx, const uint8_t *mesblock, size_t messize)
 {
 	*(uint128_t *)ctx->messize += messize;
 	uint128_t messize_bit_count = ft_uint_bswap128((*(uint128_t *)ctx->messize) * 8);
@@ -797,7 +797,7 @@ void	sha512_final_block(t_hash *ctx, const uint8_t *mesblock, size_t messize)
 # endif
 }
 
-void	sha512_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha512_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	t_sha512_word	*word;
 	size_t			offset;
@@ -835,7 +835,7 @@ void	sha512_update(t_hash *ctx, const unsigned char *mes, size_t messize)
 	ctx->bufsize = messize - offset;
 }
 
-void	sha512_final(t_hash *ctx)
+void	sha512_final(t_digest_ctx *ctx)
 {
 	uint8_t		pbuf[SHA512_BLOCK_SIZE * 2];
 	size_t		pbsize, offset;
@@ -953,21 +953,21 @@ static const t_sha512_word	SHA512_224_INIT_VECT[] = {
 	0x3f9d85a86a1d36c8, 0x1112e6ad91d692a1
 };
 
-void	sha512_224_init(t_hash *ctx)
+void	sha512_224_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA512_224_INIT_VECT, sizeof(SHA512_224_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA512_224_INIT_VECT, sizeof(SHA512_224_INIT_VECT));
 	ctx->blocksize = SHA512_BLOCK_SIZE;
 	ctx->hashsize = SHA512_224_HASH_SIZE;
 }
 
-void	sha512_224_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha512_224_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	sha512_update(ctx, mes, messize);
 }
 
-void	sha512_224_final(t_hash *ctx)
+void	sha512_224_final(t_digest_ctx *ctx)
 {
 	sha512_final(ctx);
 }
@@ -992,21 +992,21 @@ static const t_sha512_word	SHA512_256_INIT_VECT[] = {
 	0x2b0199fc2c85b8aa, 0x0eb72ddc81c52ca2
 };
 
-void	sha512_256_init(t_hash *ctx)
+void	sha512_256_init(t_digest_ctx *ctx)
 {
-	ft_bzero(ctx, sizeof(t_hash));
+	ft_bzero(ctx, sizeof(t_digest_ctx));
 	ft_memcpy(ctx->var, SHA512_256_INIT_VECT, sizeof(SHA512_256_INIT_VECT));
 	ft_memcpy(ctx->hash, SHA512_256_INIT_VECT, sizeof(SHA512_256_INIT_VECT));
 	ctx->blocksize = SHA512_BLOCK_SIZE;
 	ctx->hashsize = SHA512_256_HASH_SIZE;
 }
 
-void	sha512_256_update(t_hash *ctx, const unsigned char *mes, size_t messize)
+void	sha512_256_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 {
 	sha512_update(ctx, mes, messize);
 }
 
-void	sha512_256_final(t_hash *ctx)
+void	sha512_256_final(t_digest_ctx *ctx)
 {
 	sha512_final(ctx);
 }

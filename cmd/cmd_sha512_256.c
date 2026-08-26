@@ -43,7 +43,7 @@ int	cmd_sha512_256(const t_cmd *cmd)
 	}
 
 	// Digest transform
-	t_hash sha512_256_ctx = {0};
+	t_digest_ctx sha512_256_ctx = {0};
 	sha512_256_init(&sha512_256_ctx);
 	t_io_v2_stream *sha512_256_filter = NULL;
 	if (io_v2_filter_reader(&sha512_256_filter, in, sha512_256_transform_update, sha512_256_transform_final, &sha512_256_ctx) < 0) {

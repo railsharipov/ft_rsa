@@ -63,7 +63,7 @@ static const __t_test __TESTS[] = {
 	{ "bnum",		test_bnum	},
 	{ "json",		test_json	},
 	{ "base64",		test_base64	},
-	{ "hash",		test_hash	},
+	{ "digest",		test_digest	},
 	{ "des",		test_des	},
 	{ "der",		test_der	},
 	{ "pem",		test_pem	},
@@ -216,7 +216,7 @@ int	main(int ac, const char **av)
 	ft_htbl_add(tests_tbl, test_bnum, "bnum");
 	ft_htbl_add(tests_tbl, test_json, "json");
 	ft_htbl_add(tests_tbl, test_base64, "base64");
-	ft_htbl_add(tests_tbl, test_hash, "hash");
+	ft_htbl_add(tests_tbl, test_digest, "hash");
 	ft_htbl_add(tests_tbl, test_des, "des");
 	ft_htbl_add(tests_tbl, test_der, "der");
 	ft_htbl_add(tests_tbl, test_pem, "pem");

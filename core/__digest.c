@@ -3,7 +3,7 @@
 t_transform_result __transform_update(void *vctx, __t_func_update f_update, size_t blocksize,
 	const void *in, size_t insize, void *out, size_t outsize)
 {
-	t_hash *ctx = vctx;
+	t_digest_ctx *ctx = vctx;
 
 	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 
@@ -40,7 +40,7 @@ t_transform_result __transform_update(void *vctx, __t_func_update f_update, size
 t_transform_result __transform_final(void *vctx, __t_func_update f_update, __t_func_final f_final, size_t blocksize,
 	const void *in, size_t insize, void *out, size_t outsize)
 {
-	t_hash *ctx = vctx;
+	t_digest_ctx *ctx = vctx;
 
 	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
 

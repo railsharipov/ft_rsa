@@ -26,7 +26,7 @@
 
 int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass)
 {
-	t_hash	md5;
+	t_digest_ctx	md5;
 	char	buf[160] = {0};
 	size_t	pass_len;
 

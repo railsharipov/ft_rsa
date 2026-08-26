@@ -7,19 +7,19 @@
 
 #include "test.h"
 
-static int	__test_hash_setup(void);
+static int	__test_setup(void);
 
-static int	__test_hash_md5(void);
+static int	__test_md5(void);
 static int	__test_md5_transform(void);
 
-static int	__test_hash_sha1(void);
+static int	__test_sha1(void);
 static int	__test_sha1_transform(void);
 
-static int	__test_hash_sha256(void);
+static int	__test_sha256(void);
 static int	__test_sha256_transform(void);
 static int	__test_sha224_transform(void);
 
-static int	__test_hash_sha512(void);
+static int	__test_sha512(void);
 static int	__test_sha512_transform(void);
 static int	__test_sha384_transform(void);
 
@@ -38,32 +38,32 @@ static const char	*__large_text_sha256_hash_hex = "d148da3b9e486b4d6b7cbbf254e1a
 static const char	*__large_text_sha384_hash_hex = "0bd865253f4fc9084bdcba4603c81e5fb7b387f11f9ab91cf74d92a2f6d2e165aa2558c00a5fba9ff5372214779c1ecf";
 static const char	*__large_text_sha512_hash_hex = "a4ea60088ba626a8bcbe47891ca25708f8ff789aff305620573d9969fdb4d1ca1ed8812f70a9fe5b885cfb0a193952cede38f81708479bcaf36176c7ee4749f5";
 
-int	test_hash(void)
+int	test_digest(void)
 {
-	if (SSL_OK != __test_hash_setup()) {
+	if (SSL_OK != __test_setup()) {
 		TEST_LOG(ERROR, TEST_SETUP_ERROR);
 		TEST_FAIL();
 	}
 
-	return __test_hash_md5()
+	return __test_md5()
 		| __test_md5_transform()
-        | __test_hash_sha1()
+        | __test_sha1()
 		| __test_sha1_transform()
-        | __test_hash_sha256()
+        | __test_sha256()
         | __test_sha256_transform()
         | __test_sha224_transform()
-        | __test_hash_sha512()
+        | __test_sha512()
         | __test_sha512_transform()
         | __test_sha384_transform()
     	;
 }
 
-static int	__test_hash_setup(void)
+static int	__test_setup(void)
 {
 	return (SSL_OK);
 }
 
-static int	__test_hash_md5(void)
+static int	__test_md5(void)
 {
 	t_ostring in;
 	if (SSL_OK != file_read_all(__small_text_file_path, &in)) {
@@ -71,7 +71,7 @@ static int	__test_hash_md5(void)
 		TEST_FAIL();
 	}
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	md5_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == MD5_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == MD5_HASH_SIZE);
@@ -102,7 +102,7 @@ static int	__test_md5_transform(void)
 	size_t outsize = insize;
 	uint8_t	out[insize];
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	md5_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == MD5_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == MD5_HASH_SIZE);
@@ -147,7 +147,7 @@ static int	__test_md5_transform(void)
 	TEST_PASS();
 }
 
-static int	__test_hash_sha1(void)
+static int	__test_sha1(void)
 {
 	t_ostring in;
 	if (SSL_OK != file_read_all(__small_text_file_path, &in)) {
@@ -155,7 +155,7 @@ static int	__test_hash_sha1(void)
 		TEST_FAIL();
 	}
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha1_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA1_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA1_HASH_SIZE);
@@ -186,7 +186,7 @@ static int	__test_sha1_transform(void)
 	size_t outsize = insize;
 	uint8_t	out[insize];
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha1_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA1_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA1_HASH_SIZE);
@@ -231,7 +231,7 @@ static int	__test_sha1_transform(void)
 	TEST_PASS();
 }
 
-static int	__test_hash_sha256(void)
+static int	__test_sha256(void)
 {
 	t_ostring in;
 	if (SSL_OK != file_read_all(__small_text_file_path, &in)) {
@@ -239,7 +239,7 @@ static int	__test_hash_sha256(void)
 		TEST_FAIL();
 	}
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha256_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA256_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA256_HASH_SIZE);
@@ -270,7 +270,7 @@ static int	__test_sha256_transform(void)
 	size_t outsize = insize;
 	uint8_t	out[insize];
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha256_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA256_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA256_HASH_SIZE);
@@ -328,7 +328,7 @@ static int	__test_sha224_transform(void)
 	size_t outsize = insize;
 	uint8_t	out[insize];
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha224_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA256_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA224_HASH_SIZE);
@@ -373,7 +373,7 @@ static int	__test_sha224_transform(void)
 	TEST_PASS();
 }
 
-static int	__test_hash_sha512(void)
+static int	__test_sha512(void)
 {
 	t_ostring in;
 	if (SSL_OK != file_read_all(__small_text_file_path, &in)) {
@@ -381,7 +381,7 @@ static int	__test_hash_sha512(void)
 		TEST_FAIL();
 	}
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha512_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA512_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA512_HASH_SIZE);
@@ -412,7 +412,7 @@ static int	__test_sha512_transform(void)
 	size_t outsize = insize;
 	uint8_t	out[insize];
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha512_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA512_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA512_HASH_SIZE);
@@ -470,7 +470,7 @@ static int	__test_sha384_transform(void)
 	size_t outsize = insize;
 	uint8_t	out[insize];
 
-	t_hash ctx = {0};
+	t_digest_ctx ctx = {0};
 	sha384_init(&ctx);
 	TEST_ASSERT(ctx.blocksize == SHA512_BLOCK_SIZE);
 	TEST_ASSERT(ctx.hashsize == SHA384_HASH_SIZE);

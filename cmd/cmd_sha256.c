@@ -43,7 +43,7 @@ int	cmd_sha256(const t_cmd *cmd)
 	}
 
 	// Digest transform
-	t_hash sha256_ctx = {0};
+	t_digest_ctx sha256_ctx = {0};
 	sha256_init(&sha256_ctx);
 	t_io_v2_stream *sha256_filter = NULL;
 	if (io_v2_filter_reader(&sha256_filter, in, sha256_transform_update, sha256_transform_final, &sha256_ctx) < 0) {

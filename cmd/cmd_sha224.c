@@ -43,7 +43,7 @@ int	cmd_sha224(const t_cmd *cmd)
 	}
 
 	// Digest transform
-	t_hash sha224_ctx = {0};
+	t_digest_ctx sha224_ctx = {0};
 	sha224_init(&sha224_ctx);
 	t_io_v2_stream *sha224_filter = NULL;
 	if (io_v2_filter_reader(&sha224_filter, in, sha224_transform_update, sha224_transform_final, &sha224_ctx) < 0) {
