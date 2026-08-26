@@ -30,6 +30,6 @@ int			rand_fseed(uint64_t *seed, const char *files);
 int			rand_mgf(char *seed, int seedlen, char *mask, int masklen);
 void  		rand_mtw_init(uint64_t seed);
 uint64_t	rand_mtw_extract(void);
-int         rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass);
+int			rand_openssl_kdf(uint8_t key[8], uint8_t salt[8], uint8_t vect[8], const char *pass);
 
 #endif

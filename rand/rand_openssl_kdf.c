@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   rand_openssl_kdf.c                                 :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsharipo <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2018/09/21 15:19:23 by rsharipo          #+#    #+#             */
-/*   Updated: 2018/10/13 09:56:29 by rsharipo         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <common.h>
 #include <logger.h>
 #include <des.h>
@@ -24,9 +12,9 @@
 ** The salt must be 8 bytes. The derived key is 8 bytes, and the IV is 8 bytes.
 */
 
-int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vect, const char *pass)
+int	rand_openssl_kdf(uint8_t key[8], uint8_t salt[8], uint8_t vect[8], const char *pass)
 {
-	t_digest_ctx	md5;
+	t_digest_ctx	md5_ctx;
 	char	buf[160] = {0};
 	size_t	pass_len;
 
@@ -39,20 +27,20 @@ int	rand_openssl_kdf(unsigned char *key, unsigned char *salt, unsigned char *vec
 		return (SSL_ERR);
 	}
 
-	pass_len = ft_strlen(pass);
+	pass_len = MIN(sizeof(buf)-8, ft_strlen(pass));
 	ft_memcpy(buf, pass, pass_len);
 	ft_memcpy(buf + pass_len, salt, 8);
 
-	md5_init(&md5);
-	md5_update(&md5, (unsigned char *)buf, pass_len + 8);
-	md5_final(&md5);
+	md5_init(&md5_ctx);
+	md5_update(&md5_ctx, (uint8_t *)buf, pass_len + 8);
+	md5_final(&md5_ctx);
 
-	ft_memcpy(key, md5.hash, 8);
+	ft_memcpy(key, md5_ctx.hash, 8);
 
 	if (NULL != vect) {
-		ft_memcpy(vect, md5.hash + 8, 8);
+		ft_memcpy(vect, md5_ctx.hash + 8, 8);
 	}
-	ft_bzero(md5.hash, md5.hashsize);
+	ft_bzero(md5_ctx.hash, md5_ctx.hashsize);
 
 	return (SSL_OK);
 }
