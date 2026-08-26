@@ -1,3 +1,5 @@
+#include <pwd.h>
+#include <unistd.h>
 #include <common.h>
 #include <logger.h>
 #include <args.h>
@@ -5,53 +7,74 @@
 #include <des.h>
 #include <base64.h>
 #include <textutil.h>
+#include <rand.h>
 
 int	cmd_des_ecb(const t_cmd *cmd)
 {
-	t_io_v2_stream	*in = NULL, *out = NULL;
-
-	if (NULL == cmd) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
-
-	// Key is required
+	// DES context
+	t_des_ctx des_ctx = {0};
 	uint8_t des_key[8] = {0};
+	uint8_t des_salt[8] = {0};
 
 	if (ft_htbl_has(cmd->opts, "-k")) {
+		// Key is provided by user
 		char *des_hexkey = ft_htbl_get(cmd->opts, "-k");
 		if (!ft_str_ishex(des_hexkey)) {
 			SSL_LOG(ERROR, "key must be in hex format");
 			return (SSL_ERR);
 		}
-		if (ft_strlen(des_hexkey) != 16) {
-			SSL_LOG(ERROR, "key must be 16 characters in length");
+		ft_hex_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+	}
+	else if (ft_htbl_has(cmd->opts, "-s")) {
+		// Derive key from salt and password
+		char *des_hexsalt = ft_htbl_get(cmd->opts, "-s");
+
+		if (!ft_str_ishex(des_hexsalt)) {
+			SSL_LOG(ERROR, "salt must be in hex format");
 			return (SSL_ERR);
 		}
-		ft_hex_to_bytes(&des_key, des_hexkey, 16);
-	} else {
-		SSL_LOG(ERROR, "key must be provided");
-		return (SSL_ERR);
-	}
+		ft_hex_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
 
-	if (ft_htbl_has(cmd->opts, "-s")) {
-		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
-		return (SSL_ERR);
+		char des_pass[_PASSWORD_LEN+1] = {0};
+
+		if (ft_htbl_has(cmd->opts, "-p")) {
+			char *input = ft_htbl_get(cmd->opts, "-p");
+			ft_strncpy(des_pass, input, _PASSWORD_LEN);
+		} else {
+			char *input = getpass("enter des-ecb encryption password: ");
+			if (NULL == input) {
+				SSL_LOG(ERROR, "bad password read");
+				return (SSL_ERR);
+			}
+			ft_strncpy(des_pass, input, _PASSWORD_LEN);
+			ft_bzero(input, _PASSWORD_LEN);
+		}
+		des_pass[_PASSWORD_LEN] = 0;
+
+		if (SSL_OK != rand_openssl_kdf(des_key, des_salt, NULL, des_pass)) {
+			SSL_LOG(ERROR, "failed to generate key from salt");
+			return (SSL_ERR);
+		}
 	}
-	if (ft_htbl_has(cmd->opts, "-p")) {
-		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+	else {
+		SSL_LOG(ERROR, "key or salt is required");
 		return (SSL_ERR);
 	}
 	if (ft_htbl_has(cmd->opts, "-n")) {
-		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
-		return (SSL_ERR);
+		// Dump vectors in hex format
+		char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+		char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+		ft_printf("salt=%.16s\nkey=%.16s\n", shex, khex);
 	}
-	if (ft_htbl_has(cmd->opts, "-v")) {
-		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+	if (SSL_OK != des_ecb_encrypt_init(&des_ctx, des_key)) {
+		SSL_LOG(ERROR, "des-ecb init error");
 		return (SSL_ERR);
 	}
 
+	// I/O pipeline: Source -> Filters -> Sink
+
 	// Source
+	t_io_v2_stream *in = NULL;
 	if (ft_htbl_has(cmd->opts, "-i")) {
 		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
@@ -65,6 +88,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 	}
 
 	// Sink
+	t_io_v2_stream *out = NULL;
 	if (ft_htbl_has(cmd->opts, "-o")) {
 		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
@@ -77,63 +101,59 @@ int	cmd_des_ecb(const t_cmd *cmd)
 		}
 	}
 
-	t_des_ctx des_ctx = {0};
-	t_io_v2_stream *des_filter = NULL;
-
+	// Filters
 	if (ft_htbl_has(cmd->opts, "-d")) {
-		// Decrypt mode
 		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
 		return (SSL_ERR);
 	}
 	else {
-		// Encrypt mode
-		if (SSL_OK != des_ecb_encrypt_init(&des_ctx, des_key)) {
-			SSL_LOG(ERROR, "des-ecb init error");
-			return (SSL_ERR);
-		}
-		// Feed input into des encrypter
+		// Input filters
+		// DES crypt stream
+		t_io_v2_stream *des_filter = NULL;
 		if (SSL_OK != io_v2_filter_reader(&des_filter, in, des_ecb_encrypt_transform_update, des_ecb_encrypt_transform_final, &des_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 		in = des_filter;
 
+		// Output filters
 		if (ft_htbl_has(cmd->opts, "-a")) {
 			// Output must be base64 encoded
-			t_b64_ctx *b64_ctx = NULL;
-			t_io_v2_stream *b64_filter = NULL;
-			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
-			*b64_ctx = (t_b64_ctx){0};
-			// Feed des crypt into base64 encoder
-			if (io_v2_filter_reader(&b64_filter, in, base64_encode_transform_update, base64_encode_transform_final, b64_ctx) < 0) {
-				SSL_LOG(ERROR, IO_INIT_ERROR);
-				return (SSL_ERR);
-			}
-			in = b64_filter;
-			// Break base64 output into lines of 64 characters
-			t_textutil_ctx *linebreak_ctx = NULL;
-			t_io_v2_stream *linebreak_filter = NULL;
-			SSL_ALLOC(linebreak_ctx, sizeof(t_textutil_ctx));
-			*linebreak_ctx = (t_textutil_ctx){.delim = '\n', .line_width = 64};
-			if (io_v2_filter_reader(&linebreak_filter, in, textutil_insert_delim_update, textutil_insert_delim_final, linebreak_ctx) < 0) {
-				SSL_LOG(ERROR, IO_INIT_ERROR);
-				return (SSL_ERR);
-			}
-			in = linebreak_filter;
-			// Add newline terminator at the end of output
+			// write() -> base64 encoder -> line breaker -> terminator -> sink
+			// Add terminating newline
 			t_textutil_ctx *terminator_ctx = NULL;
 			t_io_v2_stream *terminator_filter = NULL;
 			SSL_ALLOC(terminator_ctx, sizeof(t_textutil_ctx));
 			*terminator_ctx = (t_textutil_ctx){.delim = '\n'};
-			if (io_v2_filter_reader(&terminator_filter, in, NULL, textutil_terminator_final, terminator_ctx) < 0) {
+			if (io_v2_filter_writer(&terminator_filter, out, NULL, textutil_terminator_final, terminator_ctx) < 0) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
-			in = terminator_filter;
+			out = terminator_filter;
+			// Break output into lines of 64 characters
+			t_textutil_ctx *linebreak_ctx = NULL;
+			t_io_v2_stream *linebreak_filter = NULL;
+			SSL_ALLOC(linebreak_ctx, sizeof(t_textutil_ctx));
+			*linebreak_ctx = (t_textutil_ctx){.delim = '\n', .line_width = 64};
+			if (io_v2_filter_writer(&linebreak_filter, out, textutil_insert_delim_update, textutil_insert_delim_final, linebreak_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			out = linebreak_filter;
+			// Base64 encode
+			t_b64_ctx *b64_ctx = NULL;
+			t_io_v2_stream *b64_filter = NULL;
+			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
+			*b64_ctx = (t_b64_ctx){0};
+			if (io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, b64_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			out = b64_filter;
 		}
 	}
 
-	// Create and run the pipe
+	// Run the pipeline
 	t_io_v2_pipe *pipe = NULL;
 	if (io_v2_pipe_unidir(&pipe, in, out) < 0) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
