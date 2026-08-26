@@ -31,13 +31,4 @@ typedef uint64_t	t_sha512_word;
 # define H0(X,Y,Z)		((X)^(Y)^(Z))
 # define I0(X,Y,Z)		((Y)^((X)|(~Z)))
 
-typedef void (__t_func_update)(t_digest_ctx *ctx, const uint8_t *mesblock);
-typedef void (__t_func_final)(t_digest_ctx *ctx, const uint8_t *mesblock, size_t messsize);
-
-t_transform_result __transform_update(void *vctx, __t_func_update f_update, size_t blocksize,
-	const void *in, size_t insize, void *out, size_t outsize);
-
-t_transform_result __transform_final(void *vctx, __t_func_update f_update, __t_func_final f_final, size_t blocksize,
-	const void *in, size_t insize, void *out, size_t outsize);
-
 #endif

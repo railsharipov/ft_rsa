@@ -190,18 +190,6 @@ static void	__md5_update_hash(t_md5_word *var, t_md5_word *hash)
 	var[3] = hash[3];
 }
 
-t_transform_result md5_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running MD5 transform update");
-	return (__transform_update(vctx, md5_update_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running MD5 transform final");
-	return (__transform_final(vctx, md5_update_block, md5_final_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
-}
-
 static t_sha1_word __sha1_sched[80];
 
 static const t_sha1_word SHA1_K[] = {
@@ -398,18 +386,6 @@ static void	__sha1_update_hash(t_sha1_word *var, t_sha1_word *hash)
 	var[4] = hash[4];
 }
 
-t_transform_result sha1_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA1 transform update");
-	return (__transform_update(vctx, sha1_update_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha1_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA1 transform final");
-	return (__transform_final(vctx, sha1_update_block, sha1_final_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
-}
-
 
 static const t_sha256_word	SHA224_INIT_VECT[] = {
 	0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
@@ -433,18 +409,6 @@ void	sha224_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 void	sha224_final(t_digest_ctx *ctx)
 {
 	sha256_final(ctx);
-}
-
-t_transform_result sha224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA224 transform update");
-	return (__transform_update(vctx, sha256_update_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha224_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA256 transform final");
-	return (__transform_final(vctx, sha256_update_block, sha256_final_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
 }
 
 
@@ -652,18 +616,6 @@ static void	__sha256_update_hash(t_sha256_word *var, t_sha256_word *hash)
 	var[7] = hash[7];
 }
 
-t_transform_result sha256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA256 transform update");
-	return (__transform_update(vctx, sha256_update_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha256_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA256 transform final");
-	return (__transform_final(vctx, sha256_update_block, sha256_final_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
-}
-
 
 static const t_sha512_word	SHA384_INIT_VECT[] = {
 	0xcbbb9d5dc1059ed8, 0x629a292a367cd507,
@@ -689,18 +641,6 @@ void	sha384_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messize)
 void	sha384_final(t_digest_ctx *sha384)
 {
 	sha512_final(sha384);
-}
-
-t_transform_result sha384_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA384 transform update");
-	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha384_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA384 transform final");
-	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
 }
 
 
@@ -933,19 +873,6 @@ static void	__sha512_update_hash(t_sha512_word *var, t_sha512_word *hash)
 	var[7] = hash[7];
 }
 
-t_transform_result sha512_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA512 transform update");
-	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha512_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA512 transform final");
-	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-
 static const t_sha512_word	SHA512_224_INIT_VECT[] = {
 	0x8c3d37c819544da2, 0x73e1996689dcd4d6,
 	0x1dfab7ae32ff9c82, 0x679dd514582f9fcf,
@@ -970,18 +897,6 @@ void	sha512_224_update(t_digest_ctx *ctx, const unsigned char *mes, size_t messi
 void	sha512_224_final(t_digest_ctx *ctx)
 {
 	sha512_final(ctx);
-}
-
-t_transform_result sha512_224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA512/224 transform update");
-	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha512_224_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA512/224 transform final");
-	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
 }
 
 
@@ -1011,18 +926,6 @@ void	sha512_256_final(t_digest_ctx *ctx)
 	sha512_final(ctx);
 }
 
-t_transform_result sha512_256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA512/256 transform update");
-	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
-}
-
-t_transform_result sha512_256_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
-{
-	SSL_LOG(TRACE, "running SHA512/256 transform final");
-	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
-}
-
 static void __swap_bytes_32(uint32_t *arr, size_t size)
 {
 	size_t ix = 0;
@@ -1039,4 +942,171 @@ static void __swap_bytes_64(t_sha512_word *arr, size_t size)
 		arr[ix] = ft_uint_bswap64(arr[ix]);
 		ix++;
 	}
+}
+
+typedef void (__t_func_update)(t_digest_ctx *ctx, const uint8_t *mesblock);
+typedef void (__t_func_final)(t_digest_ctx *ctx, const uint8_t *mesblock, size_t messsize);
+
+static t_transform_result __transform_update(void *vctx, __t_func_update f_update, size_t blocksize,
+	const void *in, size_t insize, void *out, size_t outsize);
+
+static t_transform_result __transform_final(void *vctx, __t_func_update f_update, __t_func_final f_final, size_t blocksize,
+	const void *in, size_t insize, void *out, size_t outsize);
+
+t_transform_result md5_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running MD5 transform update");
+	return (__transform_update(vctx, md5_update_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result md5_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running MD5 transform final");
+	return (__transform_final(vctx, md5_update_block, md5_final_block, MD5_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha1_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA1 transform update");
+	return (__transform_update(vctx, sha1_update_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha1_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA1 transform final");
+	return (__transform_final(vctx, sha1_update_block, sha1_final_block, SHA1_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA224 transform update");
+	return (__transform_update(vctx, sha256_update_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha224_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA256 transform final");
+	return (__transform_final(vctx, sha256_update_block, sha256_final_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA256 transform update");
+	return (__transform_update(vctx, sha256_update_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha256_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA256 transform final");
+	return (__transform_final(vctx, sha256_update_block, sha256_final_block, SHA256_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha384_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA384 transform update");
+	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha384_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA384 transform final");
+	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha512_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512 transform update");
+	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha512_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512 transform final");
+	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha512_224_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512/224 transform update");
+	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha512_224_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512/224 transform final");
+	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha512_256_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512/256 transform update");
+	return (__transform_update(vctx, sha512_update_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+t_transform_result sha512_256_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running SHA512/256 transform final");
+	return (__transform_final(vctx, sha512_update_block, sha512_final_block, SHA512_BLOCK_SIZE, in, insize, out, outsize));
+}
+
+static t_transform_result __transform_update(void *vctx, __t_func_update f_update, size_t blocksize,
+	const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_digest_ctx *ctx = vctx;
+
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
+
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(TRACE, "already done");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *mesin = in;
+	const uint8_t *mesout = out;
+	size_t i = 0;
+
+	if (insize < blocksize) {
+		SSL_LOG(TRACE, "need input");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_INPUT};
+	}
+	if (outsize < blocksize) {
+		SSL_LOG(TRACE, "need output");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
+	}
+	while (i+blocksize <= insize && i+blocksize <= outsize) {
+		f_update(ctx, mesin + i);
+		ft_memcpy((uint8_t *)mesout + i, mesin + i, blocksize);
+		i += blocksize;
+	}
+	SSL_LOG(TRACE, "update is ok");
+	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
+}
+
+static t_transform_result __transform_final(void *vctx, __t_func_update f_update, __t_func_final f_final, size_t blocksize,
+	const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_digest_ctx *ctx = vctx;
+
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
+
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(TRACE, "already done");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *mesin = in;
+	const uint8_t *mesout = out;
+	size_t i = 0;
+
+	while (i+blocksize <= insize && i+blocksize <= outsize) {
+		f_update(ctx, mesin + i);
+		ft_memcpy((uint8_t *)mesout + i, mesin + i, blocksize);
+		i += blocksize;
+	}
+	if (insize <= outsize) {
+		f_final(ctx, mesin + i, insize - i);
+		ft_memcpy((uint8_t *)mesout + i, mesin + i, insize - i);
+		i = insize;
+		ctx->done = 1;
+		SSL_LOG(TRACE, "processing is complete");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_DONE};
+	} else {
+		SSL_LOG(TRACE, "need output");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
+	}
+	SSL_LOG(TRACE, "update is ok");
+	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
 }
