@@ -32,4 +32,11 @@ void  		rand_mtw_init(uint64_t seed);
 uint64_t	rand_mtw_extract(void);
 int			rand_openssl_kdf(uint8_t key[8], uint8_t salt[8], uint8_t vect[8], const char *pass);
 
+int	rand_openssl_v3_kdf(
+	uint8_t *key, size_t key_size,
+	uint8_t *iv, size_t iv_size,
+	const uint8_t *salt, size_t salt_size,
+	const uint8_t *data, size_t data_size
+);
+
 #endif
