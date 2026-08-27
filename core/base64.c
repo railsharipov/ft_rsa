@@ -301,20 +301,20 @@ t_transform_result base64_decode_transform_final(void *vctx, const void *in, siz
 		i += B64_ENC_BLOCK_SIZE;
 		j += B64_MES_BLOCK_SIZE;
 	}
-	if (!__is_valid_final_block(encblock + i, insize-i)) {
-		SSL_LOG(ERROR, "bad base64 encoding");
-		return (t_transform_result){.status = TRANSFORM_ERROR};
-	}
-	size_t final_mesblock_size = B64_MES_BLOCK_SIZE;
+	if (j + B64_MES_BLOCK_SIZE < outsize) {
+		if (!__is_valid_final_block(encblock + i, insize-i)) {
+			SSL_LOG(ERROR, "bad base64 encoding");
+			return (t_transform_result){.status = TRANSFORM_ERROR};
+		}
+		size_t final_mesblock_size = B64_MES_BLOCK_SIZE;
 
-	if (encblock[i+2] == __B64_TAIL_CHAR && encblock[i+3] == __B64_TAIL_CHAR) {
-		final_mesblock_size = 1;
-	} else if (encblock[i+3] == __B64_TAIL_CHAR) {
-		final_mesblock_size = 2;
-	}
-	SSL_LOG(TRACE, "final block size %zu", final_mesblock_size);
+		if (encblock[i+2] == __B64_TAIL_CHAR && encblock[i+3] == __B64_TAIL_CHAR) {
+			final_mesblock_size = 1;
+		} else if (encblock[i+3] == __B64_TAIL_CHAR) {
+			final_mesblock_size = 2;
+		}
+		SSL_LOG(TRACE, "final block size %zu", final_mesblock_size);
 
-	if (j + final_mesblock_size < outsize) {
 		__decode_final_block(encblock + i, mesblock + j, final_mesblock_size);
 		i += B64_ENC_BLOCK_SIZE;
 		j += final_mesblock_size;
