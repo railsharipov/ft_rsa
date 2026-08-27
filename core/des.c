@@ -590,7 +590,7 @@ t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, s
 
 	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
 		ft_memcpy(enc + i, mes + i, DES_BLOCK_SIZE);
-		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(mes + i));
+		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(enc + i));
 		i += DES_BLOCK_SIZE;
 	}
 	if (i + DES_BLOCK_SIZE <= outsize) {
@@ -611,4 +611,102 @@ t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, s
 	}
 	SSL_LOG(TRACE, "update is ok");
 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
+}
+
+t_transform_result des_ecb_decrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_des_ctx *ctx = vctx;
+
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
+
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(TRACE, "already done");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *enc = in;
+	uint8_t *mes = out;
+	size_t i = 0;
+
+	// Ignore the last input block as it may be required for finalization.
+	// Effectively, if input contains only 1 block, it will never be consumed.
+	insize = MAX(insize, DES_BLOCK_SIZE) - DES_BLOCK_SIZE;
+
+	if (insize < DES_BLOCK_SIZE) {
+		SSL_LOG(TRACE, "need input");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_INPUT};
+	}
+	if (outsize < DES_BLOCK_SIZE) {
+		SSL_LOG(TRACE, "need output");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
+	}
+	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
+		ft_memcpy((uint8_t *)mes + i, enc + i, DES_BLOCK_SIZE);
+		des_ecb_decrypt_permute_block(ctx, (uint64_t *)(mes + i));
+		i += DES_BLOCK_SIZE;
+	}
+	SSL_LOG(TRACE, "update is ok");
+	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
+}
+
+t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	t_des_ctx *ctx = vctx;
+
+	SSL_LOG(TRACE, "input size %zu, output size %zu", insize, outsize);
+
+	if (NULL == in || NULL == out || NULL == ctx) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (t_transform_result){.status = TRANSFORM_ERROR};
+	}
+	if (ctx->done) {
+		SSL_LOG(TRACE, "already done");
+		return (t_transform_result){.status = TRANSFORM_DONE};
+	}
+
+	const uint8_t *enc = in;
+	uint8_t *mes = out;
+	size_t i = 0;
+
+	while (i+DES_BLOCK_SIZE < insize && i+DES_BLOCK_SIZE < outsize) {
+		ft_memcpy(mes + i, enc + i, DES_BLOCK_SIZE);
+		des_ecb_decrypt_permute_block(ctx, (uint64_t *)(mes + i));
+		i += DES_BLOCK_SIZE;
+	}
+	if (i + DES_BLOCK_SIZE < outsize) {
+		if (insize % DES_BLOCK_SIZE != 0) {
+			SSL_LOG(ERROR, "bad des-ecb crypt");
+			return (t_transform_result){.status = TRANSFORM_ERROR};
+		}
+		uint8_t final_block[DES_BLOCK_SIZE] = {0};
+		ft_memcpy(final_block, enc + i, DES_BLOCK_SIZE);
+		des_ecb_decrypt_permute_block(ctx, (uint64_t *)final_block);
+		uint8_t padsize = final_block[DES_BLOCK_SIZE-1];
+
+		if (padsize > DES_BLOCK_SIZE) {
+			SSL_LOG(ERROR, "bad des-ecb crypt");
+			return (t_transform_result){.status = TRANSFORM_ERROR};
+		}
+		// all pad bytes must have the same value
+		for (uint8_t i = 0; i < padsize; i++) {
+			if (final_block[DES_BLOCK_SIZE-i-1] != padsize) {
+				SSL_LOG(ERROR, "bad des-ecb crypt");
+				return (t_transform_result){.status = TRANSFORM_ERROR};
+			}
+		}
+
+		ft_memcpy(mes + i, final_block, DES_BLOCK_SIZE-padsize);
+		i += DES_BLOCK_SIZE;
+		ctx->done = 1;
+		SSL_LOG(TRACE, "processing is complete");
+		return (t_transform_result){.consumed = i, .produced = i - padsize, .status = TRANSFORM_DONE};
+	}
+	else {
+		SSL_LOG(TRACE, "need output");
+		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
+	}
 }

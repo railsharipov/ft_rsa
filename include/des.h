@@ -32,6 +32,9 @@ ssize_t	des_ecb_decrypt_final(t_des_ctx *des, char *out, size_t size);
 t_transform_result des_ecb_encrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
 
+t_transform_result des_ecb_decrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
 void	des_cbc_encrypt_permute_block(t_des_ctx *des, uint64_t *block);
 void	des_cbc_decrypt_permute_block(t_des_ctx *des, uint64_t *block);
 
