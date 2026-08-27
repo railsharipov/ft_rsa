@@ -46,4 +46,10 @@ int		des_cbc_decrypt_init(t_des_ctx *des, const uint8_t key[8], const uint8_t iv
 ssize_t	des_cbc_decrypt_update(t_des_ctx *des, const char *in, char *out, size_t size);
 ssize_t	des_cbc_decrypt_final(t_des_ctx *des, char *out, size_t size);
 
+t_transform_result des_cbc_encrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result des_cbc_encrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
+t_transform_result des_cbc_decrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+t_transform_result des_cbc_decrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize);
+
 #endif

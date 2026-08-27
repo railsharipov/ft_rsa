@@ -533,7 +533,7 @@ static void	__permute_block(uint64_t *ksched, uint64_t *block)
 # endif
 }
 
-t_transform_result des_ecb_encrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+static t_transform_result __encrypt_transform_update(void *vctx, __t_func_permute_block f, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_des_ctx *ctx = vctx;
 
@@ -562,14 +562,14 @@ t_transform_result des_ecb_encrypt_transform_update(void *vctx, const void *in, 
 	}
 	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
 		ft_memcpy((uint8_t *)enc + i, mes + i, DES_BLOCK_SIZE);
-		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(enc + i));
+		f(ctx, (uint64_t *)(enc + i));
 		i += DES_BLOCK_SIZE;
 	}
 	SSL_LOG(TRACE, "update is ok");
 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
 }
 
-t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+static t_transform_result __encrypt_transform_final(void *vctx, __t_func_permute_block f, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_des_ctx *ctx = vctx;
 
@@ -590,7 +590,7 @@ t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, s
 
 	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
 		ft_memcpy(enc + i, mes + i, DES_BLOCK_SIZE);
-		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(enc + i));
+		f(ctx, (uint64_t *)(enc + i));
 		i += DES_BLOCK_SIZE;
 	}
 	if (i + DES_BLOCK_SIZE <= outsize) {
@@ -600,7 +600,7 @@ t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, s
 
 		ft_memcpy(enc + i, mes + i, tailsize);
 		ft_memset(enc + i+tailsize, (int)padsize, padsize);
-		des_ecb_encrypt_permute_block(ctx, (uint64_t *)(enc + i));
+		f(ctx, (uint64_t *)(enc + i));
 		i = insize;
 		ctx->done = 1;
 		SSL_LOG(TRACE, "processing is complete");
@@ -613,7 +613,7 @@ t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, s
 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
 }
 
-t_transform_result des_ecb_decrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+static t_transform_result __decrypt_transform_update(void *vctx, __t_func_permute_block f, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_des_ctx *ctx = vctx;
 
@@ -646,14 +646,14 @@ t_transform_result des_ecb_decrypt_transform_update(void *vctx, const void *in, 
 	}
 	while (i+DES_BLOCK_SIZE <= insize && i+DES_BLOCK_SIZE <= outsize) {
 		ft_memcpy((uint8_t *)mes + i, enc + i, DES_BLOCK_SIZE);
-		des_ecb_decrypt_permute_block(ctx, (uint64_t *)(mes + i));
+		f(ctx, (uint64_t *)(mes + i));
 		i += DES_BLOCK_SIZE;
 	}
 	SSL_LOG(TRACE, "update is ok");
 	return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_OK};
 }
 
-t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+static t_transform_result __decrypt_transform_final(void *vctx, __t_func_permute_block f, const void *in, size_t insize, void *out, size_t outsize)
 {
 	t_des_ctx *ctx = vctx;
 
@@ -674,7 +674,7 @@ t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, s
 
 	while (i+DES_BLOCK_SIZE < insize && i+DES_BLOCK_SIZE < outsize) {
 		ft_memcpy(mes + i, enc + i, DES_BLOCK_SIZE);
-		des_ecb_decrypt_permute_block(ctx, (uint64_t *)(mes + i));
+		f(ctx, (uint64_t *)(mes + i));
 		i += DES_BLOCK_SIZE;
 	}
 	if (i + DES_BLOCK_SIZE < outsize) {
@@ -684,7 +684,7 @@ t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, s
 		}
 		uint8_t final_block[DES_BLOCK_SIZE] = {0};
 		ft_memcpy(final_block, enc + i, DES_BLOCK_SIZE);
-		des_ecb_decrypt_permute_block(ctx, (uint64_t *)final_block);
+		f(ctx, (uint64_t *)final_block);
 		uint8_t padsize = final_block[DES_BLOCK_SIZE-1];
 
 		if (padsize > DES_BLOCK_SIZE) {
@@ -709,4 +709,52 @@ t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, s
 		SSL_LOG(TRACE, "need output");
 		return (t_transform_result){.consumed = i, .produced = i, .status = TRANSFORM_NEED_OUTPUT};
 	}
+}
+
+t_transform_result des_ecb_encrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-ecb encrypt transform");
+	return (__encrypt_transform_update(vctx, des_ecb_encrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_ecb_encrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-ecb encrypt transform");
+	return (__encrypt_transform_final(vctx, des_ecb_encrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_ecb_decrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-ecb decrypt transform");
+	return (__decrypt_transform_update(vctx, des_ecb_decrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_ecb_decrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-ecb decrypt transform");
+	return (__decrypt_transform_final(vctx, des_ecb_decrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_cbc_encrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-cbc encrypt transform");
+	return (__encrypt_transform_update(vctx, des_cbc_encrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_cbc_encrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-cbc encrypt transform");
+	return (__encrypt_transform_final(vctx, des_cbc_encrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_cbc_decrypt_transform_update(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-cbc decrypt transform");
+	return (__decrypt_transform_update(vctx, des_cbc_decrypt_permute_block, in, insize, out, outsize));
+}
+
+t_transform_result des_cbc_decrypt_transform_final(void *vctx, const void *in, size_t insize, void *out, size_t outsize)
+{
+	SSL_LOG(TRACE, "running des-cbc decrypt transform");
+	return (__decrypt_transform_final(vctx, des_cbc_decrypt_permute_block, in, insize, out, outsize));
 }
