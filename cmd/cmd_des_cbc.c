@@ -1,3 +1,5 @@
+#include <pwd.h>
+#include <unistd.h>
 #include <common.h>
 #include <logger.h>
 #include <args.h>
@@ -5,365 +7,423 @@
 #include <des.h>
 #include <base64.h>
 #include <textutil.h>
+#include <rand.h>
 
 int	cmd_des_cbc(const t_cmd *cmd)
 {
-	SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
-	return (SSL_ERR);
+	// DES context
+	t_des_ctx des_ctx = {0};
+	uint8_t des_key[8] = {0};
+	uint8_t des_salt[8] = {0};
+	uint8_t des_iv[8] = {0};
+
+	// I/O pipeline: Source -> Filters -> Sink
+
+	// Source
+	t_io_v2_stream *in = NULL;
+	if (ft_htbl_has(cmd->opts, "-i")) {
+		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+	} else {
+		if (SSL_OK != io_v2_fd_reader(&in, 0)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+	}
+	// Sink
+	t_io_v2_stream *out = NULL;
+	if (ft_htbl_has(cmd->opts, "-o")) {
+		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+	} else {
+		if (SSL_OK != io_v2_fd_writer(&out, 1)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+	}
+
+	// Decrypt mode
+	if (ft_htbl_has(cmd->opts, "-d")) {
+		// Input filters
+		if (ft_htbl_has(cmd->opts, "-a")) {
+			// Input must be base64 decoded
+			// source -> whitespace remover -> base64 decoder -> read()
+			// Remove whitespace
+			t_textutil_ctx *eolws_remover_ctx = NULL;
+			t_io_v2_stream *eolws_remover_filter = NULL;
+			SSL_ALLOC(eolws_remover_ctx, sizeof(t_textutil_ctx));
+			*eolws_remover_ctx = (t_textutil_ctx){0};
+			if (io_v2_filter_reader(&eolws_remover_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, eolws_remover_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			in = eolws_remover_filter;
+			// Base64 decode
+			t_b64_ctx *b64_ctx = NULL;
+			t_io_v2_stream *b64_filter = NULL;
+			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
+			*b64_ctx = (t_b64_ctx){0};
+			if (io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, b64_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			in = b64_filter;
+		}
+
+		// Output filters
+		// write() -> des filter -> sink
+		// DES decrypt
+		if (ft_htbl_has(cmd->opts, "-k")) {
+			// Key is provided by user
+			char *des_hexkey = ft_htbl_get(cmd->opts, "-k");
+			if (!ft_str_ishex(des_hexkey)) {
+				SSL_LOG(ERROR, "key must be in hex format");
+				return (SSL_ERR);
+			}
+			ft_hex_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+			if (ft_htbl_has(cmd->opts, "-v")) {
+				// Initial vector is provided by user
+				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
+				if (!ft_str_ishex(des_hexiv)) {
+					SSL_LOG(ERROR, "key must be in hex format");
+					return (SSL_ERR);
+				}
+				ft_hex_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+			}
+			else {
+				SSL_LOG(ERROR, "iv is not provided");
+				return (SSL_ERR);
+			}
+			if (ft_htbl_has(cmd->opts, "-n")) {
+				// Dump vectors in hex format
+				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
+			}
+		}
+		else if (ft_htbl_has(cmd->opts, "-s")) {
+			// Derive key from salt and password
+			char *des_hexsalt = ft_htbl_get(cmd->opts, "-s");
+			if (!ft_str_ishex(des_hexsalt)) {
+				SSL_LOG(ERROR, "salt must be in hex format");
+				return (SSL_ERR);
+			}
+			ft_hex_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
+			// Get user password
+			char des_pass[_PASSWORD_LEN+1] = {0};
+			if (ft_htbl_has(cmd->opts, "-p")) {
+				char *input = ft_htbl_get(cmd->opts, "-p");
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+			} else {
+				char *input = getpass("enter des-cbc encryption password: ");
+				if (NULL == input) {
+					SSL_LOG(ERROR, "bad password read");
+					return (SSL_ERR);
+				}
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+				ft_bzero(input, _PASSWORD_LEN);
+			}
+			des_pass[_PASSWORD_LEN] = 0;
+			// Derive key and initial vector from provided salt and user password.
+			if (SSL_OK != rand_openssl_v3_kdf(des_key, sizeof(des_key), des_iv, sizeof(des_iv), des_salt, sizeof(des_salt), (const uint8_t *)des_pass, ft_strlen(des_pass))) {
+				SSL_LOG(ERROR, "failed to generate key from salt");
+				return (SSL_ERR);
+			}
+			if (ft_htbl_has(cmd->opts, "-v")) {
+				// Override initial vector with the value provided by user.
+				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
+				if (!ft_str_ishex(des_hexiv)) {
+					SSL_LOG(ERROR, "key must be in hex format");
+					return (SSL_ERR);
+				}
+				ft_bzero(des_iv, sizeof(des_iv));
+				ft_hex_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+			}
+			if (ft_htbl_has(cmd->opts, "-n")) {
+				// Dump vectors in hex format
+				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
+			}
+		}
+		else {
+			// No salt was provided which means the encryption must have a "Salted__" header.
+			// We must read and parse that header to get the salt.
+			// If header is not present we must fail the command.
+
+			// First, we should get the user password.
+			char des_pass[_PASSWORD_LEN+1] = {0};
+			if (ft_htbl_has(cmd->opts, "-p")) {
+				char *input = ft_htbl_get(cmd->opts, "-p");
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+			} else {
+				char *input = getpass("enter des-cbc encryption password: ");
+				if (NULL == input) {
+					SSL_LOG(ERROR, "bad password read");
+					return (SSL_ERR);
+				}
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+				ft_bzero(input, _PASSWORD_LEN);
+			}
+			des_pass[_PASSWORD_LEN] = 0;
+
+			// Second, read the header from encryption, then get the salt from header.
+			// Header must be 2 DES blocks in size: 1st block must contain "Salted__" string, 2nd block - salt bytes.
+			char des_salt_header[2*DES_BLOCK_SIZE] = {0};
+			if (io_v2_read_all(in, des_salt_header, sizeof(des_salt_header)) != 2*DES_BLOCK_SIZE) {
+				SSL_LOG(ERROR, "failed to read input");
+				return (SSL_ERR);
+			}
+			ft_memcpy(des_salt, des_salt_header + DES_BLOCK_SIZE, DES_BLOCK_SIZE);
+			// Derive key and initial vector from parsed salt and user password.
+			if (SSL_OK != rand_openssl_v3_kdf(des_key, sizeof(des_key), des_iv, sizeof(des_iv), des_salt, sizeof(des_salt), (const uint8_t *)des_pass, ft_strlen(des_pass))) {
+				SSL_LOG(ERROR, "failed to generate key from salt");
+				return (SSL_ERR);
+			}
+			if (ft_htbl_has(cmd->opts, "-v")) {
+				// Override initial vector with the value provided by user.
+				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
+				if (!ft_str_ishex(des_hexiv)) {
+					SSL_LOG(ERROR, "key must be in hex format");
+					return (SSL_ERR);
+				}
+				ft_bzero(des_iv, sizeof(des_iv));
+				ft_hex_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+			}
+			if (ft_htbl_has(cmd->opts, "-n")) {
+				// Dump vectors in hex format
+				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
+			}
+		}
+		if (SSL_OK != des_cbc_decrypt_init(&des_ctx, des_key, des_iv)) {
+			SSL_LOG(ERROR, "des-cbc init error");
+			return (SSL_ERR);
+		}
+		t_io_v2_stream *des_filter = NULL;
+		if (SSL_OK != io_v2_filter_writer(&des_filter, out, des_cbc_decrypt_transform_update, des_cbc_decrypt_transform_final, &des_ctx)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		out = des_filter;
+	}
+
+	// Encrypt mode
+	else {
+		// Output filters
+		if (ft_htbl_has(cmd->opts, "-a")) {
+			// Base64 encode output
+			// write() -> base64 encoder -> line breaker -> terminator -> sink
+			// Add terminating newline
+			t_textutil_ctx *terminator_ctx = NULL;
+			t_io_v2_stream *terminator_filter = NULL;
+			SSL_ALLOC(terminator_ctx, sizeof(t_textutil_ctx));
+			*terminator_ctx = (t_textutil_ctx){.delim = '\n'};
+			if (io_v2_filter_writer(&terminator_filter, out, NULL, textutil_terminator_final, terminator_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			out = terminator_filter;
+			// Break output into lines of 64 characters
+			t_textutil_ctx *linebreak_ctx = NULL;
+			t_io_v2_stream *linebreak_filter = NULL;
+			SSL_ALLOC(linebreak_ctx, sizeof(t_textutil_ctx));
+			*linebreak_ctx = (t_textutil_ctx){.delim = '\n', .line_width = 64};
+			if (io_v2_filter_writer(&linebreak_filter, out, textutil_insert_delim_update, textutil_insert_delim_final, linebreak_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			out = linebreak_filter;
+			// Base64 encode
+			t_b64_ctx *b64_ctx = NULL;
+			t_io_v2_stream *b64_filter = NULL;
+			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
+			*b64_ctx = (t_b64_ctx){0};
+			if (io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, b64_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			out = b64_filter;
+		}
+
+		// Input filters
+		// source -> des filter -> read()
+		// DES encrypt
+		if (ft_htbl_has(cmd->opts, "-k")) {
+			// Key is provided by user
+			char *des_hexkey = ft_htbl_get(cmd->opts, "-k");
+			if (!ft_str_ishex(des_hexkey)) {
+				SSL_LOG(ERROR, "key must be in hex format");
+				return (SSL_ERR);
+			}
+			ft_hex_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+			if (ft_htbl_has(cmd->opts, "-v")) {
+				// Initial vector is provided by user.
+				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
+				if (!ft_str_ishex(des_hexiv)) {
+					SSL_LOG(ERROR, "key must be in hex format");
+					return (SSL_ERR);
+				}
+				ft_bzero(des_iv, sizeof(des_iv));
+				ft_hex_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+			}
+			else {
+				SSL_LOG(ERROR, "iv is not provided");
+				return (SSL_ERR);
+			}
+			if (ft_htbl_has(cmd->opts, "-n")) {
+				// Dump vectors in hex format
+				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
+			}
+		}
+		else if (ft_htbl_has(cmd->opts, "-s")) {
+			// Derive the key from provided salt and user password.
+			// Provided salt must be included in the encryption header.
+			char *des_hexsalt = ft_htbl_get(cmd->opts, "-s");
+			if (!ft_str_ishex(des_hexsalt)) {
+				SSL_LOG(ERROR, "salt must be in hex format");
+				return (SSL_ERR);
+			}
+			ft_hex_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
+			// Get user password
+			char des_pass[_PASSWORD_LEN+1] = {0};
+			if (ft_htbl_has(cmd->opts, "-p")) {
+				char *input = ft_htbl_get(cmd->opts, "-p");
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+			} else {
+				char *input = getpass("enter des-cbc encryption password: ");
+				if (NULL == input) {
+					SSL_LOG(ERROR, "bad password read");
+					return (SSL_ERR);
+				}
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+				ft_bzero(input, _PASSWORD_LEN);
+			}
+			des_pass[_PASSWORD_LEN] = 0;
+			// Derive key and initial vector from parsed salt and user password.
+			if (SSL_OK != rand_openssl_v3_kdf(des_key, sizeof(des_key), des_iv, sizeof(des_iv), des_salt, sizeof(des_salt), (const uint8_t *)des_pass, ft_strlen(des_pass))) {
+				SSL_LOG(ERROR, "failed to generate key from salt");
+				return (SSL_ERR);
+			}
+			if (ft_htbl_has(cmd->opts, "-v")) {
+				// Override initial vector with the value provided by user.
+				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
+				if (!ft_str_ishex(des_hexiv)) {
+					SSL_LOG(ERROR, "key must be in hex format");
+					return (SSL_ERR);
+				}
+				ft_bzero(des_iv, sizeof(des_iv));
+				ft_hex_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+			}
+			if (ft_htbl_has(cmd->opts, "-n")) {
+				// Dump vectors in hex format
+				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
+			}
+		}
+		else {
+			// No salt was provided which means we need to generate random salt.
+			// Generated salt must be included in the encryption header.
+
+			// Get the user password.
+			char des_pass[_PASSWORD_LEN+1] = {0};
+			if (ft_htbl_has(cmd->opts, "-p")) {
+				char *input = ft_htbl_get(cmd->opts, "-p");
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+			} else {
+				char *input = getpass("enter des-cbc encryption password: ");
+				if (NULL == input) {
+					SSL_LOG(ERROR, "bad password read");
+					return (SSL_ERR);
+				}
+				ft_strncpy(des_pass, input, _PASSWORD_LEN);
+				ft_bzero(input, _PASSWORD_LEN);
+			}
+			des_pass[_PASSWORD_LEN] = 0;
+			// Generate random salt.
+			if (SSL_OK != rand_useed((uint64_t *)&des_salt, sizeof(des_salt))) {
+				SSL_LOG(ERROR, "failed to generate random salt");
+				return (SSL_ERR);
+			}
+			// Derive key and initial vector from parsed salt and user password.
+			if (SSL_OK != rand_openssl_v3_kdf(des_key, sizeof(des_key), des_iv, sizeof(des_iv), des_salt, sizeof(des_salt), (const uint8_t *)des_pass, ft_strlen(des_pass))) {
+				SSL_LOG(ERROR, "failed to generate key from salt");
+				return (SSL_ERR);
+			}
+			if (ft_htbl_has(cmd->opts, "-v")) {
+				// Override initial vector with the value provided by user.
+				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
+				if (!ft_str_ishex(des_hexiv)) {
+					SSL_LOG(ERROR, "key must be in hex format");
+					return (SSL_ERR);
+				}
+				ft_bzero(des_iv, sizeof(des_iv));
+				ft_hex_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+			}
+			if (ft_htbl_has(cmd->opts, "-n")) {
+				// Dump vectors in hex format
+				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
+			}
+			// Write the encryption header.
+			// Header must be 2 DES blocks in size: 1st block must contain "Salted__" string, 2nd block - salt bytes.
+			char des_salt_header[2*DES_BLOCK_SIZE] = {0};
+			ft_memcpy(des_salt_header, "Salted__", DES_BLOCK_SIZE);
+			ft_memcpy(des_salt_header + DES_BLOCK_SIZE, des_salt, DES_BLOCK_SIZE);
+			if (io_v2_write_all(out, des_salt_header, sizeof(des_salt_header)) != 2*DES_BLOCK_SIZE) {
+				SSL_LOG(ERROR, "failed to write output");
+				return (SSL_ERR);
+			}
+		}
+		if (SSL_OK != des_cbc_encrypt_init(&des_ctx, des_key, des_iv)) {
+			SSL_LOG(ERROR, "des-cbc init error");
+			return (SSL_ERR);
+		}
+		t_io_v2_stream *des_filter = NULL;
+		if (SSL_OK != io_v2_filter_reader(&des_filter, in, des_cbc_encrypt_transform_update, des_cbc_encrypt_transform_final, &des_ctx)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		in = des_filter;
+	}
+
+	// Run the pipeline
+	t_io_v2_pipe *pipe = NULL;
+	if (io_v2_pipe_unidir(&pipe, in, out) < 0) {
+		SSL_LOG(ERROR, IO_INIT_ERROR);
+		return (SSL_ERR);
+	}
+	while (pipe->status == IO_V2_STATUS_PIPE_OK) {
+		io_v2_pipe_pump(pipe);
+	}
+	if (pipe->status == IO_V2_STATUS_PIPE_ERROR) {
+		SSL_LOG(ERROR, "i/o operation failed");
+		return (SSL_ERR);
+	}
+
+	// Close all streams
+	if (io_v2_close(in) < 0) {
+		SSL_LOG(ERROR, IO_CLOSE_ERROR);
+		return (SSL_ERR);
+	}
+	if (io_v2_close(out) < 0) {
+		SSL_LOG(ERROR, IO_CLOSE_ERROR);
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
 }
-
-// static char	*__keyhex;
-// static char	*__salthex;
-// static char	*__vecthex;
-
-// static const char	*__pass;
-
-// static int	__setup_task(const char **);
-// static int	__run_task(void);
-// static int	__get_vector(const char *, const t_task *);
-// static int	__get_pass(const char *, const t_task *);
-// static int	__init_io(const char *, const t_task *);
-// static int	__set_op(const char *, const t_task *);
-// static int	__get_input(unsigned char **, size_t *);
-// static int	__write_output(const char *, size_t);
-// static void	__dump_vectors(void);
-// static int	__enc(t_ostring *, t_ostring *);
-// static int	__enc_b64(t_ostring *, t_ostring *);
-// static int	__dec(t_ostring *, t_ostring *);
-// static int	__dec_b64(t_ostring *, t_ostring *);
-
-// static const t_task	T[] = {
-// 	/*	KEY		PTR				TFLAG		GFLAG	OFLAG			VAL	*/
-// 	{	"-k", 	__get_vector,	DES_K,		DES_K,	NONE,				1	},
-// 	{	"-s", 	__get_vector,	DES_S,		DES_S,	NONE,				1	},
-// 	{	"-v", 	__get_vector,	DES_V,		DES_V,	NONE,				1	},
-// 	{	"-p", 	__get_pass,		DES_P,		DES_P,	NONE,				1	},
-// 	{	"-i", 	__init_io,		IO_INPUT,	NONE,	IO_READ|IO_FILE,	1	},
-// 	{	"-o", 	__init_io,		IO_OUTPUT,	NONE,	IO_WRITE|IO_FILE,	1	},
-// 	{	"-e",	__set_op,		DES_E,		NONE,	NONE,				0	},
-// 	{	"-d",	__set_op,		DES_D,		NONE,	NONE,				0	},
-// 	{	"-a",	NULL,			NONE,		DES_A,	NONE,				0	},
-// 	{	"-n",	NULL,			NONE,		DES_N,	NONE,				0	},
-// 	{	NULL,	NULL,			NONE,		NONE,	NONE,				0	}
-// };
-
-// int	cmd_des_cbc(const t_args_cmd *cmd)
-// {
-// 	t_des_ctx		des;
-// 	t_des_mode	mode;
-// 	uint8_t		key[8], salt[8], vect[8];
-// 	t_iodes		in, out;
-// 	t_ostring	os_in, os_out;
-// 	int			ret;
-
-// 	if (NULL == cmd) {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-
-// 	if (args_is_cmd_opt_set(cmd, "-i")) {
-// 		ret = io_fopen(&in, IO_READ|IO_FILE, args_get_cmd_opt_val(cmd, "-i"));
-// 	} else {
-// 		ret = io_fopen(&in, IO_READ|IO_STDIN, NULL);
-// 	}
-// 	if (SSL_OK != ret) {
-// 		SSL_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-
-// 	if (args_is_cmd_opt_set(cmd, "-o")) {
-// 		ret = io_fopen(&out, IO_WRITE|IO_FILE, args_get_cmd_opt_val(cmd, "-o"));
-// 	} else {
-// 		ret = io_fopen(&out, IO_WRITE|IO_STDOUT, NULL);
-// 	}
-// 	if (SSL_OK != ret) {
-// 		SSL_LOG(ERROR, IO_INIT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-
-// 	if (args_is_cmd_opt_set(cmd, "-k")) {
-// 		ft_hex_to_bytes(key, args_get_cmd_opt_val(cmd, "-k"), 8);
-// 	}
-// 	if (args_is_cmd_opt_set(cmd, "-s")) {
-// 		ft_hex_to_bytes(salt, args_get_cmd_opt_val(cmd, "-s"), 8);
-// 	}
-// 	if (args_is_cmd_opt_set(cmd, "-v")) {
-// 		ft_hex_to_bytes(vect, args_get_cmd_opt_val(cmd, "-v"), 8);
-// 	}
-
-// 	if (args_is_cmd_opt_set(cmd, "-d")) {
-// 		mode = DES_MODE_DECRYPT;
-// 	} else {
-// 		mode = DES_MODE_ENCRYPT;
-// 	}
-
-// 	if (SSL_OK != des_init(&des, key, vect, DES_CRYPT_CBC, mode)) {
-// 		SSL_LOG(ERROR, "des crypt init error");
-// 		return (SSL_ERR);
-// 	}
-
-// 	if (mode == DES_MODE_DECRYPT && args_is_cmd_opt_set(cmd, "-a")) {
-// 		t_iodes 	in_b64;
-// 		t_ostring	os_in_b64;
-
-// 		if (args_is_cmd_opt_set(cmd, "-i")) {
-// 			ret = io_fopen(&in_b64, IO_READ|IO_FILE, args_get_cmd_opt_val(cmd, "-i"));
-// 		} else {
-// 			ret = io_fopen(&in_b64, IO_READ|IO_STDIN, NULL);
-// 		}
-// 		if (SSL_OK != base64_decode_all(in.content, in.size, &os_in.content, &os_in.size)) {
-// 			SSL_LOG(ERROR, "base64 decode error");
-// 			return (SSL_ERR);
-// 		}
-// 		in.content = os_in.content;
-// 		in.size = os_in.size;
-// 	}
-
-// 	if (SSL_OK != des_update(&des, &in, &out)) {
-// 		SSL_LOG(ERROR, "des crypt error");
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != des_final(&des, &out)) {
-// 		SSL_LOG(ERROR, "des crypt error");
-// 		return (SSL_ERR);
-// 	}
-
-// 	io_fclose_multi(&in, &out, NULL);
-
-// 	if (SSL_OK != ret) {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	return (SSL_OK);
-// }
-
-
-
-// static int __run_task(void)
-// {
-// 	int			(*f_op)(t_ostring *, t_ostring *);
-// 	int			ret;
-// 	t_ostring	input;
-// 	t_ostring	output;
-
-// 	ret = SSL_OK;
-
-// 	if (__pass && !__keyhex) {
-// 		if (!__salthex) {
-// 			rand_useed((uint64_t *)__salt, 8);
-// 		}
-// 	} else {
-// 		ft_hex_to_bytes(__key, __keyhex, 16);
-// 		ft_hex_to_bytes(__salt, __salthex, 16);
-// 		ft_hex_to_bytes(__vect, __vecthex, 2);
-// 	}
-
-// 	if (SSL_OK != __get_input(&input.content, &input.size)) {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-
-// 	if (SSL_FLAG(DES_D, __gflag) && !__keyhex) {
-// 		if (input.size < 16 || ft_strncmp((char *)input.content, "Salted__", 8) != 0) {
-// 			SSL_LOG(ERROR, "invalid salted format");
-// 			return SSL_ERR;
-// 		}
-// 		ft_memcpy(__salt, input.content + 8, 8);
-// 		input.content += 16;
-// 		input.size -= 16;
-// 	}
-
-// 	if (__pass) {
-// 		if (SSL_OK != rand_openssl_kdf(__key, __salt, __vect, __pass)) {
-// 			SSL_LOG(ERROR, "kdf failed");
-// 			return (SSL_ERR);
-// 		}
-// 	}
-
-// 	if (SSL_FLAG(DES_D, __gflag)) {
-// 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__dec_b64) : (__dec);
-// 	} else {
-// 		f_op = (SSL_FLAG(DES_A, __gflag)) ? (__enc_b64) : (__enc);
-// 	}
-// 	if (SSL_OK == (ret = f_op(&input, &output))) {
-// 		ret = __write_output((char *)output.content, output.size);
-// 	}
-
-// 	SSL_FREE(input.content);
-// 	SSL_FREE(output.content);
-
-// 	return (ret);
-// }
-
-// static int	__init_io(const char *opt, const t_task *task)
-// {
-// 	t_iodes	*iodes;
-
-// 	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
-// 	return (io_fopen(iodes, task->oflag, NULL));
-// }
-
-// static int	__get_vector(const char *opt, const t_task *task)
-// {
-// 	if (!ft_str_ishex(opt)) {
-// 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (DES_K == task->tflag) {
-// 		__keyhex = (char *)opt;
-// 	} else if (DES_S == task->tflag) {
-// 		__salthex = (char *)opt;
-// 		ft_hex_to_bytes(__salt, __salthex, 16);
-// 	} else if (DES_V == task->tflag) {
-// 		__vecthex = (char *)opt;
-// 	} else {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	return (SSL_OK);
-// }
-
-// static int	__get_pass(const char *opt, const t_task *task)
-// {
-// 	(void)task;
-// 	__pass = opt;
-
-// 	return (SSL_OK);
-// }
-
-// static int __set_op(const char *opt, const t_task *task)
-// {
-// 	uint32_t	remove_flag;
-
-// 	if (DES_D == task->tflag) {
-// 		remove_flag = DES_E;
-// 	} else {
-// 		remove_flag = DES_D;
-// 	}
-
-// 	// encrypt and decrypt flags are mutually exclusive
-// 	__gflag &= ~remove_flag;
-// 	__gflag |= task->tflag;
-
-// 	return (SSL_OK);
-// }
-
-// static int	__get_input(unsigned char **input, size_t *insize)
-// {
-// 	char	buf[IO_BUFSIZE];
-// 	ssize_t	rbytes;
-
-// 	*input = NULL;
-// 	*insize = 0;
-
-// 	if (SSL_FLAG(DES_A | DES_D, __gflag)) {
-// 		__in.delim = '\n';
-// 	}
-// 	while ((rbytes = io_read(&__in, buf, IO_BUFSIZE)) > 0) {
-// 		SSL_REALLOC(*input, *insize, (*insize) + rbytes);
-// 		ft_memcpy(*input + *insize, buf, rbytes);
-// 		*insize += rbytes;
-// 	}
-// 	if (rbytes < 0) {
-// 		SSL_FREE(*input);
-// 		*insize = 0;
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	return (SSL_OK);
-// }
-
-// static int	__write_output(const char *output, size_t outsize)
-// {
-// 	if (SSL_FLAG(DES_N, __gflag)) {
-// 		__dump_vectors();
-// 	}
-// 	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
-// 		__out.delim = '\n';
-// 	}
-// 	if (io_write(&__out, output, outsize) < 0) {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_FLAG(DES_A | DES_E, __gflag)) {
-// 		if (io_write(&__out, "\n", 1) < 0) {
-// 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 			return (SSL_ERR);
-// 		}
-// 	}
-// 	return (SSL_OK);
-// }
-
-// static void	__dump_vectors(void)
-// {
-// 	char	hex[128];
-
-// 	ft_bytes_dumpb_hex(__salt, 8, 0, 0, hex, sizeof(hex));
-// 	ft_printf("salt=%s\n", hex);
-
-// 	ft_bytes_dumpb_hex(__key, 8, 0, 0, hex, sizeof(hex));
-// 	ft_printf("key=%s\n", hex);
-
-// 	ft_bytes_dumpb_hex(__vect, 8, 0, 0, hex, sizeof(hex));
-// 	ft_printf("iv=%s\n", hex);
-// }
-
-// static int	__enc(t_ostring *mes, t_ostring *ciph)
-// {
-// 	t_ostring temp;
-
-// 	if (__pass && !__keyhex) {
-// 		temp.size = mes->size + 16;
-// 		SSL_ALLOC(temp.content, temp.size);
-// 		ft_memcpy(temp.content, "Salted__", 8);
-// 		ft_memcpy(temp.content + 8, __salt, 8);
-// 		ft_memcpy(temp.content + 16, mes->content, mes->size);
-// 		return (des_cbc_encrypt(__key, __vect, &temp, ciph));
-// 	}
-// 	return (des_cbc_encrypt(__key, __vect, mes, ciph));
-// }
-
-// static int	__enc_b64(t_ostring *mes, t_ostring *ciph)
-// {
-// 	t_ostring	b64;
-// 	int			ret;
-
-// 	ret = SSL_OK;
-
-// 	if (SSL_OK != __enc(mes, ciph)) {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != base64_encode_all(ciph->content, ciph->size, &b64.content, &b64.size)) {
-// 		ret = (SSL_LOG(ERROR, UNSPECIFIED_ERROR));
-// 	}
-
-// 	SSL_FREE(ciph->content);
-// 	ciph->content = b64.content;
-// 	ciph->size = b64.size;
-
-// 	return (ret);
-// }
-
-// static int	__dec(t_ostring *ciph, t_ostring *mes)
-// {
-// 	return (des_cbc_decrypt(__key, __vect, ciph, mes));
-// }
-
-// static int	__dec_b64(t_ostring *b64, t_ostring *mes)
-// {
-// 	t_ostring	cipher;
-
-// 	if (SSL_OK != base64_decode_all(b64->content, b64->size, &cipher.content, &cipher.size)) {
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	if (SSL_OK != des_cbc_decrypt(__key, __vect, &cipher, mes)) {
-// 		SSL_FREE(cipher.content);
-// 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
-// 		return (SSL_ERR);
-// 	}
-// 	SSL_FREE(cipher.content);
-
-// 	return (SSL_OK);
-// }
