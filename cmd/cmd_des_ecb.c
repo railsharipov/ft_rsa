@@ -57,9 +57,33 @@ int	cmd_des_ecb(const t_cmd *cmd)
 		}
 	}
 	else {
-		SSL_LOG(ERROR, "key or salt is required");
-		return (SSL_ERR);
+		// Generate random salt and derive key from generated salt and password
+		if (SSL_OK != rand_useed((uint64_t *)&des_salt, sizeof(des_salt))) {
+			SSL_LOG(ERROR, "failed to generate random salt");
+			return (SSL_ERR);
+		}
+		char des_pass[_PASSWORD_LEN+1] = {0};
+
+		if (ft_htbl_has(cmd->opts, "-p")) {
+			char *input = ft_htbl_get(cmd->opts, "-p");
+			ft_strncpy(des_pass, input, _PASSWORD_LEN);
+		} else {
+			char *input = getpass("enter des-ecb encryption password: ");
+			if (NULL == input) {
+				SSL_LOG(ERROR, "bad password read");
+				return (SSL_ERR);
+			}
+			ft_strncpy(des_pass, input, _PASSWORD_LEN);
+			ft_bzero(input, _PASSWORD_LEN);
+		}
+		des_pass[_PASSWORD_LEN] = 0;
+
+		if (SSL_OK != rand_openssl_kdf(des_key, des_salt, NULL, des_pass)) {
+			SSL_LOG(ERROR, "failed to generate key from salt");
+			return (SSL_ERR);
+		}
 	}
+
 	if (ft_htbl_has(cmd->opts, "-n")) {
 		// Dump vectors in hex format
 		char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
