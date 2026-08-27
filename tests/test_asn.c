@@ -5,7 +5,7 @@
 #include <json.h>
 #include <io.h>
 #include <bnum.h>
-#include <asn.h>
+#include <asn1.h>
 #include <file.h>
 #include "test.h"
 

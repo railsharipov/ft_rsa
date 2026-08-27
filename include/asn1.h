@@ -1,5 +1,5 @@
-#ifndef ASN_SPECIFIC_H
-# define ASN_SPECIFIC_H
+#ifndef ASN_1_H
+# define ASN_1_H
 
 # include <common.h>
 #include <libft.h>
