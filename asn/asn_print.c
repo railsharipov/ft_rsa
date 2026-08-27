@@ -70,7 +70,7 @@ static void	__f_print(t_node *node, int space)
 	}
 }
 
-void	asn_print(t_node *tree)
+void	asn1_print(t_node *tree)
 {
 	if (NULL == tree) {
 		return ;

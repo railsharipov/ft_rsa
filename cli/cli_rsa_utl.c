@@ -128,13 +128,13 @@
 // 	t_ostring	input;
 // 	t_ostring	output;
 // 	t_ostring		key;
-// 	t_node		*asn_key;
+// 	t_node		*asn1_key;
 // 	int			ret;
 
 // 	ft_bzero(&input, sizeof(t_ostring));
 // 	ft_bzero(&output, sizeof(t_ostring));
 // 	ft_bzero(&key, sizeof(t_ostring));
-// 	asn_key = NULL;
+// 	asn1_key = NULL;
 // 	ret = SSL_OK;
 
 // 	if (SSL_OK != __get_input(&__inkey, (char **)&(key.content), &(key.size))) {
@@ -144,16 +144,16 @@
 // 	else if (SSL_OK != __get_input(&__in, (char **)&(input.content), &(input.size)))
 // 		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
-// 	else if (SSL_OK != __decode_key(&key, &asn_key))
+// 	else if (SSL_OK != __decode_key(&key, &asn1_key))
 // 		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
-// 	else if (SSL_OK != __f_op(&input, &output, asn_key))
+// 	else if (SSL_OK != __f_op(&input, &output, asn1_key))
 // 		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
 // 	else if (SSL_OK != __write_output((char *)output.content, output.size))
 // 		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 
-// 	asn_tree_del(asn_key);
+// 	asn1_tree_del(asn1_key);
 // 	SSL_FREE(input.content);
 // 	SSL_FREE(output.content);
 // 	SSL_FREE(key.content);
@@ -196,7 +196,7 @@
 // 	return (SSL_OK);
 // }
 
-// static int	__decode_key(t_ostring *key, t_node **asn_key)
+// static int	__decode_key(t_ostring *key, t_node **asn1_key)
 // {
 // 	t_ostring	der_key;
 // 	t_pem	pem;
@@ -214,7 +214,7 @@
 // 		SSL_LOG(ERROR, "invalid pem label");
 // 		goto label_exit;
 // 	}
-// 	if (SSL_OK != der_decode(asn_key, &der_key)) {
+// 	if (SSL_OK != der_decode(asn1_key, &der_key)) {
 // 		SSL_LOG(ERROR, "failed to decode der");
 // 		goto label_exit;
 // 	}

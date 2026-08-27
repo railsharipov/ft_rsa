@@ -3,7 +3,7 @@
 #include <asn1.h>
 #include <libft.h>
 
-int	asn_transform(t_node *src_tree, t_node *dest_tree)
+int	asn1_transform(t_node *src_tree, t_node *dest_tree)
 {
 	t_htbl	*dest_items;
 	t_node	*src_iter;

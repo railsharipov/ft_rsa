@@ -123,8 +123,8 @@ static void	__test_der_cleanup(void)
 
 static int	__test_der_decode_pkcs1_rsaPrivateKey(void)
 {
-    t_node *tree, *asn_node;
-    t_iasn *asn_item;
+    t_node *tree, *asn1_node;
+    t_iasn *asn1_item;
     t_num *num;
     int ret;
 
@@ -136,23 +136,23 @@ static int	__test_der_decode_pkcs1_rsaPrivateKey(void)
     TEST_ASSERT(tree != NULL);
 
     // RSAPrivateKey sequence
-    asn_item = tree->content;
-    TEST_ASSERT(asn_item != NULL);
-    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-    TEST_ASSERT(asn_item->content != NULL);
-    TEST_ASSERT(asn_item->size == 9);
+    asn1_item = tree->content;
+    TEST_ASSERT(asn1_item != NULL);
+    TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+    TEST_ASSERT(asn1_item->content != NULL);
+    TEST_ASSERT(asn1_item->size == 9);
 
     for (size_t i = 0; i < 9; i++) {
         char *query;
         ft_sprintf(&query, "[%zu]", i);
-        ret = asn_tree_query(query, tree, &asn_node);
+        ret = asn1_tree_query(query, tree, &asn1_node);
         TEST_ASSERT(SSL_OK == ret);
-        asn_item = asn_node->content;
-        TEST_ASSERT(asn_item != NULL);
-        TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn_item->tag));
-        TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-        TEST_ASSERT(asn_item->content != NULL);
-        num = (t_num *)asn_item->content;
+        asn1_item = asn1_node->content;
+        TEST_ASSERT(asn1_item != NULL);
+        TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+        TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+        TEST_ASSERT(asn1_item->content != NULL);
+        num = (t_num *)asn1_item->content;
         TEST_ASSERT(bnum_cmp(num, private_key_items[i]) == 0);
     }
 
@@ -181,8 +181,8 @@ static int	__test_der_encode_pkcs1_rsaPrivateKey(void)
 
 static int	__test_der_decode_pkcs1_rsaPublicKey(void)
 {
-    t_node *tree, *asn_node;
-    t_iasn *asn_item;
+    t_node *tree, *asn1_node;
+    t_iasn *asn1_item;
     t_num *num;
     int ret;
 
@@ -192,25 +192,25 @@ static int	__test_der_decode_pkcs1_rsaPublicKey(void)
     TEST_ASSERT(tree != NULL);
 
     // RSAPublicKey ::= SEQUENCE { modulus INTEGER, publicExponent INTEGER }
-    asn_item = tree->content;
-    TEST_ASSERT(asn_item != NULL);
-    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-    TEST_ASSERT(asn_item->size == 2);
+    asn1_item = tree->content;
+    TEST_ASSERT(asn1_item != NULL);
+    TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+    TEST_ASSERT(asn1_item->size == 2);
 
     // modulus
-    ret = asn_tree_query("[0]", tree, &asn_node);
+    ret = asn1_tree_query("[0]", tree, &asn1_node);
     TEST_ASSERT(SSL_OK == ret);
-    asn_item = asn_node->content;
-    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-    num = (t_num *)asn_item->content;
+    asn1_item = asn1_node->content;
+    TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+    num = (t_num *)asn1_item->content;
     TEST_ASSERT(bnum_cmp(num, modulus_num) == 0);
 
     // publicExponent
-    ret = asn_tree_query("[1]", tree, &asn_node);
+    ret = asn1_tree_query("[1]", tree, &asn1_node);
     TEST_ASSERT(SSL_OK == ret);
-    asn_item = asn_node->content;
-    TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-    num = (t_num *)asn_item->content;
+    asn1_item = asn1_node->content;
+    TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+    num = (t_num *)asn1_item->content;
     TEST_ASSERT(bnum_cmp(num, publicExponent_num) == 0);
 
     TEST_PASS();
@@ -238,8 +238,8 @@ static int	__test_der_encode_pkcs1_rsaPublicKey(void)
 
 static int	__test_der_decode_pkcs8_privateKeyInfo(void)
 {
-	t_node	*tree, *asn_node;
-	t_iasn	*asn_item;
+	t_node	*tree, *asn1_node;
+	t_iasn	*asn1_item;
 	t_num	*num;
 	int		ret;
 
@@ -251,74 +251,74 @@ static int	__test_der_decode_pkcs8_privateKeyInfo(void)
 	TEST_ASSERT(tree != NULL);
 
 	// privateKeyInfo sequence
-	asn_item = tree->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-	TEST_ASSERT(asn_item->content != NULL);
-	TEST_ASSERT(asn_item->size == 3);
+	asn1_item = tree->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+	TEST_ASSERT(asn1_item->content != NULL);
+	TEST_ASSERT(asn1_item->size == 3);
 
 	// privateKeyInfo -> version
-	ret = asn_tree_query("[0]", tree, &asn_node);
+	ret = asn1_tree_query("[0]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-	TEST_ASSERT(asn_item->content != NULL);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+	TEST_ASSERT(asn1_item->content != NULL);
 
 	// privateKeyInfo -> privateKeyAlgorithm
-	ret = asn_tree_query("[1]", tree, &asn_node);
+	ret = asn1_tree_query("[1]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-	TEST_ASSERT(asn_item->content != NULL);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+	TEST_ASSERT(asn1_item->content != NULL);
 
 	// privateKeyInfo -> privateKey
-	ret = asn_tree_query("[2]", tree, &asn_node);
+	ret = asn1_tree_query("[2]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_OCTET_STRING);
-	TEST_ASSERT(asn_item->content != NULL);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_OCTET_STRING);
+	TEST_ASSERT(asn1_item->content != NULL);
 
 	// decode encapsulated privateKey sequence
 	t_ostring	temp_ostring;
 
-	temp_ostring.content = asn_item->content;
-	temp_ostring.size = asn_item->size;
+	temp_ostring.content = asn1_item->content;
+	temp_ostring.size = asn1_item->size;
 
     ret = der_decode(&tree, &temp_ostring);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
 
-	asn_item = tree->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-	TEST_ASSERT(asn_item->content != NULL);
-	TEST_ASSERT(asn_item->size == 9);
+	asn1_item = tree->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+	TEST_ASSERT(asn1_item->content != NULL);
+	TEST_ASSERT(asn1_item->size == 9);
 
 	// privateKey sequence items
-	size_t size = asn_item->size;
+	size_t size = asn1_item->size;
 
 	for (size_t i = 0; i < size; i++) {
 		char *query;
 
 		ft_sprintf(&query, "[%zu]", i);
 
-		ret = asn_tree_query(query, tree, &asn_node);
+		ret = asn1_tree_query(query, tree, &asn1_node);
 		TEST_ASSERT(SSL_OK == ret);
 
-		asn_item = asn_node->content;
-		TEST_ASSERT(asn_item != NULL);
-		TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn_item->tag));
-		TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-		TEST_ASSERT(asn_item->content != NULL);
+		asn1_item = asn1_node->content;
+		TEST_ASSERT(asn1_item != NULL);
+		TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+		TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+		TEST_ASSERT(asn1_item->content != NULL);
 
-		num = (t_num *)asn_item->content;
+		num = (t_num *)asn1_item->content;
 		TEST_ASSERT(bnum_cmp(num, private_key_items[i]) == 0);
 	}
 
@@ -327,8 +327,8 @@ static int	__test_der_decode_pkcs8_privateKeyInfo(void)
 
 static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void)
 {
-	t_node	*tree, *asn_node;
-	t_iasn	*asn_item;
+	t_node	*tree, *asn1_node;
+	t_iasn	*asn1_item;
 	t_num	*num;
 	int		ret;
 
@@ -340,95 +340,95 @@ static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void)
 	TEST_ASSERT(tree != NULL);
 
 	// subjectPublicKeyInfo
-	asn_item = tree->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-	TEST_ASSERT(asn_item->content != NULL);
-	TEST_ASSERT(asn_item->size == 2);
+	asn1_item = tree->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+	TEST_ASSERT(asn1_item->content != NULL);
+	TEST_ASSERT(asn1_item->size == 2);
 
 	// subjectPublicKeyInfo -> algorithm
-	ret = asn_tree_query("[0]", tree, &asn_node);
+	ret = asn1_tree_query("[0]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-	TEST_ASSERT(asn_item->content != NULL);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+	TEST_ASSERT(asn1_item->content != NULL);
 
 	// algorithm -> rsaEncryption
-	asn_node = NULL;
-	ret = asn_tree_query("[0][0]", tree, &asn_node);
+	asn1_node = NULL;
+	ret = asn1_tree_query("[0][0]", tree, &asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_OBJECT_ID);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_OBJECT_ID);
 
 	// algorithm -> parameters
-	asn_node = NULL;
-	ret = asn_tree_query("[0][1]", tree, &asn_node);
+	asn1_node = NULL;
+	ret = asn1_tree_query("[0][1]", tree, &asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_NULL);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_NULL);
 
 	// subjectPublicKeyInfo -> subjectPublicKey
-	ret = asn_tree_query("[1]", tree, &asn_node);
+	ret = asn1_tree_query("[1]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
-	TEST_ASSERT(asn_node != NULL);
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_BIT_STRING);
-	TEST_ASSERT(asn_item->content != NULL);
+	TEST_ASSERT(asn1_node != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_BIT_STRING);
+	TEST_ASSERT(asn1_item->content != NULL);
 
 	// decode encapsulated subjectPublicKey sequence
 	t_ostring	temp_ostring;
 
 	// expect at least 1 content byte for unused bits count
-	TEST_ASSERT(asn_item->size > 0);
+	TEST_ASSERT(asn1_item->size > 0);
 	// expect unused bits byte to be 0
-	TEST_ASSERT(((uint8_t *)asn_item->content)[0] == 0);
+	TEST_ASSERT(((uint8_t *)asn1_item->content)[0] == 0);
 
 	// skip unused bits byte
-	temp_ostring.content = ((unsigned char *)asn_item->content + 1);
-	temp_ostring.size = asn_item->size - 1;
+	temp_ostring.content = ((unsigned char *)asn1_item->content + 1);
+	temp_ostring.size = asn1_item->size - 1;
 
 	ret = der_decode(&tree, &temp_ostring);
 
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(tree != NULL);
 
-	asn_item = tree->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_SEQUENCE);
-	TEST_ASSERT(asn_item->content != NULL);
-	TEST_ASSERT(asn_item->size == 2);
+	asn1_item = tree->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_SEQUENCE);
+	TEST_ASSERT(asn1_item->content != NULL);
+	TEST_ASSERT(asn1_item->size == 2);
 
 	// subjectPublicKey -> modulus
-	ret = asn_tree_query("[0]", tree, &asn_node);
+	ret = asn1_tree_query("[0]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
 
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn_item->tag));
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-	TEST_ASSERT(asn_item->content != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+	TEST_ASSERT(asn1_item->content != NULL);
 
-	num = (t_num *)asn_item->content;
+	num = (t_num *)asn1_item->content;
 	TEST_ASSERT(bnum_cmp(num, modulus_num) == 0);
 
 	// subjectPublicKey -> publicExponent
-	ret = asn_tree_query("[1]", tree, &asn_node);
+	ret = asn1_tree_query("[1]", tree, &asn1_node);
 	TEST_ASSERT(SSL_OK == ret);
 
-	asn_item = asn_node->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn_item->tag));
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_INT);
-	TEST_ASSERT(asn_item->content != NULL);
+	asn1_item = asn1_node->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
+	TEST_ASSERT(asn1_item->content != NULL);
 
-	num = (t_num *)asn_item->content;
+	num = (t_num *)asn1_item->content;
 	TEST_ASSERT(bnum_cmp(num, publicExponent_num) == 0);
 
     TEST_PASS();
@@ -437,7 +437,7 @@ static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void)
 static int	__test_der_encode_pkcs8_privateKeyInfo(void)
 {
 	t_node		*privateKeyInfo_tree, *encapsulated_privateKey_tree, *privateKey_tree;
-	t_iasn		*asn_item;
+	t_iasn		*asn1_item;
 	t_ostring	ref_encoded_privateKey, encoded_privateKeyInfo, encoded_privateKey;
 	int			ret;
 
@@ -449,18 +449,18 @@ static int	__test_der_encode_pkcs8_privateKeyInfo(void)
 	TEST_ASSERT(privateKeyInfo_tree != NULL);
 
 	// decode original encapsulated privateKey DER
-	ret = asn_tree_query("[2]", privateKeyInfo_tree, &encapsulated_privateKey_tree);
+	ret = asn1_tree_query("[2]", privateKeyInfo_tree, &encapsulated_privateKey_tree);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(encapsulated_privateKey_tree != NULL);
 	TEST_ASSERT(encapsulated_privateKey_tree->content != NULL);
-	asn_item = encapsulated_privateKey_tree->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_OCTET_STRING);
-	TEST_ASSERT(asn_item->content != NULL);
-	TEST_ASSERT(asn_item->size > 0);
+	asn1_item = encapsulated_privateKey_tree->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_OCTET_STRING);
+	TEST_ASSERT(asn1_item->content != NULL);
+	TEST_ASSERT(asn1_item->size > 0);
 
-	ref_encoded_privateKey.content = asn_item->content;
-	ref_encoded_privateKey.size = asn_item->size;
+	ref_encoded_privateKey.content = asn1_item->content;
+	ref_encoded_privateKey.size = asn1_item->size;
 
 	ret = der_decode(&privateKey_tree, &ref_encoded_privateKey);
 	TEST_ASSERT(SSL_OK == ret);
@@ -489,7 +489,7 @@ static int	__test_der_encode_pkcs8_subjectPublicKeyInfo(void)
 {
 	t_node		*subjectPublicKeyInfo_tree, *encapsulated_subjectPublicKey_tree, *subjectPublicKey_tree;
 	t_ostring	ref_encoded_subjectPublicKey, encoded_subjectPublicKeyInfo, encoded_subjectPublicKey;
-	t_iasn		*asn_item;
+	t_iasn		*asn1_item;
 	int			ret;
 
 	// decode subjectPublicKeyInfo DER, encode it back and compare with original DER
@@ -501,19 +501,19 @@ static int	__test_der_encode_pkcs8_subjectPublicKeyInfo(void)
 	TEST_ASSERT(subjectPublicKeyInfo_tree != NULL);
 
 	// decode original encapsulated subjectPublicKey DER
-	ret = asn_tree_query("[1]", subjectPublicKeyInfo_tree, &encapsulated_subjectPublicKey_tree);
+	ret = asn1_tree_query("[1]", subjectPublicKeyInfo_tree, &encapsulated_subjectPublicKey_tree);
 	TEST_ASSERT(SSL_OK == ret);
 	TEST_ASSERT(encapsulated_subjectPublicKey_tree != NULL);
 	TEST_ASSERT(encapsulated_subjectPublicKey_tree->content != NULL);
-	asn_item = encapsulated_subjectPublicKey_tree->content;
-	TEST_ASSERT(asn_item != NULL);
-	TEST_ASSERT(asn_item->tagnum == ASN_TAGNUM_BIT_STRING);
-	TEST_ASSERT(asn_item->content != NULL);
-	TEST_ASSERT(asn_item->size > 0);
+	asn1_item = encapsulated_subjectPublicKey_tree->content;
+	TEST_ASSERT(asn1_item != NULL);
+	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_BIT_STRING);
+	TEST_ASSERT(asn1_item->content != NULL);
+	TEST_ASSERT(asn1_item->size > 0);
 
 	// save original encapsulated subjectPublicKey DER (including unused bits byte)
-	ref_encoded_subjectPublicKey.content = (unsigned char *)asn_item->content + 1;
-	ref_encoded_subjectPublicKey.size = asn_item->size - 1;
+	ref_encoded_subjectPublicKey.content = (unsigned char *)asn1_item->content + 1;
+	ref_encoded_subjectPublicKey.size = asn1_item->size - 1;
 
 	// decode original encapsulated subjectPublicKey DER
 	ret = der_decode(&subjectPublicKey_tree, &ref_encoded_subjectPublicKey);

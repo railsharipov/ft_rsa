@@ -74,7 +74,7 @@ static int	__decode(t_node **node, t_iodes *in)
 {
 	t_func_der_decode	f_decode;
 	t_ostring		encoded, decoded;
-	t_iasn			*asn_item;
+	t_iasn			*asn1_item;
 	ssize_t			rbytes;
 	uint8_t			tag;
 	uint32_t		tagnum;
@@ -140,12 +140,12 @@ static int	__decode(t_node **node, t_iodes *in)
 		return (SSL_ERR);
 	}
 
-	asn_item = asn_item_create();
-	asn_item->tag = tag;
-	asn_item->tagnum = tagnum;
-	asn_item->content = decoded.content;
-	asn_item->size = decoded.size;
-	*node = asn_node_create(asn_item);
+	asn1_item = asn1_item_create();
+	asn1_item->tag = tag;
+	asn1_item->tagnum = tagnum;
+	asn1_item->content = decoded.content;
+	asn1_item->size = decoded.size;
+	*node = asn1_node_create(asn1_item);
 
 	SSL_LOG(TRACE, "node created successfully for tag: %u", tagnum);
 
@@ -552,7 +552,7 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 	SSL_LOG(TRACE, "object identifier: %s", obj_id);
 
-	obj_name = asn_oid_tree_get_name(obj_id);
+	obj_name = asn1_oid_tree_get_name(obj_id);
 	if (NULL == obj_name) {
 		SSL_LOG(WARN, "unknown asn object id: %s", obj_id);
 	} else {

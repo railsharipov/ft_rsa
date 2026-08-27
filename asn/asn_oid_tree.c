@@ -12,7 +12,7 @@ static int	__f_init(t_node *node, const void *farg);
 static int	__f_find_name(t_node *node, const void *farg);
 static int	__f_find_oid(t_node *node, const void *farg);
 
-char	*asn_oid_tree_get_name(const char *oid)
+char	*asn1_oid_tree_get_name(const char *oid)
 {
 	t_node	*node;
 	char	*name;
@@ -38,7 +38,7 @@ char	*asn_oid_tree_get_name(const char *oid)
 	return (name);
 }
 
-char	*asn_oid_tree_get_oid(const char *name)
+char	*asn1_oid_tree_get_oid(const char *name)
 {
 	t_node	*node;
 	char	*oid;

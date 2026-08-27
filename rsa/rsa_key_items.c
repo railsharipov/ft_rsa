@@ -4,37 +4,37 @@
 #include <rsa.h>
 #include <libft.h>
 
-static t_num	*__asn_int(t_htbl *htbl, const char *key);
-static int		__private_key_items(t_htbl *asn_items, t_rsa **rsa_key);
-static int		__public_key_items(t_htbl *asn_items, t_rsa **rsa_key);
+static t_num	*__asn1_int(t_htbl *htbl, const char *key);
+static int		__private_key_items(t_htbl *asn1_items, t_rsa **rsa_key);
+static int		__public_key_items(t_htbl *asn1_items, t_rsa **rsa_key);
 
-int	rsa_key_items(t_node *asn_key, t_rsa **rsa_key)
+int	rsa_key_items(t_node *asn1_key, t_rsa **rsa_key)
 {
-	t_htbl	*asn_items;
+	t_htbl	*asn1_items;
 	int		ret;
 
-	if (NULL == asn_key || NULL == rsa_key) {
+	if (NULL == asn1_key || NULL == rsa_key) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-	if (NULL == (asn_items = asn_tree_items(asn_key))) {
+	if (NULL == (asn1_items = asn1_tree_items(asn1_key))) {
 		SSL_LOG(ERROR, "failed to asn decode rsa key");
 		return (SSL_ERR);
 	}
 
-	if (!ft_strcmp(asn_key->key, "sequence:RSA_PRIVATE_KEY")) {
-		ret = __private_key_items(asn_items, rsa_key);
-	} else if (!ft_strcmp(asn_key->key, "sequence:PUBLIC_KEY")) {
-		ret = __public_key_items(asn_items, rsa_key);
+	if (!ft_strcmp(asn1_key->key, "sequence:RSA_PRIVATE_KEY")) {
+		ret = __private_key_items(asn1_items, rsa_key);
+	} else if (!ft_strcmp(asn1_key->key, "sequence:PUBLIC_KEY")) {
+		ret = __public_key_items(asn1_items, rsa_key);
 	} else {
-		ret = SSL_LOG(ERROR, "invalid asn key: %s", asn_key->key);
+		ret = SSL_LOG(ERROR, "invalid asn key: %s", asn1_key->key);
 	}
-	asn_tree_items_del(asn_items);
+	asn1_tree_items_del(asn1_items);
 
 	return (ret);
 }
 
-static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
+static int	__private_key_items(t_htbl *asn1_items, t_rsa **rsa_key)
 {
 	t_rsa	*key;
 	int		ret;
@@ -42,15 +42,15 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	SSL_ALLOC(key, sizeof(t_rsa));
 
 	key->tflag = RSA_PRIVKEY;
-	key->version = __asn_int(asn_items, "int:version");
-	key->modulus = __asn_int(asn_items, "int:modulus");
-	key->pubexp = __asn_int(asn_items, "int:publicExponent");
-	key->privexp = __asn_int(asn_items, "int:privateExponent");
-	key->prime1 = __asn_int(asn_items, "int:prime1");
-	key->prime2 = __asn_int(asn_items, "int:prime2");
-	key->exponent1 = __asn_int(asn_items, "int:exponent1");
-	key->exponent2 = __asn_int(asn_items, "int:exponent2");
-	key->coeff = __asn_int(asn_items, "int:coefficient");
+	key->version = __asn1_int(asn1_items, "int:version");
+	key->modulus = __asn1_int(asn1_items, "int:modulus");
+	key->pubexp = __asn1_int(asn1_items, "int:publicExponent");
+	key->privexp = __asn1_int(asn1_items, "int:privateExponent");
+	key->prime1 = __asn1_int(asn1_items, "int:prime1");
+	key->prime2 = __asn1_int(asn1_items, "int:prime2");
+	key->exponent1 = __asn1_int(asn1_items, "int:exponent1");
+	key->exponent2 = __asn1_int(asn1_items, "int:exponent2");
+	key->coeff = __asn1_int(asn1_items, "int:coefficient");
 
 	if (NULL == key->version) {
 		SSL_LOG(ERROR, "invalid rsa key: version is missing");
@@ -100,7 +100,7 @@ static int	__private_key_items(t_htbl *asn_items, t_rsa **rsa_key)
 	return (SSL_OK);
 }
 
-static t_num	*__asn_int(t_htbl *htbl, const char *key)
+static t_num	*__asn1_int(t_htbl *htbl, const char *key)
 {
 	t_num	*num;
 	t_iasn	*item;
@@ -123,15 +123,15 @@ static t_num	*__asn_int(t_htbl *htbl, const char *key)
 	return (num);
 }
 
-static int	__public_key_items(t_htbl *asn_items, t_rsa **rsa_key)
+static int	__public_key_items(t_htbl *asn1_items, t_rsa **rsa_key)
 {
 	t_rsa	*key;
 
 	SSL_ALLOC(key, sizeof(t_rsa));
 
 	key->tflag = RSA_PUBKEY;
-	key->modulus = __asn_int(asn_items, "int:modulus");
-	key->pubexp = __asn_int(asn_items, "int:publicExponent");
+	key->modulus = __asn1_int(asn1_items, "int:modulus");
+	key->pubexp = __asn1_int(asn1_items, "int:publicExponent");
 	key->keysize = bnum_lmbit(key->modulus);
 
 	if ((NULL == key->modulus) || (NULL == key->pubexp)) {

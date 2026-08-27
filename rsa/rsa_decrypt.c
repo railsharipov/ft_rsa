@@ -125,19 +125,19 @@ static int	__decrypt(const unsigned char *ciph, size_t ciphsize, unsigned char *
 	return (SSL_OK);
 }
 
-int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key)
+int rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn1_key)
 {
-	if ((NULL == ciph) || (NULL == ciph->content) || (NULL == mes) || (NULL == asn_key)) {
+	if ((NULL == ciph) || (NULL == ciph->content) || (NULL == mes) || (NULL == asn1_key)) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	mes->content = NULL;
 
-	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY")) {
+	if (ft_strcmp(asn1_key->key, "RSA_PRIVATE_KEY")) {
 		SSL_LOG(ERROR, "invalid rsa key type");
 		return (SSL_ERR);
 	}
-	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
+	if (SSL_OK != rsa_key_items(asn1_key, &__items)) {
 		SSL_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}

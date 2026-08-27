@@ -57,32 +57,32 @@ typedef struct		s_iasn
 	size_t			size;
 }					t_iasn;
 
-struct s_node	*asn_tree(const char *);
-t_node			*asn_tree_create(t_node *schema_json);
-int				asn_tree_query(const char *s, t_node *asn_tree, t_node **ret_asn_node);
-char			*asn_tree_dump(struct s_node *);
-char			*asn_tree_dumps(struct s_node *);
-size_t			asn_tree_dumpb(struct s_node *, char *, size_t);
-void			asn_tree_del(struct s_node *);
-void			*asn_tree_get(t_node *, const char *);
-t_htbl			*asn_tree_items(struct s_node *);
-void			asn_tree_items_del(t_htbl *);
+struct s_node	*asn1_tree(const char *);
+t_node			*asn1_tree_create(t_node *schema_json);
+int				asn1_tree_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node);
+char			*asn1_tree_dump(struct s_node *);
+char			*asn1_tree_dumps(struct s_node *);
+size_t			asn1_tree_dumpb(struct s_node *, char *, size_t);
+void			asn1_tree_del(struct s_node *);
+void			*asn1_tree_get(t_node *, const char *);
+t_htbl			*asn1_tree_items(struct s_node *);
+void			asn1_tree_items_del(t_htbl *);
 
-t_node			*asn_node_create(t_iasn *asn_item);
-void			asn_node_clear(t_node *asn_node);
-void			asn_node_del(t_node *asn_node);
+t_node			*asn1_node_create(t_iasn *asn1_item);
+void			asn1_node_clear(t_node *asn1_node);
+void			asn1_node_del(t_node *asn1_node);
 
-t_iasn			*asn_item_create(void);
-void			asn_item_clear(t_iasn *);
-void			asn_item_del(t_iasn *);
-void			asn_item_init(t_iasn *);
-t_iasn			*asn_item_dup(t_iasn *);
-int				asn_item_set_type(t_iasn *, char *type_key);
-char			*asn_item_get_type_name(t_iasn *);
+t_iasn			*asn1_item_create(void);
+void			asn1_item_clear(t_iasn *);
+void			asn1_item_del(t_iasn *);
+void			asn1_item_init(t_iasn *);
+t_iasn			*asn1_item_dup(t_iasn *);
+int				asn1_item_set_type(t_iasn *, char *type_key);
+char			*asn1_item_get_type_name(t_iasn *);
 
-void			asn_print(struct s_node *);
-int				asn_transform(struct s_node *, struct s_node *);
-char			*asn_oid_tree_get_name(const char *);
-char			*asn_oid_tree_get_oid(const char *);
+void			asn1_print(struct s_node *);
+int				asn1_transform(struct s_node *, struct s_node *);
+char			*asn1_oid_tree_get_name(const char *);
+char			*asn1_oid_tree_get_oid(const char *);
 
 #endif

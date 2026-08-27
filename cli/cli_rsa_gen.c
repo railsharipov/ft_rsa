@@ -15,7 +15,7 @@
 // static uint32_t		__gflag;
 // static t_iodes		__out;
 // static int			__modsize;
-// static t_node		*__asn_pkey;
+// static t_node		*__asn1_pkey;
 // static t_ostring	*__der_pkey;
 // static t_ostring	__pem_pkey;
 
@@ -58,7 +58,7 @@
 // static void	__clear(void)
 // {
 // 	ft_htbl_del(__rsa_htable);
-// 	asn_tree_del(__asn_pkey);
+// 	asn1_tree_del(__asn1_pkey);
 // 	der_del(__der_pkey);
 // 	ft_ostr_clear(&__pem_pkey);
 // }
@@ -82,11 +82,11 @@
 
 // 	SSL_LOG(INFO, "Generating RSA private key, %d bit long modulus\n", __modsize);
 
-// 	if (SSL_OK != rsa_gen_key(&__asn_pkey, __modsize, __frand)) {
+// 	if (SSL_OK != rsa_gen_key(&__asn1_pkey, __modsize, __frand)) {
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_OK != der_encode(__asn_pkey, __der_pkey))	{
+// 	if (SSL_OK != der_encode(__asn1_pkey, __der_pkey))	{
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}

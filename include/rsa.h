@@ -45,12 +45,12 @@ typedef struct	s_rsa
 	t_num		*coeff;
 }				t_rsa;
 
-int			rsa_key_items(t_node *asn_key, t_rsa **rsa_key);
+int			rsa_key_items(t_node *asn1_key, t_rsa **rsa_key);
 void		rsa_key_items_del(t_rsa *rsa_key);
-int			rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand);
-int			rsa_check(t_node *asn_key);
-int 		rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key);
-int 		rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn_key);
+int			rsa_gen_key(t_node **asn1_pkey, int modsize, const char *frand);
+int			rsa_check(t_node *asn1_key);
+int 		rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn1_key);
+int 		rsa_decrypt(t_ostring *ciph, t_ostring *mes, t_node *asn1_key);
 int			rsa_os2i(t_num *num, unsigned char *octets, size_t osize);
 int			rsa_i2os(t_num *num, unsigned char **octets, size_t osize);
 

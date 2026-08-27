@@ -76,7 +76,7 @@ static int	__encode(t_node *node, t_iodes *out)
 	t_func_der_encode	f_encode;
 	t_ostring		encoded, data;
 	ssize_t			wbytes;
-	t_iasn			*asn_item;
+	t_iasn			*asn1_item;
 	uint8_t			tag;
 	uint32_t		tagnum;
 
@@ -85,15 +85,15 @@ static int	__encode(t_node *node, t_iodes *out)
 		return (SSL_OK);
 	}
 
-	asn_item = node->content;
+	asn1_item = node->content;
 
-	if (NULL == asn_item) {
+	if (NULL == asn1_item) {
 		SSL_LOG(ERROR, "invalid asn node: no content");
 		return (SSL_ERR);
 	}
-	tagnum = asn_item->tagnum;
+	tagnum = asn1_item->tagnum;
 
-	SSL_LOG(TRACE, "encoding asn item: %s, tag number: %#x", asn_item_get_type_name(asn_item), tagnum);
+	SSL_LOG(TRACE, "encoding asn item: %s, tag number: %#x", asn1_item_get_type_name(asn1_item), tagnum);
 
 	switch (tagnum) {
 		case ASN_TAGNUM_SEQUENCE:
@@ -135,8 +135,8 @@ static int	__encode(t_node *node, t_iodes *out)
 		return (SSL_ERR);
 	}
 
-	data.content = asn_item->content;
-	data.size = asn_item->size;
+	data.content = asn1_item->content;
+	data.size = asn1_item->size;
 
 	SSL_LOG(TRACE, "encoding content, size: %zu", data.size);
 	ft_ostr_init(&encoded);
@@ -473,7 +473,7 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	obj_id_string = ft_ostr_to_cstr(data, 0, data->size);
 	SSL_LOG(TRACE, "object identifier: %s", obj_id_string);
 
-	obj_name = asn_oid_tree_get_name(obj_id_string);
+	obj_name = asn1_oid_tree_get_name(obj_id_string);
 	if (NULL == obj_name) {
 		SSL_LOG(WARN, "invalid or unknown asn object id: %s", obj_id_string);
 	} else {

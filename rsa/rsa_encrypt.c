@@ -123,15 +123,15 @@ static int  __encrypt(const unsigned char *mes, size_t messize, unsigned char **
 	return (SSL_OK);
 }
 
-int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn_key)
+int rsa_encrypt(t_ostring *mes, t_ostring *ciph, t_node *asn1_key)
 {
-	if ((NULL == mes) || (NULL == mes->content) || (NULL == ciph) || (NULL == asn_key)) {
+	if ((NULL == mes) || (NULL == mes->content) || (NULL == ciph) || (NULL == asn1_key)) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 	ciph->content = NULL;
 
-	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
+	if (SSL_OK != rsa_key_items(asn1_key, &__items)) {
 		SSL_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}

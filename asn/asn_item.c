@@ -2,7 +2,7 @@
 #include <logger.h>
 #include <asn1.h>
 
-t_iasn *asn_item_create(void)
+t_iasn *asn1_item_create(void)
 {
 	t_iasn *item;
 
@@ -11,7 +11,7 @@ t_iasn *asn_item_create(void)
 	return (item);
 }
 
-void	asn_item_init(t_iasn *item)
+void	asn1_item_init(t_iasn *item)
 {
 	if (NULL == item) {
 		return ;
@@ -20,7 +20,7 @@ void	asn_item_init(t_iasn *item)
 	ft_bzero(item, sizeof(t_iasn));
 }
 
-void asn_item_clear(t_iasn *item)
+void asn1_item_clear(t_iasn *item)
 {
 	if (NULL == item) {
 		return;
@@ -31,7 +31,7 @@ void asn_item_clear(t_iasn *item)
 	ft_bzero(item, sizeof(t_iasn));
 }
 
-void asn_item_del(t_iasn *item)
+void asn1_item_del(t_iasn *item)
 {
 	if (NULL == item) {
 		return;
@@ -42,7 +42,7 @@ void asn_item_del(t_iasn *item)
 	SSL_FREE(item);
 }
 
-t_iasn *asn_item_dup(t_iasn *item)
+t_iasn *asn1_item_dup(t_iasn *item)
 {
 	t_iasn *dup_item;
 
@@ -50,7 +50,7 @@ t_iasn *asn_item_dup(t_iasn *item)
 		return (NULL);
 	}
 
-	dup_item = asn_item_create();
+	dup_item = asn1_item_create();
 	ft_memcpy(dup_item, item, sizeof(t_iasn));
 
 	dup_item->content = ft_memdup(item->content, item->size);
@@ -58,7 +58,7 @@ t_iasn *asn_item_dup(t_iasn *item)
 	return (dup_item);
 }
 
-int	asn_item_set_type(t_iasn *item, char *type)
+int	asn1_item_set_type(t_iasn *item, char *type)
 {
 	uint8_t	tagnum;
 
@@ -99,7 +99,7 @@ int	asn_item_set_type(t_iasn *item, char *type)
 	return (SSL_OK);
 }
 
-char	*asn_item_get_type_name(t_iasn *item)
+char	*asn1_item_get_type_name(t_iasn *item)
 {
 	if (NULL == item) {
 		return (NULL);

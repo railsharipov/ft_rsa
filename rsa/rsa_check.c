@@ -169,23 +169,23 @@ static int	__check_prime(t_num *prime)
 	return (SSL_OK);
 }
 
-int	rsa_check(t_node *asn_key)
+int	rsa_check(t_node *asn1_key)
 {
 	int	ret;
 
 	ret = SSL_OK;
 
-	if (NULL == asn_key) {
+	if (NULL == asn1_key) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
-	if (ft_strcmp(asn_key->key, "RSA_PRIVATE_KEY")) {
-		SSL_LOG(ERROR, "invalid rsa key type: %s", asn_key->key);
+	if (ft_strcmp(asn1_key->key, "RSA_PRIVATE_KEY")) {
+		SSL_LOG(ERROR, "invalid rsa key type: %s", asn1_key->key);
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != rsa_key_items(asn_key, &__items)) {
+	if (SSL_OK != rsa_key_items(asn1_key, &__items)) {
 		SSL_LOG(ERROR, "invalid rsa key");
 		return (SSL_ERR);
 	}

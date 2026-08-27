@@ -141,7 +141,7 @@
 // static int	__run_task(void)
 // {
 // 	t_ostring	*outkey;
-// 	t_node		*asn_key;
+// 	t_node		*asn1_key;
 // 	int			ret;
 
 // 	ret = SSL_OK;
@@ -151,27 +151,27 @@
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_OK != __decode_key(&asn_key)) {
+// 	if (SSL_OK != __decode_key(&asn1_key)) {
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
 // 	if (SSL_FLAG(RSA_CHECK, __gflag)) {
-// 		if (SSL_OK != rsa_check(asn_key)) {
-// 			asn_tree_del(asn_key);
+// 		if (SSL_OK != rsa_check(asn1_key)) {
+// 			asn1_tree_del(asn1_key);
 // 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 			return (SSL_ERR);
 // 		}
 // 		SSL_LOG(INFO, "RSA key ok");
 // 	}
-// 	__key_info(asn_key);
+// 	__key_info(asn1_key);
 
-// 	if (SSL_OK != __key_type(&asn_key)) {
+// 	if (SSL_OK != __key_type(&asn1_key)) {
 // 		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 	}
-// 	else if (SSL_OK != __encode_key(asn_key, &outkey)) {
+// 	else if (SSL_OK != __encode_key(asn1_key, &outkey)) {
 // 		ret = SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 	}
-// 	asn_tree_del(asn_key);
+// 	asn1_tree_del(asn1_key);
 
 // 	if (SSL_OK == ret) {
 // 		ret = __write_output((char *)outkey->content, outkey->size);
@@ -266,40 +266,40 @@
 // 	return (SSL_OK);
 // }
 
-// static void	__key_info(t_node *asn_key)
+// static void	__key_info(t_node *asn1_key)
 // {
-// 	t_iasn	*asn_item;
+// 	t_iasn	*asn1_item;
 
 // 	if (SSL_FLAG(RSA_TEXT, __gflag)) {
-// 		asn_print(asn_key);
+// 		asn1_print(asn1_key);
 // 	}
 // 	if (SSL_FLAG(RSA_MODULUS, __gflag)) {
-// 		asn_item = asn_tree_get(asn_key, "modulus");
+// 		asn1_item = asn1_tree_get(asn1_key, "modulus");
 
-// 		if (NULL != asn_item) {
+// 		if (NULL != asn1_item) {
 // 			SSL_LOG(INFO, "Modulus=");
-// 			bnum_print(NULL, asn_item->content);
+// 			bnum_print(NULL, asn1_item->content);
 // 		}
 // 	}
 // }
 
-// static int	__key_type(t_node **asn_key)
+// static int	__key_type(t_node **asn1_key)
 // {
-// 	t_node	*asn_pubkey;
+// 	t_node	*asn1_pubkey;
 
 // 	if (SSL_FLAG(RSA_PUBIN, __gflag)) {
 // 		__out_type = TYPE_X509_PUBLIC_KEY;
 // 		__out_map = MAP_X509_PUBLIC_KEY;
 // 	}
 // 	else if (SSL_FLAG(RSA_PUBOUT, __gflag)) {
-// 		asn_pubkey = asn_tree(MAP_X509_PUBLIC_KEY);
+// 		asn1_pubkey = asn1_tree(MAP_X509_PUBLIC_KEY);
 
-// 		if (SSL_OK != asn_transform(*asn_key, asn_pubkey)) {
+// 		if (SSL_OK != asn1_transform(*asn1_key, asn1_pubkey)) {
 // 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 			return (SSL_ERR);
 // 		}
-// 		asn_tree_del(*asn_key);
-// 		*asn_key = asn_pubkey;
+// 		asn1_tree_del(*asn1_key);
+// 		*asn1_key = asn1_pubkey;
 
 // 		__out_type = TYPE_X509_PUBLIC_KEY;
 // 		__out_map = MAP_X509_PUBLIC_KEY;
@@ -307,7 +307,7 @@
 // 	return (SSL_OK);
 // }
 
-// static int	__decode_key(t_node **asn_key)
+// static int	__decode_key(t_node **asn1_key)
 // {
 // 	t_ostring	*der_key;
 // 	t_pem	pem;
@@ -329,7 +329,7 @@
 // 	} else {
 // 		der_key = ft_ostr_dup(&__inkey);
 // 	}
-// 	if (SSL_OK != der_decode(asn_key, der_key)) {
+// 	if (SSL_OK != der_decode(asn1_key, der_key)) {
 // 		SSL_LOG(ERROR, "failed to decode der");
 // 		goto label_exit;
 // 	}
@@ -342,7 +342,7 @@
 // 	return (ret);
 // }
 
-// static int	__encode_key(t_node *asn_key, t_ostring **outkey)
+// static int	__encode_key(t_node *asn1_key, t_ostring **outkey)
 // {
 // 	t_ostring	der_key, pem_key;
 // 	t_pem	*pem;
@@ -352,7 +352,7 @@
 // 	ft_ostr_init(&der_key);
 // 	ft_ostr_init(&pem_key);
 
-// 	if (SSL_OK != der_encode(asn_key, &der_key)) {
+// 	if (SSL_OK != der_encode(asn1_key, &der_key)) {
 // 		SSL_LOG(ERROR, "failed to DER encode key");
 // 		goto label_exit;
 // 	}

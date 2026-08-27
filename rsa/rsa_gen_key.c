@@ -71,7 +71,7 @@ static void	__get_exponents(void)
 	bnum_clear_multi(&t1, &t2, &t3, NULL);
 }
 
-int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
+int	rsa_gen_key(t_node **asn1_pkey, int modsize, const char *frand)
 {
 	t_node		*pkey_tree;
 	uint64_t	seed;
@@ -81,7 +81,7 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	pkey_tree = NULL;
 	res = SSL_OK;
 
-	if (NULL == asn_pkey) {
+	if (NULL == asn1_pkey) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
@@ -89,7 +89,7 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 		SSL_LOG(ERROR, "invalid rsa key size");
 		return (SSL_ERR);
 	}
-	if (NULL == (pkey_tree = asn_tree(MAP_RSA_PRIVATE_KEY))) {
+	if (NULL == (pkey_tree = asn1_tree(MAP_RSA_PRIVATE_KEY))) {
 		res = SSL_LOG(ERROR, "failed to construct asn tree");
 	}
 	else if (SSL_OK != rsa_key_items(pkey_tree, &__items)) {
@@ -107,7 +107,7 @@ int	rsa_gen_key(t_node **asn_pkey, int modsize, const char *frand)
 	__get_primes(modsize, seed);
 	__get_exponents();
 
-	*asn_pkey = pkey_tree;
+	*asn1_pkey = pkey_tree;
 
 	return (SSL_OK);
 }
