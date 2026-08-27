@@ -66,10 +66,6 @@ int	cmd_des_ecb(const t_cmd *cmd)
 		char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
 		ft_printf("salt=%.16s\nkey=%.16s\n", shex, khex);
 	}
-	if (SSL_OK != des_ecb_encrypt_init(&des_ctx, des_key)) {
-		SSL_LOG(ERROR, "des-ecb init error");
-		return (SSL_ERR);
-	}
 
 	// I/O pipeline: Source -> Filters -> Sink
 
@@ -103,12 +99,54 @@ int	cmd_des_ecb(const t_cmd *cmd)
 
 	// Filters
 	if (ft_htbl_has(cmd->opts, "-d")) {
-		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
-		return (SSL_ERR);
+		// Input filters
+		if (ft_htbl_has(cmd->opts, "-a")) {
+			// Input must be base64 decoded
+			// source -> whitespace remover -> base64 decoder -> read()
+			// Remove whitespace
+			t_textutil_ctx *eolws_remover_ctx = NULL;
+			t_io_v2_stream *eolws_remover_filter = NULL;
+			SSL_ALLOC(eolws_remover_ctx, sizeof(t_textutil_ctx));
+			*eolws_remover_ctx = (t_textutil_ctx){0};
+			if (io_v2_filter_reader(&eolws_remover_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, eolws_remover_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			in = eolws_remover_filter;
+			// Base64 decode
+			t_b64_ctx *b64_ctx = NULL;
+			t_io_v2_stream *b64_filter = NULL;
+			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
+			*b64_ctx = (t_b64_ctx){0};
+			if (io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, b64_ctx) < 0) {
+				SSL_LOG(ERROR, IO_INIT_ERROR);
+				return (SSL_ERR);
+			}
+			in = b64_filter;
+		}
+
+		// Output filters
+		// write() -> des filter -> sink
+		// DES decrypt
+		if (SSL_OK != des_ecb_decrypt_init(&des_ctx, des_key)) {
+			SSL_LOG(ERROR, "des-ecb init error");
+			return (SSL_ERR);
+		}
+		t_io_v2_stream *des_filter = NULL;
+		if (SSL_OK != io_v2_filter_writer(&des_filter, out, des_ecb_decrypt_transform_update, des_ecb_decrypt_transform_final, &des_ctx)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		out = des_filter;
 	}
 	else {
 		// Input filters
-		// DES crypt stream
+		// source -> des filter -> read()
+		// DES encrypt
+		if (SSL_OK != des_ecb_encrypt_init(&des_ctx, des_key)) {
+			SSL_LOG(ERROR, "des-ecb init error");
+			return (SSL_ERR);
+		}
 		t_io_v2_stream *des_filter = NULL;
 		if (SSL_OK != io_v2_filter_reader(&des_filter, in, des_ecb_encrypt_transform_update, des_ecb_encrypt_transform_final, &des_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
@@ -118,7 +156,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 
 		// Output filters
 		if (ft_htbl_has(cmd->opts, "-a")) {
-			// Output must be base64 encoded
+			// Base64 encode output
 			// write() -> base64 encoder -> line breaker -> terminator -> sink
 			// Add terminating newline
 			t_textutil_ctx *terminator_ctx = NULL;
