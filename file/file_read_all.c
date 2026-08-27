@@ -14,13 +14,11 @@ int file_read_all(const char *path, t_ostring *ostring)
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-
 	if ((fd = open(path, O_RDONLY)) < 0) {
 		SSL_LOG(ERROR, "failed to open file %s", path);
 		return (SSL_ERR);
 	}
-	ostring->content = NULL;
-	ostring->size = 0;
+	ft_ostr_init(ostring);
 
 	while ((nbytes = read(fd, buf, bufsize)) > 0) {
 		ft_ostr_append(ostring, (void *)buf, nbytes);
