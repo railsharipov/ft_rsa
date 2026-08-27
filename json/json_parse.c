@@ -2,6 +2,7 @@
 #include <bnum.h>
 #include <logger.h>
 #include <libft.h>
+#include <file.h>
 
 /*
 ** VALUE ::= CHOICE {
@@ -503,4 +504,27 @@ label_exit:
 	}
 
 	return (status);
+}
+
+int	json_parse_file(const char *filename, t_node **node)
+{
+	t_ostring file_content;
+	if (SSL_OK != file_read_all(filename, &file_content)) {
+		SSL_LOG(ERROR, "file read error");
+		return (SSL_ERR);
+	}
+	char *json_s = ft_ostr_to_cstr(&file_content, 0, file_content.size);
+	ft_ostr_clear(&file_content);
+	if (NULL == json_s) {
+		SSL_LOG(ERROR, "memory error");
+		return (SSL_ERR);
+	}
+	int ret = json_parse(json_s, node);
+	LIBFT_FREE(json_s);
+
+	if (SSL_OK != ret) {
+		SSL_LOG(ERROR, "json file parse error");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
 }

@@ -39,6 +39,7 @@ typedef int (*t_func_json_select)(t_node *node, t_node *query_node, t_node **ret
 typedef int (*t_func_json_dump)(t_node *node, t_ostring *ostring);
 
 int     json_parse(const char *s, t_node **node);
+int		json_parse_file(const char *filename, t_node **node);
 int     json_query(const char *s, t_node *json, t_node **ret_node);
 int     json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector);
 int     json_validate(t_node *node);
