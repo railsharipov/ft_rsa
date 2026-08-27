@@ -60,6 +60,26 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
     return (result);
 }
 
+ssize_t io_v2_read_all(t_io_v2_stream *stream, void *buf, size_t nbytes)
+{
+	// Attempt to read all bytes in one call.
+	ssize_t trbytes = 0;
+	ssize_t rbytes = 0;
+	while (trbytes < nbytes) {
+		rbytes = io_v2_read(stream, buf + trbytes, nbytes - trbytes);
+		if (rbytes <= 0) {
+			break;
+		}
+		trbytes += rbytes;
+	}
+	if (stream->status != IO_V2_STATUS_OK) {
+		// Error or EOF
+		SSL_LOG(ERROR, "failed to read all");
+		return (-1);
+	}
+	return (trbytes);
+}
+
 ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 {
     ssize_t result;
@@ -108,15 +128,10 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 
 ssize_t io_v2_write_all(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 {
-	// TODO: We need WOULD_BLOCK, etc. to correctly detect when no more output can be written.
-	// NOTE: This implementation treats 0 written bytes as "nothing more to write" break condition.
+	// Attempt to write all bytes in one call.
 	ssize_t twbytes = 0;
 	ssize_t wbytes = 0;
-	while (1) {
-		if (twbytes > nbytes) {
-			SSL_LOG(ERROR, UNEXPECTED_ERROR);
-			return (-1);
-		}
+	while (twbytes < nbytes) {
 		wbytes = io_v2_write(stream, buf + twbytes, nbytes - twbytes);
 		if (wbytes <= 0) {
 			break;
@@ -127,13 +142,6 @@ ssize_t io_v2_write_all(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 		SSL_LOG(ERROR, "failed to write all");
 		return (-1);
 	}
-	wbytes = io_v2_finish(stream);
-	if (wbytes < 0) {
-		SSL_LOG(ERROR, "failed to write all");
-		return (-1);
-	}
-	twbytes += wbytes;
-
 	return (twbytes);
 }
 
