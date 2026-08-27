@@ -26,7 +26,6 @@ typedef int		(*t_func_cmd)(const struct s_cmd *cmd);
 int		cmd_logger_print_file(const char *file_name);
 int		cmd_read_stdin_pass(char *buf, size_t bufsize);
 
-int     cmd_default(const struct s_cmd *cmd);
 int     cmd_base64(const struct s_cmd *cmd);
 int     cmd_md5(const struct s_cmd *cmd);
 int     cmd_sha1(const struct s_cmd *cmd);
@@ -38,6 +37,9 @@ int     cmd_sha512_224(const struct s_cmd *cmd);
 int     cmd_sha512_256(const struct s_cmd *cmd);
 int     cmd_des_ecb(const struct s_cmd *cmd);
 int     cmd_des_cbc(const struct s_cmd *cmd);
+
+int     cmd_asn1(const struct s_cmd *cmd);
+
 int     cmd_rsa_gen(const struct s_cmd *cmd);
 int     cmd_rsa(const struct s_cmd *cmd);
 int     cmd_rsa_utl(const struct s_cmd *cmd);

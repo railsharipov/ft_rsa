@@ -127,6 +127,12 @@ int	main(int ac, const char **av)
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-n", "dump vectors", AP_OPT_TYPE_FLAG));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
+	// POC
+
+	sub_cmd_arg = args_new_cmd("asn1", "ASN.1 procedures", cmd_asn1);
+
+	// NOT FULLY IMPLEMENTED YET
+
 	// genrsa command
 	sub_cmd_arg = args_new_cmd("genrsa", "Generate RSA private keys", cmd_rsa_gen);
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-rand", "set rand source as list of <files>, separated by colon", AP_OPT_TYPE_STRING));
