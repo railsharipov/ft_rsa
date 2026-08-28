@@ -21,7 +21,7 @@ int asn1_tree_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node)
 		return (SSL_ERR);
 	}
 
-	SSL_LOG(TRACE, "running query `%s` on asn tree: %s", s, asn1_tree_dump(asn1_tree));
+	SSL_LOG(TRACE, "running query `%s` on asn tree: %p", asn1_tree);
 
 	*ret_asn1_node = NULL;
 
@@ -30,7 +30,7 @@ int asn1_tree_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node)
 		return (SSL_ERR);
 	}
 
-	SSL_LOG(TRACE, "query result: %s", asn1_tree_dump(*ret_asn1_node));
+	SSL_LOG(TRACE, "query is ok");
 
 	return (SSL_OK);
 }
