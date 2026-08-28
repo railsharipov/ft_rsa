@@ -51,7 +51,6 @@ typedef struct		s_iasn
 {
 	uint8_t			tag;
 	uint32_t		tagnum;
-	uint8_t			encapsulates;
 	char			*description;
 	void			*content;
 	size_t			size;
@@ -60,7 +59,6 @@ typedef struct		s_iasn
 struct s_node	*asn1_tree(const char *);
 t_node			*asn1_tree_create(t_node *schema_json);
 int				asn1_tree_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node);
-char			*asn1_tree_dump(struct s_node *);
 char			*asn1_tree_dumps(struct s_node *);
 size_t			asn1_tree_dumpb(struct s_node *, char *, size_t);
 void			asn1_tree_del(struct s_node *);
@@ -79,6 +77,8 @@ void			asn1_item_init(t_iasn *);
 t_iasn			*asn1_item_dup(t_iasn *);
 int				asn1_item_set_type(t_iasn *, char *type_key);
 char			*asn1_item_get_type_name(t_iasn *);
+char			*asn1_item_dumps(t_iasn *);
+char			*asn1_item_value_dumps(t_iasn *);
 
 void			asn1_print(struct s_node *);
 int				asn1_transform(struct s_node *, struct s_node *);

@@ -129,7 +129,9 @@ int	main(int ac, const char **av)
 
 	// POC
 
-	sub_cmd_arg = args_new_cmd("asn1", "ASN.1 procedures", cmd_asn1);
+	sub_cmd_arg = args_new_cmd("asn1parse", "ASN1 parse diagnostic utility", cmd_asn1parse);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("--schema", "parse asn1 schema from JSON file", AP_OPT_TYPE_STRING));
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// NOT FULLY IMPLEMENTED YET
 
