@@ -3,6 +3,7 @@ Simple crypto library. RSA, ASN.1, PEM, DER, DES, Base64, SHAx, MD5
 
 ## About
 The goals of this project:
+* Big number
 * Pseudo-random number generator
 * Password based key derivation
 * RSA key generation
@@ -11,20 +12,19 @@ The goals of this project:
 * DES crypt
 * Message digest
 * Base64 encoding
-* ASN.1 tree
+* ASN.1 parser
 * DER encoding
 * PEM encoding
-* OpenSSL style flags
+* JSON parser
+* I/O streams
+* CLI argument parser
+* Text parser
+* Logger
 
 ## Requirements
 * GNU C
 * MacOS High Sierra or higher
 * Ubuntu 16.04 or higher
-
-## Compile
-```
-make -j
-```
 
 ## Usage
 ```
