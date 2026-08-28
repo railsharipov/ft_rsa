@@ -25,6 +25,9 @@ char	*json_dumps_with_f_dumper(t_node *node, t_func_json_dump f_dumper)
 	t_ostring	ostring;
 	char		*s;
 
+	if (NULL == node) {
+		return (NULL);
+	}
 	ft_ostr_init(&ostring);
 
 	if (SSL_OK != f_dumper(node, &ostring)) {
@@ -65,11 +68,6 @@ size_t	json_dumpb_with_f_dumper(t_node *node, char *buf, size_t size, t_func_jso
 
 static int	__f_default_dumper(t_node *node, t_ostring *ostring)
 {
-	if (NULL == node) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
-
 	switch (node->type)
 	{
 		case JSON_TYPE_OBJECT:
