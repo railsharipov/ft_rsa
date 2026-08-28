@@ -21,11 +21,6 @@ The goals of this project:
 * Text parser
 * Logger
 
-## Requirements
-* GNU C
-* MacOS High Sierra or higher
-* Ubuntu 16.04 or higher
-
 ## Usage
 ```
 ./ft_ssl -h
