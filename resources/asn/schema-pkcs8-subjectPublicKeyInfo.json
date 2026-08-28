@@ -1,15 +1,15 @@
 {
   "description": "subjectPublicKeyInfo",
   "type": "sequence",
-  "data": [
+  "value": [
     {
       "description": "algorithm",
       "type": "sequence",
-      "data": [
+      "value": [
         {
           "description": "rsaEncryption",
           "type": "objectId",
-          "data": "1.2.840.113549.1.1.1"
+          "value": "1.2.840.113549.1.1.1"
         },
         {
           "description": "parameters",
@@ -19,8 +19,7 @@
     },
     {
       "description": "subjectPublicKey",
-      "type": "bitstring",
-      "encapsulates": true
+      "type": "bitstring"
     }
   ]
 }

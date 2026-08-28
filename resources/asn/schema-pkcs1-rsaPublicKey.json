@@ -1,7 +1,7 @@
 {
   "description": "rsaPublicKey",
   "type": "sequence",
-  "data": [
+  "value": [
     {
       "description": "modulus",
       "type": "int"
@@ -11,4 +11,4 @@
       "type": "int"
     }
   ]
-} 
+}

@@ -1,11 +1,11 @@
 {
   "description": "rsaPrivateKey",
   "type": "sequence",
-  "data": [
+  "value": [
     {
       "description": "version",
       "type": "int",
-      "data": 0
+      "value": 0
     },
     {
       "description": "modulus",
@@ -40,4 +40,4 @@
       "type": "int"
     }
   ]
-} 
+}

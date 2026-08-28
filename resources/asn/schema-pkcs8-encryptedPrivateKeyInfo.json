@@ -1,20 +1,20 @@
 {
   "description": "encryptedPrivateKeyInfo",
   "type": "sequence",
-  "data": [
+  "value": [
     {
       "description": "encryptionAlgorithm",
       "type": "sequence",
-      "data": [
+      "value": [
         {
           "description": "algorithm",
           "type": "objectId",
-          "data": "1.2.840.113549.1.5.3"
+          "value": "1.2.840.113549.1.5.3"
         },
         {
           "description": "pbeParameter",
           "type": "sequence",
-          "data": [
+          "value": [
             {
               "description": "salt",
               "type": "ostring"
@@ -29,8 +29,7 @@
     },
     {
       "description": "encryptedData",
-      "type": "ostring",
-      "encapsulates": true
+      "type": "ostring"
     }
   ]
 }
