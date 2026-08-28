@@ -30,7 +30,7 @@ int file_read_all(const char *path, t_ostring *ostring)
 		SSL_LOG(ERROR, "failed to read file %s", path);
 		return (SSL_ERR);
 	}
-	SSL_LOG(DEBUG, "read %zd bytes from file %s", ostring->size, path);
+	SSL_LOG(TRACE, "read %zd bytes from file %s", ostring->size, path);
 
 	return (SSL_OK);
 }
