@@ -404,7 +404,11 @@ char	*asn1_item_dumps(t_iasn *item)
 		break;
 	case ASN_TAGNUM_OCTET_STRING:
 	case ASN_TAGNUM_BIT_STRING:
-		ft_ostr_appendf(&ostring, "\"<ptr=%p,size=%zu>\"", item->content, item->size);
+		if (item->content) {
+			ft_ostr_appendf(&ostring, "\"<ptr=%p,size=%zu>\"", item->content, item->size);
+		} else {
+			ft_ostr_append_cstr(&ostring, "null");
+		}
 		break;
 	case ASN_TAGNUM_OBJECT_ID:
 	case ASN_TAGNUM_OBJECT_DESCR:
