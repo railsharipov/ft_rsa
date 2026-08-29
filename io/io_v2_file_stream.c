@@ -4,13 +4,61 @@
 #include <logger.h>
 
 typedef struct s_io_v2_file_ctx {
-    int    		fd;
-    ssize_t		seek;
+    int fd;
 } t_io_v2_file_ctx;
 
 static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes);
 static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_file_close(void *vctx);
+static ssize_t __io_v2_file_noop_close(void *vctx);
+
+static t_io_v2_file_ctx __stdin_ctx = { .fd = 0, };
+static t_io_v2_file_ctx __stdout_ctx = { .fd = 1, };
+static t_io_v2_file_ctx __stderr_ctx = { .fd = 2, };
+
+static t_io_v2_stream __io_v2_stdin_reader = {
+	.interface = (t_io_v2_interface){ .read = __io_v2_file_read, .close = __io_v2_file_noop_close, },
+	.flags = IO_V2_FLAG_READ|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__stdin_ctx,
+};
+static t_io_v2_stream __io_v2_stdin_writer = {
+	.interface = (t_io_v2_interface){ .write = __io_v2_file_write, .close = __io_v2_file_noop_close, },
+	.flags = IO_V2_FLAG_WRITE|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__stdin_ctx,
+};
+static t_io_v2_stream __io_v2_stdout_reader = {
+	.interface = (t_io_v2_interface){ .read = __io_v2_file_read, .close = __io_v2_file_noop_close, },
+	.flags = IO_V2_FLAG_READ|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__stdout_ctx,
+};
+static t_io_v2_stream __io_v2_stdout_writer = {
+	.interface = (t_io_v2_interface){ .write= __io_v2_file_write, .close = __io_v2_file_noop_close, },
+	.flags = IO_V2_FLAG_WRITE|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__stdout_ctx,
+};
+static t_io_v2_stream __io_v2_stderr_reader = {
+	.interface = (t_io_v2_interface){ .read = __io_v2_file_read, .close = __io_v2_file_noop_close, },
+	.flags = IO_V2_FLAG_READ|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__stderr_ctx,
+};
+static t_io_v2_stream __io_v2_stderr_writer = {
+	.interface = (t_io_v2_interface){ .write = __io_v2_file_write, .close = __io_v2_file_noop_close, },
+	.flags = IO_V2_FLAG_WRITE|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__stderr_ctx,
+};
+
+t_io_v2_stream *io_v2_stdin_reader = &__io_v2_stdin_reader;
+t_io_v2_stream *io_v2_stdin_writer = &__io_v2_stdin_writer;
+t_io_v2_stream *io_v2_stdout_reader = &__io_v2_stdout_reader;
+t_io_v2_stream *io_v2_stdout_writer = &__io_v2_stdout_writer;
+t_io_v2_stream *io_v2_stderr_reader = &__io_v2_stderr_reader;
+t_io_v2_stream *io_v2_stderr_writer = &__io_v2_stderr_writer;
 
 int io_v2_fd_reader(t_io_v2_stream **stream, int fd)
 {
@@ -26,7 +74,6 @@ int io_v2_fd_reader(t_io_v2_stream **stream, int fd)
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
     ctx->fd = fd;
-    ctx->seek = 0;
 
 	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
@@ -67,7 +114,6 @@ int io_v2_fd_writer(t_io_v2_stream **stream, int fd)
     }
     SSL_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
     ctx->fd = fd;
-    ctx->seek = 0;
 
 	if (SSL_OK != io_v2_stream(stream, interface, ctx)) {
 		SSL_LOG(ERROR, IO_CREATE_STREAM_ERROR);
@@ -112,7 +158,6 @@ static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
     err = errno;
 
     if (rbytes > 0) {
-        ctx->seek += rbytes;
         SSL_LOG(TRACE, "read %zd bytes from fd=%d", rbytes, ctx->fd);
         return (rbytes);
     }
@@ -157,7 +202,6 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
     err = errno;
 
     if (wbytes > 0) {
-        ctx->seek += wbytes;
         SSL_LOG(TRACE, "wrote %zd bytes to fd=%d", wbytes, ctx->fd);
         return (wbytes);
     }
@@ -198,25 +242,27 @@ static ssize_t __io_v2_file_close(void *vctx)
         SSL_LOG(WARN, "invalid file descriptor");
         return (IO_V2_STATUS_OK);
     }
-    if (ctx->fd > 2) {
-	    SSL_LOG(DEBUG, "closing fd=%d", ctx->fd);
-	    result = close(ctx->fd);
-	    err = errno;
-	    if (result < 0) {
-	        if (err == EINTR || err == EIO) {
-	            SSL_LOG(WARN, "fd %d is already closed: %s", ctx->fd, strerror(err));
-	            ctx->fd = -1;
-	            return (IO_V2_STATUS_OK);
-	        }
-	        SSL_LOG(ERROR, "close error: %s", strerror(err));
-	        return (IO_V2_STATUS_ERROR);
-	    }
-    }
-    else {
-    	SSL_LOG(DEBUG, "not closing fd=%d", ctx->fd);
+    SSL_LOG(DEBUG, "closing fd=%d", ctx->fd);
+    result = close(ctx->fd);
+    err = errno;
+    if (result < 0) {
+        if (err == EINTR || err == EIO) {
+            SSL_LOG(WARN, "fd %d is already closed: %s", ctx->fd, strerror(err));
+            ctx->fd = -1;
+            return (IO_V2_STATUS_OK);
+        }
+        SSL_LOG(ERROR, "close error: %s", strerror(err));
+        return (IO_V2_STATUS_ERROR);
     }
     ctx->fd = -1;
     SSL_LOG(TRACE, "closed file stream");
 
+    return (IO_V2_STATUS_OK);
+}
+
+static ssize_t __io_v2_file_noop_close(void *vctx)
+{
+	(void)vctx;
+    SSL_LOG(TRACE, "ignoring file stream close");
     return (IO_V2_STATUS_OK);
 }

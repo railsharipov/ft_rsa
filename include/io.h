@@ -120,6 +120,13 @@ typedef struct s_io_v2_stream {
 	void				*ctx;
 } t_io_v2_stream;
 
+extern t_io_v2_stream *io_v2_stdin_reader;
+extern t_io_v2_stream *io_v2_stdin_writer;
+extern t_io_v2_stream *io_v2_stdout_reader;
+extern t_io_v2_stream *io_v2_stdout_writer;
+extern t_io_v2_stream *io_v2_stderr_reader;
+extern t_io_v2_stream *io_v2_stderr_writer;
+
 ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
 ssize_t	io_v2_read_all(t_io_v2_stream *stream, void *buf, size_t nbytes);
 ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
