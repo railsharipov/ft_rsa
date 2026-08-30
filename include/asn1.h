@@ -66,24 +66,24 @@ void	asn1_tree_items_del(t_htbl *);
 
 t_node	*asn1_node_create(t_iasn *asn1_item);
 t_node	*asn1_node_create_from_schema(t_node *schema_json);
-char	*asn1_node_dumps(struct s_node *);
-size_t	asn1_node_dumpb(struct s_node *, char *, size_t);
+char	*asn1_node_dumps(t_node *asn1_node);
+size_t	asn1_node_dumpb(t_node *asn1_node, char *buf, size_t bufsize);
 void	asn1_node_clear(t_node *asn1_node);
 void	asn1_node_del(t_node *asn1_node);
 
 int		asn1_query(const char *s, t_node *asn1_node, t_node **ret_asn1_node);
 
 t_iasn	*asn1_item_create(void);
-void	asn1_item_clear(t_iasn *);
-void	asn1_item_del(t_iasn *);
-void	asn1_item_init(t_iasn *);
-t_iasn	*asn1_item_dup(t_iasn *);
-int		asn1_item_set_type(t_iasn *, char *type_key);
-char	*asn1_item_get_type_name(t_iasn *);
-char	*asn1_item_dumps(t_iasn *);
-char	*asn1_item_value_dumps(t_iasn *);
+void	asn1_item_clear(t_iasn *asn1_item);
+void	asn1_item_del(t_iasn *asn1_item);
+void	asn1_item_init(t_iasn *asn1_item);
+t_iasn	*asn1_item_dup(t_iasn *asn1_item);
+int		asn1_item_set_type(t_iasn *asn1_item, char *type_name);
+char	*asn1_item_get_type_name(t_iasn *asn1_item);
+char	*asn1_item_dumps(t_iasn *asn1_item);
+char	*asn1_item_value_dumps(t_iasn *asn1_item);
 
-char	*asn1_oid_get_name(const char *);
-char	*asn1_oid_get_oid(const char *);
+char	*asn1_oid_get_name(const char *oid);
+char	*asn1_oid_get_oid(const char *name);
 
 #endif
