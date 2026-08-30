@@ -3,7 +3,8 @@
 
 # include <stdint.h>
 # include <common.h>
-#include <libft.h>
+# include <libft.h>
+# include <io.h>
 
 typedef enum e_der_status {
 	DER_OK = 0,
@@ -14,16 +15,13 @@ typedef enum e_der_status {
 	DER_OUTPUT_FULL,
 } t_der_status;
 
-struct s_node;
-struct s_iodes;
-
 t_ostring	*der_init(void);
-void	der_del(t_ostring *);
-void	der_clear(t_ostring *);
+void		der_del(t_ostring *);
+void		der_clear(t_ostring *);
 
-int	der_encode(struct s_node *tree, t_ostring *encoded);
-int	der_encode_stream(struct s_node *tree, struct s_iodes *out);
-int der_decode(struct s_node **tree, t_ostring *encoded);
-int der_decode_stream(struct s_node **tree, struct s_iodes *in);
+int	der_encode(t_node *asn1_node, t_ostring *encoded);
+int	der_encode_stream(t_node *asn1_node, t_iodes *out);
+int der_decode(t_node **asn1_node, t_ostring *encoded);
+int der_decode_stream(t_node **asn1_node, t_io_v2_stream *in);
 
 #endif

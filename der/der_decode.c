@@ -8,10 +8,10 @@
 #include <libft.h>
 #include <unistd.h>
 
-static int		__decode(t_node **node, t_iodes *in);
-static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in);
-static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in);
-static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in);
+static int		__decode(t_node **node, t_io_v2_stream *in);
+static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_io_v2_stream *in);
+static ssize_t	__read_len(size_t *len, uint8_t *form, t_io_v2_stream *in);
+static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in);
 
 static int	__decode_construct(t_node **nodes, t_ostring *encoded);
 static int	__decode_ostring(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
@@ -24,22 +24,21 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
 typedef int	(*t_func_der_decode)(uint8_t tag, t_ostring *decoded, t_ostring *encoded);
 
-int	der_decode(t_node **tree, t_ostring *encoded)
+int	der_decode(t_node **asn1_node, t_ostring *encoded)
 {
-	t_iodes	iodes;
-
 	SSL_LOG(TRACE, "starting DER decode octet string");
 
-	if (NULL == tree || NULL == encoded) {
+	if (NULL == asn1_node || NULL == encoded) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
 
-	if (SSL_OK != io_osbuf(&iodes, IO_READ, encoded)) {
-		SSL_LOG(ERROR, "failed to init io");
+	t_io_v2_stream *in = NULL;
+	if (SSL_OK != io_v2_bytes_reader(&in, encoded)) {
+		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != der_decode_stream(tree, &iodes)) {
+	if (SSL_OK != der_decode_stream(asn1_node, in)) {
 		SSL_LOG(ERROR, "failed to decode octet string");
 		return (SSL_ERR);
 	}
@@ -48,42 +47,33 @@ int	der_decode(t_node **tree, t_ostring *encoded)
 	return (SSL_OK);
 }
 
-int	der_decode_stream(t_node **tree, t_iodes *in)
+int	der_decode_stream(t_node **asn1_node, t_io_v2_stream *in)
 {
-	t_node	*node;
-
 	SSL_LOG(TRACE, "starting DER decode stream");
 
-	if (NULL == tree || NULL == in) {
+	if (NULL == asn1_node || NULL == in) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
-
-	if (SSL_OK != __decode(&node, in)) {
+	if (SSL_OK != __decode(asn1_node, in)) {
 		SSL_LOG(TRACE, "DER decode failed");
 		return (SSL_ERR);
 	}
-
-	*tree = node;
 	SSL_LOG(TRACE, "DER decode stream completed successfully");
 
 	return (SSL_OK);
 }
 
-static int	__decode(t_node **node, t_iodes *in)
+static int	__decode(t_node **node, t_io_v2_stream *in)
 {
-	t_func_der_decode	f_decode;
-	t_ostring		encoded, decoded;
-	t_iasn			*asn1_item;
-	ssize_t			rbytes;
-	uint8_t			tag;
-	uint32_t		tagnum;
-	int				ret;
-
 	*node = NULL;
 
+	uint8_t	tag = 0;
+	uint32_t tagnum = 0;
+	ssize_t	rbytes = __read_tag(&tag, &tagnum, in);
+
 	// If no tag octets, then end of encoding.
-	if ((rbytes = __read_tag(&tag, &tagnum, in)) == 0) {
+	if (rbytes == 0) {
 		SSL_LOG(TRACE, "end of encoding reached");
 		return (SSL_OK);
 	}
@@ -91,12 +81,9 @@ static int	__decode(t_node **node, t_iodes *in)
 		SSL_LOG(ERROR, "read tag error");
 		return (SSL_ERR);
 	}
-
-	ft_ostr_init(&encoded);
-	ft_ostr_init(&decoded);
-
 	SSL_LOG(TRACE, "decoding tag number: %u, tag: %u", tagnum, tag);
 
+	t_func_der_decode f_decode = NULL;
 	switch (tagnum) {
 		case ASN_TAGNUM_SEQUENCE:
 			f_decode = __decode_sequence;
@@ -124,15 +111,17 @@ static int	__decode(t_node **node, t_iodes *in)
 			return (SSL_ERR);
 	}
 
+	t_ostring encoded;
+	ft_ostr_init(&encoded);
 	if (__read_content_octets(&encoded, in) < 0) {
 		SSL_LOG(ERROR, "read content octets error");
 		return (SSL_ERR);
 	}
-
 	SSL_LOG(TRACE, "content octets read, size: %zu", encoded.size);
 
-	ret = f_decode(tag, &decoded, &encoded);
-
+	t_ostring decoded;
+	ft_ostr_init(&decoded);
+	int ret = f_decode(tag, &decoded, &encoded);
 	ft_ostr_clear(&encoded);
 
 	if (SSL_OK != ret) {
@@ -140,7 +129,7 @@ static int	__decode(t_node **node, t_iodes *in)
 		return (SSL_ERR);
 	}
 
-	asn1_item = asn1_item_create();
+	t_iasn *asn1_item = asn1_item_create();
 	asn1_item->tag = tag;
 	asn1_item->tagnum = tagnum;
 	asn1_item->content = decoded.content;
@@ -152,25 +141,22 @@ static int	__decode(t_node **node, t_iodes *in)
 	return (SSL_OK);
 }
 
-static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in)
+static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_io_v2_stream *in)
 {
-	char		octet;
-	ssize_t		rbytes;
-	ssize_t		tbytes;
+	ssize_t	rbytes = 0;
+	ssize_t	tbytes = 0;
 
-	if (NULL == tag || NULL == tagnum || NULL == in) {
-		return (-1);
-	}
 	*tag = 0;
 	tbytes = 0;
 
-	if ((rbytes = io_read(in, (char *)tag, 1)) < 0) {
+	rbytes = io_v2_read(in, tag, 1);
+	if (rbytes < 0) {
+		if (in->status == IO_V2_STATUS_EOF) {
+			SSL_LOG(TRACE, "no tag bytes read");
+			return (0);
+		}
 		SSL_LOG(ERROR, "read tag error: bad read");
 		return (-1);
-	}
-	if (rbytes == 0) {
-		SSL_LOG(TRACE, "no tag bytes read");
-		return (0);
 	}
 	tbytes += rbytes;
 
@@ -180,10 +166,11 @@ static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in)
 	SSL_LOG(TRACE, "read tag number: %u, tag: %u", *tagnum, *tag);
 
     if (ASN_TAGNUM_COMPLEX == *tagnum) {
+    	uint8_t octet = 0;
         *tagnum = 0;
 
         do {
-            rbytes = io_read(in, (char *)&octet, 1);
+            rbytes = io_v2_read(in, &octet, 1);
             if (rbytes <= 0) {
                 SSL_LOG(ERROR, "read complex tag error: bad read");
                 return (-1);
@@ -196,42 +183,36 @@ static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_iodes *in)
 
         SSL_LOG(TRACE, "complex tag number: %u", *tagnum);
     }
-
 	return (tbytes);
 }
 
-static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in)
+static ssize_t	__read_len(size_t *len, uint8_t *form, t_io_v2_stream *in)
 {
-	uint8_t		octet;
-	ssize_t		rbytes;
-	ssize_t		tbytes;
-	size_t		lensize;
-
-	if (NULL == len || NULL == form || NULL == in) {
-		return (-1);
-	}
+	uint8_t	octet = 0;
+	ssize_t rbytes = 0;
+	ssize_t tbytes = 0;
 
 	*len = 0;
-	tbytes = 0;
 
-	if ((rbytes = io_read(in, (char *)&octet, 1)) < 0) {
+	if ((rbytes = io_v2_read(in, &octet, 1)) < 0) {
+		if (in->status == IO_V2_STATUS_EOF) {
+			SSL_LOG(TRACE, "no length bytes read");
+			return (0);
+		}
 		SSL_LOG(ERROR, "read length error: bad read");
 		return (-1);
-	}
-	if (rbytes == 0) {
-		SSL_LOG(TRACE, "no length bytes read");
-		return (0);
 	}
 	tbytes += rbytes;
 
 	if (octet & ASN_LEN_LONG) {
 		*form = ASN_LEN_LONG;
-		lensize = octet & 0x7F;
+		size_t lensize = octet & 0x7F;
 
 		SSL_LOG(TRACE, "reading long length form, size bytes: %zu", lensize);
 
 		while (lensize > 0) {
-			if ((rbytes = io_read(in, (char *)&octet, 1)) <= 0) {
+			rbytes = io_v2_read(in, &octet, 1);
+			if (rbytes <= 0) {
 				SSL_LOG(ERROR, "read long length form error: bad read");
 				return (-1);
 			}
@@ -247,21 +228,20 @@ static ssize_t	__read_len(size_t *len, uint8_t *form, t_iodes *in)
 		*len = (size_t)octet;
 		SSL_LOG(TRACE, "reading short length form: %zu", *len);
 	}
-
 	SSL_LOG(TRACE, "length read: %zu, form: %u", *len, *form);
 
 	return (tbytes);
 }
 
-static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
+static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in)
 {
-	ssize_t	rbytes, tbytes;
-	size_t	len;
-	uint8_t	lenform;
+	ssize_t	rbytes = 0;
+	ssize_t tbytes = 0;
+	size_t len = 0;
+	uint8_t lenform = 0;
 
-	tbytes = 0;
-
-	if ((rbytes = __read_len(&len, &lenform, in)) <= 0) {
+	rbytes = __read_len(&len, &lenform, in);
+	if (rbytes <= 0) {
 		SSL_LOG(ERROR, "read content octets error: bad read");
 		return (-1);
 	}
@@ -270,32 +250,29 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 	SSL_LOG(TRACE, "reading content octets, length: %zu", len);
 
     if (ASN_LEN_LONG == lenform && len == 0) {
-		t_iodes	out;
-		char	octet;
-		int		null_count;
-
 		SSL_LOG(TRACE, "reading indefinite length content");
 
-		if (SSL_OK != io_osbuf(&out, IO_WRITE|IO_OSBUF, osbuf)) {
+		t_io_v2_stream *out = NULL;
+		if (SSL_OK != io_v2_bytes_writer(&out, osbuf)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (-1);
 		}
-		null_count = 0;
+
+		uint8_t octet = 0;
+		int	null_count = 0;
 		rbytes = 0;
 		tbytes = 0;
-
         // Read until End-of-Contents (0x00 0x00), but avoid busy-waiting
         while (null_count < 2) {
-            rbytes = io_read(in, &octet, 1);
+            rbytes = io_v2_read(in, &octet, 1);
             if (rbytes <= 0) {
                 SSL_LOG(ERROR, "read indefinite length content error: bad read");
                 goto label_error;
             }
             tbytes += 1;
-
-            if (io_write(&out, &octet, 1) != 1) {
+            if (io_v2_write(out, &octet, 1) != 1) {
                 goto label_error;
             }
-
             if (octet == 0) {
                 null_count += 1;
             } else {
@@ -305,10 +282,15 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_iodes *in)
 		SSL_LOG(TRACE, "indefinite length content read, total bytes: %zd", tbytes);
 	}
 	else if (len > 0) {
-		char buf[len];
-		if ((rbytes = io_read(in, buf, sizeof(buf))) < 0) {
-			SSL_LOG(ERROR, "read definite length content error: bad read");
-			goto label_error;
+		uint8_t buf[len];
+		rbytes = io_v2_read(in, buf, sizeof(buf));
+		if (rbytes < 0) {
+			if (in->status == IO_V2_STATUS_EOF) {
+				rbytes = 0;
+			} else {
+				SSL_LOG(ERROR, "read definite length content error: bad read");
+				goto label_error;
+			}
 		}
 		ft_ostr_append(osbuf, buf, sizeof(buf));
 		tbytes += rbytes;
@@ -328,20 +310,19 @@ label_error:
 
 static int	__decode_construct(t_node **nodes, t_ostring *encoded)
 {
-	t_node		*child;
-	t_iodes		iodes;
+	SSL_LOG(TRACE, "decoding constructed type, size: %zu", encoded->size);
 
 	*nodes = NULL;
 
-	SSL_LOG(TRACE, "decoding constructed type, size: %zu", encoded->size);
-
-	if (SSL_OK != io_osbuf(&iodes, IO_READ|IO_OSBUF, encoded)) {
-		SSL_LOG(ERROR, "failed to create input buffer for constructed type");
+	t_io_v2_stream *in = NULL;
+	if (SSL_OK != io_v2_bytes_reader(&in, encoded)) {
+		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
 
+	t_node *child = NULL;
 	do {
-		if (SSL_OK != __decode(&child, &iodes)) {
+		if (SSL_OK != __decode(&child, in)) {
 			SSL_LOG(ERROR, "failed to decode child node in constructed type");
 			return (SSL_ERR);
 		}
@@ -385,10 +366,9 @@ static int	__decode_bitstring(uint8_t tag, t_ostring *decoded, t_ostring *encode
 	}
 
 	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
-		t_node	*nodes;
-
 		SSL_LOG(TRACE, "decoding constructed bit string");
 
+		t_node *nodes = NULL;
 		if (SSL_OK != __decode_construct(&nodes, encoded)) {
 			SSL_LOG(ERROR, "invalid der encoding: bitstring: bad construct");
 			return (SSL_ERR);
@@ -427,8 +407,6 @@ static int	__decode_bool(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 static int	__decode_sequence(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
-	t_node	*nodes;
-
 	SSL_LOG(TRACE, "decoding sequence, size: %zu", encoded->size);
 
 	if (!SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
@@ -436,12 +414,13 @@ static int	__decode_sequence(uint8_t tag, t_ostring *decoded, t_ostring *encoded
 		return (SSL_ERR);
 	}
 
+	t_node *nodes = NULL;
 	if (SSL_OK != __decode_construct(&nodes, encoded)) {
 		SSL_LOG(ERROR, "sequence construct decode failed");
 		return (SSL_ERR);
 	}
 
-	decoded->content = (unsigned char *)nodes;
+	decoded->content = (uint8_t *)nodes;
 	decoded->size = ft_lst_size(nodes);
 
 	SSL_LOG(TRACE, "sequence decoded successfully, child nodes: %zu", decoded->size);
@@ -465,8 +444,6 @@ static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
-	t_num	*num;
-
 	SSL_LOG(TRACE, "decoding integer, size: %zu", encoded->size);
 
 	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
@@ -474,9 +451,9 @@ static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	num = bnum_create();
+	t_num *num = bnum_create();
 	bnum_from_bytes_u(num, (char *)encoded->content, encoded->size);
-	decoded->content = (unsigned char *)num;
+	decoded->content = (uint8_t *)num;
 	decoded->size = 0;
 
 	SSL_LOG(TRACE, "integer decoded successfully");
@@ -485,11 +462,6 @@ static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
-	char		*obj_name, *obj_id;
-	uint32_t	sub_ids[encoded->size + 1];
-	char		*sub_id_strings[encoded->size + 1];
-	int			num_sub_ids;
-
 	SSL_LOG(TRACE, "decoding object identifier, size: %zu", encoded->size);
 
 	if (encoded->size == 0) {
@@ -502,7 +474,8 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	num_sub_ids = 0;
+	uint32_t sub_ids[encoded->size + 1];
+	int num_sub_ids = 0;
 
 	for (int i = 0; i < (int)encoded->size; ) {
 		sub_ids[num_sub_ids] = 0;
@@ -536,6 +509,7 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 
 	//	First two ids are concatenated into one single id using following formula:
 	//	CONCAT_ID = 40 * ID_0 + ID_1
+	char *sub_id_strings[encoded->size + 1];
 	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
 	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
 
@@ -548,17 +522,9 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
  	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
 
 	// Join all sub-id strings into an object id string
-	obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
+	char *obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
 
 	SSL_LOG(TRACE, "object identifier: %s", obj_id);
-
-	obj_name = asn1_oid_tree_get_name(obj_id);
-	if (NULL == obj_name) {
-		SSL_LOG(WARN, "unknown asn object id: %s", obj_id);
-	} else {
-		SSL_LOG(TRACE, "object identifier matches: %s", obj_name);
-	}
-	SSL_FREE(obj_name);
 
 	decoded->content = (unsigned char *)obj_id;
 	decoded->size = ft_strlen(obj_id);
