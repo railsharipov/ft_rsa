@@ -130,7 +130,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 	}
 
 	// Dump ASN1 to output
-	char *asn1_s = asn1_tree_dumps(asn1_node);
+	char *asn1_s = asn1_node_dumps(asn1_node);
 	if (io_v2_write_all(out, asn1_s, ft_strlen(asn1_s)) < 0) {
 		SSL_LOG(ERROR, "i/o error");
 		return (SSL_ERR);

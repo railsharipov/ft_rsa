@@ -250,7 +250,7 @@ label_error:
 
 static int 	__f_asn1_node_dumper(t_node *node, t_ostring *ostring);
 
-char	*asn1_tree_dumps(t_node *asn1_tree)
+char	*asn1_node_dumps(t_node *asn1_tree)
 {
 	if (NULL == asn1_tree) {
 		return (NULL);
@@ -258,7 +258,7 @@ char	*asn1_tree_dumps(t_node *asn1_tree)
 	return (json_dumps_with_f_dumper(asn1_tree, __f_asn1_node_dumper));
 }
 
-size_t	asn1_tree_dumpb(t_node *asn1_tree, char *buf, size_t size)
+size_t	asn1_node_dumpb(t_node *asn1_tree, char *buf, size_t size)
 {
 	return (json_dumpb_with_f_dumper(asn1_tree, buf, size, __f_asn1_node_dumper));
 }

@@ -473,7 +473,7 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	obj_id_string = ft_ostr_to_cstr(data, 0, data->size);
 	SSL_LOG(TRACE, "object identifier: %s", obj_id_string);
 
-	obj_name = asn1_oid_tree_get_name(obj_id_string);
+	obj_name = asn1_oid_get_name(obj_id_string);
 	if (NULL == obj_name) {
 		SSL_LOG(WARN, "invalid or unknown asn object id: %s", obj_id_string);
 	} else {
