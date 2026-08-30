@@ -2,7 +2,8 @@
 # define SSL_JSON_H
 
 # include <common.h>
-#include <libft.h>
+# include <libft.h>
+# include <io.h>
 
 enum	e_json_type {
     JSON_TYPE_BYTES = 1,
@@ -40,6 +41,7 @@ typedef int (*t_func_json_dump)(t_node *node, t_ostring *ostring);
 
 int     json_parse(const char *s, t_node **node);
 int		json_parse_file(const char *filename, t_node **node);
+int		json_parse_stream(t_io_v2_stream *stream, t_node **node);
 int     json_query(const char *s, t_node *json, t_node **ret_node);
 int     json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector);
 int     json_validate(t_node *node);

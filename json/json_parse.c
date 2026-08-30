@@ -528,3 +528,39 @@ int	json_parse_file(const char *filename, t_node **node)
 	}
 	return (SSL_OK);
 }
+
+int	json_parse_stream(t_io_v2_stream *stream, t_node **node)
+{
+	// TODO: Refactor JSON parsing to support stream inputs.
+	// Read all data from stream into the memory before parsing JSON.
+	t_ostring file_content;
+	ft_ostr_init_with_capacity(&file_content, IO_BUFSIZE);
+	char buf[IO_BUFSIZE] = {0};
+
+	ssize_t rbytes = 0;
+	while (1) {
+		rbytes = io_v2_read(stream, buf, sizeof(buf));
+		if (rbytes < 0) {
+			break;
+		}
+		ft_ostr_append(&file_content, buf, rbytes);
+	}
+	if (stream->status != IO_V2_STATUS_EOF) {
+		SSL_LOG(ERROR, IO_READ_ERROR);
+		return (SSL_ERR);
+	}
+	char *json_s = ft_ostr_to_cstr(&file_content, 0, file_content.size);
+	ft_ostr_clear(&file_content);
+	if (NULL == json_s) {
+		SSL_LOG(ERROR, "memory error");
+		return (SSL_ERR);
+	}
+	int ret = json_parse(json_s, node);
+	LIBFT_FREE(json_s);
+
+	if (SSL_OK != ret) {
+		SSL_LOG(ERROR, "json stream parse error");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
