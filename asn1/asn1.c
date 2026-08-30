@@ -7,8 +7,46 @@
 #include <libft.h>
 #include <bnum.h>
 
-// temporary
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// ASN1 is built on top of JSON.
+// ASN1 values can be queried using JSON query syntax.
+//
+// ASN1 nodes are JSON nodes of custom JSON_TYPE_BYTES type:
+//
+// 		ASN1 node == JSON node { type=JSON_TYPE_BYTES, ..., content -> { ASN1 value -> { metadata, data pointer } } }
+//
+// 1. For primitive ASN1 types the content pointer points to raw bytes.
+// 2. For complex ASN1 types the content pointer points to child ASN1 node(s).
+//
+// 		Example: primitive ASN1 integer:
+//
+// 			ASN1 node -> { ASN1 value { tag=0x2, tagnum=0x80, description="modulus", content -> <integer bytes>, size=4; } }
+//
+// 				<integer bytes> -> (4 bytes) 0000 6160 0000 0c80
+//
+// 		Example: primitive ASN1 octet string:
+//
+// 			ASN1 node -> { ASN1 value { tag=0x4, tagnum=0x80, description="crypt", content -> <integer bytes>, size=8; } }
+//
+// 				<octet string bytes> -> (8 bytes) 6153 746c 6465 5f5f 9485 ac82 aec9 ef8a
+//
+// 		Example: complex ASN1 sequence:
+//
+// 			ASN1 node -> { ASN1 value { tag=0x2, tagnum=0x0, description="private key", content -> <list of ASN1 nodes>, size=<pointer size>; } }
+//
+// 				<list of ASN1 nodes> ->	[
+//		 									ASN1 node 1 { ASN1 value { ... } },
+//		 									ASN1 node 2 { ASN1 value { ... } },
+//		 									...
+//		 								]
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+
+/////// DEPRECATED /////////////////////////////////////////////////
 t_node	*asn1_tree(const char *map) {
 	return (NULL);
 }
@@ -32,8 +70,8 @@ void	asn1_tree_items_del(t_htbl *items)
 {
 	return ;
 }
+///////////////////////////////////////////////////////////////////
 
-//
 t_node	*asn1_node_create(t_iasn *asn1_item)
 {
 	t_node *asn1_node = ft_node_create();
@@ -68,11 +106,10 @@ void	asn1_node_del(t_node *asn1_node)
 	ft_node_del(asn1_node);
 }
 
-t_node	*asn1_tree_create(t_node *json_schema)
+t_node	*asn1_node_create_from_schema(t_node *json_schema)
 {
 	t_htbl		*htbl;
 	t_node		*type, *desc, *value;
-	t_node		*asn1_node, *child_asn1_node;
 	t_iasn		*asn1_item;
 
 	SSL_LOG(TRACE, "creating asn tree from json schema");
@@ -137,20 +174,20 @@ t_node	*asn1_tree_create(t_node *json_schema)
 
 			for (t_node *child = value->content; child != NULL; child = child->next) {
 				SSL_LOG(TRACE, "creating asn node from json array item: %p", child);
-				child_asn1_node = asn1_tree_create(child);
+				t_node *asn1_node = asn1_node_create_from_schema(child);
 
-				if (NULL == child_asn1_node) {
+				if (NULL == asn1_node) {
 					SSL_LOG(ERROR, "failed to create asn node for asn sequence");
 					goto label_error;
 				}
-				ft_lst_append((t_node **)&asn1_item->content, child_asn1_node);
+				ft_lst_append((t_node **)&asn1_item->content, asn1_node);
 			}
 		} else if (value->type == JSON_TYPE_OBJECT) {
 			SSL_LOG(TRACE, "value type is json object, processing object node");
 			SSL_LOG(TRACE, "creating asn node from json object: %p", value);
 
-			child_asn1_node = asn1_tree_create(value);
-			asn1_item->content = child_asn1_node;
+			t_node *asn1_node = asn1_node_create_from_schema(value);
+			asn1_item->content = asn1_node;
 			asn1_item->size = 0;
 
 		} else {
@@ -204,11 +241,7 @@ t_node	*asn1_tree_create(t_node *json_schema)
 			}
 		}
 	}
-
-	asn1_node = asn1_node_create(asn1_item);
-	SSL_LOG(TRACE, "successfully created asn node: %p", asn1_node);
-
-	return (asn1_node);
+	return (asn1_node_create(asn1_item));
 
 label_error:
 	asn1_item_del(asn1_item);
@@ -233,17 +266,88 @@ size_t	asn1_tree_dumpb(t_node *asn1_tree, char *buf, size_t size)
 static int	__f_asn1_node_dumper(t_node *node, t_ostring *ostring)
 {
 	t_iasn *asn1_item = node->content;
+	if (NULL == asn1_item) {
+		ft_ostr_append_cstr(ostring, "null");
+		return (SSL_OK);
+	}
 
 	switch (node->type) {
 	case JSON_TYPE_BYTES:
-		if (asn1_item) {
-			char *item_dumps = asn1_item_dumps(asn1_item);
-			ft_ostr_append_cstr(ostring, item_dumps);
-			SSL_FREE(item_dumps);
-		} else {
-			ft_ostr_append_cstr(ostring, "null");
+		;;
+		t_ostring value_ostring;
+		ft_ostr_init_with_capacity(&value_ostring, 128);
+		switch (asn1_item->tagnum) {
+		case ASN_TAGNUM_SEQUENCE:
+			ft_ostr_appendf(&value_ostring, "[");
+			int	commas = 0;
+			for (t_node *cur_node = asn1_item->content; cur_node; cur_node = cur_node->next) {
+				if (commas++) {
+					ft_ostr_append(&value_ostring, ",", 1);
+				}
+				t_ostring item_ostring;
+				ft_ostr_init_with_capacity(&item_ostring, 128);
+				if (SSL_OK != __f_asn1_node_dumper(cur_node, &item_ostring)) {
+					ft_ostr_clear(&value_ostring);
+					return (SSL_ERR);
+				}
+				char *node_dumps = ft_ostr_to_cstr(&item_ostring, 0, item_ostring.size);
+				ft_ostr_clear(&item_ostring);
+				ft_ostr_appendf(&value_ostring, "%s", node_dumps);
+			}
+			ft_ostr_append(&value_ostring, "]", 1);
+			break;
+		case ASN_TAGNUM_OCTET_STRING:
+		case ASN_TAGNUM_BIT_STRING:
+			if (asn1_item->content) {
+				ft_ostr_appendf(&value_ostring, "\"<ptr=%p,size=%zu>\"", asn1_item->content, asn1_item->size);
+			} else {
+				ft_ostr_append_cstr(&value_ostring, "null");
+			}
+			break;
+		case ASN_TAGNUM_OBJECT_ID:
+		case ASN_TAGNUM_OBJECT_DESCR:
+			if (asn1_item->content) {
+				ft_ostr_append_cstr(&value_ostring, "\"");
+				ft_ostr_append(&value_ostring, asn1_item->content, asn1_item->size);
+				ft_ostr_append_cstr(&value_ostring, "\"");
+			} else {
+				ft_ostr_append_cstr(&value_ostring, "null");
+			}
+			break;
+		case ASN_TAGNUM_INT:
+			if (asn1_item->content) {
+				char *hex = bnum_to_hex_u((const t_num *)(asn1_item->content));
+				ft_ostr_appendf(&value_ostring, "\"%s\"", hex);
+				SSL_FREE(hex);
+			} else {
+				ft_ostr_append_cstr(&value_ostring, "null");
+			}
+			break;
+		case ASN_TAGNUM_NULL:
+			ft_ostr_append_cstr(&value_ostring, "null");
+			break;
+		case ASN_TAGNUM_BOOLEAN:
+			;;
+			const char *bools = (*(uint8_t *)(asn1_item->content) == 1u) ? ft_strdup("true") : ft_strdup("false");
+			ft_ostr_append_cstr(&value_ostring, bools);
+			break;
+		default:
+			ft_ostr_append_cstr(&value_ostring, "\"unknown\"");
+			break;
 		}
+
+		char *values = ft_ostr_to_cstr(&value_ostring, 0, value_ostring.size);
+		ft_ostr_clear(&value_ostring);
+		if (asn1_item->description) {
+			ft_ostr_appendf(ostring, "{\"description\":\"%s\",\"type\":\"%s\",\"tag\":\"%#x\",\"value\":%s}",
+				asn1_item->description, asn1_item_get_type_name(asn1_item), asn1_item->tag, values);
+		} else {
+			ft_ostr_appendf(ostring, "{\"description\":null,\"type\":\"%s\",\"tag\":\"%#x\",\"value\":%s}",
+				asn1_item_get_type_name(asn1_item), asn1_item->tag, values);
+		}
+		SSL_FREE(values);
 		return (SSL_OK);
+
 	default:
 		SSL_LOG(ERROR, "unknown asn1 node type: %#x", node->type);
 		return (SSL_ERR);
@@ -264,7 +368,6 @@ void	asn1_item_init(t_iasn *item)
 	if (NULL == item) {
 		return ;
 	}
-
 	ft_bzero(item, sizeof(t_iasn));
 }
 
@@ -273,7 +376,6 @@ void asn1_item_clear(t_iasn *item)
 	if (NULL == item) {
 		return;
 	}
-
 	SSL_FREE(item->content);
 	SSL_FREE(item->description);
 	ft_bzero(item, sizeof(t_iasn));
@@ -284,7 +386,6 @@ void asn1_item_del(t_iasn *item)
 	if (NULL == item) {
 		return;
 	}
-
 	SSL_FREE(item->content);
 	SSL_FREE(item->description);
 	SSL_FREE(item);
@@ -292,15 +393,11 @@ void asn1_item_del(t_iasn *item)
 
 t_iasn *asn1_item_dup(t_iasn *item)
 {
-	t_iasn *dup_item;
-
 	if (NULL == item) {
 		return (NULL);
 	}
-
-	dup_item = asn1_item_create();
+	t_iasn *dup_item = asn1_item_create();
 	ft_memcpy(dup_item, item, sizeof(t_iasn));
-
 	dup_item->content = ft_memdup(item->content, item->size);
 
 	return (dup_item);
@@ -372,80 +469,4 @@ char	*asn1_item_get_type_name(t_iasn *item)
 		default:
 			return ASN_TYPE_NAME_UNKNOWN;
 	}
-}
-
-char	*asn1_item_dumps(t_iasn *item)
-{
-	if (NULL == item) {
-		return (NULL);
-	}
-	t_ostring ostring;
-	ft_ostr_init_with_capacity(&ostring, 128);
-
-	switch (item->tagnum) {
-	case ASN_TAGNUM_SEQUENCE:
-		ft_ostr_appendf(&ostring, "[");
-		int	commas = 0;
-		for (t_node *cur_node = item->content; cur_node; cur_node = cur_node->next) {
-			if (commas++) {
-				ft_ostr_append(&ostring, ",", 1);
-			}
-			t_ostring item_ostring;
-			ft_ostr_init_with_capacity(&item_ostring, 128);
-			if (SSL_OK != __f_asn1_node_dumper(cur_node, &item_ostring)) {
-				ft_ostr_clear(&ostring);
-				return (NULL);
-			}
-			char *node_dumps = ft_ostr_to_cstr(&item_ostring, 0, item_ostring.size);
-			ft_ostr_clear(&item_ostring);
-			ft_ostr_appendf(&ostring, "%s", node_dumps);
-		}
-		ft_ostr_append(&ostring, "]", 1);
-		break;
-	case ASN_TAGNUM_OCTET_STRING:
-	case ASN_TAGNUM_BIT_STRING:
-		if (item->content) {
-			ft_ostr_appendf(&ostring, "\"<ptr=%p,size=%zu>\"", item->content, item->size);
-		} else {
-			ft_ostr_append_cstr(&ostring, "null");
-		}
-		break;
-	case ASN_TAGNUM_OBJECT_ID:
-	case ASN_TAGNUM_OBJECT_DESCR:
-		if (item->content) {
-			ft_ostr_append_cstr(&ostring, "\"");
-			ft_ostr_append(&ostring, item->content, item->size);
-			ft_ostr_append_cstr(&ostring, "\"");
-		} else {
-			ft_ostr_append_cstr(&ostring, "null");
-		}
-		break;
-	case ASN_TAGNUM_INT:
-		if (item->content) {
-			char *hex = bnum_to_hex_u((const t_num *)(item->content));
-			ft_ostr_appendf(&ostring, "\"%s\"", hex);
-			SSL_FREE(hex);
-		} else {
-			ft_ostr_append_cstr(&ostring, "null");
-		}
-		break;
-	case ASN_TAGNUM_NULL:
-		ft_ostr_append_cstr(&ostring, "null");
-		break;
-	case ASN_TAGNUM_BOOLEAN:
-		;;
-		const char *bools = (*(uint8_t *)(item->content) == 1u) ? ft_strdup("true") : ft_strdup("false");
-		ft_ostr_append_cstr(&ostring, bools);
-		break;
-	default:
-		ft_ostr_append_cstr(&ostring, "\"unknown\"");
-	}
-
-	char *dumps = NULL;
-	char *values = ft_ostr_to_cstr(&ostring, 0, ostring.size);
-	ft_ostr_clear(&ostring);
-	ft_sprintf(&dumps, "{\"description\":\"%s\",\"type\":\"%s\",\"tag\":\"%#x\",\"value\":%s}", item->description, asn1_item_get_type_name(item), item->tag, values);
-	SSL_FREE(values);
-
-	return (dumps);
 }
