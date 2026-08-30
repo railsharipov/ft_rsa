@@ -20,7 +20,7 @@ void		der_del(t_ostring *);
 void		der_clear(t_ostring *);
 
 int	der_encode(t_node *asn1_node, t_ostring *encoded);
-int	der_encode_stream(t_node *asn1_node, t_iodes *out);
+int	der_encode_stream(t_node *asn1_node, t_io_v2_stream *out);
 int der_decode(t_node **asn1_node, t_ostring *encoded);
 int der_decode_stream(t_node **asn1_node, t_io_v2_stream *in);
 
