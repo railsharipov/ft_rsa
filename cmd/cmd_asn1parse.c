@@ -41,7 +41,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 	__t_asn1_form outform = __ASN1_FORM_PEM;
 	if (ft_htbl_has(cmd->opts, "--outform")) {
 		// Parse ASN1 schema from JSON file
-		const char *outforms = ft_htbl_get(cmd->opts, "--inform");
+		const char *outforms = ft_htbl_get(cmd->opts, "--outform");
 		if (ft_streq(outforms, "PEM")) {
 			outform = __ASN1_FORM_PEM;
 		} else if (ft_streq(outforms, "DER")) {
@@ -49,7 +49,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		} else if (ft_streq(outforms, "JSON")) {
 			outform = __ASN1_FORM_JSON;
 		} else {
-			SSL_LOG(ERROR, "invalid asn1 input format: %s", outforms);
+			SSL_LOG(ERROR, "invalid asn1 output format: %s", outforms);
 			return (SSL_ERR);
 		}
 	}
@@ -78,7 +78,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		out = io_v2_stdout_writer;
 	}
 
-	// Parse ASN1 from input
+	// Parse ASN1
 	t_node *asn1_node = NULL;
 	char *pem_label = NULL;
 	switch (inform) {
@@ -89,7 +89,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		t_ostring enc;
 		ft_ostr_init_with_capacity(&enc, 128);
 		// Decode PEM and get DER encoding
-		if (SSL_OK != pem_decode_stream(&pem_ctx, in, &enc, NULL)) {
+		if (SSL_OK != pem_decode_from_stream(&pem_ctx, in, &enc, NULL)) {
 			SSL_LOG(ERROR, "der decode error");
 			return (SSL_ERR);
 		}
@@ -129,14 +129,51 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		return (SSL_ERR);
 	}
 
-	// Dump ASN1 to output
-	char *asn1_s = asn1_node_dumps(asn1_node);
-	if (io_v2_write_all(out, asn1_s, ft_strlen(asn1_s)) < 0) {
-		SSL_LOG(ERROR, "i/o error");
-		return (SSL_ERR);
-	}
-	if (io_v2_write_all(io_v2_stdout_writer, "\n", 1) < 0) {
-		SSL_LOG(ERROR, "i/o error");
+	// Dump ASN1
+	switch (outform) {
+	case __ASN1_FORM_PEM:
+		;;
+		// Encode ASN1 to DER encoding
+		t_ostring enc;
+		ft_ostr_init_with_capacity(&enc, 128);
+		if (SSL_OK != der_encode(asn1_node, &enc)) {
+			SSL_LOG(ERROR, "der encode error");
+			return (SSL_ERR);
+		}
+		// TODO: handle encrypted PEM input
+		t_pem pem_ctx = {0};
+		pem_ctx.label = pem_label;
+		// Encode DER to PEM encoding
+		if (SSL_OK != pem_encode_to_stream(&pem_ctx, &enc, out, NULL)) {
+			SSL_LOG(ERROR, "der decode error");
+			return (SSL_ERR);
+		}
+		break;
+
+	case __ASN1_FORM_DER:
+		;;
+		if (SSL_OK != der_encode_stream(asn1_node, out)) {
+			SSL_LOG(ERROR, "der encode error");
+			return (SSL_ERR);
+		}
+		break;
+
+	case __ASN1_FORM_JSON:
+		;;
+		char *asn1_s = asn1_node_dumps(asn1_node);
+		if (io_v2_write_all(out, asn1_s, ft_strlen(asn1_s)) < 0) {
+			SSL_LOG(ERROR, "i/o error");
+			return (SSL_ERR);
+		}
+		if (io_v2_write_all(out, "\n", 1) < 0) {
+			SSL_LOG(ERROR, "i/o error");
+			return (SSL_ERR);
+		}
+		break;
+
+	default:
+		;;
+		SSL_LOG(ERROR, UNEXPECTED_ERROR);
 		return (SSL_ERR);
 	}
 

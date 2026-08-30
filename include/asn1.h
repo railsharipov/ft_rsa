@@ -47,14 +47,13 @@
 # define ASN_TYPE_NAME_BOOL			"bool"
 # define ASN_TYPE_NAME_UNKNOWN		"unknown"
 
-typedef struct		s_iasn
-{
-	uint8_t			tag;
-	uint32_t		tagnum;
-	char			*description;
-	void			*content;
-	size_t			size;
-}					t_iasn;
+typedef struct s_iasn {
+	uint8_t		tag;
+	uint32_t	tagnum;
+	char		*description;
+	void		*content;
+	size_t		size;
+} t_iasn;
 
 // DEPRECATED ////////////////////////////////////////////
 t_node	*asn1_tree(const char *);
