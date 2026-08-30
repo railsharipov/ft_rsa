@@ -58,7 +58,7 @@ typedef struct		s_iasn
 
 struct s_node	*asn1_tree(const char *);
 t_node			*asn1_node_create_from_schema(t_node *schema_json);
-int				asn1_tree_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node);
+int				asn1_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node);
 char			*asn1_tree_dumps(struct s_node *);
 size_t			asn1_tree_dumpb(struct s_node *, char *, size_t);
 void			asn1_tree_del(struct s_node *);

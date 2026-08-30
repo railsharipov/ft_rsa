@@ -96,7 +96,7 @@ static int	__test_asn1_tree_create_subjectPublicKeyInfo(void)
 
 	// subjectPublicKeyInfo -> [ algorithm, subjectPublicKey ]
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -106,7 +106,7 @@ static int	__test_asn1_tree_create_subjectPublicKeyInfo(void)
 
 	// algorithm -> [ rsaEncryption, parameters ]
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0][0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0][0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -116,7 +116,7 @@ static int	__test_asn1_tree_create_subjectPublicKeyInfo(void)
 
 	// algorithm -> parameters
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0][1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0][1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -125,7 +125,7 @@ static int	__test_asn1_tree_create_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "parameters"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -147,7 +147,7 @@ static int	__test_asn1_tree_create_subjectPublicKeyInfo(void)
 
 	// rsaPublicKey -> [ modulus, publicExponent ]
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -156,7 +156,7 @@ static int	__test_asn1_tree_create_subjectPublicKeyInfo(void)
 	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -187,7 +187,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(asn1_node != NULL);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query(".", asn1_node, &result_asn1_node);
+	ret = asn1_query(".", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -197,7 +197,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "subjectPublicKeyInfo"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -207,7 +207,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "algorithm"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0][0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0][0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -217,7 +217,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "rsaEncryption"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0][1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0][1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -226,7 +226,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(asn1_item->tagnum = ASN_TAGNUM_NULL);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -243,7 +243,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(asn1_node != NULL);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query(".", asn1_node, &result_asn1_node);
+	ret = asn1_query(".", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -253,7 +253,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "rsaPublicKey"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -263,7 +263,7 @@ static int __test_asn1_tree_query_subjectPublicKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "modulus"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -297,7 +297,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 
 	// privateKeyInfo -> [ version, algorithm, privateKey ]
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -306,7 +306,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -316,7 +316,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 
 	// algorithm -> [ rsaEncryption, parameters ]
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1][0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1][0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -326,7 +326,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 
 	// algorithm -> parameters
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1][1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1][1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -335,7 +335,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 	TEST_ASSERT(ft_streq(asn1_item->description, "parameters"));
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[2]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[2]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	asn1_item = result_asn1_node->content;
@@ -361,7 +361,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 		char *query;
 		ft_sprintf(&query, "[%d]", i);
 		result_asn1_node = NULL;
-		ret = asn1_tree_query(query, asn1_node, &result_asn1_node);
+		ret = asn1_query(query, asn1_node, &result_asn1_node);
 		TEST_ASSERT(ret == SSL_OK);
 		TEST_ASSERT(result_asn1_node != NULL);
 		asn1_item = result_asn1_node->content;
@@ -391,7 +391,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn1_node != NULL);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query(".", asn1_node, &result_asn1_node);
+	ret = asn1_query(".", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -402,7 +402,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 
 	// privateKeyInfo -> version
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -413,7 +413,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 
 	// privateKeyInfo -> algorithm
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -424,7 +424,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 
 	// algorithm -> rsaEncryption
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1][0]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1][0]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -435,7 +435,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 
 	// algorithm -> parameters
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[1][1]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[1][1]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -447,7 +447,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 	// privateKeyInfo -> privateKey
 	// decode encapsulated privateKey sequence
 	result_asn1_node = NULL;
-	ret = asn1_tree_query("[2]", asn1_node, &result_asn1_node);
+	ret = asn1_query("[2]", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -465,7 +465,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 	TEST_ASSERT(asn1_node != NULL);
 
 	result_asn1_node = NULL;
-	ret = asn1_tree_query(".", asn1_node, &result_asn1_node);
+	ret = asn1_query(".", asn1_node, &result_asn1_node);
 	TEST_ASSERT(ret == SSL_OK);
 	TEST_ASSERT(result_asn1_node != NULL);
 	TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);
@@ -480,7 +480,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 		char *query;
 		ft_sprintf(&query, "[%d]", i);
 		result_asn1_node = NULL;
-		ret = asn1_tree_query(query, asn1_node, &result_asn1_node);
+		ret = asn1_query(query, asn1_node, &result_asn1_node);
 		TEST_ASSERT(ret == SSL_OK);
 		TEST_ASSERT(result_asn1_node != NULL);
 		TEST_ASSERT(result_asn1_node->type == JSON_TYPE_BYTES);

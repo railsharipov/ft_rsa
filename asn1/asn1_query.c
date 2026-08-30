@@ -9,7 +9,7 @@
 
 static int 	__f_asn1_node_selector(t_node *node, t_node *query, t_node **ret_asn1_node);
 
-int asn1_tree_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node)
+int asn1_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node)
 {
 	if (NULL == s) {
 		SSL_LOG(ERROR, __ASNQ_BAD_QUERY_ERROR);
