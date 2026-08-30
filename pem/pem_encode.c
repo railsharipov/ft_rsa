@@ -25,7 +25,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 	char		buf[1024], *salthex;
 	uint8_t		key[8], iv[8], salt[8];
 	int			ret;
-	t_des_ctx		des;
+	t_des_ctx	des;
 
 	SSL_LOG(TRACE, "encoding pem: content: %p, size: %d", data->content, data->size);
 
@@ -143,4 +143,35 @@ label_exit:
 	ft_ostr_clear(&b64flat);
 	ft_ostr_clear(&b64formatted);
 	return (ret);
+}
+
+
+int pem_encode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *enc, const char *pass)
+{
+	// TODO: Refactor PEM encode to support stream inputs.
+	// Read all data from stream into the memory before encoding PEM.
+	t_ostring data;
+	ft_ostr_init_with_capacity(&data, IO_BUFSIZE);
+	char buf[IO_BUFSIZE] = {0};
+
+	ssize_t rbytes = 0;
+	while (1) {
+		rbytes = io_v2_read(stream, buf, sizeof(buf));
+		if (rbytes < 0) {
+			break;
+		}
+		ft_ostr_append(&data, buf, rbytes);
+	}
+	if (stream->status != IO_V2_STATUS_EOF) {
+		SSL_LOG(ERROR, IO_READ_ERROR);
+		return (SSL_ERR);
+	}
+	int ret = pem_encode(pem, &data, enc, pass);
+	ft_ostr_clear(&data);
+
+	if (SSL_OK != ret) {
+		SSL_LOG(ERROR, "pem stream encode error");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
 }
