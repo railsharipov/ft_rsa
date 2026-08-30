@@ -3291,6 +3291,19 @@ void 	ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity)
 	ostring->capacity = capacity;
 }
 
+void	ft_ostr_init_with_content(t_ostring *ostring, void *content, size_t size)
+{
+	if (NULL == ostring) {
+		return;
+	}
+	ft_ostr_init(ostring);
+	if (content) {
+		ostring->content = content;
+		ostring->size = size;
+		ostring->capacity = size;
+	}
+}
+
 void	ft_ostr_del(t_ostring *ostring)
 {
 	if (NULL == ostring) {
