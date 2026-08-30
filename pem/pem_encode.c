@@ -145,33 +145,24 @@ label_exit:
 	return (ret);
 }
 
-
-int pem_encode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *enc, const char *pass)
+int pem_encode_to_stream(t_pem *pem, t_ostring *data, t_io_v2_stream *out, const char *pass)
 {
-	// TODO: Refactor PEM encode to support stream inputs.
-	// Read all data from stream into the memory before encoding PEM.
-	t_ostring data;
-	ft_ostr_init_with_capacity(&data, IO_BUFSIZE);
-	char buf[IO_BUFSIZE] = {0};
+	// TODO: Refactor PEM encode to support stream i/o.
+	t_ostring enc;
+	ft_ostr_init_with_capacity(&enc, IO_BUFSIZE);
 
-	ssize_t rbytes = 0;
-	while (1) {
-		rbytes = io_v2_read(stream, buf, sizeof(buf));
-		if (rbytes < 0) {
-			break;
-		}
-		ft_ostr_append(&data, buf, rbytes);
-	}
-	if (stream->status != IO_V2_STATUS_EOF) {
-		SSL_LOG(ERROR, IO_READ_ERROR);
-		return (SSL_ERR);
-	}
-	int ret = pem_encode(pem, &data, enc, pass);
-	ft_ostr_clear(&data);
-
+	int ret = pem_encode(pem, data, &enc, pass);
 	if (SSL_OK != ret) {
 		SSL_LOG(ERROR, "pem stream encode error");
 		return (SSL_ERR);
 	}
+
+	ssize_t wbytes = io_v2_write_all(out, enc.content, enc.size);
+	if (wbytes < 0) {
+		SSL_LOG(ERROR, IO_WRITE_ERROR);
+		return (SSL_ERR);
+	}
+	ft_ostr_clear(&enc);
+
 	return (SSL_OK);
 }

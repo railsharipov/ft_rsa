@@ -29,7 +29,8 @@ void    pem_init(t_pem *pem);
 void    pem_del(t_pem *pem);
 void    pem_clear(t_pem *pem);
 int		pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass);
+int		pem_encode_to_stream(t_pem *pem, t_ostring *data, t_io_v2_stream *out, const char *pass);
 int		pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass);
-int 	pem_decode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *data, const char *pass);
+int 	pem_decode_from_stream(t_pem *pem, t_io_v2_stream *in, t_ostring *data, const char *pass);
 
 #endif
