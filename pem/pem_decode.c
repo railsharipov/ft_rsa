@@ -27,7 +27,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 	char		salthex[128], cipher_name[128], proc_type[128];
 	uint8_t		key[8], iv[8], salt[8];
 	int			pos, matches, idx, ret;
-	t_des_ctx		des;
+	t_des_ctx	des;
 
 	SSL_LOG(TRACE, "decoding pem: content: %p, size: %d", enc->content, enc->size);
 	ret = SSL_ERR;
@@ -162,8 +162,8 @@ int pem_decode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *data, const
 {
 	// TODO: Refactor PEM decode to support stream inputs.
 	// Read all data from stream into the memory before decoding PEM.
-	t_ostring file_content;
-	ft_ostr_init_with_capacity(&file_content, IO_BUFSIZE);
+	t_ostring enc;
+	ft_ostr_init_with_capacity(&enc, IO_BUFSIZE);
 	char buf[IO_BUFSIZE] = {0};
 
 	ssize_t rbytes = 0;
@@ -172,14 +172,14 @@ int pem_decode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *data, const
 		if (rbytes < 0) {
 			break;
 		}
-		ft_ostr_append(&file_content, buf, rbytes);
+		ft_ostr_append(&enc, buf, rbytes);
 	}
 	if (stream->status != IO_V2_STATUS_EOF) {
 		SSL_LOG(ERROR, IO_READ_ERROR);
 		return (SSL_ERR);
 	}
-	int ret = pem_decode(pem, &file_content, data, pass);
-	ft_ostr_clear(&file_content);
+	int ret = pem_decode(pem, &enc, data, pass);
+	ft_ostr_clear(&enc);
 
 	if (SSL_OK != ret) {
 		SSL_LOG(ERROR, "pem stream decode error");
