@@ -1,9 +1,10 @@
 #ifndef SSL_PEM_H
 # define SSL_PEM_H
 
-#include <common.h>
-#include <logger.h>
-#include <libft.h>
+# include <common.h>
+# include <logger.h>
+# include <libft.h>
+# include <io.h>
 
 typedef enum e_pem_proc {
     PEM_PROC_TYPE_NONE = 0,        // No Proc-Type header (unencrypted)
@@ -29,5 +30,6 @@ void    pem_del(t_pem *pem);
 void    pem_clear(t_pem *pem);
 int		pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass);
 int		pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass);
+int 	pem_decode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *data, const char *pass);
 
 #endif

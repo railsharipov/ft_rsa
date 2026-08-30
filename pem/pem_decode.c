@@ -157,3 +157,33 @@ label_exit:
 
 	return (ret);
 }
+
+int pem_decode_stream(t_pem *pem, t_io_v2_stream *stream, t_ostring *data, const char *pass)
+{
+	// TODO: Refactor PEM decode to support stream inputs.
+	// Read all data from stream into the memory before decoding PEM.
+	t_ostring file_content;
+	ft_ostr_init_with_capacity(&file_content, IO_BUFSIZE);
+	char buf[IO_BUFSIZE] = {0};
+
+	ssize_t rbytes = 0;
+	while (1) {
+		rbytes = io_v2_read(stream, buf, sizeof(buf));
+		if (rbytes < 0) {
+			break;
+		}
+		ft_ostr_append(&file_content, buf, rbytes);
+	}
+	if (stream->status != IO_V2_STATUS_EOF) {
+		SSL_LOG(ERROR, IO_READ_ERROR);
+		return (SSL_ERR);
+	}
+	int ret = pem_decode(pem, &file_content, data, pass);
+	ft_ostr_clear(&file_content);
+
+	if (SSL_OK != ret) {
+		SSL_LOG(ERROR, "pem stream decode error");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
