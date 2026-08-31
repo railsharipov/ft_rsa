@@ -127,9 +127,12 @@ extern t_io_v2_stream *io_v2_stdout_writer;
 extern t_io_v2_stream *io_v2_stderr_reader;
 extern t_io_v2_stream *io_v2_stderr_writer;
 
+// NON-BLOCKING
 ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
-ssize_t	io_v2_read_all(t_io_v2_stream *stream, void *buf, size_t nbytes);
 ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
+
+// BLOCKING
+ssize_t	io_v2_read_all(t_io_v2_stream *stream, void *buf, size_t nbytes);
 ssize_t io_v2_write_all(t_io_v2_stream *stream, const void *buf, size_t nbytes);
 ssize_t	io_v2_finish(t_io_v2_stream *stream);
 ssize_t	io_v2_flush(t_io_v2_stream *stream);
