@@ -6,10 +6,13 @@
 #include <asn1.h>
 #include <der.h>
 #include <pem.h>
+#include <base64.h>
+#include <textutil.h>
 #include <io.h>
 
 typedef enum __e_asn1_form {
 	__ASN1_FORM_PEM,
+	__ASN1_FORM_B64,
 	__ASN1_FORM_DER,
 	__ASN1_FORM_JSON,
 } __t_asn1_form;
@@ -28,6 +31,8 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		const char *informs = ft_htbl_get(cmd->opts, "--inform");
 		if (ft_streq(informs, "PEM")) {
 			inform = __ASN1_FORM_PEM;
+		} else if (ft_streq(informs, "B64")) {
+			inform = __ASN1_FORM_B64;
 		} else if (ft_streq(informs, "DER")) {
 			inform = __ASN1_FORM_DER;
 		} else if (ft_streq(informs, "JSON")) {
@@ -44,6 +49,8 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		const char *outforms = ft_htbl_get(cmd->opts, "--outform");
 		if (ft_streq(outforms, "PEM")) {
 			outform = __ASN1_FORM_PEM;
+		} else if (ft_streq(outforms, "B64")) {
+			outform = __ASN1_FORM_B64;
 		} else if (ft_streq(outforms, "DER")) {
 			outform = __ASN1_FORM_DER;
 		} else if (ft_streq(outforms, "JSON")) {
@@ -101,6 +108,33 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		}
 		break;
 
+	case __ASN1_FORM_B64:
+		;;
+		// Remove whitespace from input before feeding into decoder
+		t_textutil_ctx *textutil_ctx = NULL;
+		t_io_v2_stream *textutil_filter = NULL;
+		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
+		*textutil_ctx = (t_textutil_ctx){0};
+		if (SSL_OK != io_v2_filter_reader(&textutil_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, textutil_ctx)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		in = textutil_filter;
+		// Feed processed input into base64 decoder
+		t_b64_ctx b64_ctx = {0};
+		t_io_v2_stream *b64_filter = NULL;
+		if (SSL_OK != io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, &b64_ctx)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		in = b64_filter;
+		// Decode DER encoding
+		if (SSL_OK != der_decode_stream(&asn1_node, in)) {
+			SSL_LOG(ERROR, "der decode error");
+			return (SSL_ERR);
+		}
+	 	break;
+
 	case __ASN1_FORM_DER:
 		;;
 		if (SSL_OK != der_decode_stream(&asn1_node, in)) {
@@ -125,7 +159,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 
 	default:
 		;;
-		SSL_LOG(ERROR, UNEXPECTED_ERROR);
+		SSL_LOG(ERROR, "invalid input format");
 		return (SSL_ERR);
 	}
 
@@ -150,6 +184,33 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		}
 		break;
 
+	case __ASN1_FORM_B64:
+		;;
+		// Add newline terminator at the end of output
+		t_textutil_ctx *textutil_ctx = NULL;
+		t_io_v2_stream *textutil_filter = NULL;
+		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
+		*textutil_ctx = (t_textutil_ctx){.delim = '\n'};
+		if (io_v2_filter_writer(&textutil_filter, out, NULL, textutil_terminator_final, textutil_ctx) < 0) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		out = textutil_filter;
+		// Feed DER output to base64 encoder
+		t_b64_ctx b64_ctx = {0};
+		t_io_v2_stream *b64_filter = NULL;
+		if (SSL_OK != io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, &b64_ctx)) {
+			SSL_LOG(ERROR, IO_INIT_ERROR);
+			return (SSL_ERR);
+		}
+		out = b64_filter;
+		// Encode ASN1 and feed output to base64 encoder
+		if (SSL_OK != der_encode_stream(asn1_node, out)) {
+			SSL_LOG(ERROR, "der encode error");
+			return (SSL_ERR);
+		}
+		break;
+
 	case __ASN1_FORM_DER:
 		;;
 		if (SSL_OK != der_encode_stream(asn1_node, out)) {
@@ -162,18 +223,18 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		;;
 		char *asn1_s = asn1_node_dumps(asn1_node);
 		if (io_v2_write_all(out, asn1_s, ft_strlen(asn1_s)) < 0) {
-			SSL_LOG(ERROR, "i/o error");
+			SSL_LOG(ERROR, IO_WRITE_ERROR);
 			return (SSL_ERR);
 		}
 		if (io_v2_write_all(out, "\n", 1) < 0) {
-			SSL_LOG(ERROR, "i/o error");
+			SSL_LOG(ERROR, IO_WRITE_ERROR);
 			return (SSL_ERR);
 		}
 		break;
 
 	default:
 		;;
-		SSL_LOG(ERROR, UNEXPECTED_ERROR);
+		SSL_LOG(ERROR, "invalid output format");
 		return (SSL_ERR);
 	}
 
