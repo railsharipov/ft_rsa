@@ -68,6 +68,7 @@ static int	__decode(t_node **node, t_io_v2_stream *in)
 {
 	*node = NULL;
 
+	SSL_LOG(TRACE, "reading tag octets");
 	uint8_t	tag = 0;
 	uint32_t tagnum = 0;
 	ssize_t	rbytes = __read_tag(&tag, &tagnum, in);
@@ -81,7 +82,7 @@ static int	__decode(t_node **node, t_io_v2_stream *in)
 		SSL_LOG(ERROR, "read tag error");
 		return (SSL_ERR);
 	}
-	SSL_LOG(TRACE, "decoding tag number: %u, tag: %u", tagnum, tag);
+	SSL_LOG(TRACE, "tag number: %u, tag: %u", tagnum, tag);
 
 	t_func_der_decode f_decode = NULL;
 	switch (tagnum) {
@@ -111,6 +112,7 @@ static int	__decode(t_node **node, t_io_v2_stream *in)
 			return (SSL_ERR);
 	}
 
+	SSL_LOG(TRACE, "reading content octets");
 	t_ostring encoded;
 	ft_ostr_init(&encoded);
 	if (__read_content_octets(&encoded, in) < 0) {
@@ -149,7 +151,7 @@ static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_io_v2_stream *in)
 	*tag = 0;
 	tbytes = 0;
 
-	rbytes = io_v2_read(in, tag, 1);
+	rbytes = io_v2_read_all(in, tag, 1);
 	if (rbytes < 0) {
 		if (in->status == IO_V2_STATUS_EOF) {
 			SSL_LOG(TRACE, "no tag bytes read");
@@ -163,14 +165,13 @@ static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_io_v2_stream *in)
 	*tagnum = *tag & 0x1F;
 	*tag = *tag & 0xE0;
 
-	SSL_LOG(TRACE, "read tag number: %u, tag: %u", *tagnum, *tag);
-
     if (ASN_TAGNUM_COMPLEX == *tagnum) {
+    	SSL_LOG(TRACE, "tag number is complex");
     	uint8_t octet = 0;
         *tagnum = 0;
 
         do {
-            rbytes = io_v2_read(in, &octet, 1);
+            rbytes = io_v2_read_all(in, &octet, 1);
             if (rbytes <= 0) {
                 SSL_LOG(ERROR, "read complex tag error: bad read");
                 return (-1);
@@ -180,8 +181,9 @@ static ssize_t	__read_tag(uint8_t *tag, uint32_t *tagnum, t_io_v2_stream *in)
             *tagnum <<= 7;
             *tagnum |= (uint32_t)octet & 0x7F;
         } while (octet & 0x80);
-
-        SSL_LOG(TRACE, "complex tag number: %u", *tagnum);
+    }
+    else {
+   		SSL_LOG(TRACE, "tag number is simple");
     }
 	return (tbytes);
 }
@@ -194,7 +196,7 @@ static ssize_t	__read_len(size_t *len, uint8_t *form, t_io_v2_stream *in)
 
 	*len = 0;
 
-	if ((rbytes = io_v2_read(in, &octet, 1)) < 0) {
+	if ((rbytes = io_v2_read_all(in, &octet, 1)) < 0) {
 		if (in->status == IO_V2_STATUS_EOF) {
 			SSL_LOG(TRACE, "no length bytes read");
 			return (0);
@@ -211,7 +213,7 @@ static ssize_t	__read_len(size_t *len, uint8_t *form, t_io_v2_stream *in)
 		SSL_LOG(TRACE, "reading long length form, size bytes: %zu", lensize);
 
 		while (lensize > 0) {
-			rbytes = io_v2_read(in, &octet, 1);
+			rbytes = io_v2_read_all(in, &octet, 1);
 			if (rbytes <= 0) {
 				SSL_LOG(ERROR, "read long length form error: bad read");
 				return (-1);
@@ -224,12 +226,10 @@ static ssize_t	__read_len(size_t *len, uint8_t *form, t_io_v2_stream *in)
 		}
 	}
 	else {
+		SSL_LOG(TRACE, "reading short length form");
 		*form = ASN_LEN_SHORT;
 		*len = (size_t)octet;
-		SSL_LOG(TRACE, "reading short length form: %zu", *len);
 	}
-	SSL_LOG(TRACE, "length read: %zu, form: %u", *len, *form);
-
 	return (tbytes);
 }
 
@@ -240,18 +240,17 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in)
 	size_t len = 0;
 	uint8_t lenform = 0;
 
+	SSL_LOG(TRACE, "reading content length octets");
 	rbytes = __read_len(&len, &lenform, in);
 	if (rbytes <= 0) {
 		SSL_LOG(ERROR, "read content octets error: bad read");
 		return (-1);
 	}
+	SSL_LOG(TRACE, "content length: %zu, form: %u", len, lenform);
 	tbytes += rbytes;
-
-	SSL_LOG(TRACE, "reading content octets, length: %zu", len);
 
     if (ASN_LEN_LONG == lenform && len == 0) {
 		SSL_LOG(TRACE, "reading indefinite length content");
-
 		t_io_v2_stream *out = NULL;
 		if (SSL_OK != io_v2_bytes_writer(&out, osbuf)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
@@ -264,13 +263,13 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in)
 		tbytes = 0;
         // Read until End-of-Contents (0x00 0x00), but avoid busy-waiting
         while (null_count < 2) {
-            rbytes = io_v2_read(in, &octet, 1);
+            rbytes = io_v2_read_all(in, &octet, 1);
             if (rbytes <= 0) {
                 SSL_LOG(ERROR, "read indefinite length content error: bad read");
                 goto label_error;
             }
             tbytes += 1;
-            if (io_v2_write(out, &octet, 1) != 1) {
+            if (io_v2_write_all(out, &octet, 1) != 1) {
                 goto label_error;
             }
             if (octet == 0) {
@@ -282,8 +281,9 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in)
 		SSL_LOG(TRACE, "indefinite length content read, total bytes: %zd", tbytes);
 	}
 	else if (len > 0) {
+		SSL_LOG(TRACE, "reading definite length content");
 		uint8_t buf[len];
-		rbytes = io_v2_read(in, buf, sizeof(buf));
+		rbytes = io_v2_read_all(in, buf, sizeof(buf));
 		if (rbytes < 0) {
 			if (in->status == IO_V2_STATUS_EOF) {
 				rbytes = 0;
@@ -303,7 +303,6 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in)
 
 label_error:
 	ft_ostr_clear(osbuf);
-
 	return (-1);
 }
 

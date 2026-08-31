@@ -25,7 +25,7 @@ typedef int	(*t_func_der_encode)(uint8_t tag, t_ostring *encoded, t_ostring *dat
 
 int	der_encode(t_node *asn1_node, t_ostring *encoded)
 {
-	SSL_LOG(TRACE, "starting DER encode octet string");
+	SSL_LOG(TRACE, "starting der encode");
 
 	if (NULL == asn1_node || NULL == encoded) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -40,21 +40,21 @@ int	der_encode(t_node *asn1_node, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 	if (SSL_OK != der_encode_stream(asn1_node, out)) {
-		SSL_LOG(ERROR, "DER encode octet string failed");
+		SSL_LOG(ERROR, "der encode failed");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != io_v2_close(out)) {
 		SSL_LOG(ERROR, IO_CLOSE_ERROR);
 		return (SSL_ERR);
 	}
-	SSL_LOG(TRACE, "DER encode octet string completed successfully");
+	SSL_LOG(TRACE, "der encode completed successfully");
 
 	return (SSL_OK);
 }
 
 int	der_encode_stream(t_node *asn1_node, t_io_v2_stream *out)
 {
-	SSL_LOG(TRACE, "starting DER encode stream");
+	SSL_LOG(TRACE, "starting der encode stream");
 
 	if (NULL == asn1_node || NULL == out) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -63,10 +63,10 @@ int	der_encode_stream(t_node *asn1_node, t_io_v2_stream *out)
 	int ret = __encode(asn1_node, out);
 
 	if (SSL_OK != ret) {
-		SSL_LOG(ERROR, "DER encode stream failed");
+		SSL_LOG(ERROR, "der encode stream failed");
 		return (SSL_ERR);
 	}
-	SSL_LOG(TRACE, "DER encode stream completed successfully");
+	SSL_LOG(TRACE, "der encode stream completed successfully");
 
 	return (SSL_OK);
 }
@@ -138,6 +138,7 @@ static int	__encode(t_node *asn1_node, t_io_v2_stream *out)
 		SSL_LOG(TRACE, "encode function failed for tag: %u", tagnum);
 		return (SSL_ERR);
 	}
+	SSL_LOG(TRACE, "writing content octets, size: %zu", encoded.size);
 	ssize_t wbytes = __write_content_octets((char *)encoded.content, encoded.size, out);
 	ft_ostr_clear(&encoded);
 
@@ -152,7 +153,7 @@ static int	__encode(t_node *asn1_node, t_io_v2_stream *out)
 
 static ssize_t	__write_content_octets(char *content, size_t size, t_io_v2_stream *out)
 {
-	SSL_LOG(TRACE, "writing content octets, size: %zu", size);
+	SSL_LOG(TRACE, "writing content length octets, length: %zu", size);
 
 	if (__write_len(size, out) < 0) {
 		SSL_LOG(ERROR, "failed to write length octets");
@@ -161,12 +162,11 @@ static ssize_t	__write_content_octets(char *content, size_t size, t_io_v2_stream
 	SSL_LOG(TRACE, "length octets written");
 
 	if (size > 0) {
-		ssize_t	wbytes = io_v2_write(out, content, size);
+		ssize_t	wbytes = io_v2_write_all(out, content, size);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, "failed to write content octets");
 			return (-1);
 		}
-		SSL_LOG(TRACE, "content octets written, bytes: %zd", wbytes);
 		return (wbytes);
 	}
 	else {
@@ -182,6 +182,7 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_io_v2_stream *out)
 	ssize_t	wbytes = 0;
 
 	if (tagnum > 30) {
+		SSL_LOG(TRACE, "tag is complex");
 		// Complex tag
 		int tagnum_nbits = ft_uint_lmbit(tagnum, 8 * sizeof(tagnum));
         // Number of 7-bit base-128 continuation octets required
@@ -204,15 +205,15 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_io_v2_stream *out)
 		}
 		buf[0] = ASN_TAGNUM_COMPLEX | tag;
 
-		wbytes = io_v2_write(out, buf, buf_size);
+		wbytes = io_v2_write_all(out, buf, buf_size);
 		SSL_FREE(buf);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, IO_WRITE_ERROR);
 			return (-1);
 		}
-		SSL_LOG(TRACE, "complex tag written, bytes: %zd", wbytes);
 	}
 	else {
+		SSL_LOG(TRACE, "tag is simple");
 		// Simple tag
 		size_t buf_size = 1;
 		uint8_t buf[buf_size];
@@ -220,23 +221,21 @@ static ssize_t	__write_tag(uint8_t tag, uint32_t tagnum, t_io_v2_stream *out)
 		buf[0] = ASN_TAGNUM_SIMPLE | tag;
 		buf[0] |= tagnum & 0x7F;
 
-		wbytes = io_v2_write(out, (char *)buf, buf_size);
+		wbytes = io_v2_write_all(out, (char *)buf, buf_size);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, IO_WRITE_ERROR);
 			return (-1);
 		}
-		SSL_LOG(TRACE, "simple tag written, bytes: %zd", wbytes);
 	}
 	return (wbytes);
 }
 
 static ssize_t	__write_len(size_t len, t_io_v2_stream *out)
 {
-	SSL_LOG(TRACE, "writing length: %zu", len);
-
 	ssize_t	wbytes = 0;
 
 	if (len > 127) {
+		SSL_LOG(TRACE, "length is in long format");
 		// Long length form
 		int len_nbits = ft_uint_lmbit(len, 8 * sizeof(len));
         // Number of bytes needed to represent "len" in big-endian
@@ -260,27 +259,26 @@ static ssize_t	__write_len(size_t len, t_io_v2_stream *out)
 		}
 		buf[0] = ASN_LEN_LONG | len_nbytes;
 
-		wbytes = io_v2_write(out, buf, (size_t)buf_size);
+		wbytes = io_v2_write_all(out, buf, (size_t)buf_size);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, IO_WRITE_ERROR);
 			return (-1);
 		}
 		SSL_FREE(buf);
-		SSL_LOG(TRACE, "long length form written, bytes: %zd", wbytes);
 	}
 	else {
+		SSL_LOG(TRACE, "length is in short format");
 		// Short length form
 		size_t buf_size = 1;
 		uint8_t buf[buf_size];
 
 		buf[0] = len;
 
-		wbytes = io_v2_write(out, buf, buf_size);
+		wbytes = io_v2_write_all(out, buf, buf_size);
 		if (wbytes < 0) {
 			SSL_LOG(ERROR, IO_WRITE_ERROR);
 			return (-1);
 		}
-		SSL_LOG(TRACE, "short length form written, bytes: %zd", wbytes);
 	}
 	return (wbytes);
 }
