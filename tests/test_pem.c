@@ -30,7 +30,7 @@ static const char	*__pkcs8_encryptedPrivateKeyInfo_pem_file_path = "tests/files/
 static const char	*__pkcs8_encryptedPrivateKeyInfo_der_file_path = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
 static const char	*__pkcs8_subjectPublicKeyInfo_pem_file_path = "tests/files/keys/pkcs8-subjectPublicKeyInfo.pem";
 static const char	*__pkcs8_subjectPublicKeyInfo_der_file_path = "tests/files/keys/pkcs8-subjectPublicKeyInfo.der";
-static const char	*__pkcs8_privateKeyInfo_schema_json_file_path = "resources/asn/schema-pkcs8-privateKeyInfo.json";
+static const char	*__pkcs8_privateKeyInfo_schema_json_file_path = "resources/asn1/schema-pkcs8-privateKeyInfo.json";
 
 static const char	*__pkcs1_encrypted_rsaPrivateKey_pem_file_path = "tests/files/keys/pkcs1-encrypted-rsaPrivateKey.pem";
 static const char	*__pkcs1_rsaPrivateKey_pem_file_path = "tests/files/keys/pkcs1-rsaPrivateKey.pem";

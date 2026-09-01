@@ -17,11 +17,11 @@ static int	__test_asn1_tree_query_subjectPublicKeyInfo(void);
 static int	__test_asn1_tree_create_privateKeyInfo(void);
 static int	__test_asn1_tree_query_privateKeyInfo(void);
 
-static const char *__schema_pkcs8_subjectPublicKeyInfo_path = "resources/asn/schema-pkcs8-subjectPublicKeyInfo.json";
-static const char *__schema_pkcs1_rsaPublicKey_path = "resources/asn/schema-pkcs1-rsaPublicKey.json";
+static const char *__schema_pkcs8_subjectPublicKeyInfo_path = "resources/asn1/schema-pkcs8-subjectPublicKeyInfo.json";
+static const char *__schema_pkcs1_rsaPublicKey_path = "resources/asn1/schema-pkcs1-rsaPublicKey.json";
 
-static const char *__schema_pkcs8_privateKeyInfo_path = "resources/asn/schema-pkcs8-privateKeyInfo.json";
-static const char *__schema_pkcs1_rsaPrivateKey_path = "resources/asn/schema-pkcs1-rsaPrivateKey.json";
+static const char *__schema_pkcs8_privateKeyInfo_path = "resources/asn1/schema-pkcs8-privateKeyInfo.json";
+static const char *__schema_pkcs1_rsaPrivateKey_path = "resources/asn1/schema-pkcs1-rsaPrivateKey.json";
 
 static t_ostring	__schema_subjectPublicKeyInfo_json;
 static t_ostring	__schema_rsaPublicKey_json;

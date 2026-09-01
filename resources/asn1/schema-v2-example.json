@@ -1,0 +1,70 @@
+{
+	"taggingMode": "explicit",
+	"types": {
+		"privateKeyInfo": {
+			"type": {
+				"kind": "sequence",
+				"tagClass": null,
+				"tagNumber": null,
+				"baseType": null
+			},
+			"optional": false,
+			"default": null,
+			"elementType": null,
+			"elements": [
+				{
+					"name": "version",
+					"type": {
+						"kind": "ref",
+						"definition": "version"
+					},
+					"optional": false,
+					"default": null,
+					"alternatives": null,
+					"elementType": null,
+					"elements": null
+				},
+				{
+					"name": "algorithm",
+					"type": {
+						"kind": "tagged",
+						"tagClass": "context-specific",
+						"tagNumber": 0,
+						"baseType": {
+							"kind": "ostring"
+						}
+					},
+					"optional": false,
+					"default": null,
+					"alternatives": null,
+					"elementType": null,
+					"elements": null
+				},
+				{
+					"name": "data",
+					"type": {
+						"kind": "ostring",
+						"tagClass": null,
+						"tagNumber": null,
+						"baseType": null,
+						"default": null
+					},
+					"optional": false,
+					"default": null,
+					"alternatives": null,
+					"elementType": null,
+					"elements": null
+				}
+			]
+		},
+		"version": {
+			"name": "version",
+			"type": {
+				"kind": "integer"
+			},
+			"optional": false,
+			"default": 0
+		}
+	},
+	"values": {}
+}
