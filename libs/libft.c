@@ -3385,11 +3385,16 @@ t_ostring	*ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 			ft_ostr_init_with_capacity(ostring, size);
 		}
 		if (ostring->size + size > ostring->capacity) {
-			LIBFT_REALLOC(ostring->content, ostring->capacity, ostring->capacity + size);
+			// LIBFT_LOG(TRACE, "needed=%zu, have=%zu", ostring->size + size, ostring->capacity);
+			size_t new_size = ostring->capacity + size;
+			if (new_size < 2*ostring->capacity) {
+				new_size = 2*ostring->capacity;
+			}
+			LIBFT_REALLOC(ostring->content, ostring->capacity, new_size);
 			if (NULL == ostring->content) {
 				return (NULL);
 			}
-			ostring->capacity += size;
+			ostring->capacity = new_size;
 		}
 		ft_memcpy(ostring->content + ostring->size, content, size);
 		ostring->size += size;
