@@ -6,6 +6,28 @@
 # include <libft.h>
 # include <io.h>
 
+# define DER_BYTE_TAG_SIMPLE		0x0
+# define DER_BYTE_TAG_COMPLEX		0x1F
+
+# define DER_BYTE_TAG_UNIVERSAL		0x0
+# define DER_BYTE_TAG_APPLICATION	0x40
+# define DER_BYTE_TAG_CONTEXT		0x80
+# define DER_BYTE_TAG_PRIVATE		0xC0
+
+# define DER_BYTE_TYPE_PRIMITIVE	0x0
+# define DER_BYTE_TYPE_CONSTRUCT	0x20
+# define DER_BYTE_TYPE_BOOLEAN		0x1
+# define DER_BYTE_TYPE_INT			0x2
+# define DER_BYTE_TYPE_BIT_STRING	0x3
+# define DER_BYTE_TYPE_OCTET_STRING	0x4
+# define DER_BYTE_TYPE_NULL			0x5
+# define DER_BYTE_TYPE_OBJECT_ID	0x6
+# define DER_BYTE_TYPE_OBJECT_DESCR	0x7
+# define DER_BYTE_TYPE_SEQUENCE		0x10
+
+# define DER_BYTE_TAG_SUBSEQ		0x80
+# define DER_BYTE_TAG_SUBSEQ_LAST	0x0
+
 typedef enum e_der_status {
 	DER_OK = 0,
 	DER_NEED_MORE,

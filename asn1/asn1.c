@@ -16,6 +16,8 @@
 //
 // 		ASN1 node == JSON node { type=JSON_TYPE_BYTES, ..., content -> { ASN1 value -> { metadata, data pointer } } }
 //
+// 		Example JSON file: resources/asn/schema-pkcs8-encryptedPrivateKeyInfo.json
+//
 // 1. For primitive ASN1 types the content pointer points to raw bytes.
 // 2. For complex ASN1 types the content pointer points to child ASN1 node(s).
 //

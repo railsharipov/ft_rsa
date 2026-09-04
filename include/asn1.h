@@ -85,4 +85,74 @@ char	*asn1_item_value_dumps(t_iasn *asn1_item);
 char	*asn1_oid_get_name(const char *oid);
 char	*asn1_oid_get_oid(const char *name);
 
+//////////////
+// ASN.1 v2 //
+//////////////
+
+typedef enum e_asn_v2_tag_mode {
+	ASN_V2_TAG_MODE_EXPLICIT,
+	ASN_V2_TAG_MODE_IMPLICIT,
+} t_asn_v2_tag_mode;
+
+typedef enum e_asn_v2_tag_class {
+	ASN_V2_TAG_CLASS_UNIVERSAL,
+	ASN_V2_TAG_CLASS_APPLICATION,
+	ASN_V2_TAG_CLASS_CONTEXT,
+	ASN_V2_TAG_CLASS_PRIVATE,
+} t_asn_v2_tag_class;
+
+typedef enum e_asn_v2_type_kind {
+	ASN_V2_TYPE_KIND_BOOLEAN,
+	ASN_V2_TYPE_KIND_INT,
+	ASN_V2_TYPE_KIND_BIT_STRING,
+	ASN_V2_TYPE_KIND_OCTET_STRING,
+	ASN_V2_TYPE_KIND_IA5_STRING,
+	ASN_V2_TYPE_KIND_UTF8_STRING,
+	ASN_V2_TYPE_KIND_PRINTABLE_STRING,
+	ASN_V2_TYPE_KIND_NULL,
+	ASN_V2_TYPE_KIND_OBJECT_ID,
+	ASN_V2_TYPE_KIND_OBJECT_DESCR,
+	ASN_V2_TYPE_KIND_SEQUENCE,
+	ASN_V2_TYPE_KIND_SEQUENCE_OF,
+	ASN_V2_TYPE_KIND_SET,
+	ASN_V2_TYPE_KIND_SET_OF,
+	ASN_V2_TYPE_KIND_CHOICE,
+	ASN_V2_TYPE_KIND_TAGGED,
+	ASN_V2_TYPE_KIND_REF,
+} t_asn_v2_type_kind;
+
+typedef struct s_asn_v2_value {
+	void	*content;
+	size_t	size;
+} t_asn_v2_value;
+
+typedef struct s_asn_v2_tag {
+	t_asn_v2_tag_mode	mode;
+	t_asn_v2_tag_class	class;
+	uint32_t			number;
+	uint8_t				complex;
+} t_asn_v2_tag;
+
+typedef struct s_asn_v2_type {
+	t_asn_v2_type_kind		kind;
+	t_asn_v2_tag			tag;
+	struct s_asn_v2_type	*base_type;
+} t_asn_v2_type;
+
+typedef struct s_asn_v2_typedef {
+	t_asn_v2_type_kind		kind;
+	struct s_asn_v2_typedef	*base_typedef;
+	t_asn_v2_tag			tag;
+	t_asn_v2_value			*default_value;
+	uint8_t 				optional;
+	struct s_asn_v2_typedef	*element_typedef;
+	size_t					element_count;
+	void 					*elements;
+} t_asn_v2_typedef;
+
+typedef struct s_asn_v2_schema {
+	t_asn_v2_tag_mode	tag_mode;
+	t_asn_v2_typedef	*typedefs;
+} t_asn_v2_schema;
+
 #endif
