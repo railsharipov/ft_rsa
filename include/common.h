@@ -15,10 +15,13 @@
 
 # include <stdint.h>
 # include <stddef.h>
+# include <stdlib.h>
 # include <alloc.h>
 #include <libft.h>
 
-# define SSL_FLAG(FLAG, FLAGS)		((int)(((FLAGS)&(FLAG))==(FLAG)))
+# define SSL_FLAG(FLAG, FLAGS)	((int)(((FLAGS)&(FLAG))==(FLAG)))
+# define SSL_UNREACHABLE(MES)	do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+# define SSL_TODO(MES)			do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
 
 # define INVALID_INPUT_ERROR	"invalid input"
 # define FILE_READ_ERROR		"failed to read file"
