@@ -26,6 +26,14 @@ int	main(int ac, const char **av)
 		.is_ansi_colored = 1,
 	};
 
+	t_logger *__libft_logger = libft_get_logger();
+	*__libft_logger = (t_logger){
+		.log_writer = __app_log_writer,
+		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
+		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
+		.is_ansi_colored = 1,
+	};
+
 	// default command
 	cmd_arg = args_new_cmd(av[0], "SSL-ish command line tool", NULL);
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("--debug", "set debug log level", AP_OPT_TYPE_FLAG));
@@ -136,6 +144,9 @@ int	main(int ac, const char **av)
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("--outform", "output format: PEM (default), DER or JSON", AP_OPT_TYPE_STRING));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
+	sub_cmd_arg = args_new_cmd("dev", "Development", cmd_dev);
+	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
+
 	// NOT FULLY IMPLEMENTED YET
 
 	// genrsa command
@@ -186,18 +197,23 @@ int	main(int ac, const char **av)
 	// handle global options
 	if (ft_htbl_has(cmd.opts, "--warn")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_WARN;
+		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_WARN;
 	}
 	if (ft_htbl_has(cmd.opts, "--info")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_INFO;
+		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_INFO;
 	}
 	if (ft_htbl_has(cmd.opts, "--debug")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
+		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
 	}
 	if (ft_htbl_has(cmd.opts, "--trace")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
+		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
 	}
 	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_ERROR;
+		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_ERROR;
 	}
 
 	// handle help option
