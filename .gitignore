@@ -10,3 +10,4 @@ test
 .cache
 compile_commands.json
 *.log
+libft.o
