@@ -39,6 +39,7 @@ int     cmd_des_ecb(const struct s_cmd *cmd);
 int     cmd_des_cbc(const struct s_cmd *cmd);
 
 int     cmd_asn1parse(const struct s_cmd *cmd);
+int     cmd_dev(const struct s_cmd *cmd);
 
 int     cmd_rsa_gen(const struct s_cmd *cmd);
 int     cmd_rsa(const struct s_cmd *cmd);
