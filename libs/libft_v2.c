@@ -3,24 +3,19 @@
 
 /****************************************************************************/
 
-t_node_v2 *ft_ref_create_node(void *ptr)
+t_list *ft_list_create(void)
 {
-	t_ref *ref = NULL;
-	LIBFT_ALLOC(ref, sizeof(t_ref));
-	ref->ptr = ptr;
-	return (&ref->base);
+	t_list *list = NULL;
+	LIBFT_ALLOC(list, sizeof(t_list));
+	*list = (t_list){0};
+	return (list);
 }
 
-void ft_ref_delete_node(t_node_v2 *node, const void *vctx)
+void ft_list_init(t_list *list)
 {
-	(void)vctx;
-	if (NULL != node) {
-		t_ref *ref = container_of(node, t_ref, base);
-		LIBFT_FREE(ref);
-	}
+	assert(NULL != list);
+	*list = (t_list){0};
 }
-
-/****************************************************************************/
 
 void ft_list_append(t_list *list, t_node_v2 *node)
 {
@@ -69,14 +64,14 @@ t_node_v2 *ft_list_pop(t_list *list)
 	return (node);
 }
 
-t_node_v2 *ft_list_remove(t_list *list, t_func_node_op f_find, const void *vctx)
+t_node_v2 *ft_list_remove(t_list *list, t_node_v2 *node)
 {
 	assert(NULL != list);
-	assert(NULL != f_find);
+	assert(NULL != node);
 	if (list->size == 0) return (NULL);
 
 	t_node_v2 *cur = list->first;
-	if (NULL != cur && f_find(cur, vctx)) {
+	if (NULL != cur && cur == node) {
 		// Short path: remove first node from the list.
 		list->first = cur->next;
 		list->size -= 1;
@@ -84,7 +79,7 @@ t_node_v2 *ft_list_remove(t_list *list, t_func_node_op f_find, const void *vctx)
 	else {
 		// Iterate through a list to find a node to remove.
 		t_node_v2 *prev = NULL;
-		while (NULL != cur && !f_find(cur, vctx)) {
+		while (NULL != cur && cur != node) {
 			prev = cur;
 			cur = cur->next;
 		}
@@ -101,42 +96,6 @@ t_node_v2 *ft_list_remove(t_list *list, t_func_node_op f_find, const void *vctx)
 		list->last = NULL;
 	}
 	return (cur);
-}
-
-t_node_v2 *ft_list_find(t_list *list, t_func_node_op f_find, const void *vctx)
-{
-	assert(NULL != list);
-	assert(NULL != f_find);
-	if (list->size == 0) return (NULL);
-
-	t_node_v2 *node = list->first;
-	while (NULL != node) {
-		if (f_find(node, vctx)) {
-			return (node);
-		}
-		node = node->next;
-	}
-	return (NULL);
-}
-
-void ft_list_clear(t_list *list, t_func_node_delete f_del, const void *vctx)
-{
-	assert(NULL != list);
-	assert(NULL != f_del);
-
-	t_node_v2 *node = list->first;
-	while (NULL != node) {
-		t_node_v2 *tmp = node->next;
-		f_del(node, vctx);
-		node = tmp;
-	}
-}
-
-void ft_list_del(t_list *list, t_func_node_delete f_del, const void *vctx)
-{
-	if (NULL == list) return;
-	ft_list_clear(list, f_del, vctx);
-	LIBFT_FREE(list);
 }
 
 void ft_list_reverse(t_list *list)
@@ -180,6 +139,152 @@ char *ft_list_dumps(t_list *list)
 
 /****************************************************************************/
 
+typedef struct s_ref_node {
+	t_node_v2  base;
+	void       *ptr;
+} t_ref_node;
+
+static t_node_v2 *__ft_ref_create_node(void *ptr)
+{
+	t_ref_node *ref_node = NULL;
+	LIBFT_ALLOC(ref_node, sizeof(t_ref_node));
+	ref_node->ptr = ptr;
+	return (&ref_node->base);
+}
+
+static void __ft_ref_delete_node(t_node_v2 *node)
+{
+	if (NULL != node) {
+		t_ref_node *ref_node = container_of(node, t_ref_node, base);
+		LIBFT_FREE(ref_node);
+	}
+}
+
+void ft_list_append_ref(t_list *list, void *ptr)
+{
+	assert(NULL != ptr);
+	ft_list_append(list, __ft_ref_create_node(ptr));
+}
+
+void ft_list_prepend_ref(t_list *list, void *ptr)
+{
+	assert(NULL != ptr);
+	ft_list_prepend(list, __ft_ref_create_node(ptr));
+}
+
+void *ft_list_pop_ref(t_list *list)
+{
+	t_node_v2 *node = ft_list_pop(list);
+	if (NULL != node) {
+		void *ptr = container_of(node, t_ref_node, base)->ptr;
+		__ft_ref_delete_node(node);
+		return (ptr);
+	}
+	return (NULL);
+}
+
+void ft_list_clear_all_ref(t_list *list)
+{
+	assert(NULL != list);
+
+	t_node_v2 *node = ft_list_pop(list);
+	while (NULL != node) {
+		__ft_ref_delete_node(node);
+		node = ft_list_pop(list);
+	}
+}
+
+void ft_list_del_all_ref(t_list *list)
+{
+	if (NULL == list) return;
+	ft_list_clear_all_ref(list);
+	LIBFT_FREE(list);
+}
+
+/****************************************************************************/
+
+typedef struct s_content_node {
+	t_node_v2  base;
+	void       *content;
+	t_func_content_del f_del;
+} t_content_node;
+
+static t_node_v2 *__ft_content_create_node(void *content, t_func_content_del f_del)
+{
+	assert(NULL != f_del);
+	t_content_node *content_node = NULL;
+	LIBFT_ALLOC(content_node, sizeof(t_content_node));
+	content_node->content = content;
+	return (&content_node->base);
+}
+
+static void __ft_content_delete_node(t_node_v2 *node)
+{
+	if (NULL != node) {
+		t_content_node *content_node = container_of(node, t_content_node, base);
+		assert(NULL != content_node->f_del);
+		content_node->f_del(content_node->content);
+		LIBFT_FREE(content_node);
+	}
+}
+
+void ft_list_append_content(t_list *list, void *content, t_func_content_del f_del)
+{
+	assert(NULL != f_del);
+	ft_list_append(list, __ft_content_create_node(content, f_del));
+}
+
+void ft_list_prepend_content(t_list *list, void *content, t_func_content_del f_del)
+{
+	assert(NULL != f_del);
+	ft_list_prepend(list, __ft_content_create_node(content, f_del));
+}
+
+void *ft_list_pop_content(t_list *list)
+{
+	t_node_v2 *node = ft_list_pop(list);
+	if (NULL != node) {
+		t_content_node *content_node = container_of(node, t_content_node, base);
+		void *content = content_node->content;
+		LIBFT_FREE(content_node);
+		return (content);
+	}
+	return (NULL);
+}
+
+t_list *ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy)
+{
+	assert(NULL != f_copy);
+
+	t_list *list_copy = ft_list_create();
+	t_content_node *node = container_of(list->first, t_content_node, base);
+	while (NULL != node) {
+		ft_list_append_content(list_copy, f_copy(node->content), node->f_del);
+		node = container_next(node, t_content_node, base);
+	}
+	return (list_copy);
+}
+
+void ft_list_clear_all_content(t_list *list)
+{
+	assert(NULL != list);
+
+	t_node_v2 *node = ft_list_pop(list);
+	while (NULL != node) {
+		__ft_content_delete_node(node);
+		node = ft_list_pop(list);
+	}
+}
+
+void ft_list_del_all_content(t_list *list)
+{
+	if (NULL == list) return;
+	ft_list_clear_all_content(list);
+	LIBFT_FREE(list);
+}
+
+/****************************************************************************/
+
 typedef struct s_htbl_v2_entry {
 	t_node_v2	base;
 	uint32_t	hash;
@@ -197,9 +302,8 @@ static inline uint32_t	__ft_htbl_v2_calc_array_idx(const t_htbl_v2 *htbl, uint32
 	return (hash % htbl->size);
 }
 
-static void __ft_htbl_v2_delete_node(t_node_v2 *node, void *vctx)
+static void __ft_htbl_v2_delete_node(t_node_v2 *node, t_func_content_del f_del_content)
 {
-	t_func_content_del f_del_content = vctx;
 	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
 	if (NULL != entry->key) {
 		LIBFT_FREE(entry->key);
@@ -222,9 +326,8 @@ static t_node_v2 *__ft_htbl_v2_create_node(const char *key, void *vctx)
 	return (&entry->base);
 }
 
-static bool __ft_htbl_v2_match_node(t_node_v2 *node, const void *vctx)
+static bool __ft_htbl_v2_match_node(t_node_v2 *node, const char *key)
 {
-	const char *key = vctx;
 	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
 	return (ft_streq(entry->key, key));
 }
@@ -303,7 +406,10 @@ bool ft_htbl_v2_set(t_htbl_v2 *htbl, const char *key, void *content)
 
 	// We use the list because different keys may resolve to the same array index.
 	t_list *list = htbl->arr + idx;
-	t_node_v2 *node = ft_list_find(list, __ft_htbl_v2_match_node, key);
+	t_node_v2 *node = list->first;
+	while (NULL != node) {
+		if (__ft_htbl_v2_match_node(node, key)) break;
+	}
 	if (NULL != node) {
 		// The key has already been set.
 		return (false);
@@ -323,7 +429,10 @@ bool ft_htbl_v2_reset(t_htbl_v2 *htbl, const char *key, void *content, t_func_co
 
 	// We use the list because different keys may resolve to the same array index.
 	t_list *list = htbl->arr + idx;
-	t_node_v2 *node = ft_list_find(list, __ft_htbl_v2_match_node, key);
+	t_node_v2 *node = list->first;
+	while (NULL != node) {
+		if (__ft_htbl_v2_match_node(node, key)) break;
+	}
 	if (NULL != node) {
 		// The key has already been set: replace the value for the key.
 		t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
@@ -347,7 +456,10 @@ bool ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del
 	uint32_t hash = __ft_htbl_v2_calc_hash(key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
-	t_node_v2 *node = ft_list_remove(list, __ft_htbl_v2_match_node, key);
+	t_node_v2 *node = list->first;
+	while (NULL != node) {
+		if (__ft_htbl_v2_match_node(node, key)) break;
+	}
 	if (NULL != node) {
 		__ft_htbl_v2_delete_node(node, f_del_content);
 	}
@@ -362,7 +474,11 @@ bool ft_htbl_v2_has(const t_htbl_v2 *htbl, const char *key)
 	uint32_t hash = __ft_htbl_v2_calc_hash(key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
-	return (ft_list_find(list, __ft_htbl_v2_match_node, key));
+	t_node_v2 *node = list->first;
+	while (NULL != node) {
+		if (__ft_htbl_v2_match_node(node, key)) return (true);
+	}
+	return (false);
 }
 
 void *ft_htbl_v2_get(const t_htbl_v2 *htbl, const char *key)
@@ -373,7 +489,10 @@ void *ft_htbl_v2_get(const t_htbl_v2 *htbl, const char *key)
 	uint32_t hash = __ft_htbl_v2_calc_hash(key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
-	t_node_v2 *node = ft_list_find(list, __ft_htbl_v2_match_node, key);
+	t_node_v2 *node = list->first;
+	while (NULL != node) {
+		if (__ft_htbl_v2_match_node(node, key)) break;
+	}
 	if (NULL != node) {
 		t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
 		return (entry->content);
@@ -388,7 +507,11 @@ void ft_htbl_v2_clear(t_htbl_v2 *htbl, t_func_content_del f_del_content)
 
 	for (uint32_t idx = 0; idx < htbl->size; idx++) {
 		t_list *list = htbl->arr + idx;
-		ft_list_clear(list, (t_func_node_delete)__ft_htbl_v2_delete_node, f_del_content);
+		t_node_v2 *node = ft_list_pop(list);
+		while (NULL != node) {
+			__ft_htbl_v2_delete_node(node, f_del_content);
+			node = ft_list_pop(list);
+		}
 	}
 	LIBFT_FREE(htbl->arr);
 	htbl->size = 0;
@@ -483,20 +606,18 @@ t_node_v2 *ft_ntree_v2_bfs(t_ntree *ntree, t_func_node_op f_find, const void *vc
 	t_list list = {0};
 	t_node_v2 *node = ntree->root;
 	while (NULL != node) {
-		ft_list_append(&list, ft_ref_create_node(node));
+		ft_list_append_ref(&list, node);
 		node = node->next;
 	}
 	while (list.size != 0) {
-		t_node_v2 *ref_node = ft_list_pop(&list);
-		node = container_of(ref_node, t_ref, base)->ptr;
-		ft_ref_delete_node(ref_node, NULL);
+		node = ft_list_pop_ref(&list);
 		t_node_v2 *child_node = node->nodes;
 		while (NULL != child_node) {
-			ft_list_append(&list, ft_ref_create_node(child_node));
+			ft_list_append_ref(&list, child_node);
 			child_node = child_node->next;
 		}
 		if (f_find(node, vctx)) {
-			ft_list_clear(&list, ft_ref_delete_node, NULL);
+			ft_list_clear_all_ref(&list);
 			return (node);
 		}
 	}

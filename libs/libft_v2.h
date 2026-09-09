@@ -12,7 +12,8 @@ typedef _Bool bool;
 /****************************************************************************/
 
 #define container_of(ptr, type, member)	((type *)((char *)(ptr) - offsetof(type, member)))
-#define node_of(ptr, type) (&((type *)(ptr))->base)
+#define container_next(ptr, type, member) (container_of((ptr)->base.next, type, member))
+#define container_nodes(ptr, type, member) (container_of((ptr)->base.nodes, type, member))
 
 typedef struct s_node_v2 {
 	struct s_node_v2 *next;
@@ -22,13 +23,7 @@ typedef struct s_node_v2 {
 typedef void (*t_func_node_delete)(t_node_v2 *node, const void *vctx);
 typedef void (*t_func_node_map)(t_node_v2 *node, const void *vctx);
 typedef bool (*t_func_node_op)(t_node_v2 *node, const void *vctx);
-
-/****************************************************************************/
-
-typedef struct s_ref {
-	t_node_v2  base;
-	void       *ptr;
-} t_ref;
+typedef t_node_v2 *(*t_func_node_copy)(t_node_v2 *node, const void *vctx);
 
 /****************************************************************************/
 
@@ -38,15 +33,38 @@ typedef struct s_list {
 	size_t		size;
 } t_list;
 
+typedef struct s_list_next {
+	t_node_v2 *node;
+} t_list_next;
+
+t_list		*ft_list_create(void);
+void		ft_list_init(t_list *list);
 void		ft_list_append(t_list *list, t_node_v2 *node);
 void		ft_list_prepend(t_list *list, t_node_v2 *node);
 t_node_v2	*ft_list_pop(t_list *list);
-t_node_v2	*ft_list_find(t_list *list, t_func_node_op f_find, const void *vctx);
-t_node_v2	*ft_list_remove(t_list *list, t_func_node_op f_find, const void *vctx);
-void		ft_list_clear(t_list *list, t_func_node_delete f_del, const void *vctx);
-void		ft_list_del(t_list *list, t_func_node_delete f_del, const void *vctx);
+t_node_v2	*ft_list_remove(t_list *list, t_node_v2 *node);
 void		ft_list_reverse(t_list *list);
 char 		*ft_list_dumps(t_list *list);
+
+/****************************************************************************/
+
+void	ft_list_append_ref(t_list *list, void *ptr);
+void	ft_list_prepend_ref(t_list *list, void *ptr);
+void	*ft_list_pop_ref(t_list *list);
+void	ft_list_clear_all_ref(t_list *list);
+void	ft_list_del_all_ref(t_list *list);
+
+/****************************************************************************/
+
+typedef	void (*t_func_content_del)(void *content);
+typedef	void *(*t_func_content_copy)(void *content);
+
+void	ft_list_append_content(t_list *list, void *content, t_func_content_del f_del);
+void	ft_list_prepend_content(t_list *list, void *content, t_func_content_del f_del);
+void	*ft_list_pop_content(t_list *list);
+t_list	*ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy);
+void	ft_list_clear_all_content(t_list *list);
+void	ft_list_del_all_content(t_list *list);
 
 /****************************************************************************/
 
