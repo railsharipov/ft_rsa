@@ -1,6 +1,6 @@
 {
 	"taggingMode": "explicit",
-	"types": {
+	"typedefs": {
 		"privateKeyInfo": {
 			"type": {
 				"kind": "sequence",
@@ -20,7 +20,6 @@
 					},
 					"optional": false,
 					"default": null,
-					"alternatives": null,
 					"elementType": null,
 					"elements": null
 				},
@@ -36,7 +35,6 @@
 					},
 					"optional": false,
 					"default": null,
-					"alternatives": null,
 					"elementType": null,
 					"elements": null
 				},
@@ -51,7 +49,6 @@
 					},
 					"optional": false,
 					"default": null,
-					"alternatives": null,
 					"elementType": null,
 					"elements": null
 				}

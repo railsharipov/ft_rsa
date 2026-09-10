@@ -2,7 +2,9 @@
 # define ASN_1_H
 
 # include <common.h>
-#include <libft.h>
+# include <libft.h>
+# include <libft_v2.h>
+# include <bnum.h>
 
 // ASN.1 - Abstract Syntax Notation One
 // Refer to X.208, X.209, X.608
@@ -119,11 +121,19 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_CHOICE,
 	ASN_V2_TYPE_KIND_TAGGED,
 	ASN_V2_TYPE_KIND_REF,
+	ASN_V2_TYPE_KIND_UNKNOWN,
 } t_asn_v2_type_kind;
 
 typedef struct s_asn_v2_value {
-	void	*content;
-	size_t	size;
+	t_asn_v2_type_kind kind;
+	union {
+		t_ostring  ostring;
+		t_num      number;
+		bool       boolean;
+		t_list     list;
+		t_htbl_v2  htable;
+		const char *cstr;
+	} as;
 } t_asn_v2_value;
 
 typedef struct s_asn_v2_tag {
@@ -154,5 +164,14 @@ typedef struct s_asn_v2_schema {
 	t_asn_v2_tag_mode	tag_mode;
 	t_asn_v2_typedef	*typedefs;
 } t_asn_v2_schema;
+
+// union {
+// 	bool      boolean;
+// 	char      *string;
+// 	t_num     *number;
+// 	uint8_t   *bytes;
+// };
+
+int	asn1_v2_schema_validate(t_node *json_schema_node);
 
 #endif

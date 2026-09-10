@@ -110,9 +110,9 @@ static int	__f_find_oid(t_node *node, const void *farg)
 	if (NULL == node) {
 		return (0);
 	}
-	SSL_LOG(TRACE, "checking oid=%s with farg=%s", node->content, farg);
+	SSL_LOG(TRACE, "checking oid=%s with farg=%p", node->content, farg);
 	if (ft_streq(node->content, farg)) {
-		SSL_LOG(TRACE, "found oid=%s with farg=%s", node->content, farg);
+		SSL_LOG(TRACE, "found oid=%s with farg=%p", node->content, farg);
 		return (1);
 	}
 	return (0);
@@ -123,9 +123,9 @@ static int	__f_find_name(t_node *node, const void *farg)
 	if (NULL == node) {
 		return (0);
 	}
-	SSL_LOG(TRACE, "checking name=%s with farg=%s", node->key, farg);
+	SSL_LOG(TRACE, "checking name=%s with farg=%p", node->key, farg);
 	if (ft_streq(node->key, farg)) {
-		SSL_LOG(TRACE, "found name=%s with farg=%s", node->key, farg);
+		SSL_LOG(TRACE, "found name=%s with farg=%p", node->key, farg);
 		return (1);
 	}
 	return (0);

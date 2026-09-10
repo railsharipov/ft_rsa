@@ -37,15 +37,15 @@ int asn1_query(const char *s, t_node *asn1_tree, t_node **ret_asn1_node)
 
 static int 	__f_asn1_node_selector(t_node *node, t_node *query, t_node **ret_node)
 {
-	if (query->type == JSON_Q_OBJECT_KEY) {
-		SSL_LOG(ERROR, "unexpected asn tree query type: %s", json_get_query_type_name(query->type));
+	if (query->type == JSON_Q_TYPE_OBJECT_KEY) {
+		SSL_LOG(ERROR, "unexpected asn tree query type: %#x", query->type);
 		return (JSON_BAD_QUERY);
 	}
-	else if (query->type == JSON_Q_SELF) {
+	else if (query->type == JSON_Q_TYPE_SELF) {
 		*ret_node = node;
-		return (JSON_MATCH);
+		return (JSON_MATCH_QUERY);
 	}
-	else if (query->type == JSON_Q_ARRAY_INDEX) {
+	else if (query->type == JSON_Q_TYPE_ARRAY_INDEX) {
 		t_node	*arr_item;
 		t_iasn		*asn1_item;
 		int			target_idx, idx;
@@ -63,14 +63,14 @@ static int 	__f_asn1_node_selector(t_node *node, t_node *query, t_node **ret_nod
 			if (idx == target_idx) {
 				SSL_LOG(TRACE, "found asn node at index `%d`", target_idx);
 				*ret_node = arr_item;
-				return (JSON_MATCH);
+				return (JSON_MATCH_QUERY);
 			}
 			arr_item = arr_item->next;
 			idx++;
 		}
 		SSL_LOG(TRACE, "no match found");
 
-		return (JSON_NO_MATCH);
+		return (JSON_NO_MATCH_QUERY);
 	}
 	else {
 		return (JSON_BAD_QUERY);
