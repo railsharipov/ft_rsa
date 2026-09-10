@@ -206,38 +206,34 @@ void ft_list_del_all_ref(t_list *list)
 typedef struct s_content_node {
 	t_node_v2  base;
 	void       *content;
-	t_func_content_del f_del;
 } t_content_node;
 
-static t_node_v2 *__ft_content_create_node(void *content, t_func_content_del f_del)
+static t_node_v2 *__ft_content_create_node(void *content)
 {
-	assert(NULL != f_del);
 	t_content_node *content_node = NULL;
 	LIBFT_ALLOC(content_node, sizeof(t_content_node));
 	content_node->content = content;
 	return (&content_node->base);
 }
 
-static void __ft_content_delete_node(t_node_v2 *node)
+static void __ft_content_delete_node(t_node_v2 *node, t_func_content_del f_del)
 {
 	if (NULL != node) {
+		assert(NULL != f_del);
 		t_content_node *content_node = container_of(node, t_content_node, base);
-		assert(NULL != content_node->f_del);
-		content_node->f_del(content_node->content);
+		f_del(content_node->content);
 		LIBFT_FREE(content_node);
 	}
 }
 
-void ft_list_append_content(t_list *list, void *content, t_func_content_del f_del)
+void ft_list_append_content(t_list *list, void *content)
 {
-	assert(NULL != f_del);
-	ft_list_append(list, __ft_content_create_node(content, f_del));
+	ft_list_append(list, __ft_content_create_node(content));
 }
 
-void ft_list_prepend_content(t_list *list, void *content, t_func_content_del f_del)
+void ft_list_prepend_content(t_list *list, void *content)
 {
-	assert(NULL != f_del);
-	ft_list_prepend(list, __ft_content_create_node(content, f_del));
+	ft_list_prepend(list, __ft_content_create_node(content));
 }
 
 void *ft_list_pop_content(t_list *list)
@@ -259,27 +255,29 @@ t_list *ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy)
 	t_list *list_copy = ft_list_create();
 	t_content_node *node = container_of(list->first, t_content_node, base);
 	while (NULL != node) {
-		ft_list_append_content(list_copy, f_copy(node->content), node->f_del);
+		ft_list_append_content(list_copy, f_copy(node->content));
 		node = container_next(node, t_content_node, base);
 	}
 	return (list_copy);
 }
 
-void ft_list_clear_all_content(t_list *list)
+void ft_list_clear_all_content(t_list *list, t_func_content_del f_del)
 {
 	assert(NULL != list);
+	assert(NULL != f_del);
 
 	t_node_v2 *node = ft_list_pop(list);
 	while (NULL != node) {
-		__ft_content_delete_node(node);
+		__ft_content_delete_node(node, f_del);
 		node = ft_list_pop(list);
 	}
 }
 
-void ft_list_del_all_content(t_list *list)
+void ft_list_del_all_content(t_list *list, t_func_content_del f_del)
 {
 	if (NULL == list) return;
-	ft_list_clear_all_content(list);
+
+	ft_list_clear_all_content(list, f_del);
 	LIBFT_FREE(list);
 }
 

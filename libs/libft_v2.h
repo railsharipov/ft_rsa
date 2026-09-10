@@ -59,12 +59,12 @@ void	ft_list_del_all_ref(t_list *list);
 typedef	void (*t_func_content_del)(void *content);
 typedef	void *(*t_func_content_copy)(void *content);
 
-void	ft_list_append_content(t_list *list, void *content, t_func_content_del f_del);
-void	ft_list_prepend_content(t_list *list, void *content, t_func_content_del f_del);
+void	ft_list_append_content(t_list *list, void *content);
+void	ft_list_prepend_content(t_list *list, void *content);
 void	*ft_list_pop_content(t_list *list);
 t_list	*ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy);
-void	ft_list_clear_all_content(t_list *list);
-void	ft_list_del_all_content(t_list *list);
+void	ft_list_clear_all_content(t_list *list, t_func_content_del f_del);
+void	ft_list_del_all_content(t_list *list, t_func_content_del f_del);
 
 /****************************************************************************/
 
