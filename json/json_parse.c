@@ -41,6 +41,12 @@
 ** }
 */
 
+enum __e_json_parse_status {
+	__JSON_MATCH,
+	__JSON_NO_MATCH,
+	__JSON_BAD_FORMAT,
+};
+
 typedef int (*t_func_json_parse)(const char *, t_node *);
 
 static size_t	__pos;
@@ -63,7 +69,7 @@ int json_parse(const char *s, t_node **node)
 
 	if (s == NULL) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	*node = NULL;
 	__pos = 0;
@@ -73,14 +79,14 @@ int json_parse(const char *s, t_node **node)
 	status = __parse_value(s, json_node);
 	__skip_ws(s);
 
-	if (status != JSON_MATCH || s[__pos] != '\0') {
+	if (status != __JSON_MATCH || s[__pos] != '\0') {
 		ft_node_del(json_node);
 		SSL_LOG(ERROR, "bad format");
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	*node = json_node;
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static void	__skip_ws(const char *s)
@@ -116,17 +122,17 @@ static int	__parse_value(const char *s, t_node *node)
 	for (int i = 0; i < arr_size; i++) {
 		status = f_arr[i](s, node);
 
-		if (JSON_MATCH == status) {
-			return (JSON_MATCH);
+		if (__JSON_MATCH == status) {
+			return (__JSON_MATCH);
 		}
-		else if (JSON_NO_MATCH == status) {
+		else if (__JSON_NO_MATCH == status) {
 			continue ;
 		}
 		else {
 			return (status);
 		}
 	}
-	return (JSON_NO_MATCH);
+	return (__JSON_NO_MATCH);
 }
 
 static int	__parse_null(const char *s, t_node *node)
@@ -144,11 +150,11 @@ static int	__parse_null(const char *s, t_node *node)
 
 	if (ft_strncmp(s + __pos, "null", 4) == 0) {
 		__pos += 4;
-		return (JSON_MATCH);
+		return (__JSON_MATCH);
 	} else {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
 		__pos = old_pos;
-		return (JSON_NO_MATCH);
+		return (__JSON_NO_MATCH);
 	}
 }
 
@@ -167,16 +173,16 @@ static int	__parse_boolean(const char *s, t_node *node)
 		__pos += 4;
 		node->type = JSON_TYPE_BOOL_TRUE;
 		node->f_del_content = json_get_f_del(JSON_TYPE_BOOL_TRUE);
-		return (JSON_MATCH);
+		return (__JSON_MATCH);
 	} else if (ft_strncmp(s + __pos, "false", 5) == 0) {
 		__pos += 5;
 		node->type = JSON_TYPE_BOOL_FALSE;
 		node->f_del_content = json_get_f_del(JSON_TYPE_BOOL_FALSE);
-		return (JSON_MATCH);
+		return (__JSON_MATCH);
 	} else {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
 		__pos = old_pos;
-		return (JSON_NO_MATCH);
+		return (__JSON_NO_MATCH);
 	}
 }
 
@@ -208,7 +214,7 @@ static int	__parse_number(const char *s, t_node *node)
 
 	if (!ft_isdigit(s[__pos]) && s[__pos] != '-') {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		return (JSON_NO_MATCH);
+		return (__JSON_NO_MATCH);
 	}
 
 	if (s[__pos] == '-') {
@@ -217,7 +223,7 @@ static int	__parse_number(const char *s, t_node *node)
 		if (!ft_isdigit(s[__pos])) {
 			SSL_LOG(ERROR, "bad negative number format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
 			__pos = old_pos;
-			return (JSON_BAD_FORMAT);
+			return (__JSON_BAD_FORMAT);
 		}
 	}
 
@@ -236,7 +242,7 @@ static int	__parse_number(const char *s, t_node *node)
 		if (!ft_isdigit(s[__pos])) {
 			SSL_LOG(ERROR, "bad float format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
 			__pos = old_pos;
-			return (JSON_BAD_FORMAT);
+			return (__JSON_BAD_FORMAT);
 		}
 		while (ft_isdigit(s[__pos])) {
 			__pos++;
@@ -256,7 +262,7 @@ static int	__parse_number(const char *s, t_node *node)
 		if (!ft_isdigit(s[__pos])) {
 			SSL_LOG(ERROR, "bad float format at index %d, %.20s...: expected digit, got '%c'", __pos, s + __pos, s[__pos]);
 			__pos = old_pos;
-			return (JSON_BAD_FORMAT);
+			return (__JSON_BAD_FORMAT);
 		}
 		while (ft_isdigit(s[__pos])) {
 			__pos++;
@@ -267,7 +273,7 @@ static int	__parse_number(const char *s, t_node *node)
 	if (is_float || is_neg_exponent) {
 		SSL_LOG(TRACE, "float: start=%zu, end=%zu, fraction_start=%zu, fraction_end=%zu, exponent_start=%zu, exponent_end=%zu", mantissa_start, mantissa_end, fraction_start, fraction_end, exponent_start, exponent_end);
 		SSL_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
-		return (JSON_BAD_FORMAT);
+		return (__JSON_BAD_FORMAT);
 	}
 	if (is_exponent) {
 		exponent_str = ft_strsub(s, exponent_start, exponent_end - exponent_start);
@@ -294,7 +300,7 @@ static int	__parse_number(const char *s, t_node *node)
 	node->content = number;
 	node->size = 0;
 
-	return (JSON_MATCH);
+	return (__JSON_MATCH);
 }
 
 static int	__parse_string(const char *s, t_node *node)
@@ -313,7 +319,7 @@ static int	__parse_string(const char *s, t_node *node)
 
 	if (s[__pos] != '"') {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		return (JSON_NO_MATCH);
+		return (__JSON_NO_MATCH);
 	}
 	__pos++;
 	str_start = __pos;
@@ -326,14 +332,14 @@ static int	__parse_string(const char *s, t_node *node)
 	if (s[__pos] == '\0') {
 		SSL_LOG(ERROR, "bad string format at index %d, %.20s...: expected '\"', got '%c'", __pos, s + __pos, s[__pos]);
 		__pos = old_pos;
-		return (JSON_BAD_FORMAT);
+		return (__JSON_BAD_FORMAT);
 	}
 	__pos++;
 
 	node->content = ft_strsub(s, str_start, str_end - str_start);
 	node->size = str_end - str_start;
 
-	return (JSON_MATCH);
+	return (__JSON_MATCH);
 }
 
 static int	__parse_kv(const char *s, t_htbl *htbl)
@@ -342,7 +348,7 @@ static int	__parse_kv(const char *s, t_htbl *htbl)
 	size_t 	old_pos;
 	int 	status;
 
-	status = JSON_NO_MATCH;
+	status = __JSON_NO_MATCH;
 	old_pos = __pos;
 
 	SSL_LOG(TRACE, "try parsing key-value at index %zu: %.20s...", __pos, s + __pos);
@@ -350,7 +356,7 @@ static int	__parse_kv(const char *s, t_htbl *htbl)
 	key_node = ft_node_create();
 	value_node = ft_node_create();
 
-	if (JSON_MATCH != (status = __parse_string(s, key_node))) {
+	if (__JSON_MATCH != (status = __parse_string(s, key_node))) {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
 		goto label_exit;
 	}
@@ -358,23 +364,23 @@ static int	__parse_kv(const char *s, t_htbl *htbl)
 
 	if (s[__pos] != ':') {
 		SSL_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected ':', got '%c'", __pos, s + __pos, s[__pos]);
-		status = JSON_BAD_FORMAT;
+		status = __JSON_BAD_FORMAT;
 		goto label_exit;
 	}
 	__pos++;
 
-	if (JSON_MATCH != (status = __parse_value(s, value_node))) {
+	if (__JSON_MATCH != (status = __parse_value(s, value_node))) {
 		SSL_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected value", __pos, s + __pos);
 		goto label_exit;
 	}
-	status = JSON_MATCH;
+	status = __JSON_MATCH;
 
 	ft_htbl_add_with_f_del(htbl, value_node, key_node->content, json_get_f_del(value_node->type));
 
 label_exit:
 	ft_node_del(key_node);
 
-	if (status != JSON_MATCH) {
+	if (status != __JSON_MATCH) {
 		__pos = old_pos;
 		ft_node_del(value_node);
 	}
@@ -401,19 +407,19 @@ static int	__parse_object(const char *s, t_node *node)
 
 	if (s[__pos] != '{') {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		status = JSON_NO_MATCH;
+		status = __JSON_NO_MATCH;
 		goto label_exit;
 	}
 	__pos++;
 
 	if (s[__pos] == '}') {
 		__pos++;
-		status = JSON_MATCH;
+		status = __JSON_MATCH;
 		goto label_exit;
 	}
 
 	do {
-		if (JSON_MATCH != (status = __parse_kv(s, htbl))) {
+		if (__JSON_MATCH != (status = __parse_kv(s, htbl))) {
 			SSL_LOG(ERROR, "bad object at index %d, %.20s...: expected key-value", __pos, s + __pos);
 			goto label_exit;
 		}
@@ -423,17 +429,17 @@ static int	__parse_object(const char *s, t_node *node)
 
 	if (s[__pos] != '}') {
 		SSL_LOG(ERROR, "bad object format at index %d, %.20s...: expected '}', got '%c'", __pos, s + __pos, s[__pos]);
-		status = JSON_BAD_FORMAT;
+		status = __JSON_BAD_FORMAT;
 		goto label_exit;
 	}
 	__pos++;
 
 	node->content = htbl;
 
-	status = JSON_MATCH;
+	status = __JSON_MATCH;
 
 label_exit:
-	if (status != JSON_MATCH) {
+	if (status != __JSON_MATCH) {
 		__pos = old_pos;
 		ft_htbl_del(htbl);
 	}
@@ -459,14 +465,14 @@ static int	__parse_array(const char *s, t_node *node)
 
 	if (s[__pos] != '[') {
 		SSL_LOG(TRACE, "no match at index %zu: %c", __pos, s[__pos]);
-		status = JSON_NO_MATCH;
+		status = __JSON_NO_MATCH;
 		goto label_exit;
 	}
 	__pos++;
 
 	ft_lst_prepend(&value_node_list, ft_node_create());
 
-	if (JSON_MATCH != (status = __parse_value(s, value_node_list))) {
+	if (__JSON_MATCH != (status = __parse_value(s, value_node_list))) {
 		SSL_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", __pos, s + __pos);
 		goto label_exit;
 	}
@@ -477,7 +483,7 @@ static int	__parse_array(const char *s, t_node *node)
 
 		ft_lst_prepend(&value_node_list, ft_node_create());
 
-		if (JSON_MATCH != (status = __parse_value(s, value_node_list))) {
+		if (__JSON_MATCH != (status = __parse_value(s, value_node_list))) {
 			SSL_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", __pos, s + __pos);
 			goto label_exit;
 		}
@@ -485,7 +491,7 @@ static int	__parse_array(const char *s, t_node *node)
 	}
 	if (s[__pos] != ']') {
 		SSL_LOG(ERROR, "bad array format at index %d, %.20s...: expected ']', got '%c'", __pos, s + __pos, s[__pos]);
-		status = JSON_BAD_FORMAT;
+		status = __JSON_BAD_FORMAT;
 		goto label_exit;
 	}
 	__pos++;
@@ -495,10 +501,10 @@ static int	__parse_array(const char *s, t_node *node)
 	node->content = value_node_list;
 	node->size = ft_lst_size(value_node_list);
 
-	status = JSON_MATCH;
+	status = __JSON_MATCH;
 
 label_exit:
-	if (status != JSON_MATCH) {
+	if (status != __JSON_MATCH) {
 		__pos = old_pos;
 		ft_lst_del(value_node_list);
 	}
@@ -509,24 +515,24 @@ label_exit:
 int	json_parse_file(const char *filename, t_node **node)
 {
 	t_ostring file_content;
-	if (SSL_OK != file_read_all(filename, &file_content)) {
+	if (JSON_OK != file_read_all(filename, &file_content)) {
 		SSL_LOG(ERROR, "file read error");
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	char *json_s = ft_ostr_to_cstr(&file_content, 0, file_content.size);
 	ft_ostr_clear(&file_content);
 	if (NULL == json_s) {
 		SSL_LOG(ERROR, "memory error");
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	int ret = json_parse(json_s, node);
 	LIBFT_FREE(json_s);
 
-	if (SSL_OK != ret) {
+	if (JSON_OK != ret) {
 		SSL_LOG(ERROR, "json file parse error");
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 int	json_parse_stream(t_io_v2_stream *stream, t_node **node)
@@ -547,20 +553,20 @@ int	json_parse_stream(t_io_v2_stream *stream, t_node **node)
 	}
 	if (stream->status != IO_V2_STATUS_EOF) {
 		SSL_LOG(ERROR, IO_READ_ERROR);
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	char *json_s = ft_ostr_to_cstr(&file_content, 0, file_content.size);
 	ft_ostr_clear(&file_content);
 	if (NULL == json_s) {
 		SSL_LOG(ERROR, "memory error");
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	int ret = json_parse(json_s, node);
 	LIBFT_FREE(json_s);
 
-	if (SSL_OK != ret) {
+	if (JSON_OK != ret) {
 		SSL_LOG(ERROR, "json stream parse error");
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
-	return (SSL_OK);
+	return (JSON_OK);
 }

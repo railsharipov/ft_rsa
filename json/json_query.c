@@ -42,28 +42,33 @@ int json_query(const char *s, t_node *json, t_node **ret_node)
 
 int json_query_with_f_selector(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector)
 {
-	int ret;
-
 	if (NULL == s) {
-		SSL_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
-		return (JSON_BAD_QUERY);
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (JSON_ERR);
 	}
-
 	if (NULL == json || NULL == ret_node) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (SSL_ERR);
 	}
+	int status = __run_query(s, json, ret_node, f_selector);
 
-	if (JSON_MATCH != (ret = __run_query(s, json, ret_node, f_selector))) {
-		if (ret == JSON_NO_MATCH) {
-			SSL_LOG(TRACE, "no such key: %s", s);
-		} else {
-			SSL_LOG(ERROR, __JQ_BAD_QUERY_ERROR);
-		}
-		return (SSL_ERR);
+	switch (status) {
+	case JSON_MATCH_QUERY:
+		SSL_LOG(TRACE, "match key: %s", s);
+		return (JSON_OK);
+	case JSON_NO_MATCH_QUERY:
+		SSL_LOG(TRACE, "no such key: %s", s);
+		return (JSON_ERR);
+	case JSON_BAD_QUERY:
+		SSL_LOG(TRACE, "bad query: %s", s);
+		return (JSON_ERR);
+	case JSON_BAD_QUERY_FORMAT:
+		SSL_LOG(ERROR, "bad query format: %s", s);
+		return (JSON_FMT);
+	default:
+		SSL_LOG(ERROR, "unexpected query status: %#x", status);
+		return (JSON_ERR);
 	}
-
-	return (SSL_OK);
 }
 
 static int __run_query(const char *s, t_node *json, t_node **ret_node, t_func_json_select f_selector)
@@ -81,7 +86,7 @@ static int __run_query(const char *s, t_node *json, t_node **ret_node, t_func_js
 		query = ft_node_create();
 		selected_node = NULL;
 
-		if (JSON_QUERY_OK == (status = __parse_selector(s, query))) {
+		if (JSON_OK == (status = __parse_selector(s, query))) {
 			SSL_LOG(TRACE, "parsed %s", __get_json_q_type_name(query->type));
 			status = f_selector(cur_node, query, &selected_node);
 		} else {
@@ -89,7 +94,7 @@ static int __run_query(const char *s, t_node *json, t_node **ret_node, t_func_js
 		}
 		ft_node_del(query);
 
-		if (status != JSON_MATCH) {
+		if (status != JSON_MATCH_QUERY) {
 			return (status);
 		}
 		cur_node = selected_node;
@@ -115,9 +120,9 @@ static int 	__parse_selector(const char *s, t_node *query)
 		end = __pos;
 
 		if (begin == end) {
-			query->type = JSON_Q_SELF;
+			query->type = JSON_Q_TYPE_SELF;
 		} else {
-			query->type = JSON_Q_OBJECT_KEY;
+			query->type = JSON_Q_TYPE_OBJECT_KEY;
 			query->content = ft_strsub(s, begin, end - begin);
 		}
 	}
@@ -132,7 +137,7 @@ static int 	__parse_selector(const char *s, t_node *query)
 				__pos++;
 			}
 			end = __pos;
-			query->type = JSON_Q_ARRAY_INDEX;
+			query->type = JSON_Q_TYPE_ARRAY_INDEX;
 		}
 		else if (s[__pos] == '"' || s[__pos] == '\'') {
 			SSL_LOG(TRACE, "parsing object key");
@@ -146,16 +151,16 @@ static int 	__parse_selector(const char *s, t_node *query)
 
 			if (s[__pos] != quote) {
 				SSL_LOG(ERROR, __JQ_BAD_SELECTOR_ERROR ": expected terminating `%c`, got `%c`", quote, s[__pos]);
-				return (JSON_BAD_QUERY);
+				return (JSON_BAD_QUERY_FORMAT);
 			}
 			end = __pos;
 			__pos++;
-			query->type = JSON_Q_OBJECT_KEY;
+			query->type = JSON_Q_TYPE_OBJECT_KEY;
 		}
 
 		if (s[__pos] != ']') {
 			SSL_LOG(ERROR, __JQ_BAD_SELECTOR_ERROR ": expected `]`, got `%c`", s[__pos]);
-			return (JSON_BAD_QUERY);
+			return (JSON_BAD_QUERY_FORMAT);
 		}
 		__pos++;
 
@@ -163,27 +168,27 @@ static int 	__parse_selector(const char *s, t_node *query)
 	}
 	else {
 		SSL_LOG(ERROR, __JQ_BAD_SELECTOR_ERROR ": `%c`", s[__pos]);
-		return (JSON_BAD_QUERY);
+		return (JSON_BAD_QUERY_FORMAT);
 	}
 
-	return (JSON_QUERY_OK);
+	return (JSON_OK);
 }
 
 static int 	__f_default_selector(t_node *node, t_node *query, t_node **ret_node)
 {
-	if (query->type == JSON_Q_OBJECT_KEY) {
+	if (query->type == JSON_Q_TYPE_OBJECT_KEY) {
 		return (__select_object_key(node, query, ret_node));
 	}
-	else if (query->type == JSON_Q_ARRAY_INDEX) {
+	else if (query->type == JSON_Q_TYPE_ARRAY_INDEX) {
 		return (__select_array_index(node, query, ret_node));
 	}
-	else if (query->type == JSON_Q_SELF) {
+	else if (query->type == JSON_Q_TYPE_SELF) {
 		*ret_node = node;
-		return (JSON_MATCH);
+		return (JSON_MATCH_QUERY);
 	}
 	SSL_LOG(ERROR, "unknown query type");
 
-	return (JSON_BAD_QUERY);
+	return (JSON_BAD_QUERY_FORMAT);
 }
 
 static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node)
@@ -194,8 +199,8 @@ static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node)
 	SSL_LOG(TRACE, "searching for object key: `%s`", query->content);
 
 	if (node->type != JSON_TYPE_OBJECT) {
-		SSL_LOG(ERROR, "using key for non-object type");
-		return (JSON_BAD_FORMAT);
+		SSL_LOG(TRACE, "using key for non-object type");
+		return (JSON_BAD_QUERY);
 	}
 
 	htbl = node->content;
@@ -204,11 +209,11 @@ static int 	__select_object_key(t_node *node, t_node *query, t_node **ret_node)
 	if (value_node != NULL) {
 		SSL_LOG(TRACE, "found node of type `%s`", json_get_type_name(value_node->type));
 		*ret_node = value_node;
-		return (JSON_MATCH);
+		return (JSON_MATCH_QUERY);
 	}
 
 	SSL_LOG(TRACE, "no match found");
-	return (JSON_NO_MATCH);
+	return (JSON_NO_MATCH_QUERY);
 }
 
 static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
@@ -219,8 +224,8 @@ static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
 	SSL_LOG(TRACE, "indexing array at: `%s`", query->content);
 
 	if (node->type != JSON_TYPE_ARRAY) {
-		SSL_LOG(ERROR, "using index for non-array type");
-		return (JSON_BAD_FORMAT);
+		SSL_LOG(TRACE, "using index for non-array type");
+		return (JSON_BAD_QUERY);
 	}
 
 	arr_item = node->content;
@@ -233,24 +238,24 @@ static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
 		if (idx == target_idx) {
 			SSL_LOG(TRACE, "found node of type `%s`", json_get_type_name(arr_item->type));
 			*ret_node = arr_item;
-			return (JSON_MATCH);
+			return (JSON_MATCH_QUERY);
 		}
 		arr_item = arr_item->next;
 		idx++;
 	}
 
 	SSL_LOG(TRACE, "no match found");
-	return (JSON_NO_MATCH);
+	return (JSON_NO_MATCH_QUERY);
 }
 
 static const char	*__get_json_q_type_name(enum e_json_q_type type)
 {
 	switch (type) {
-		case JSON_Q_OBJECT_KEY:
+		case JSON_Q_TYPE_OBJECT_KEY:
 			return ("object key");
-		case JSON_Q_ARRAY_INDEX:
+		case JSON_Q_TYPE_ARRAY_INDEX:
 			return ("array index");
-		case JSON_Q_SELF:
+		case JSON_Q_TYPE_SELF:
 			return ("self");
 		default:
 			return ("undefined");

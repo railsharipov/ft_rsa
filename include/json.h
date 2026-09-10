@@ -5,7 +5,7 @@
 # include <libft.h>
 # include <io.h>
 
-enum	e_json_type {
+typedef enum e_json_type {
     JSON_TYPE_BYTES = 1,
     JSON_TYPE_ARRAY,
     JSON_TYPE_OBJECT,
@@ -15,24 +15,25 @@ enum	e_json_type {
     JSON_TYPE_BOOL_FALSE,
     JSON_TYPE_NULL,
 	JSON_TYPE_COUNT
+} t_json_type;
+
+enum e_json_status {
+	JSON_OK,
+	JSON_ERR,
+	JSON_FMT
 };
 
-enum	e_json_status
-{
-	JSON_MATCH 		= SSL_STATUS_COUNT,
-	JSON_NO_MATCH	= SSL_STATUS_COUNT + 1,
-	JSON_BAD_FORMAT = SSL_STATUS_COUNT + 2,
-	JSON_BAD_TYPE	= SSL_STATUS_COUNT + 3,
-	JSON_QUERY_OK	= SSL_STATUS_COUNT + 4,
-	JSON_BAD_QUERY	= SSL_STATUS_COUNT + 5,
+enum e_json_q_type {
+    JSON_Q_TYPE_OBJECT_KEY,
+    JSON_Q_TYPE_ARRAY_INDEX,
+    JSON_Q_TYPE_SELF,
 };
 
-enum    e_json_q_type
-{
-    JSON_Q_OBJECT_KEY = 1,
-    JSON_Q_ARRAY_INDEX,
-    JSON_Q_SELF,
-    JSON_Q_TYPE_COUNT
+enum e_json_q_status {
+	JSON_MATCH_QUERY,
+	JSON_NO_MATCH_QUERY,
+	JSON_BAD_QUERY,
+	JSON_BAD_QUERY_FORMAT,
 };
 
 typedef int (*t_func_json_map)(t_node *node);

@@ -21,19 +21,19 @@ int	json_clone(t_node *json, t_node **ret_json)
 
 	if (json == NULL || ret_json == NULL) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 
 	*ret_json = NULL;
 	node = ft_node_create();
 
-	if (SSL_OK != __copy_node(json, node)) {
+	if (JSON_OK != __copy_node(json, node)) {
 		ft_node_del(node);
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 
 	*ret_json = node;
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_node(t_node *src, t_node *dst)
@@ -47,11 +47,11 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 
 	if (NULL == src || NULL == dst) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 	if (src->type != type) {
 		SSL_LOG(ERROR, "expected %s, got %s", json_get_type_name(type), json_get_type_name(src->type));
-		return (SSL_ERR);
+		return (JSON_ERR);
 	}
 
 	ft_node_init(dst);
@@ -81,7 +81,7 @@ static int	__copy_node_of_type(t_node *src, t_node *dst, int type)
 			break;
 		default:
 			SSL_LOG(ERROR, "cannot clone type: %s", json_get_type_name(src->type));
-			return (SSL_ERR);
+			return (JSON_ERR);
 	}
 
 	return (ret);
@@ -105,10 +105,10 @@ static int	__copy_object(t_node *src, t_node *dst)
 		value_node = item->content;
 		dst_value_node = ft_node_create();
 
-		if (SSL_OK != __copy_node(value_node, dst_value_node)) {
+		if (JSON_OK != __copy_node(value_node, dst_value_node)) {
 			ft_node_del(dst_value_node);
 			ft_htbl_del(dst_htbl);
-			return (SSL_ERR);
+			return (JSON_ERR);
 		}
 		ft_htbl_add(dst_htbl, dst_value_node, item->key);
 	}
@@ -118,7 +118,7 @@ static int	__copy_object(t_node *src, t_node *dst)
 	dst->size = 0;
 	dst->f_del_content = json_get_f_del(dst->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_array(t_node *src, t_node *dst)
@@ -135,10 +135,10 @@ static int	__copy_array(t_node *src, t_node *dst)
 	while (src_list) {
 		item = ft_node_create();
 
-		if (SSL_OK != __copy_node(src_list, item)) {
+		if (JSON_OK != __copy_node(src_list, item)) {
 			ft_node_del(item);
 			ft_lst_del(dst_list);
-			return (SSL_ERR);
+			return (JSON_ERR);
 		}
 
 		ft_lst_prepend(&dst_list, item);
@@ -151,7 +151,7 @@ static int	__copy_array(t_node *src, t_node *dst)
 	dst->size = ft_lst_size(dst_list);
 	dst->f_del_content = json_get_f_del(src->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_string(t_node *src, t_node *dst)
@@ -163,7 +163,7 @@ static int	__copy_string(t_node *src, t_node *dst)
 	dst->size = src->size;
 	dst->f_del_content = json_get_f_del(src->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_number(t_node *src, t_node *dst)
@@ -180,7 +180,7 @@ static int	__copy_number(t_node *src, t_node *dst)
 	dst->size = 0;
 	dst->f_del_content = json_get_f_del(src->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_boolean(t_node *src, t_node *dst)
@@ -192,7 +192,7 @@ static int	__copy_boolean(t_node *src, t_node *dst)
 	dst->size = 0;
 	dst->f_del_content = json_get_f_del(src->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_null(t_node *src, t_node *dst)
@@ -206,7 +206,7 @@ static int	__copy_null(t_node *src, t_node *dst)
 	dst->size = 0;
 	dst->f_del_content = json_get_f_del(src->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
 
 static int	__copy_bytes(t_node *src, t_node *dst)
@@ -218,5 +218,5 @@ static int	__copy_bytes(t_node *src, t_node *dst)
 	dst->size = src->size;
 	dst->f_del_content = json_get_f_del(src->type);
 
-	return (SSL_OK);
+	return (JSON_OK);
 }
