@@ -248,6 +248,25 @@ void *ft_list_pop_content(t_list *list)
 	return (NULL);
 }
 
+bool ft_list_next_content(t_list *list, t_list_next *next, void **content)
+{
+	assert(NULL != list);
+	assert(NULL != next);
+
+	if (!next->init) {
+		next->node = list->first;
+		next->init = true;
+	}
+	if (NULL != next->node) {
+		t_content_node *content_node = container_of(next->node, t_content_node, base);
+		if (NULL != content) *content = content_node->content;
+		next->node = next->node->next;
+		return (true);
+	}
+	if (NULL != content) *content = NULL;
+	return (false);
+}
+
 t_list *ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy)
 {
 	assert(NULL != f_copy);
@@ -525,12 +544,10 @@ void ft_htbl_v2_del(t_htbl_v2 *htbl, t_func_content_del f_del_content)
 bool ft_htbl_v2_next(t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content)
 {
 	t_htbl_v2_entry *entry = NULL;
-	if (__ft_htbl_v2_next_entry(htbl, next, &entry)) {
-		if (NULL != key) *key = entry->key;
-		if (NULL != content) *content = entry->content;
-		return (true);
-	}
-	return (false);
+	bool exists = __ft_htbl_v2_next_entry(htbl, next, &entry);
+	if (NULL != key) { *key = (exists) ? entry->key : NULL; }
+	if (NULL != content) { *content = (exists) ? entry->content : NULL; }
+	return (exists);
 }
 
 void ft_htbl_v2_resize(t_htbl_v2 *htbl, uint32_t size)
