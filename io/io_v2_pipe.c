@@ -18,11 +18,11 @@ int io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_str
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (SSL_ERR);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_READ, upstream->flags)) {
+    if (!FLAG(IO_V2_FLAG_READ, upstream->flags)) {
         SSL_LOG(ERROR, "upstream stream is not readable");
         return (SSL_ERR);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_WRITE, downstream->flags)) {
+    if (!FLAG(IO_V2_FLAG_WRITE, downstream->flags)) {
         SSL_LOG(ERROR, "downstream stream is not writable");
         return (SSL_ERR);
     }

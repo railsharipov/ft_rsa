@@ -14,16 +14,16 @@ int	io_osbuf(t_iodes *iodes, uint32_t flags, t_ostring *osbuf)
 
 	ft_bzero(iodes, sizeof(t_iodes));
 
-	if (!SSL_FLAG(IO_READ, flags) && !SSL_FLAG(IO_WRITE, flags)) {
+	if (!FLAG(IO_READ, flags) && !FLAG(IO_WRITE, flags)) {
 		SSL_LOG(ERROR, "invalid flags %#x - neither IO_READ nor IO_WRITE set", flags);
 		return (SSL_ERR);
 	}
-	if (SSL_FLAG(IO_READ, flags) && SSL_FLAG(IO_WRITE, flags)) {
+	if (FLAG(IO_READ, flags) && FLAG(IO_WRITE, flags)) {
 		SSL_LOG(ERROR, "invalid flags %#x - both IO_READ and IO_WRITE set", flags);
 		return (SSL_ERR);
 	}
 
-	if (SSL_FLAG(IO_READ, flags)) {
+	if (FLAG(IO_READ, flags)) {
 		if (NULL == osbuf->content) {
 			SSL_LOG(ERROR, "buffer is not specified");
 			return (SSL_ERR);

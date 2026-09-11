@@ -168,7 +168,7 @@ t_node	*asn1_node_create_from_schema(t_node *json_schema)
 		SSL_LOG(ERROR, "unknown asn1 tagnum: %#x", asn1_item->tagnum);
 		goto label_error;
 	}
-	SSL_LOG(TRACE, "using asn1_item encode tag: %s", SSL_FLAG(ASN_ENCODE_CONSTRUCT, asn1_item->tag) ? "construct" : "primitive");
+	SSL_LOG(TRACE, "using asn1_item encode tag: %s", FLAG(ASN_ENCODE_CONSTRUCT, asn1_item->tag) ? "construct" : "primitive");
 
 	if (value != NULL) {
 		if (value->type == JSON_TYPE_ARRAY) {

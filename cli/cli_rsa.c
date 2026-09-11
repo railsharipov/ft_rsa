@@ -155,7 +155,7 @@
 // 		SSL_LOG(ERROR, UNSPECIFIED_ERROR);
 // 		return (SSL_ERR);
 // 	}
-// 	if (SSL_FLAG(RSA_CHECK, __gflag)) {
+// 	if (FLAG(RSA_CHECK, __gflag)) {
 // 		if (SSL_OK != rsa_check(asn1_key)) {
 // 			asn1_tree_del(asn1_key);
 // 			SSL_LOG(ERROR, UNSPECIFIED_ERROR);
@@ -205,7 +205,7 @@
 
 // static int	__write_output(char *output, size_t outsize)
 // {
-// 	if (!SSL_FLAG(RSA_NOOUT, __gflag)) {
+// 	if (!FLAG(RSA_NOOUT, __gflag)) {
 // 		SSL_LOG(INFO, "writing RSA key");
 
 // 		if (io_write(&__out, output, outsize) < 0) {
@@ -220,14 +220,14 @@
 // {
 // 	t_iodes	*iodes;
 
-// 	iodes = (SSL_FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
+// 	iodes = (FLAG(IO_INPUT, task->tflag)) ? (&__in):(&__out);
 
 // 	return (io_fopen(iodes, task->oflag, NULL));
 // }
 
 // static int	__set_type(const char *opt, const t_task *task)
 // {
-// 	if (SSL_FLAG(RSA_PUBIN, task->tflag)) {
+// 	if (FLAG(RSA_PUBIN, task->tflag)) {
 // 		__in_type = TYPE_X509_PUBLIC_KEY;
 // 		__in_map = MAP_X509_PUBLIC_KEY;
 // 	} else {
@@ -241,7 +241,7 @@
 // {
 // 	uint32_t	*form;
 
-// 	form = (SSL_FLAG(RSA_INFORM, task->tflag)) ? (&__inform) : (&__outform);
+// 	form = (FLAG(RSA_INFORM, task->tflag)) ? (&__inform) : (&__outform);
 
 // 	if (!ft_strcmp(opt, "PEM")) {
 // 		*form = RSA_PEM;
@@ -257,7 +257,7 @@
 
 // static int	__get_pass(const char *opt, const t_task *task)
 // {
-// 	if (SSL_FLAG(RSA_PASSIN, task->tflag)) {
+// 	if (FLAG(RSA_PASSIN, task->tflag)) {
 // 		__passin = (char *)opt;
 // 	}
 // 	else
@@ -270,10 +270,10 @@
 // {
 // 	t_iasn	*asn1_item;
 
-// 	if (SSL_FLAG(RSA_TEXT, __gflag)) {
+// 	if (FLAG(RSA_TEXT, __gflag)) {
 // 		asn1_print(asn1_key);
 // 	}
-// 	if (SSL_FLAG(RSA_MODULUS, __gflag)) {
+// 	if (FLAG(RSA_MODULUS, __gflag)) {
 // 		asn1_item = asn1_tree_get(asn1_key, "modulus");
 
 // 		if (NULL != asn1_item) {
@@ -287,11 +287,11 @@
 // {
 // 	t_node	*asn1_pubkey;
 
-// 	if (SSL_FLAG(RSA_PUBIN, __gflag)) {
+// 	if (FLAG(RSA_PUBIN, __gflag)) {
 // 		__out_type = TYPE_X509_PUBLIC_KEY;
 // 		__out_map = MAP_X509_PUBLIC_KEY;
 // 	}
-// 	else if (SSL_FLAG(RSA_PUBOUT, __gflag)) {
+// 	else if (FLAG(RSA_PUBOUT, __gflag)) {
 // 		asn1_pubkey = asn1_tree(MAP_X509_PUBLIC_KEY);
 
 // 		if (SSL_OK != asn1_transform(*asn1_key, asn1_pubkey)) {
@@ -357,7 +357,7 @@
 // 		goto label_exit;
 // 	}
 // 	if (RSA_PEM == __outform) {
-// 		if (SSL_FLAG(RSA_ENCRYPT, __gflag)) {
+// 		if (FLAG(RSA_ENCRYPT, __gflag)) {
 // 			pem = pem_create(__out_type, NULL, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
 // 			if (SSL_OK != pem_encode(pem, &der_key, &pem_key, __passout)) {
 // 				SSL_LOG(ERROR, "failed to PEM encode key");

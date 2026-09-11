@@ -287,7 +287,7 @@ static int	__encode_ostring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding octet string, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
+	if (!FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
@@ -301,7 +301,7 @@ static int	__encode_bitstring(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding bit string, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
+	if (!FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
@@ -323,7 +323,7 @@ static int	__encode_bool(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding boolean, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
+	if (!FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
@@ -341,7 +341,7 @@ static int	__encode_sequence(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding sequence, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (!FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected construct");
 		return (SSL_ERR);
 	}
@@ -379,7 +379,7 @@ static int	__encode_null(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding null, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
+	if (!FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
@@ -397,7 +397,7 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding integer, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
+	if (!FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}
@@ -430,7 +430,7 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 {
 	SSL_LOG(TRACE, "encoding object identifier, size: %zu", data->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
+	if (!FLAG(ASN_ENCODE_PRIMITIVE, tag)) {
 		SSL_LOG(ERROR, "invalid asn type tag: expected primitive");
 		return (SSL_ERR);
 	}

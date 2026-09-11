@@ -345,7 +345,7 @@ static int	__decode_ostring(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_OK);
 	}
 
-	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid der encoding: ostring type: expected primitive, got construct");
 		return (SSL_ERR);
 	}
@@ -364,7 +364,7 @@ static int	__decode_bitstring(uint8_t tag, t_ostring *decoded, t_ostring *encode
 		return (SSL_ERR);
 	}
 
-	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(TRACE, "decoding constructed bit string");
 
 		t_node *nodes = NULL;
@@ -394,7 +394,7 @@ static int	__decode_bool(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid der encoding: bool type: expected primitive, got construct");
 		return (SSL_ERR);
 	}
@@ -408,7 +408,7 @@ static int	__decode_sequence(uint8_t tag, t_ostring *decoded, t_ostring *encoded
 {
 	SSL_LOG(TRACE, "decoding sequence, size: %zu", encoded->size);
 
-	if (!SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (!FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid der encoding: sequence type: expected construct, got primitive");
 		return (SSL_ERR);
 	}
@@ -431,7 +431,7 @@ static int	__decode_null(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
 	SSL_LOG(TRACE, "decoding null, size: %zu", encoded->size);
 
-	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid der encoding: null type: expected primitive, got construct");
 		return (SSL_ERR);
 	}
@@ -445,7 +445,7 @@ static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 {
 	SSL_LOG(TRACE, "decoding integer, size: %zu", encoded->size);
 
-	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid der encoding: int type: expected primitive, got construct");
 		return (SSL_ERR);
 	}
@@ -468,7 +468,7 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 		return (SSL_ERR);
 	}
 
-	if (SSL_FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
+	if (FLAG(ASN_ENCODE_CONSTRUCT, tag)) {
 		SSL_LOG(ERROR, "invalid der encoding: oid type: expected primitive, got construct");
 		return (SSL_ERR);
 	}

@@ -19,7 +19,7 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_READ, stream->flags)) {
+    if (!FLAG(IO_V2_FLAG_READ, stream->flags)) {
         SSL_LOG(ERROR, "stream is not readable");
         return (-1);
     }
@@ -96,7 +96,7 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_WRITE, stream->flags)) {
+    if (!FLAG(IO_V2_FLAG_WRITE, stream->flags)) {
         SSL_LOG(ERROR, "stream is not writable");
         return (-1);
     }
@@ -165,7 +165,7 @@ ssize_t io_v2_finish(t_io_v2_stream *stream)
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_FINISH, stream->flags)) {
+    if (!FLAG(IO_V2_FLAG_FINISH, stream->flags)) {
         SSL_LOG(ERROR, "stream is not finishable");
         return (-1);
     }
@@ -213,7 +213,7 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
+    if (!FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
         SSL_LOG(ERROR, "stream is not flushable");
         return (-1);
     }
@@ -256,7 +256,7 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
         SSL_LOG(ERROR, INVALID_INPUT_ERROR);
         return (-1);
     }
-    if (!SSL_FLAG(IO_V2_FLAG_CLOSE, stream->flags)) {
+    if (!FLAG(IO_V2_FLAG_CLOSE, stream->flags)) {
         SSL_LOG(ERROR, "stream is not closable");
         return (-1);
     }

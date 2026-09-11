@@ -84,18 +84,18 @@ int	io_fopen(t_iodes *iodes, uint32_t flags, const char *filename)
 
 	iodes->fd = param->fd;
 
-	if (SSL_FLAG(IO_FILE, flags)) {
+	if (FLAG(IO_FILE, flags)) {
 		if (NULL == filename) {
 			SSL_LOG(ERROR, "filename is not specified");
 			return (-1);
 		}
 
 		SSL_LOG(TRACE, "opening file '%s' with flags 0x%x", filename, flags);
-		if (SSL_FLAG(IO_READ, flags)) {
+		if (FLAG(IO_READ, flags)) {
 			iodes->fd = open(filename, O_RDONLY, 0644);
 			SSL_LOG(TRACE, "opened file for reading, fd=%d", iodes->fd);
 		}
-		else if (SSL_FLAG(IO_WRITE, flags)) {
+		else if (FLAG(IO_WRITE, flags)) {
 			iodes->fd = open(filename, O_TRUNC|O_RDWR|O_CREAT, 0644);
 			SSL_LOG(TRACE, "opened file for writing, fd=%d", iodes->fd);
 		}

@@ -149,7 +149,7 @@ static int	__test_der_decode_pkcs1_rsaPrivateKey(void)
         TEST_ASSERT(SSL_OK == ret);
         asn1_item = asn1_node->content;
         TEST_ASSERT(asn1_item != NULL);
-        TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+        TEST_ASSERT(FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
         TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
         TEST_ASSERT(asn1_item->content != NULL);
         num = (t_num *)asn1_item->content;
@@ -314,7 +314,7 @@ static int	__test_der_decode_pkcs8_privateKeyInfo(void)
 
 		asn1_item = asn1_node->content;
 		TEST_ASSERT(asn1_item != NULL);
-		TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+		TEST_ASSERT(FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
 		TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
 		TEST_ASSERT(asn1_item->content != NULL);
 
@@ -411,7 +411,7 @@ static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void)
 
 	asn1_item = asn1_node->content;
 	TEST_ASSERT(asn1_item != NULL);
-	TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+	TEST_ASSERT(FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
 	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
 	TEST_ASSERT(asn1_item->content != NULL);
 
@@ -424,7 +424,7 @@ static int	__test_der_decode_pkcs8_subjectPublicKeyInfo(void)
 
 	asn1_item = asn1_node->content;
 	TEST_ASSERT(asn1_item != NULL);
-	TEST_ASSERT(SSL_FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
+	TEST_ASSERT(FLAG(ASN_ENCODE_PRIMITIVE, asn1_item->tag));
 	TEST_ASSERT(asn1_item->tagnum == ASN_TAGNUM_INT);
 	TEST_ASSERT(asn1_item->content != NULL);
 

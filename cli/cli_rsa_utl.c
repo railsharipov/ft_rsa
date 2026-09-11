@@ -185,7 +185,7 @@
 
 // static int	__write_output(char *output, size_t outsize)
 // {
-// 	if (SSL_FLAG(RSA_HEXDUMP, __gflag)) {
+// 	if (FLAG(RSA_HEXDUMP, __gflag)) {
 // 		ft_bytes_write_hex(__out.fd, output, outsize);
 // 	}
 // 	else if (io_write(&__out, output, outsize) < 0)
@@ -231,10 +231,10 @@
 // {
 // 	t_iodes	*iodes;
 
-// 	if (SSL_FLAG(IO_INPUT, task->tflag)) {
+// 	if (FLAG(IO_INPUT, task->tflag)) {
 // 		iodes = &__in;
 // 	}
-// 	else if (SSL_FLAG(IO_OUTPUT, task->tflag))
+// 	else if (FLAG(IO_OUTPUT, task->tflag))
 // 		iodes = &__out;
 // 	else
 // 		iodes = &__inkey;
@@ -246,7 +246,7 @@
 // {
 // 	(void)opt;
 
-// 	if (SSL_FLAG(RSA_ENCRYPT, task->tflag)) {
+// 	if (FLAG(RSA_ENCRYPT, task->tflag)) {
 // 		__f_op = rsa_encrypt;
 // 	}
 // 	else
@@ -257,7 +257,7 @@
 
 // static int	__set_type(const char *opt, const t_task *task)
 // {
-// 	if (SSL_FLAG(RSA_PUBIN, task->tflag)) {
+// 	if (FLAG(RSA_PUBIN, task->tflag)) {
 // 		__in_type = TYPE_X509_PUBLIC_KEY;
 // 		__in_map = MAP_X509_PUBLIC_KEY;
 // 	}
