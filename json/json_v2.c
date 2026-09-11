@@ -12,21 +12,21 @@ enum __e_json_parse_status {
 	__JSON_V2_BAD_FORMAT,
 };
 
-typedef int (*t_func_json_parse)(const char *s, t_json_v2_value *value, size_t *pos);
+typedef int (*t_func_json_v2_parse)(const char *s, t_json_v2 *json, size_t *pos);
 
-static t_json_v2 *__json_create(void);
-static void __json_delete_value(t_json_v2 *json);
-static void __json_delete(t_json_v2 *json);
+static t_json_v2 *__json_v2_create(void);
+static void __json_v2_delete_value(t_json_v2 *json);
+static void __json_v2_delete(t_json_v2 *json);
 
-static int	__json_parse_value(const char *s, t_json_v2 *json, size_t *pos);
+static int	__json_v2_parse_value(const char *s, t_json_v2 *json, size_t *pos);
 
-static int	__json_parse_null(const char *s, t_json_v2_value *value, size_t *pos);
-static int	__json_parse_boolean(const char *s, t_json_v2_value *value, size_t *pos);
-static int	__json_parse_number(const char *s, t_json_v2_value *value, size_t *pos);
-static int	__json_parse_string(const char *s, t_json_v2_value *value, size_t *pos);
-static int	__json_parse_object(const char *s, t_json_v2_value *value, size_t *pos);
-static int	__json_parse_array(const char *s, t_json_v2_value *value, size_t *pos);
-static void	__json_parse_ws(const char *s, size_t *pos);
+static int	__json_v2_parse_null(const char *s, t_json_v2 *json, size_t *pos);
+static int	__json_v2_parse_boolean(const char *s, t_json_v2 *json, size_t *pos);
+static int	__json_v2_parse_number(const char *s, t_json_v2 *json, size_t *pos);
+static int	__json_v2_parse_string(const char *s, t_json_v2 *json, size_t *pos);
+static int	__json_v2_parse_object(const char *s, t_json_v2 *json, size_t *pos);
+static int	__json_v2_parse_array(const char *s, t_json_v2 *json, size_t *pos);
+static void	__json_v2_parse_ws(const char *s, size_t *pos);
 
 int json_v2_parse(const char *s, t_json_v2 **ret_json)
 {
@@ -37,12 +37,12 @@ int json_v2_parse(const char *s, t_json_v2 **ret_json)
 	*ret_json = NULL;
 	size_t pos = 0;
 
-	t_json_v2 *json = __json_create();
-	int status = __json_parse_value(s, json, &pos);
-	__json_parse_ws(s, &pos);
+	t_json_v2 *json = __json_v2_create();
+	int status = __json_v2_parse_value(s, json, &pos);
+	__json_v2_parse_ws(s, &pos);
 
 	if (status != __JSON_V2_MATCH || s[pos] != '\0') {
-		__json_delete(json);
+		__json_v2_delete(json);
 		SSL_LOG(ERROR, "bad format");
 		return (JSON_V2_ERR);
 	}
@@ -110,7 +110,7 @@ int	json_v2_parse_stream(t_io_v2_stream *stream, t_json_v2 **json)
 	return (JSON_V2_OK);
 }
 
-static void __json_delete_value(t_json_v2 *json)
+static void __json_v2_delete_value(t_json_v2 *json)
 {
 	assert(NULL != json);
 
@@ -120,33 +120,24 @@ static void __json_delete_value(t_json_v2 *json)
 	case JSON_V2_TYPE_BOOL:
 		break;
 	case JSON_V2_TYPE_ARRAY:
-		ft_list_clear_all_content(&json->value.as.list, (t_func_content_del)__json_delete);
+		ft_list_clear_all_content(&json->as.list, (t_func_content_del)__json_v2_delete);
 		break;
 	case JSON_V2_TYPE_OBJECT:
-		ft_htbl_v2_clear(&json->value.as.htable, (t_func_content_del)__json_delete);
+		ft_htbl_v2_clear(&json->as.htable, (t_func_content_del)__json_v2_delete);
 		break;
 	case JSON_V2_TYPE_STRING:
-		LIBFT_FREE(json->value.as.cstr);
+		LIBFT_FREE(json->as.cstr);
 		break;
 	case JSON_V2_TYPE_NUMBER:
-		bnum_clear(&json->value.as.number);
+		bnum_clear(&json->as.number);
 		break;
 	default:
-		UNREACHABLE("__json_delete_value");
+		UNREACHABLE("__json_v2_delete_value");
 	}
 	json->type = JSON_V2_TYPE_NULL;
 }
 
-// static void __json_set_value(t_json_v2 *json, t_json_v2_type type, t_json_v2_value value)
-// {
-// 	assert(NULL != json);
-
-// 	__json_delete_value(json);
-// 	json->type = type;
-// 	json->value = value;
-// }
-
-static t_json_v2 *__json_create(void)
+static t_json_v2 *__json_v2_create(void)
 {
 	t_json_v2 *json = NULL;
 	LIBFT_ALLOC(json, sizeof(t_json_v2));
@@ -155,68 +146,57 @@ static t_json_v2 *__json_create(void)
 	return (json);
 }
 
-static void __json_delete(t_json_v2 *json)
+static void __json_v2_delete(t_json_v2 *json)
 {
-	__json_delete_value(json);
+	__json_v2_delete_value(json);
 	LIBFT_FREE(json);
 }
 
-typedef struct __s_json_parse_ctx {
-	t_json_v2_type type;
-	t_func_json_parse f;
-} __t_json_parse_ctx;
-
-static int	__json_parse_value(const char *s, t_json_v2 *json, size_t *pos)
+static int	__json_v2_parse_value(const char *s, t_json_v2 *json, size_t *pos)
 {
-	const __t_json_parse_ctx arr[] = {
-		{ JSON_V2_TYPE_NULL, __json_parse_null },
-		{ JSON_V2_TYPE_BOOL, __json_parse_boolean },
-		{ JSON_V2_TYPE_NUMBER, __json_parse_number },
-		{ JSON_V2_TYPE_STRING, __json_parse_string },
-		{ JSON_V2_TYPE_OBJECT, __json_parse_object },
-		{ JSON_V2_TYPE_ARRAY, __json_parse_array },
+	const t_func_json_v2_parse arr[] = {
+		__json_v2_parse_null,
+		__json_v2_parse_boolean,
+		__json_v2_parse_number,
+		__json_v2_parse_string,
+		__json_v2_parse_object,
+		__json_v2_parse_array,
 	};
 	const int arr_size = sizeof(arr) / sizeof(arr[0]);
 
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	for (int i = 0; i < arr_size; i++) {
-		__t_json_parse_ctx ctx = arr[i];
-		t_json_v2_value value = {0};
-		int status = ctx.f(s, &value, pos);
+		int status = arr[i](s, json, pos);
 
 		if (__JSON_V2_MATCH == status) {
-			json->type = ctx.type;
-			json->value = value;
 			return (__JSON_V2_MATCH);
-		}
-		else if (__JSON_V2_NO_MATCH == status) {
+		} else if (__JSON_V2_NO_MATCH == status) {
 			continue ;
-		}
-		else {
+		} else {
 			return (status);
 		}
 	}
 	return (__JSON_V2_NO_MATCH);
 }
 
-static void	__json_parse_ws(const char *s, size_t *pos)
+static void	__json_v2_parse_ws(const char *s, size_t *pos)
 {
 	while (ft_iseolws(s[*pos]) && s[*pos] != '\0') {
 		(*pos)++;
 	}
 }
 
-static int	__json_parse_null(const char *s, t_json_v2_value *value, size_t *pos)
+static int	__json_v2_parse_null(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t old_pos = *pos;
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	SSL_LOG(TRACE, "parsing null at index %zu: %.20s...", *pos, s + *pos);
 
 	if (ft_strncmp(s + *pos, "null", 4) == 0) {
 		*pos += 4;
-		*value = (t_json_v2_value){0};
+		json->type = JSON_V2_TYPE_NULL;
 		return (__JSON_V2_MATCH);
 	} else {
 		SSL_LOG(TRACE, "no match at index %zu: %c", *pos, s[*pos]);
@@ -225,20 +205,22 @@ static int	__json_parse_null(const char *s, t_json_v2_value *value, size_t *pos)
 	}
 }
 
-static int	__json_parse_boolean(const char *s, t_json_v2_value *value, size_t *pos)
+static int	__json_v2_parse_boolean(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t	old_pos = *pos;
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	SSL_LOG(TRACE, "parsing boolean at index %zu: %.20s...", *pos, s + *pos);
 
 	if (ft_strncmp(s + *pos, "true", 4) == 0) {
 		*pos += 4;
-		value->as.boolean = 1;
+		json->type = JSON_V2_TYPE_BOOL;
+		json->as.boolean = 1;
 		return (__JSON_V2_MATCH);
 	} else if (ft_strncmp(s + *pos, "false", 5) == 0) {
 		*pos += 5;
-		value->as.boolean = 0;
+		json->type = JSON_V2_TYPE_BOOL;
+		json->as.boolean = 0;
 		return (__JSON_V2_MATCH);
 	} else {
 		SSL_LOG(TRACE, "no match at index %zu: %c", *pos, s[*pos]);
@@ -247,10 +229,10 @@ static int	__json_parse_boolean(const char *s, t_json_v2_value *value, size_t *p
 	}
 }
 
-static int	__json_parse_number(const char *s, t_json_v2_value *value, size_t *pos)
+static int	__json_v2_parse_number(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t old_pos = *pos;
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	SSL_LOG(TRACE, "parsing number at index %zu: %.20s...", *pos, s + *pos);
 
@@ -336,28 +318,31 @@ static int	__json_parse_number(const char *s, t_json_v2_value *value, size_t *po
 	t_num *mantissa = bnum_from_dec(mantissa_str);
 	LIBFT_FREE(mantissa_str);
 
-	t_num *number = &value->as.number;
-	bnum_init(number);
+	t_num number = {0};
+	bnum_init(&number);
 
 	if (is_exponent) {
-		bnum_exp(mantissa, exponent, number);
+		bnum_exp(mantissa, exponent, &number);
 	} else {
-		bnum_copy(mantissa, number);
+		bnum_copy(mantissa, &number);
 	}
 	if (is_neg_mantissa) {
-		number->sign = BNUM_NEG;
+		number.sign = BNUM_NEG;
 	}
 	bnum_del(mantissa);
+
+	json->type = JSON_V2_TYPE_NUMBER;
+	json->as.number = number;
 
 	return (__JSON_V2_MATCH);
 }
 
-static int	__json_parse_string(const char *s, t_json_v2_value *value, size_t *pos)
+static int	__json_v2_parse_string(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t old_pos = *pos;
 	size_t str_start = 0, str_end = 0;
 
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 	SSL_LOG(TRACE, "parsing string at index %zu: %.20s...", *pos, s + *pos);
 
 	if (s[*pos] != '"') {
@@ -379,65 +364,16 @@ static int	__json_parse_string(const char *s, t_json_v2_value *value, size_t *po
 	}
 	(*pos)++;
 
-	value->as.cstr = ft_strsub(s, str_start, str_end - str_start);
+	json->type = JSON_V2_TYPE_STRING;
+	json->as.cstr = ft_strsub(s, str_start, str_end - str_start);
 
 	return (__JSON_V2_MATCH);
 }
 
-// static int	__json_parse_kv(const char *s, t_htbl_v2 *htbl, size_t *pos)
-// {
-// 	size_t old_pos = *pos;
-// 	int status = __JSON_V2_MATCH;
-
-// 	SSL_LOG(TRACE, "parsing key-value at index %zu: %.20s...", *pos, s + *pos);
-
-// 	t_json_v2_value *key = __json_create();
-// 	t_json_v2_value *value = __json_create();
-
-// 	if (__JSON_V2_MATCH != (status = __json_parse_string(s, key, pos))) {
-// 		SSL_LOG(TRACE, "no match at index %zu: %c", *pos, s[*pos]);
-// 		goto label_exit;
-// 	}
-// 	__json_parse_ws(s, pos);
-
-// 	if (s[*pos] != ':') {
-// 		SSL_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected ':', got '%c'", *pos, s + *pos, s[*pos]);
-// 		status = __JSON_V2_BAD_FORMAT;
-// 		goto label_exit;
-// 	}
-// 	(*pos)++;
-
-// 	if (__JSON_V2_MATCH != (status = __json_parse_value(s, value, pos))) {
-// 		SSL_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected value", *pos, s + *pos);
-// 		goto label_exit;
-// 	}
-// 	t_string *key_string = __json_get_value_ptr(key);
-// 	void *any = __json_get_value_ptr(value);
-
-// 	char *key_cstr = ft_ostr_to_cstr(key_string, 0, key_string.size);
-// 	bool ok = ft_htbl_v2_set(htable, key_cstr, any);
-// 	LIBFT_FREE(key_cstr);
-// 	if (!ok) {
-// 		SSL_LOG(ERROR, "bad key-value: duplicate key?");
-// 		status = __JSON_V2_BAD_FORMAT;
-// 		goto label_exit;
-// 	}
-
-// label_exit:
-// 	__json_delete(&key);
-
-// 	if (status != __JSON_V2_MATCH) {
-// 		*pos = old_pos;
-// 		ft_node_del(value_node);
-// 	}
-
-// 	return (status);
-// }
-
-static int	__json_parse_object(const char *s, t_json_v2_value *value, size_t *pos)
+static int	__json_v2_parse_object(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t old_pos = *pos;
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	SSL_LOG(TRACE, "parsing object at index %zu: %.20s...", *pos, s + *pos);
 
@@ -451,49 +387,49 @@ static int	__json_parse_object(const char *s, t_json_v2_value *value, size_t *po
 		goto label_exit;
 	}
 	(*pos)++;
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	while (s[*pos] != '}' && s[*pos]) {
 		SSL_LOG(TRACE, "parsing key at index %zu: %.20s...", *pos, s + *pos);
 
-		t_json_v2 *key = __json_create();
-		if (__JSON_V2_MATCH != (status = __json_parse_value(s, key, pos))) {
+		t_json_v2 *key = __json_v2_create();
+		if (__JSON_V2_MATCH != (status = __json_v2_parse_value(s, key, pos))) {
 			SSL_LOG(TRACE, "no match at index %zu: %c", *pos, s[*pos]);
 			goto label_exit;
 		}
 		if (key->type != JSON_V2_TYPE_STRING) {
 			SSL_LOG(TRACE, "bad format: expected string at index %zu: %c", *pos, s[*pos]);
 			status = __JSON_V2_BAD_FORMAT;
-			__json_delete(key);
+			__json_v2_delete(key);
 			goto label_exit;
 		}
-		__json_parse_ws(s, pos);
+		__json_v2_parse_ws(s, pos);
 
 		if (s[*pos] != ':') {
 			SSL_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected ':', got '%c'", *pos, s + *pos, s[*pos]);
 			status = __JSON_V2_BAD_FORMAT;
-			__json_delete(key);
+			__json_v2_delete(key);
 			goto label_exit;
 		}
 		(*pos)++;
 
-		t_json_v2 *value = __json_create();
-		if (__JSON_V2_MATCH != (status = __json_parse_value(s, value, pos))) {
+		t_json_v2 *value = __json_v2_create();
+		if (__JSON_V2_MATCH != (status = __json_v2_parse_value(s, value, pos))) {
 			SSL_LOG(ERROR, "bad key-value format at index %d, %.20s...: expected value", *pos, s + *pos);
-			__json_delete(key);
+			__json_v2_delete(key);
 			goto label_exit;
 		}
 
-		bool ok = ft_htbl_v2_set(&htable, key->value.as.cstr, value);
-		__json_delete(key);
+		bool ok = ft_htbl_v2_set(&htable, key->as.cstr, value);
+		__json_v2_delete(key);
 
 		if (!ok) {
 			SSL_LOG(ERROR, "bad key-value: duplicate key?");
 			status = __JSON_V2_BAD_FORMAT;
-			__json_delete(value);
+			__json_v2_delete(value);
 			goto label_exit;
 		}
-		__json_parse_ws(s, pos);
+		__json_v2_parse_ws(s, pos);
 
 		if (s[*pos] != ',') break;
 		(*pos)++;
@@ -505,22 +441,23 @@ static int	__json_parse_object(const char *s, t_json_v2_value *value, size_t *po
 	}
 	(*pos)++;
 
-	value->as.htable = htable;
+	json->type = JSON_V2_TYPE_OBJECT;
+	json->as.htable = htable;
 
 label_exit:
 	if (status != __JSON_V2_MATCH) {
 		*pos = old_pos;
-		ft_htbl_v2_clear(&htable, (t_func_content_del)__json_delete_value);
+		ft_htbl_v2_clear(&htable, (t_func_content_del)__json_v2_delete_value);
 	}
 	return (status);
 }
 
-static int	__json_parse_array(const char *s, t_json_v2_value *value, size_t *pos)
+static int	__json_v2_parse_array(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t old_pos = *pos;
 	int status = __JSON_V2_NO_MATCH;
 
-	__json_parse_ws(s, pos);
+	__json_v2_parse_ws(s, pos);
 
 	SSL_LOG(TRACE, "parsing array at index %zu: %.20s...", *pos, s + *pos);
 
@@ -533,14 +470,14 @@ static int	__json_parse_array(const char *s, t_json_v2_value *value, size_t *pos
 
 	t_list list = {0};
 	while (s[*pos] != ']' && s[*pos]) {
-		t_json_v2 *item = __json_create();
+		t_json_v2 *item = __json_v2_create();
 		ft_list_append_content(&list, item);
 
-		if (__JSON_V2_MATCH != (status = __json_parse_value(s, item, pos))) {
+		if (__JSON_V2_MATCH != (status = __json_v2_parse_value(s, item, pos))) {
 			SSL_LOG(ERROR, "bad array format at index %d, %.20s...: expected value", *pos, s + *pos);
 			goto label_exit;
 		}
-		__json_parse_ws(s, pos);
+		__json_v2_parse_ws(s, pos);
 
 		if (s[*pos] != ',') break;
 		(*pos)++;
@@ -552,12 +489,13 @@ static int	__json_parse_array(const char *s, t_json_v2_value *value, size_t *pos
 	}
 	(*pos)++;
 
-	value->as.list = list;
+	json->type = JSON_V2_TYPE_ARRAY;
+	json->as.list = list;
 
 label_exit:
 	if (status != __JSON_V2_MATCH) {
 		*pos = old_pos;
-		ft_list_clear_all_content(&list, (t_func_content_del)__json_delete);
+		ft_list_clear_all_content(&list, (t_func_content_del)__json_v2_delete);
 	}
 
 	return (status);
@@ -639,7 +577,7 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
 		size_t commas = 0;
-		while (ft_htbl_v2_next(&json->value.as.htable, &next, &key, &value)) {
+		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
 			if (commas++) ft_ostr_append_cstr(ostring, ",");
 			ft_ostr_appendf(ostring, "\"%s\":", key);
 			__json_v2_f_default_dumper(value, ostring);
@@ -652,7 +590,7 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 		void *content = NULL;
 		t_list_next next = {0};
 		size_t commas = 0;
-		while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+		while (ft_list_next_content(&json->as.list, &next, &content)) {
 			if (commas++) ft_ostr_append_cstr(ostring, ",");
 			__json_v2_f_default_dumper(content, ostring);
 		}
@@ -660,17 +598,17 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 		return;
 	}
 	case JSON_V2_TYPE_STRING: {
-		ft_ostr_appendf(ostring, "\"%s\"", json->value.as.cstr);
+		ft_ostr_appendf(ostring, "\"%s\"", json->as.cstr);
 		return;
 	}
 	case JSON_V2_TYPE_NUMBER: {
-		char *s = bnum_to_dec(&json->value.as.number);
+		char *s = bnum_to_dec(&json->as.number);
 		ft_ostr_append_cstr(ostring, s);
 		LIBFT_FREE(s);
 		return;
 	}
 	case JSON_V2_TYPE_BOOL: {
-		ft_ostr_append_cstr(ostring, (json->value.as.boolean) ? "true" : "false");
+		ft_ostr_append_cstr(ostring, (json->as.boolean) ? "true" : "false");
 		return;
 	}
 	case JSON_V2_TYPE_NULL: {
@@ -694,7 +632,7 @@ int	json_v2_validate(t_json_v2 *json)
 		const char *key = NULL;
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
-		while (ft_htbl_v2_next(&json->value.as.htable, &next, &key, &value)) {
+		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
 			if (NULL == key) return (JSON_V2_ERR);
 			if (JSON_V2_OK != json_v2_validate(value)) return (JSON_V2_ERR);
 		}
@@ -703,13 +641,13 @@ int	json_v2_validate(t_json_v2 *json)
 	case JSON_V2_TYPE_ARRAY: {
 		void *content = NULL;
 		t_list_next next = {0};
-		while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+		while (ft_list_next_content(&json->as.list, &next, &content)) {
 			if (JSON_V2_OK != json_v2_validate(content)) return (JSON_V2_ERR);
 		}
 		return (JSON_V2_OK);
 	}
 	case JSON_V2_TYPE_STRING:
-		return (NULL == json->value.as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
+		return (NULL == json->as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
 	case JSON_V2_TYPE_NUMBER:
 	case JSON_V2_TYPE_BOOL:
 	case JSON_V2_TYPE_NULL:
@@ -729,7 +667,7 @@ int	json_v2_validate_shallow(t_json_v2 *json)
 		const char *key = NULL;
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
-		while (ft_htbl_v2_next(&json->value.as.htable, &next, &key, &value)) {
+		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
 			if (NULL == key) return (JSON_V2_ERR);
 			if (NULL == value) return (JSON_V2_ERR);
 		}
@@ -738,13 +676,13 @@ int	json_v2_validate_shallow(t_json_v2 *json)
 	case JSON_V2_TYPE_ARRAY: {
 		void *content = NULL;
 		t_list_next next = {0};
-		while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+		while (ft_list_next_content(&json->as.list, &next, &content)) {
 			if (NULL == content) return (JSON_V2_ERR);
 		}
 		return (JSON_V2_OK);
 	}
 	case JSON_V2_TYPE_STRING:
-		return (NULL == json->value.as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
+		return (NULL == json->as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
 	case JSON_V2_TYPE_NUMBER:
 	case JSON_V2_TYPE_BOOL:
 	case JSON_V2_TYPE_NULL:
@@ -984,7 +922,7 @@ static int 	__json_v2_select_object_key(t_json_v2 *json, __t_json_v2_query query
 		return (JSON_V2_ERR);
 	}
 
-	t_json_v2 *value = ft_htbl_v2_get(&json->value.as.htable, query.as.key);
+	t_json_v2 *value = ft_htbl_v2_get(&json->as.htable, query.as.key);
 	if (value != NULL) {
 		SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name(value->type));
 		*ret_json = value;
@@ -1007,7 +945,7 @@ static int 	__json_v2_select_array_index(t_json_v2 *json, __t_json_v2_query quer
 	size_t idx = 0;
 	void *content = NULL;
 	t_list_next next = {0};
-	while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+	while (ft_list_next_content(&json->as.list, &next, &content)) {
 		if (idx == target_idx) {
 			*ret_json = content;
 			SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name((*ret_json)->type));

@@ -22,7 +22,9 @@ enum e_json_v2_status {
 	JSON_V2_FMT
 };
 
-typedef struct s_json_v2_value {
+typedef struct s_json_v2 {
+	t_node_v2       base;
+	t_json_v2_type  type;
 	union {
 		t_htbl_v2 htable;
 		t_list    list;
@@ -30,12 +32,6 @@ typedef struct s_json_v2_value {
 		bool      boolean;
 		char      *cstr;
 	} as;
-} t_json_v2_value;
-
-typedef struct s_json_v2 {
-	t_node_v2       base;
-	t_json_v2_type  type;
-	t_json_v2_value value;
 } t_json_v2;
 
 typedef int (*t_func_json_v2_map)(t_json_v2 *json);
@@ -49,13 +45,13 @@ int	json_v2_validate(t_json_v2 *json);
 int	json_v2_validate_shallow(t_json_v2 *json);
 int	json_v2_validate_type(t_json_v2 *json);
 
+int	json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json);
+
 const char	*json_v2_get_type_name(t_json_v2_type type);
 
 char	*json_v2_dumps(t_json_v2 *json);
 char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper);
 size_t	json_v2_dumpb(t_json_v2 *json, char *buf, size_t size);
 size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper);
-
-int	json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json);
 
 #endif
