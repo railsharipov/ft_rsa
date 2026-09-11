@@ -38,26 +38,16 @@ typedef struct s_json_v2 {
 	t_json_v2_value value;
 } t_json_v2;
 
-// enum e_json_q_type {
-//     JSON_Q_TYPE_OBJECT_KEY,
-//     JSON_Q_TYPE_ARRAY_INDEX,
-//     JSON_Q_TYPE_SELF,
-// };
-
-// enum e_json_q_status {
-// 	JSON_MATCH_QUERY,
-// 	JSON_NO_MATCH_QUERY,
-// 	JSON_BAD_QUERY,
-// 	JSON_BAD_QUERY_FORMAT,
-// };
-
 typedef int (*t_func_json_v2_map)(t_json_v2 *json);
-typedef int (*t_func_json_v2_select)(t_json_v2 *json, t_node *query_node, t_node **ret_node);
 typedef void (*t_func_json_v2_dump)(t_json_v2 *json, t_ostring *ostring);
 
 int	json_v2_parse(const char *s, t_json_v2 **json);
 int	json_v2_parse_file(const char *filename, t_json_v2 **json);
 int	json_v2_parse_stream(t_io_v2_stream *stream, t_json_v2 **json);
+
+int	json_v2_validate(t_json_v2 *json);
+int	json_v2_validate_shallow(t_json_v2 *json);
+int	json_v2_validate_type(t_json_v2 *json);
 
 const char	*json_v2_get_type_name(t_json_v2_type type);
 
@@ -65,5 +55,7 @@ char	*json_v2_dumps(t_json_v2 *json);
 char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper);
 size_t	json_v2_dumpb(t_json_v2 *json, char *buf, size_t size);
 size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper);
+
+int	json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json);
 
 #endif

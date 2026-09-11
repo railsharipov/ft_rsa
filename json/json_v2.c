@@ -132,7 +132,7 @@ static void __json_delete_value(t_json_v2 *json)
 		bnum_clear(&json->value.as.number);
 		break;
 	default:
-		SSL_UNREACHABLE("__json_delete_value");
+		UNREACHABLE("__json_delete_value");
 	}
 	json->type = JSON_V2_TYPE_NULL;
 }
@@ -645,8 +645,8 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 			__json_v2_f_default_dumper(value, ostring);
 		}
 		ft_ostr_append_cstr(ostring, "}");
+		return;
 	}
-	break;
 	case JSON_V2_TYPE_ARRAY: {
 		ft_ostr_append(ostring, "[", 1);
 		void *content = NULL;
@@ -657,28 +657,378 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 			__json_v2_f_default_dumper(content, ostring);
 		}
 		ft_ostr_append(ostring, "]", 1);
+		return;
 	}
-	break;
 	case JSON_V2_TYPE_STRING: {
 		ft_ostr_appendf(ostring, "\"%s\"", json->value.as.cstr);
+		return;
 	}
-	break;
 	case JSON_V2_TYPE_NUMBER: {
 		char *s = bnum_to_dec(&json->value.as.number);
 		ft_ostr_append_cstr(ostring, s);
 		LIBFT_FREE(s);
+		return;
 	}
-	break;
 	case JSON_V2_TYPE_BOOL: {
 		ft_ostr_append_cstr(ostring, (json->value.as.boolean) ? "true" : "false");
+		return;
 	}
-	break;
 	case JSON_V2_TYPE_NULL: {
 		ft_ostr_append_cstr(ostring, "null");
+		return;
 	}
-	break;
-	default: {
+	default:
 		ft_ostr_append_cstr(ostring, "\"<_unknown_type_>\"");
 	}
+}
+
+/****************************************************************************/
+
+int	json_v2_validate(t_json_v2 *json)
+{
+	if (NULL == json) return (JSON_V2_ERR);
+	if (json_v2_validate_type(json)) return (JSON_V2_ERR);
+
+	switch (json->type) {
+	case JSON_V2_TYPE_OBJECT: {
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		while (ft_htbl_v2_next(&json->value.as.htable, &next, &key, &value)) {
+			if (NULL == key) return (JSON_V2_ERR);
+			if (JSON_V2_OK != json_v2_validate(value)) return (JSON_V2_ERR);
+		}
+		return (JSON_V2_OK);
+	}
+	case JSON_V2_TYPE_ARRAY: {
+		void *content = NULL;
+		t_list_next next = {0};
+		while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+			if (JSON_V2_OK != json_v2_validate(content)) return (JSON_V2_ERR);
+		}
+		return (JSON_V2_OK);
+	}
+	case JSON_V2_TYPE_STRING:
+		return (NULL == json->value.as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
+	case JSON_V2_TYPE_NUMBER:
+	case JSON_V2_TYPE_BOOL:
+	case JSON_V2_TYPE_NULL:
+		return (JSON_V2_OK);
+	default:
+		return (JSON_V2_ERR);
+	}
+}
+
+int	json_v2_validate_shallow(t_json_v2 *json)
+{
+	if (NULL == json) return (JSON_V2_ERR);
+	if (json_v2_validate_type(json)) return (JSON_V2_ERR);
+
+	switch (json->type) {
+	case JSON_V2_TYPE_OBJECT: {
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		while (ft_htbl_v2_next(&json->value.as.htable, &next, &key, &value)) {
+			if (NULL == key) return (JSON_V2_ERR);
+			if (NULL == value) return (JSON_V2_ERR);
+		}
+		return (JSON_V2_OK);
+	}
+	case JSON_V2_TYPE_ARRAY: {
+		void *content = NULL;
+		t_list_next next = {0};
+		while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+			if (NULL == content) return (JSON_V2_ERR);
+		}
+		return (JSON_V2_OK);
+	}
+	case JSON_V2_TYPE_STRING:
+		return (NULL == json->value.as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
+	case JSON_V2_TYPE_NUMBER:
+	case JSON_V2_TYPE_BOOL:
+	case JSON_V2_TYPE_NULL:
+		return (JSON_V2_OK);
+	default:
+		return (JSON_V2_ERR);
+	}
+}
+
+int	json_v2_validate_type(t_json_v2 *json)
+{
+	assert(NULL != json);
+
+	switch (json->type) {
+	case JSON_V2_TYPE_NULL:
+	case JSON_V2_TYPE_ARRAY:
+	case JSON_V2_TYPE_OBJECT:
+	case JSON_V2_TYPE_STRING:
+	case JSON_V2_TYPE_NUMBER:
+	case JSON_V2_TYPE_BOOL:
+		return (JSON_V2_OK);
+	default:
+		return (JSON_V2_ERR);
+	}
+}
+
+/****************************************************************************/
+
+# define __JSON_V2_Q_BAD_SELECTOR_ERROR	"bad selector"
+# define __JSON_V2_Q_BAD_QUERY_ERROR	"bad query"
+# define __JSON_V2_Q_BAD_TYPE_ERROR		"bad type"
+
+enum __e_json_v2_q_status {
+	__JSON_V2_MATCH_QUERY = 10,
+	__JSON_V2_NO_MATCH_QUERY,
+};
+
+typedef enum __e_json_v2_q_type {
+    __JSON_V2_Q_TYPE_OBJECT_KEY,
+    __JSON_V2_Q_TYPE_ARRAY_INDEX,
+    __JSON_V2_Q_TYPE_SELF,
+} __t_json_v2_q_type;
+
+typedef struct __s_json_v2_query {
+	__t_json_v2_q_type	type;
+	union {
+		char	*key;
+		size_t	index;
+	} as;
+} __t_json_v2_query;
+
+typedef int (*t_func_json_v2_select)(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
+
+static int	__json_v2_query_with_f_selector(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector);
+
+static int 	__json_v2_run_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector);
+static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_t *pos);
+static void __json_v2_clear_query(__t_json_v2_query *query);
+
+static int 	__json_v2_f_default_selector(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
+static int 	__json_v2_select_object_key(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
+static int 	__json_v2_select_array_index(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
+
+static const char	*__json_v2_get_query_type_name(__t_json_v2_q_type type);
+
+int json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json)
+{
+	return (__json_v2_query_with_f_selector(s, json, ret_json, __json_v2_f_default_selector));
+}
+
+static int __json_v2_query_with_f_selector(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector)
+{
+	if (NULL == s) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (JSON_V2_ERR);
+	}
+	if (NULL == json || NULL == ret_json) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (JSON_V2_ERR);
+	}
+	int status = __json_v2_run_query(s, json, ret_json, f_selector);
+
+	switch (status) {
+	case __JSON_V2_MATCH_QUERY:
+		SSL_LOG(TRACE, "match key: %s", s);
+		return (JSON_V2_OK);
+	case __JSON_V2_NO_MATCH_QUERY:
+		SSL_LOG(TRACE, "no such key: %s", s);
+		return (JSON_V2_ERR);
+	case JSON_V2_ERR:
+		SSL_LOG(TRACE, "bad query: %s", s);
+		return (JSON_V2_ERR);
+	case JSON_V2_FMT:
+		SSL_LOG(ERROR, "bad query format: %s", s);
+		return (JSON_V2_FMT);
+	default:
+		SSL_LOG(ERROR, "unexpected query status: %#x", status);
+		return (JSON_V2_ERR);
+	}
+}
+
+static int __json_v2_run_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector)
+{
+	*ret_json = NULL;
+	int status = __JSON_V2_NO_MATCH_QUERY;
+
+	t_json_v2 *cur_json = json;
+	size_t pos = 0;
+	while (s[pos] != '\0') {
+		__t_json_v2_query query = {0};
+		status = __json_v2_parse_query(s, &query, &pos);
+		if (JSON_V2_OK != status) {
+			SSL_LOG(ERROR, "failed to parse query");
+			break;
+		}
+		SSL_LOG(TRACE, "parsed %s", __json_v2_get_query_type_name(query.type));
+
+		status = f_selector(cur_json, query, ret_json);
+		__json_v2_clear_query(&query);
+		if (status != __JSON_V2_MATCH_QUERY) {
+			break;
+		}
+		cur_json = *ret_json;
+	}
+	return (status);
+}
+
+static void __json_v2_clear_query(__t_json_v2_query *query)
+{
+	switch (query->type) {
+	case __JSON_V2_Q_TYPE_OBJECT_KEY:
+		LIBFT_FREE(query->as.key);
+		query->as.key = NULL;
+		return;
+	case __JSON_V2_Q_TYPE_ARRAY_INDEX:
+	case __JSON_V2_Q_TYPE_SELF:
+		return;
+	default:
+		UNREACHABLE("__json_v2_clear_query");
+	}
+}
+
+static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_t *pos)
+{
+	size_t	begin, end;
+	char	quote;
+
+	if (s[*pos] == '.') {
+		SSL_LOG(TRACE, "parsing object key");
+		(*pos)++;
+		begin = *pos;
+
+		while (s[*pos] != '\0' && s[*pos] != '.' && s[*pos] != '[') {
+			(*pos)++;
+		}
+		end = *pos;
+
+		if (begin == end) {
+			query->type = __JSON_V2_Q_TYPE_SELF;
+		} else {
+			query->type = __JSON_V2_Q_TYPE_OBJECT_KEY;
+			query->as.key = ft_strsub(s, begin, end - begin);
+		}
+	}
+	else if (s[*pos] == '[') {
+		(*pos)++;
+
+		if (ft_isdigit(s[*pos])) {
+			SSL_LOG(TRACE, "parsing array index");
+			begin = *pos;
+
+			while (ft_isdigit(s[*pos])) {
+				(*pos)++;
+			}
+			end = *pos;
+			query->type = __JSON_V2_Q_TYPE_ARRAY_INDEX;
+			char *nums = ft_strsub(s, begin, end - begin);
+			query->as.index = (size_t)ft_atoi(nums);
+			LIBFT_FREE(nums);
+		}
+		else if (s[*pos] == '"' || s[*pos] == '\'') {
+			SSL_LOG(TRACE, "parsing object key");
+			quote = s[*pos];
+			(*pos)++;
+			begin = *pos;
+
+			while (s[*pos] != '\0' && s[*pos] != quote) {
+				(*pos)++;
+			}
+
+			if (s[*pos] != quote) {
+				SSL_LOG(ERROR, __JSON_V2_Q_BAD_SELECTOR_ERROR ": expected terminating `%c`, got `%c`", quote, s[*pos]);
+				return (JSON_V2_FMT);
+			}
+			end = *pos;
+			(*pos)++;
+			query->type = __JSON_V2_Q_TYPE_OBJECT_KEY;
+			query->as.key = ft_strsub(s, begin, end - begin);
+		}
+
+		if (s[*pos] != ']') {
+			SSL_LOG(ERROR, __JSON_V2_Q_BAD_SELECTOR_ERROR ": expected `]`, got `%c`", s[*pos]);
+			return (JSON_V2_FMT);
+		}
+		(*pos)++;
+	}
+	else {
+		SSL_LOG(ERROR, __JSON_V2_Q_BAD_SELECTOR_ERROR ": `%c`", s[*pos]);
+		return (JSON_V2_FMT);
+	}
+
+	return (JSON_V2_OK);
+}
+
+static int 	__json_v2_f_default_selector(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
+{
+	switch (query.type) {
+	case __JSON_V2_Q_TYPE_OBJECT_KEY:
+		return (__json_v2_select_object_key(json, query, ret_json));
+	case __JSON_V2_Q_TYPE_ARRAY_INDEX:
+		return (__json_v2_select_array_index(json, query, ret_json));
+	case __JSON_V2_Q_TYPE_SELF:
+		*ret_json = json;
+		return (__JSON_V2_MATCH_QUERY);
+	default:
+		SSL_LOG(ERROR, "unknown query type");
+		return (JSON_V2_ERR);
+	}
+}
+
+static int 	__json_v2_select_object_key(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
+{
+	SSL_LOG(TRACE, "searching for object key: `%s`", query.as.key);
+
+	if (json->type != JSON_V2_TYPE_OBJECT) {
+		SSL_LOG(TRACE, "using key for non-object type");
+		return (JSON_V2_ERR);
+	}
+
+	t_json_v2 *value = ft_htbl_v2_get(&json->value.as.htable, query.as.key);
+	if (value != NULL) {
+		SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name(value->type));
+		*ret_json = value;
+		return (__JSON_V2_MATCH_QUERY);
+	}
+
+	SSL_LOG(TRACE, "no match found");
+	return (__JSON_V2_NO_MATCH_QUERY);
+}
+
+static int 	__json_v2_select_array_index(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
+{
+	SSL_LOG(TRACE, "indexing array at: `%s`", query.as.index);
+
+	if (json->type != JSON_V2_TYPE_ARRAY) {
+		SSL_LOG(TRACE, "using index for non-array type");
+		return (JSON_V2_ERR);
+	}
+	size_t target_idx = query.as.index;
+	size_t idx = 0;
+	void *content = NULL;
+	t_list_next next = {0};
+	while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+		if (idx == target_idx) {
+			*ret_json = content;
+			SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name((*ret_json)->type));
+			return (__JSON_V2_MATCH_QUERY);
+		}
+		idx++;
+	}
+	SSL_LOG(TRACE, "no match found");
+	return (__JSON_V2_NO_MATCH_QUERY);
+}
+
+static const char	*__json_v2_get_query_type_name(__t_json_v2_q_type type)
+{
+	switch (type) {
+	case __JSON_V2_Q_TYPE_OBJECT_KEY:
+		return ("object key");
+	case __JSON_V2_Q_TYPE_ARRAY_INDEX:
+		return ("array index");
+	case __JSON_V2_Q_TYPE_SELF:
+		return ("self");
+	default:
+		return ("undefined");
 	}
 }
