@@ -1,65 +1,10 @@
 #include <json_v2.h>
+#include <io.h>
 #include <bnum.h>
 #include <logger.h>
 #include <libft.h>
 #include <libft_v2.h>
 #include <file.h>
-
-static void __json_delete_value(t_json_v2 *json);
-// static void __json_set_value(t_json_v2 *json, t_json_v2_type type, t_json_v2_value value);
-static t_json_v2 *__json_create(void);
-static void __json_delete(t_json_v2 *json);
-
-static void __json_delete_value(t_json_v2 *json)
-{
-	assert(NULL != json);
-
-	switch (json->type) {
-	case JSON_V2_TYPE_NULL:
-		break;
-	case JSON_V2_TYPE_BOOL:
-		break;
-	case JSON_V2_TYPE_ARRAY:
-		ft_list_clear_all_content(&json->value.as.list, (t_func_content_del)__json_delete);
-		break;
-	case JSON_V2_TYPE_OBJECT:
-		ft_htbl_v2_clear(&json->value.as.htable, (t_func_content_del)__json_delete);
-		break;
-	case JSON_V2_TYPE_STRING:
-		LIBFT_FREE(json->value.as.cstr);
-		break;
-	case JSON_V2_TYPE_NUMBER:
-		bnum_clear(&json->value.as.number);
-		break;
-	default:
-		SSL_UNREACHABLE("__json_delete_value");
-	}
-	json->type = JSON_V2_TYPE_NULL;
-}
-
-// static void __json_set_value(t_json_v2 *json, t_json_v2_type type, t_json_v2_value value)
-// {
-// 	assert(NULL != json);
-
-// 	__json_delete_value(json);
-// 	json->type = type;
-// 	json->value = value;
-// }
-
-static t_json_v2 *__json_create(void)
-{
-	t_json_v2 *json = NULL;
-	LIBFT_ALLOC(json, sizeof(t_json_v2));
-	*json = (t_json_v2){0};
-	json->type = JSON_V2_TYPE_NULL;
-	return (json);
-}
-
-static void __json_delete(t_json_v2 *json)
-{
-	__json_delete_value(json);
-	LIBFT_FREE(json);
-}
 
 enum __e_json_parse_status {
 	__JSON_V2_MATCH,
@@ -69,13 +14,16 @@ enum __e_json_parse_status {
 
 typedef int (*t_func_json_parse)(const char *s, t_json_v2_value *value, size_t *pos);
 
+static t_json_v2 *__json_create(void);
+static void __json_delete_value(t_json_v2 *json);
+static void __json_delete(t_json_v2 *json);
+
 static int	__json_parse_value(const char *s, t_json_v2 *json, size_t *pos);
 
 static int	__json_parse_null(const char *s, t_json_v2_value *value, size_t *pos);
 static int	__json_parse_boolean(const char *s, t_json_v2_value *value, size_t *pos);
 static int	__json_parse_number(const char *s, t_json_v2_value *value, size_t *pos);
 static int	__json_parse_string(const char *s, t_json_v2_value *value, size_t *pos);
-// static int	__json_parse_kv(const char *s, t_htbl_v2 *htbl, size_t *pos);
 static int	__json_parse_object(const char *s, t_json_v2_value *value, size_t *pos);
 static int	__json_parse_array(const char *s, t_json_v2_value *value, size_t *pos);
 static void	__json_parse_ws(const char *s, size_t *pos);
@@ -162,11 +110,55 @@ int	json_v2_parse_stream(t_io_v2_stream *stream, t_json_v2 **json)
 	return (JSON_V2_OK);
 }
 
-static void	__json_parse_ws(const char *s, size_t *pos)
+static void __json_delete_value(t_json_v2 *json)
 {
-	while (ft_iseolws(s[*pos]) && s[*pos] != '\0') {
-		(*pos)++;
+	assert(NULL != json);
+
+	switch (json->type) {
+	case JSON_V2_TYPE_NULL:
+		break;
+	case JSON_V2_TYPE_BOOL:
+		break;
+	case JSON_V2_TYPE_ARRAY:
+		ft_list_clear_all_content(&json->value.as.list, (t_func_content_del)__json_delete);
+		break;
+	case JSON_V2_TYPE_OBJECT:
+		ft_htbl_v2_clear(&json->value.as.htable, (t_func_content_del)__json_delete);
+		break;
+	case JSON_V2_TYPE_STRING:
+		LIBFT_FREE(json->value.as.cstr);
+		break;
+	case JSON_V2_TYPE_NUMBER:
+		bnum_clear(&json->value.as.number);
+		break;
+	default:
+		SSL_UNREACHABLE("__json_delete_value");
 	}
+	json->type = JSON_V2_TYPE_NULL;
+}
+
+// static void __json_set_value(t_json_v2 *json, t_json_v2_type type, t_json_v2_value value)
+// {
+// 	assert(NULL != json);
+
+// 	__json_delete_value(json);
+// 	json->type = type;
+// 	json->value = value;
+// }
+
+static t_json_v2 *__json_create(void)
+{
+	t_json_v2 *json = NULL;
+	LIBFT_ALLOC(json, sizeof(t_json_v2));
+	*json = (t_json_v2){0};
+	json->type = JSON_V2_TYPE_NULL;
+	return (json);
+}
+
+static void __json_delete(t_json_v2 *json)
+{
+	__json_delete_value(json);
+	LIBFT_FREE(json);
 }
 
 typedef struct __s_json_parse_ctx {
@@ -206,6 +198,13 @@ static int	__json_parse_value(const char *s, t_json_v2 *json, size_t *pos)
 		}
 	}
 	return (__JSON_V2_NO_MATCH);
+}
+
+static void	__json_parse_ws(const char *s, size_t *pos)
+{
+	while (ft_iseolws(s[*pos]) && s[*pos] != '\0') {
+		(*pos)++;
+	}
 }
 
 static int	__json_parse_null(const char *s, t_json_v2_value *value, size_t *pos)
@@ -562,4 +561,124 @@ label_exit:
 	}
 
 	return (status);
+}
+
+/****************************************************************************/
+
+# define __JSON_V2_TYPE_NAME_OBJECT		"object"
+# define __JSON_V2_TYPE_NAME_ARRAY		"array"
+# define __JSON_V2_TYPE_NAME_STRING		"string"
+# define __JSON_V2_TYPE_NAME_NUMBER		"number"
+# define __JSON_V2_TYPE_NAME_BOOLEAN	"boolean"
+# define __JSON_V2_TYPE_NAME_NULL		"null"
+# define __JSON_V2_TYPE_NAME_UNKNOWN	"unknown"
+
+const char	*json_v2_get_type_name(t_json_v2_type type)
+{
+	switch (type) {
+	case JSON_V2_TYPE_OBJECT:	return __JSON_V2_TYPE_NAME_OBJECT;
+	case JSON_V2_TYPE_ARRAY:	return __JSON_V2_TYPE_NAME_ARRAY;
+	case JSON_V2_TYPE_STRING:	return __JSON_V2_TYPE_NAME_STRING;
+	case JSON_V2_TYPE_NUMBER:	return __JSON_V2_TYPE_NAME_NUMBER;
+	case JSON_V2_TYPE_BOOL:		return __JSON_V2_TYPE_NAME_BOOLEAN;
+	case JSON_V2_TYPE_NULL:		return __JSON_V2_TYPE_NAME_NULL;
+	default:
+		return __JSON_V2_TYPE_NAME_UNKNOWN;
+	}
+}
+
+/****************************************************************************/
+
+static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring);
+
+char	*json_v2_dumps(t_json_v2 *json)
+{
+	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_default_dumper));
+}
+
+char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper)
+{
+	assert(NULL != json);
+	assert(NULL != f_dumper);
+
+	t_ostring ostring = {0};
+	ft_ostr_init(&ostring);
+
+	f_dumper(json, &ostring);
+	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+	return (dumps);
+}
+
+size_t	json_v2_dumpb(t_json_v2 *json, char *buf, size_t size)
+{
+	return (json_v2_dumpb_with_f_dumper(json, buf, size, __json_v2_f_default_dumper));
+}
+
+size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper)
+{
+	if (size == 0) return (0);
+
+	char *dumps = json_v2_dumps_with_f_dumper(json, f_dumper);
+	size_t len = ft_strlen(dumps);
+	if (len >= size) {
+		len = size-1;
+	}
+	ft_strncpy(buf, dumps, len);
+	buf[len] = '\0';
+	SSL_FREE(dumps);
+	return (len);
+}
+
+static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
+{
+	switch (json->type) {
+	case JSON_V2_TYPE_OBJECT: {
+		ft_ostr_append_cstr(ostring, "{");
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		size_t commas = 0;
+		while (ft_htbl_v2_next(&json->value.as.htable, &next, &key, &value)) {
+			if (commas++) ft_ostr_append_cstr(ostring, ",");
+			ft_ostr_appendf(ostring, "\"%s\":", key);
+			__json_v2_f_default_dumper(value, ostring);
+		}
+		ft_ostr_append_cstr(ostring, "}");
+	}
+	break;
+	case JSON_V2_TYPE_ARRAY: {
+		ft_ostr_append(ostring, "[", 1);
+		void *content = NULL;
+		t_list_next next = {0};
+		size_t commas = 0;
+		while (ft_list_next_content(&json->value.as.list, &next, &content)) {
+			if (commas++) ft_ostr_append_cstr(ostring, ",");
+			__json_v2_f_default_dumper(content, ostring);
+		}
+		ft_ostr_append(ostring, "]", 1);
+	}
+	break;
+	case JSON_V2_TYPE_STRING: {
+		ft_ostr_appendf(ostring, "\"%s\"", json->value.as.cstr);
+	}
+	break;
+	case JSON_V2_TYPE_NUMBER: {
+		char *s = bnum_to_dec(&json->value.as.number);
+		ft_ostr_append_cstr(ostring, s);
+		LIBFT_FREE(s);
+	}
+	break;
+	case JSON_V2_TYPE_BOOL: {
+		ft_ostr_append_cstr(ostring, (json->value.as.boolean) ? "true" : "false");
+	}
+	break;
+	case JSON_V2_TYPE_NULL: {
+		ft_ostr_append_cstr(ostring, "null");
+	}
+	break;
+	default: {
+		ft_ostr_append_cstr(ostring, "\"<_unknown_type_>\"");
+	}
+	}
 }

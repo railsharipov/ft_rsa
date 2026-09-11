@@ -53,10 +53,17 @@ typedef struct s_json_v2 {
 
 typedef int (*t_func_json_v2_map)(t_json_v2 *json);
 typedef int (*t_func_json_v2_select)(t_json_v2 *json, t_node *query_node, t_node **ret_node);
-typedef int (*t_func_json_v2_dump)(t_json_v2 *json, t_ostring *ostring);
+typedef void (*t_func_json_v2_dump)(t_json_v2 *json, t_ostring *ostring);
 
 int	json_v2_parse(const char *s, t_json_v2 **json);
 int	json_v2_parse_file(const char *filename, t_json_v2 **json);
 int	json_v2_parse_stream(t_io_v2_stream *stream, t_json_v2 **json);
+
+const char	*json_v2_get_type_name(t_json_v2_type type);
+
+char	*json_v2_dumps(t_json_v2 *json);
+char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper);
+size_t	json_v2_dumpb(t_json_v2 *json, char *buf, size_t size);
+size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper);
 
 #endif
