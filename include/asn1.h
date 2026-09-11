@@ -4,6 +4,7 @@
 # include <common.h>
 # include <libft.h>
 # include <libft_v2.h>
+# include <json_v2.h>
 # include <bnum.h>
 
 // ASN.1 - Abstract Syntax Notation One
@@ -150,6 +151,7 @@ typedef struct s_asn_v2_type {
 } t_asn_v2_type;
 
 typedef struct s_asn_v2_typedef {
+	const char				*name;
 	t_asn_v2_type_kind		kind;
 	struct s_asn_v2_typedef	*base_typedef;
 	t_asn_v2_tag			tag;
@@ -160,10 +162,10 @@ typedef struct s_asn_v2_typedef {
 	void 					*elements;
 } t_asn_v2_typedef;
 
-typedef struct s_asn_v2_schema {
+typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode	tag_mode;
 	t_asn_v2_typedef	*typedefs;
-} t_asn_v2_schema;
+} t_asn_v2_module;
 
 // union {
 // 	bool      boolean;
@@ -172,6 +174,6 @@ typedef struct s_asn_v2_schema {
 // 	uint8_t   *bytes;
 // };
 
-int	asn1_v2_schema_validate(t_node *json_schema_node);
+int	asn1_v2_schema_validate(t_json_v2 *jschema);
 
 #endif

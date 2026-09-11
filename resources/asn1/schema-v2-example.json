@@ -16,7 +16,7 @@
 					"name": "version",
 					"type": {
 						"kind": "ref",
-						"definition": "version"
+						"typedef": "version"
 					},
 					"optional": false,
 					"default": null,
