@@ -137,5 +137,6 @@ void    bnum_swap_values(t_num *a, t_num *b);
 void    bnum_to_bytes_u(const t_num *num, char **bytes, size_t *len);
 char    *bnum_to_dec(const t_num *num);
 char    *bnum_to_hex_u(const t_num *num);
+uint64_t	bnum_to_dig_u(const t_num *num);
 
 #endif
