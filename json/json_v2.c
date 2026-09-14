@@ -548,14 +548,17 @@ char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper)
 	return (dumps);
 }
 
-size_t	json_v2_dumpb(t_json_v2 *json, char *buf, size_t size)
+char	*json_v2_dumpb(t_json_v2 *json, char *buf, size_t size)
 {
 	return (json_v2_dumpb_with_f_dumper(json, buf, size, __json_v2_f_default_dumper));
 }
 
-size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper)
+char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper)
 {
-	if (size == 0) return (0);
+	assert(NULL != json);
+	assert(NULL != buf);
+	assert(NULL != f_dumper);
+	if (size == 0) return (NULL);
 
 	char *dumps = json_v2_dumps_with_f_dumper(json, f_dumper);
 	size_t len = ft_strlen(dumps);
@@ -565,7 +568,7 @@ size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_fu
 	ft_strncpy(buf, dumps, len);
 	buf[len] = '\0';
 	SSL_FREE(dumps);
-	return (len);
+	return (buf);
 }
 
 static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
@@ -751,6 +754,16 @@ static const char	*__json_v2_get_query_type_name(__t_json_v2_q_type type);
 int json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json)
 {
 	return (__json_v2_query_with_f_selector(s, json, ret_json, __json_v2_f_default_selector));
+}
+
+int json_v2_query_nonnull(const char *s, t_json_v2 *json, t_json_v2 **ret_json)
+{
+	int status = __json_v2_query_with_f_selector(s, json, ret_json, __json_v2_f_default_selector);
+	if (JSON_V2_OK == status && (*ret_json)->type == JSON_V2_TYPE_NULL) {
+		*ret_json = NULL;
+		return (JSON_V2_ERR);
+	}
+	return (status);
 }
 
 static int __json_v2_query_with_f_selector(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector)

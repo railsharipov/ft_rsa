@@ -46,12 +46,13 @@ int	json_v2_validate_shallow(t_json_v2 *json);
 int	json_v2_validate_type(t_json_v2 *json);
 
 int	json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json);
+int	json_v2_query_nonnull(const char *s, t_json_v2 *json, t_json_v2 **ret_json);
 
 const char	*json_v2_get_type_name(t_json_v2_type type);
 
 char	*json_v2_dumps(t_json_v2 *json);
 char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper);
-size_t	json_v2_dumpb(t_json_v2 *json, char *buf, size_t size);
-size_t	json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper);
+char	*json_v2_dumpb(t_json_v2 *json, char *buf, size_t size);
+char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper);
 
 #endif
