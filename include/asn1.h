@@ -105,6 +105,7 @@ typedef enum e_asn_v2_tag_class {
 } t_asn_v2_tag_class;
 
 typedef enum e_asn_v2_type_kind {
+	ASN_V2_TYPE_KIND_NULL,
 	ASN_V2_TYPE_KIND_BOOLEAN,
 	ASN_V2_TYPE_KIND_INT,
 	ASN_V2_TYPE_KIND_BIT_STRING,
@@ -112,7 +113,6 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_IA5_STRING,
 	ASN_V2_TYPE_KIND_UTF8_STRING,
 	ASN_V2_TYPE_KIND_PRINTABLE_STRING,
-	ASN_V2_TYPE_KIND_NULL,
 	ASN_V2_TYPE_KIND_OBJECT_ID,
 	ASN_V2_TYPE_KIND_OBJECT_DESCR,
 	ASN_V2_TYPE_KIND_SEQUENCE,
@@ -122,18 +122,25 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_CHOICE,
 	ASN_V2_TYPE_KIND_TAGGED,
 	ASN_V2_TYPE_KIND_REF,
-	ASN_V2_TYPE_KIND_UNKNOWN,
 } t_asn_v2_type_kind;
 
+typedef enum s_asn_v2_value_type {
+	ASN_V2_VALUE_TYPE_NULL,
+	ASN_V2_VALUE_TYPE_BOOLEAN,
+	ASN_V2_VALUE_TYPE_NUMBER,
+	ASN_V2_VALUE_TYPE_CSTRING,
+	ASN_V2_VALUE_TYPE_OSTRING,
+	ASN_V2_VALUE_TYPE_LIST,
+} t_asn_v2_value_type;
+
 typedef struct s_asn_v2_value {
-	t_asn_v2_type_kind kind;
+	t_asn_v2_value_type	type;
 	union {
-		t_ostring  ostring;
-		t_num      number;
-		bool       boolean;
-		t_list     list;
-		t_htbl_v2  htable;
-		const char *cstr;
+		t_ostring	ostring;
+		t_num		number;
+		t_list		list;
+		bool		boolean;
+		char		*cstr;
 	} as;
 } t_asn_v2_value;
 
@@ -141,39 +148,37 @@ typedef struct s_asn_v2_tag {
 	t_asn_v2_tag_mode	mode;
 	t_asn_v2_tag_class	class;
 	uint32_t			number;
-	uint8_t				complex;
+	bool				complex;
 } t_asn_v2_tag;
 
 typedef struct s_asn_v2_type {
 	t_asn_v2_type_kind		kind;
 	t_asn_v2_tag			tag;
 	struct s_asn_v2_type	*base_type;
+	char 					*ref_name;
 } t_asn_v2_type;
 
 typedef struct s_asn_v2_typedef {
-	const char				*name;
-	t_asn_v2_type_kind		kind;
-	struct s_asn_v2_typedef	*base_typedef;
-	t_asn_v2_tag			tag;
-	t_asn_v2_value			*default_value;
-	uint8_t 				optional;
-	struct s_asn_v2_typedef	*element_typedef;
-	size_t					element_count;
-	void 					*elements;
+	char			*id;
+	t_asn_v2_type	*type;
+	t_asn_v2_value	*default_value;
+	t_asn_v2_type	*element_type;
+	t_list			elements;
+	bool 			optional;
 } t_asn_v2_typedef;
 
 typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode	tag_mode;
-	t_asn_v2_typedef	*typedefs;
+	t_htbl_v2			typedefs;
 } t_asn_v2_module;
 
-// union {
-// 	bool      boolean;
-// 	char      *string;
-// 	t_num     *number;
-// 	uint8_t   *bytes;
-// };
-
 int	asn1_v2_schema_validate(t_json_v2 *jschema);
+int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
+
+char *asn1_v2_module_dumps(t_asn_v2_module *asn1_module);
+
+const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
+const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
+const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
 
 #endif

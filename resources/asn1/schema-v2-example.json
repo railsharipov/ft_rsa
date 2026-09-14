@@ -13,10 +13,10 @@
 			"elementType": null,
 			"elements": [
 				{
-					"name": "version",
+					"id": "version",
 					"type": {
 						"kind": "ref",
-						"typedef": "version"
+						"refName": "version"
 					},
 					"optional": false,
 					"default": null,
@@ -24,13 +24,13 @@
 					"elements": null
 				},
 				{
-					"name": "algorithm",
+					"id": "algorithm",
 					"type": {
 						"kind": "tagged",
-						"tagClass": "context-specific",
+						"tagClass": "context",
 						"tagNumber": 0,
 						"baseType": {
-							"kind": "ostring"
+							"kind": "octet-string"
 						}
 					},
 					"optional": false,
@@ -39,9 +39,9 @@
 					"elements": null
 				},
 				{
-					"name": "data",
+					"id": "data",
 					"type": {
-						"kind": "ostring",
+						"kind": "octet-string",
 						"tagClass": null,
 						"tagNumber": null,
 						"baseType": null,
@@ -55,7 +55,7 @@
 			]
 		},
 		"version": {
-			"name": "version",
+			"id": "version",
 			"type": {
 				"kind": "integer"
 			},
