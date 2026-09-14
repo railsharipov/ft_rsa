@@ -63,8 +63,10 @@
 #define DO_NOTHING			(void)0;
 
 # define FLAG(FLAG, FLAGS)	((int)(((FLAGS)&(FLAG))==(FLAG)))
-# define UNREACHABLE(MES)	do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
-# define TODO(MES)			do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+
+# define NOT_IMPLEMENTED(MES)	do { ft_printf("%@" TXT_YELL("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+# define UNREACHABLE(MES)		do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+# define TODO(MES)				do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
 
 typedef enum e_libft_status {
 	LIBFT_OK = 0,
