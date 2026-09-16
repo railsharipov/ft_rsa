@@ -429,6 +429,7 @@ void 		ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity);
 void		ft_ostr_init_with_content(t_ostring *ostring, void *content, size_t size);
 void		ft_ostr_clear(t_ostring *ostring);
 void		ft_ostr_del(t_ostring *ostring);
+void		ft_ostr_copy(const t_ostring *src, t_ostring *dst);
 t_ostring	*ft_ostr_dup(const t_ostring *ostring);
 t_ostring	*ft_ostr_append_cstr(t_ostring *ostring, const char *cstr);
 t_ostring	*ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr);

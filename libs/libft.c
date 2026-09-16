@@ -3324,6 +3324,18 @@ void	ft_ostr_clear(t_ostring *ostring)
 	ostring->capacity = 0;
 }
 
+void	ft_ostr_copy(const t_ostring *src, t_ostring *dst)
+{
+	if (NULL == src || NULL == dst) {
+		return;
+	}
+	ft_ostr_init_with_capacity(dst, src->size);
+	ft_memcpy(dst->content, src->content, src->size);
+	dst->size = src->size;
+	dst->capacity = dst->size;
+}
+
+
 t_ostring	*ft_ostr_dup(const t_ostring *ostring)
 {
 	t_ostring *dup = ft_ostr_new_with_capacity(ostring->size);
