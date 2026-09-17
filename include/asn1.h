@@ -95,6 +95,7 @@ char	*asn1_oid_get_oid(const char *name);
 typedef enum e_asn_v2_tag_mode {
 	ASN_V2_TAG_MODE_EXPLICIT,
 	ASN_V2_TAG_MODE_IMPLICIT,
+	ASN_V2_TAG_MODE_AUTOMATIC,
 } t_asn_v2_tag_mode;
 
 typedef enum e_asn_v2_tag_class {
@@ -124,11 +125,31 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_REF,
 } t_asn_v2_type_kind;
 
+typedef enum t_asn_v2_universal_tag_number {
+    ASN_V2_TAG_NUMBER_BOOLEAN          = 1,
+    ASN_V2_TAG_NUMBER_INTEGER          = 2,
+    ASN_V2_TAG_NUMBER_BIT_STRING       = 3,
+    ASN_V2_TAG_NUMBER_OCTET_STRING     = 4,
+    ASN_V2_TAG_NUMBER_NULL             = 5,
+    ASN_V2_TAG_NUMBER_OBJECT_ID        = 6,
+    ASN_V2_TAG_NUMBER_OBJECT_DESCR     = 7,
+
+    ASN_V2_TAG_NUMBER_UTF8_STRING      = 12,
+    ASN_V2_TAG_NUMBER_PRINTABLE_STRING = 19,
+    ASN_V2_TAG_NUMBER_IA5_STRING       = 22,
+
+    ASN_V2_TAG_NUMBER_SEQUENCE         = 16,
+    ASN_V2_TAG_NUMBER_SEQUENCE_OF      = 16,
+    ASN_V2_TAG_NUMBER_SET              = 17,
+    ASN_V2_TAG_NUMBER_SET_OF           = 17,
+} t_asn_v2_universal_tag_number;
+
 typedef enum s_asn_v2_value_type {
 	ASN_V2_VALUE_TYPE_NULL,
 	ASN_V2_VALUE_TYPE_BOOLEAN,
 	ASN_V2_VALUE_TYPE_NUMBER,
 	ASN_V2_VALUE_TYPE_CSTRING,
+	ASN_V2_VALUE_TYPE_BSTRING,
 	ASN_V2_VALUE_TYPE_OSTRING,
 	ASN_V2_VALUE_TYPE_LIST,
 } t_asn_v2_value_type;
@@ -145,25 +166,43 @@ typedef struct s_asn_v2_value {
 } t_asn_v2_value;
 
 typedef struct s_asn_v2_tag {
-	t_asn_v2_tag_mode	mode;
 	t_asn_v2_tag_class	class;
-	uint32_t			number;
-	bool				complex;
+	uint32_t 	number;
+	bool 		constructed;
 } t_asn_v2_tag;
 
+typedef enum e_asn_v2_constraint_type {
+	ASN_V2_CONSTRAINT_TYPE_RANGE,
+	ASN_V2_CONSTRAINT_TYPE_SIZE,
+} t_asn_v2_constraint_type;
+
+typedef struct s_asn_v2_constraint {
+	t_asn_v2_constraint_type type;
+	union {
+		struct { t_num *min; t_num *max; } range;
+		struct { size_t min; size_t max; } size;
+	} as;
+} t_asn_v2_constraint;
+
 typedef struct s_asn_v2_type {
-	t_asn_v2_type_kind		kind;
-	t_asn_v2_tag			tag;
-	struct s_asn_v2_type	*base_type;
-	char 					*ref_name;
+	t_asn_v2_type_kind kind;
+	t_list constraints;
+	union {
+		struct { t_list elements; } constructed;
+		struct { struct s_asn_v2_type *element_type; } collection;
+		struct { char *name; } ref;
+		struct {
+			struct s_asn_v2_type *base_type;
+			t_asn_v2_tag_mode tag_mode;
+			t_asn_v2_tag tag;
+		} tagged;
+	} as;
 } t_asn_v2_type;
 
 typedef struct s_asn_v2_typedef {
 	char			*id;
 	t_asn_v2_type	*type;
 	t_asn_v2_value	*default_value;
-	t_asn_v2_type	*element_type;
-	t_list			elements;
 	bool 			optional;
 } t_asn_v2_typedef;
 
@@ -175,10 +214,26 @@ typedef struct s_asn_v2_module {
 int	asn1_v2_schema_validate(t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
 
-char *asn1_v2_module_dumps(t_asn_v2_module *asn1_module);
+char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
+char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);
 
 const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
 const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
+
+typedef struct s_der_v2_type {
+	t_asn_v2_type_kind kind;
+	union {
+		struct { t_list elements; } constructed;
+		struct { struct s_der_v2_type *element_type; } collection;
+	} as;
+	t_asn_v2_value *default_value;
+	t_asn_v2_tag *inner_tag;
+	t_list outer_tags;
+	t_list alternative_tags;
+	bool optional;
+} t_der_v2_type;
+
+int	asn1_v2_typedef_compile(t_der_v2_type **der_type, const t_asn_v2_typedef *asn1_typedef);
 
 #endif

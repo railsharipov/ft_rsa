@@ -1,0 +1,23 @@
+{
+	"tagMode": "string|null",
+	"typedefs": {
+		"<typedef-name>": {
+			"type": {
+				"kind": "string",
+				"tagMode": "string|null",
+				"tagClass": "string|null",
+				"tagNumber": "number",
+				"baseType": "<type>",
+				"refName": "string|null",
+				"elementType": "<type>|null>",
+				"elements": ["<type>","<type>","<type>"],
+				"contraints": {
+					"range": { "min": "number|null", "max": "number|null" },
+					"size": { "min": "number|null", "max": "number|null" }
+				}
+			},
+			"optional": "false|true",
+			"default": "any"
+		}
+	}
+}

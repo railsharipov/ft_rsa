@@ -1,67 +1,83 @@
 {
-	"taggingMode": "explicit",
+	"tagMode": "explicit",
 	"typedefs": {
 		"privateKeyInfo": {
 			"type": {
 				"kind": "sequence",
-				"tagClass": null,
-				"tagNumber": null,
-				"baseType": null
-			},
-			"optional": false,
-			"default": null,
-			"elementType": null,
-			"elements": [
-				{
-					"id": "version",
-					"type": {
-						"kind": "ref",
-						"refName": "version"
-					},
-					"optional": false,
-					"default": null,
-					"elementType": null,
-					"elements": null
-				},
-				{
-					"id": "algorithm",
-					"type": {
-						"kind": "tagged",
-						"tagClass": "context",
-						"tagNumber": 0,
-						"baseType": {
-							"kind": "octet-string"
+				"elements": [
+					{
+						"id": "version",
+						"type": {
+							"kind": "ref",
+							"refName": "version"
 						}
 					},
-					"optional": false,
-					"default": null,
-					"elementType": null,
-					"elements": null
-				},
-				{
-					"id": "data",
-					"type": {
-						"kind": "octet-string",
-						"tagClass": null,
-						"tagNumber": null,
-						"baseType": null,
-						"default": null
+					{
+						"id": "authors",
+						"type": {
+							"kind": "set-of",
+							"elementType": {
+								"kind": "ref",
+								"refName": "author"
+							}
+						}
 					},
-					"optional": false,
-					"default": null,
-					"elementType": null,
-					"elements": null
-				}
-			]
+					{
+						"id": "algorithm",
+						"type": {
+							"kind": "tagged",
+							"tagClass": "context",
+							"tagNumber": 0,
+							"baseType": {
+								"kind": "octet-string"
+							}
+						}
+					},
+					{
+						"id": "data",
+						"type": {
+							"kind": "bit-string"
+						}
+					}
+				]
+			}
 		},
 		"version": {
-			"id": "version",
 			"type": {
 				"kind": "integer"
 			},
-			"optional": false,
 			"default": 0
+		},
+		"author": {
+			"type": {
+				"kind": "choice",
+				"elements": [
+					{
+						"id": "fullname",
+						"type": {
+							"kind": "ia5-string"
+						}
+					},
+					{
+						"id": "email",
+						"type": {
+							"kind": "ia5-string"
+						}
+					},
+					{
+						"id": "id",
+						"type": {
+							"kind": "tagged",
+							"tagMode": "implicit",
+							"tagClass": "application",
+							"tagNumber": 0,
+							"baseType": {
+								"kind": "integer"
+							}
+						}
+					}
+				]
+			}
 		}
-	},
-	"values": {}
+	}
 }
