@@ -248,7 +248,7 @@ void *ft_list_pop_content(t_list *list)
 	return (NULL);
 }
 
-bool ft_list_next_content(t_list *list, t_list_next *next, void **content)
+bool ft_list_next_content(const t_list *list, t_list_next *next, void **content)
 {
 	assert(NULL != list);
 	assert(NULL != next);
@@ -267,17 +267,16 @@ bool ft_list_next_content(t_list *list, t_list_next *next, void **content)
 	return (false);
 }
 
-t_list *ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy)
+void ft_list_copy_all_content(t_list *src, t_list *dst, t_func_content_copy f_copy)
 {
+	assert(NULL != src && NULL != dst);
 	assert(NULL != f_copy);
 
-	t_list *list_copy = ft_list_create();
-	t_content_node *node = container_of(list->first, t_content_node, base);
+	t_content_node *node = container_of(src->first, t_content_node, base);
 	while (NULL != node) {
-		ft_list_append_content(list_copy, f_copy(node->content));
+		ft_list_append_content(dst, f_copy(node->content));
 		node = container_next(node, t_content_node, base);
 	}
-	return (list_copy);
 }
 
 void ft_list_clear_all_content(t_list *list, t_func_content_del f_del)
@@ -349,7 +348,7 @@ static bool __ft_htbl_v2_match_node(t_node_v2 *node, const char *key)
 	return (ft_streq(entry->key, key));
 }
 
-static int __ft_htbl_v2_next_entry(t_htbl_v2 *htbl, t_htbl_v2_next *next, t_htbl_v2_entry **ret_entry)
+static int __ft_htbl_v2_next_entry(const t_htbl_v2 *htbl, t_htbl_v2_next *next, t_htbl_v2_entry **ret_entry)
 {
 	assert(NULL != htbl && NULL != htbl->arr);
 	assert(NULL != next);
@@ -541,7 +540,7 @@ void ft_htbl_v2_del(t_htbl_v2 *htbl, t_func_content_del f_del_content)
 	LIBFT_FREE(htbl);
 }
 
-bool ft_htbl_v2_next(t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content)
+bool ft_htbl_v2_next(const t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content)
 {
 	t_htbl_v2_entry *entry = NULL;
 	bool exists = __ft_htbl_v2_next_entry(htbl, next, &entry);

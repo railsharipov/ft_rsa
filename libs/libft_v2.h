@@ -63,8 +63,8 @@ typedef	void *(*t_func_content_copy)(void *content);
 void	ft_list_append_content(t_list *list, void *content);
 void	ft_list_prepend_content(t_list *list, void *content);
 void	*ft_list_pop_content(t_list *list);
-bool	ft_list_next_content(t_list *list, t_list_next *next, void **content);
-t_list	*ft_list_copy_all_content(t_list *list, t_func_content_copy f_copy);
+bool	ft_list_next_content(const t_list *list, t_list_next *next, void **content);
+void	ft_list_copy_all_content(t_list *src, t_list *dst, t_func_content_copy f_copy);
 void	ft_list_clear_all_content(t_list *list, t_func_content_del f_del);
 void	ft_list_del_all_content(t_list *list, t_func_content_del f_del);
 
@@ -90,7 +90,7 @@ bool		ft_htbl_v2_reset(t_htbl_v2 *htbl, const char *key, void *content, t_func_c
 bool		ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del_content);
 void		ft_htbl_v2_clear(t_htbl_v2 *htbl, t_func_content_del f_del_content);
 void		ft_htbl_v2_del(t_htbl_v2 *htbl, t_func_content_del f_del_content);
-bool		ft_htbl_v2_next(t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content);
+bool		ft_htbl_v2_next(const t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content);
 void 		ft_htbl_v2_resize(t_htbl_v2 *htbl, uint32_t size);
 char		*ft_htbl_v2_dumps(t_htbl_v2 *htbl);
 
