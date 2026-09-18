@@ -267,7 +267,7 @@ bool ft_list_next_content(const t_list *list, t_list_next *next, void **content)
 	return (false);
 }
 
-void ft_list_copy_all_content(t_list *src, t_list *dst, t_func_content_copy f_copy)
+void ft_list_copy_all_content(const t_list *src, t_list *dst, t_func_content_copy f_copy)
 {
 	assert(NULL != src && NULL != dst);
 	assert(NULL != f_copy);
@@ -276,6 +276,15 @@ void ft_list_copy_all_content(t_list *src, t_list *dst, t_func_content_copy f_co
 	while (NULL != node) {
 		ft_list_append_content(dst, f_copy(node->content));
 		node = container_next(node, t_content_node, base);
+	}
+}
+
+void ft_list_move_all_content(t_list *src, t_list *dst)
+{
+	assert(NULL != src && NULL != dst);
+
+	while (src->size > 0) {
+		ft_list_append_content(dst, ft_list_pop_content(src));
 	}
 }
 

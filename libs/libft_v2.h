@@ -64,7 +64,8 @@ void	ft_list_append_content(t_list *list, void *content);
 void	ft_list_prepend_content(t_list *list, void *content);
 void	*ft_list_pop_content(t_list *list);
 bool	ft_list_next_content(const t_list *list, t_list_next *next, void **content);
-void	ft_list_copy_all_content(t_list *src, t_list *dst, t_func_content_copy f_copy);
+void	ft_list_copy_all_content(const t_list *src, t_list *dst, t_func_content_copy f_copy);
+void	ft_list_move_all_content(t_list *src, t_list *dst);
 void	ft_list_clear_all_content(t_list *list, t_func_content_del f_del);
 void	ft_list_del_all_content(t_list *list, t_func_content_del f_del);
 
