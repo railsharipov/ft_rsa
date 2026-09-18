@@ -23,10 +23,10 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 all: CFLAGS := -O3 -std=c11 -Wall -Wfatal-errors -I./include -I./libs
 all: $(NAME)
 
-debug: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libs
+debug: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -Werror=switch -I./include -I./libs
 debug: $(NAME)
 
-sanitize: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
+sanitize: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -Werror=switch -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
 sanitize: LDFLAGS := -fsanitize=address
 sanitize: $(NAME)
 
