@@ -1,83 +1,115 @@
 {
-	"tagMode": "explicit",
-	"typedefs": {
-		"privateKeyInfo": {
-			"type": {
-				"kind": "sequence",
-				"elements": [
-					{
-						"id": "version",
-						"type": {
-							"kind": "ref",
-							"refName": "version"
-						}
-					},
-					{
-						"id": "authors",
-						"type": {
-							"kind": "set-of",
-							"elementType": {
-								"kind": "ref",
-								"refName": "author"
-							}
-						}
-					},
-					{
-						"id": "algorithm",
-						"type": {
-							"kind": "tagged",
-							"tagClass": "context",
-							"tagNumber": 0,
-							"baseType": {
-								"kind": "octet-string"
-							}
-						}
-					},
-					{
-						"id": "data",
-						"type": {
-							"kind": "bit-string"
-						}
-					}
-				]
-			}
-		},
-		"version": {
-			"type": {
-				"kind": "integer"
-			},
-			"default": 0
-		},
-		"author": {
-			"type": {
-				"kind": "choice",
-				"elements": [
-					{
-						"id": "fullname",
-						"type": {
-							"kind": "ia5-string"
-						}
-					},
-					{
-						"id": "email",
-						"type": {
-							"kind": "ia5-string"
-						}
-					},
-					{
-						"id": "id",
-						"type": {
-							"kind": "tagged",
-							"tagMode": "implicit",
-							"tagClass": "application",
-							"tagNumber": 0,
-							"baseType": {
-								"kind": "integer"
-							}
-						}
-					}
-				]
-			}
-		}
-	}
+  "tagMode": "automatic",
+  "types": {
+    "privateKeyInfo": {
+      "kind": "sequence",
+      "components": [
+        {
+          "id": "version",
+          "type": {
+            "kind": "ref",
+            "refName": "version"
+          },
+          "default": 0
+        },
+        {
+          "id": "authors",
+          "type": {
+            "kind": "set-of",
+            "componentType": {
+              "kind": "ref",
+              "refName": "author"
+            }
+          }
+        },
+        {
+          "id": "algorithm",
+          "type": {
+            "kind": "tagged",
+            "tagClass": "context",
+            "tagNumber": 0,
+            "baseType": {
+              "kind": "octet-string"
+            }
+          }
+        },
+        {
+          "id": "data",
+          "type": {
+            "kind": "bit-string"
+          }
+        }
+      ]
+    },
+    "version": {
+      "kind": "integer"
+    },
+    "author": {
+      "kind": "choice",
+      "components": [
+        {
+          "id": "fullname",
+          "type": {
+            "kind": "tagged",
+            "tagMode": "implicit",
+            "tagClass": "context",
+            "tagNumber": 0,
+            "baseType": {
+              "kind": "ia5-string"
+            }
+          }
+        },
+        {
+          "id": "email",
+          "type": {
+            "kind": "tagged",
+            "tagMode": "implicit",
+            "tagClass": "context",
+            "tagNumber": 1,
+            "baseType": {
+              "kind": "ia5-string"
+            }
+          }
+        },
+        {
+          "id": "id",
+          "type": {
+            "kind": "tagged",
+            "tagMode": "implicit",
+            "tagClass": "application",
+            "tagNumber": 0,
+            "baseType": {
+              "kind": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "records": {
+      "kind": "set",
+      "components": [
+        {
+          "id": "001",
+          "type": {
+            "kind": "integer"
+          },
+          "optional": true
+        },
+        {
+          "id": "002",
+          "type": {
+            "kind": "integer"
+          },
+          "optional": true
+        },
+        {
+          "id": "003",
+          "type": {
+            "kind": "integer"
+          },
+          "optional": true
+        }
+      ]
+    }
+  }
 }

@@ -1,23 +1,33 @@
 {
-	"tagMode": "string|null",
-	"typedefs": {
-		"<typedef-name>": {
-			"type": {
-				"kind": "string",
-				"tagMode": "string|null",
-				"tagClass": "string|null",
-				"tagNumber": "number",
-				"baseType": "<type>",
-				"refName": "string|null",
-				"elementType": "<type>|null>",
-				"elements": ["<type>","<type>","<type>"],
-				"contraints": {
-					"range": { "min": "number|null", "max": "number|null" },
-					"size": { "min": "number|null", "max": "number|null" }
-				}
-			},
-			"optional": "false|true",
-			"default": "any"
-		}
-	}
+  "tagMode": "string|null",
+  "types": {
+    "<type-name>": {
+        "kind": "string",
+        "tagMode": "string|null",
+        "tagClass": "string|null",
+        "tagNumber": "number",
+        "baseType": "<type>",
+        "contraints": {
+          "range": { "min": "number|null", "max": "number|null" },
+          "size": { "min": "number|null", "max": "number|null" }
+        },
+        "refName": "string|null",
+        "componentType": "<type>|null>",
+        "components": [
+          {
+            "id": "component_1",
+            "type": "<type>",
+            "optional": "false|true",
+            "default": "any"
+          },
+          {
+            "id": "component_2",
+            "type": "<type>",
+            "optional": "false|true",
+            "default": "any"
+          }
+        ]
+      }
+    }
+  }
 }

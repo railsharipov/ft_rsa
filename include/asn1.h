@@ -122,7 +122,6 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_SET_OF,
 	ASN_V2_TYPE_KIND_CHOICE,
 	ASN_V2_TYPE_KIND_TAGGED,
-	ASN_V2_TYPE_KIND_REF,
 } t_asn_v2_type_kind;
 
 typedef enum t_asn_v2_universal_tag_number {
@@ -152,6 +151,7 @@ typedef enum s_asn_v2_value_type {
 	ASN_V2_VALUE_TYPE_BSTRING,
 	ASN_V2_VALUE_TYPE_OSTRING,
 	ASN_V2_VALUE_TYPE_LIST,
+	ASN_V2_VALUE_TYPE_CHOICE,
 } t_asn_v2_value_type;
 
 typedef struct s_asn_v2_value {
@@ -162,6 +162,10 @@ typedef struct s_asn_v2_value {
 		t_list		list;
 		bool		boolean;
 		char		*cstr;
+		struct {
+		    char *id;
+			struct s_asn_v2_value *value;
+		} choice;
 	} as;
 } t_asn_v2_value;
 
@@ -187,10 +191,10 @@ typedef struct s_asn_v2_constraint {
 typedef struct s_asn_v2_type {
 	t_asn_v2_type_kind kind;
 	t_list constraints;
+	bool is_ref;
 	union {
-		struct { t_list elements; } constructed;
+		struct { t_list elements; } composite;
 		struct { struct s_asn_v2_type *element_type; } collection;
-		struct { char *name; } ref;
 		struct {
 			struct s_asn_v2_type *base_type;
 			t_asn_v2_tag_mode tag_mode;
@@ -199,17 +203,38 @@ typedef struct s_asn_v2_type {
 	} as;
 } t_asn_v2_type;
 
-typedef struct s_asn_v2_typedef {
+typedef struct s_asn_v2_component {
 	char			*id;
 	t_asn_v2_type	*type;
 	t_asn_v2_value	*default_value;
 	bool 			optional;
-} t_asn_v2_typedef;
+} t_asn_v2_component;
 
 typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode	tag_mode;
-	t_htbl_v2			typedefs;
+	t_htbl_v2			types;
 } t_asn_v2_module;
+
+typedef struct s_der_v2_type {
+	t_asn_v2_type_kind kind;
+	t_list constraints;
+	union {
+		struct { t_list elements; } composite;
+		struct { struct s_der_v2_type *element_type; } collection;
+		struct {
+			struct s_der_v2_type *base_type;
+			t_asn_v2_tag_mode tag_mode;
+			t_asn_v2_tag tag;
+		} tagged;
+	} as;
+} t_der_v2_type;
+
+typedef struct s_der_v2_component {
+    char *id;
+	t_der_v2_type *type;
+	t_asn_v2_value *default_value;
+	bool optional;
+} t_der_v2_component;
 
 int	asn1_v2_schema_validate(t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
@@ -221,19 +246,11 @@ const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
 const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
 
-typedef struct s_der_v2_type {
-	t_asn_v2_type_kind kind;
-	union {
-		struct { t_list elements; } constructed;
-		struct { struct s_der_v2_type *element_type; } collection;
-	} as;
-	t_asn_v2_value *default_value;
-	t_asn_v2_tag *inner_tag;
-	t_list outer_tags;
-	t_list alternative_tags;
-	bool optional;
-} t_der_v2_type;
+int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module);
 
-int	asn1_v2_typedef_compile(t_der_v2_type **der_type, const t_asn_v2_typedef *asn1_typedef);
+int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type);
+
+char *der_v2_type_dumps(const t_der_v2_type *der_type);
+char *der_v2_type_dumpb(const t_der_v2_type *der_type, char *buf, size_t size);
 
 #endif
