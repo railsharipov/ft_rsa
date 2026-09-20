@@ -765,6 +765,19 @@ char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module)
 	return (dumps);
 }
 
+char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, int depth, size_t width, bool colored)
+{
+    char *dumps = asn1_v2_module_dumps(asn1_module);
+    t_json_v2 *json = NULL;
+    int status = json_v2_parse(dumps, &json);
+    if (JSON_V2_OK == status) {
+        SSL_FREE(dumps);
+        return (json_v2_pretty_dumps(json, depth, width, colored));
+    } else {
+        return (dumps);
+    }
+}
+
 static char *__asn1_v2_tag_dumpb(const t_asn_v2_tag *asn1_tag, char *buf, size_t size)
 {
 	assert(NULL != buf);

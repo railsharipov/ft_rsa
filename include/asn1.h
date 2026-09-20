@@ -220,6 +220,7 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
 
 char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
 char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);
+char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, int depth, size_t width, bool colored);
 
 const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
