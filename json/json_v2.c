@@ -912,6 +912,8 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 
 static int 	__json_v2_f_default_selector(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
 {
+    *ret_json = NULL;
+
 	switch (query.type) {
 	case __JSON_V2_Q_TYPE_OBJECT_KEY:
 		return (__json_v2_select_object_key(json, query, ret_json));
