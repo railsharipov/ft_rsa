@@ -105,6 +105,9 @@ int io_v2_pipe_pump(t_io_v2_pipe *pipe)
 		case IO_V2_STATUS_FINISHED:
 	   		SSL_LOG(TRACE, "wrote %zu bytes to downstream", wbytes);
 	       	break;
+		case IO_V2_STATUS_EOF:
+		case IO_V2_STATUS_CLOSED:
+		case IO_V2_STATUS_ERROR:
 		default:
 			SSL_LOG(ERROR, "write to downstream failed");
 			pipe->status = IO_V2_STATUS_PIPE_ERROR;
@@ -123,6 +126,7 @@ int io_v2_pipe_pump(t_io_v2_pipe *pipe)
     	SSL_LOG(ERROR, "downstream is in finished state");
     	pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return (-1);
+    case IO_V2_STATUS_EOF:
     default:
   		SSL_LOG(ERROR, "downstream is in invalid state");
    		pipe->status = IO_V2_STATUS_PIPE_ERROR;
@@ -145,6 +149,9 @@ int io_v2_pipe_pump(t_io_v2_pipe *pipe)
 		case IO_V2_STATUS_EOF:
 			SSL_LOG(TRACE, "upstream is at EOF");
 			break;
+		case IO_V2_STATUS_CLOSED:
+		case IO_V2_STATUS_FINISHED:
+		case IO_V2_STATUS_ERROR:
 		default:
 			SSL_LOG(ERROR, "read from upstream failed");
 			pipe->status = IO_V2_STATUS_PIPE_ERROR;
@@ -165,6 +172,7 @@ int io_v2_pipe_pump(t_io_v2_pipe *pipe)
     	SSL_LOG(ERROR, "upstream is in closed state");
      	pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return (-1);
+    case IO_V2_STATUS_FINISHED:
     default:
   		SSL_LOG(ERROR, "upstream is in invalid state");
    		pipe->status = IO_V2_STATUS_PIPE_ERROR;

@@ -35,6 +35,7 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
     case IO_V2_STATUS_EOF:
 		SSL_LOG(ERROR, __IO_EOF_STATUS_ERROR);
         return (-1);
+    case IO_V2_STATUS_FINISHED:
     default:
         SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
         return (-1);
@@ -79,6 +80,9 @@ ssize_t io_v2_read_all(t_io_v2_stream *stream, void *buf, size_t nbytes)
 	case IO_V2_STATUS_EOF:
 		SSL_LOG(TRACE, "eof reached");
 		return (0);
+	case IO_V2_STATUS_FINISHED:
+	case IO_V2_STATUS_ERROR:
+	case IO_V2_STATUS_CLOSED:
 	default:
 		SSL_LOG(ERROR, IO_READ_ERROR);
 		return (-1);
@@ -112,6 +116,7 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
     case IO_V2_STATUS_FINISHED:
 		SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
         return (-1);
+    case IO_V2_STATUS_EOF:
     default:
         SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
         return (-1);
@@ -148,6 +153,10 @@ ssize_t io_v2_write_all(t_io_v2_stream *stream, const void *buf, size_t nbytes)
 	switch (stream->status) {
 	case IO_V2_STATUS_OK:
 		return (twbytes);
+	case IO_V2_STATUS_EOF:
+	case IO_V2_STATUS_ERROR:
+	case IO_V2_STATUS_CLOSED:
+	case IO_V2_STATUS_FINISHED:
 	default:
 		SSL_LOG(ERROR, IO_WRITE_ERROR);
 		return (-1);
@@ -181,6 +190,7 @@ ssize_t io_v2_finish(t_io_v2_stream *stream)
     case IO_V2_STATUS_FINISHED:
 		SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
         return (-1);
+    case IO_V2_STATUS_EOF:
     default:
         SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
         return (-1);
@@ -226,6 +236,10 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
     case IO_V2_STATUS_CLOSED:
 		SSL_LOG(ERROR, __IO_CLOSED_STATUS_ERROR);
         return (-1);
+    case IO_V2_STATUS_FINISHED:
+        SSL_LOG(ERROR, __IO_CLOSED_FINISHED_ERROR);
+        return (-1);
+    case IO_V2_STATUS_EOF:
     default:
         SSL_LOG(ERROR, __IO_INVALID_STATUS_ERROR);
         return (-1);

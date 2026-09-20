@@ -126,6 +126,7 @@ static ssize_t	__io_v2_buffered_read(void *vctx, void *buf, size_t nbytes)
 				case IO_V2_STATUS_CLOSED:
 					SSL_LOG(ERROR, "stream is closed");
 					return (IO_V2_STATUS_ERROR);
+				case IO_V2_STATUS_FINISHED:
 				default:
 					SSL_LOG(ERROR, "invalid stream status");
 					return (IO_V2_STATUS_ERROR);
@@ -178,6 +179,8 @@ static ssize_t __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes
 				case IO_V2_STATUS_CLOSED:
 					SSL_LOG(ERROR, "stream is closed");
 					return (IO_V2_STATUS_ERROR);
+				case IO_V2_STATUS_FINISHED:
+				case IO_V2_STATUS_EOF:
 				default:
 					SSL_LOG(ERROR, "invalid stream status");
 					return (IO_V2_STATUS_ERROR);
@@ -228,6 +231,10 @@ static ssize_t __io_v2_buffered_flush(void *vctx)
 			case IO_V2_STATUS_CLOSED:
 				SSL_LOG(ERROR, "stream is closed");
 				return (IO_V2_STATUS_ERROR);
+			case IO_V2_STATUS_FINISHED:
+			case IO_V2_STATUS_EOF:
+			case IO_V2_STATUS_OK:
+			    UNREACHABLE("__io_v2_buffered_flush");
 			default:
 				SSL_LOG(ERROR, "invalid stream status");
 				return (IO_V2_STATUS_ERROR);

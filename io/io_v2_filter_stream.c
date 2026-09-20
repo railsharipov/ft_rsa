@@ -181,6 +181,7 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 		case IO_V2_STATUS_CLOSED:
 			SSL_LOG(ERROR, "upstream is closed");
 			return (IO_V2_STATUS_ERROR);
+		case IO_V2_STATUS_FINISHED:
 		default:
 			SSL_LOG(ERROR, "invalid upstream status: %d", upstream->status);
 			return (IO_V2_STATUS_ERROR);
@@ -320,6 +321,7 @@ static ssize_t __io_v2_filter_passthrough_read(void *vctx, void *buf, size_t nby
 		case IO_V2_STATUS_CLOSED:
 			SSL_LOG(ERROR, "upstream is closed");
 			return (IO_V2_STATUS_ERROR);
+		case IO_V2_STATUS_FINISHED:
 		default:
 			SSL_LOG(ERROR, "invalid upstream status: %d", upstream->status);
 			return (IO_V2_STATUS_ERROR);
@@ -467,6 +469,9 @@ static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 		case IO_V2_STATUS_CLOSED:
 			SSL_LOG(ERROR, "downstream is closed");
 			return (IO_V2_STATUS_ERROR);
+		case IO_V2_STATUS_FINISHED:
+    		SSL_LOG(ERROR, "downstream is finished");
+    		return (IO_V2_STATUS_ERROR);
 		case IO_V2_STATUS_EOF:
 		default:
 			SSL_LOG(ERROR, "invalid downstream status: %d", downstream->status);
@@ -571,6 +576,9 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 			case IO_V2_STATUS_CLOSED:
 				SSL_LOG(ERROR, "downstream is closed");
 				return (IO_V2_STATUS_ERROR);
+			case IO_V2_STATUS_FINISHED:
+				SSL_LOG(ERROR, "downstream is finished");
+				return (IO_V2_STATUS_ERROR);
 			case IO_V2_STATUS_EOF:
 			default:
 				SSL_LOG(ERROR, "invalid downstream status: %d", downstream->status);
@@ -624,6 +632,9 @@ static ssize_t __io_v2_filter_write_flush(void *vctx)
 				return (IO_V2_STATUS_ERROR);
 			case IO_V2_STATUS_CLOSED:
 				SSL_LOG(ERROR, "downstream is closed");
+				return (IO_V2_STATUS_ERROR);
+			case IO_V2_STATUS_FINISHED:
+				SSL_LOG(ERROR, "downstream is finished");
 				return (IO_V2_STATUS_ERROR);
 			case IO_V2_STATUS_EOF:
 			default:
