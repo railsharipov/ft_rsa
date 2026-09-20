@@ -55,6 +55,6 @@ char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper,
 char	*json_v2_dumpb(t_json_v2 *json, char *buf, size_t size);
 char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper, void *vctx);
 
-char	*json_v2_pretty_dumps(t_json_v2 *json, int depth);
+char	*json_v2_pretty_dumps(t_json_v2 *json, int depth, size_t width, bool colored);
 
 #endif

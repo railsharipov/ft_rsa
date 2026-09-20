@@ -10,19 +10,20 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#define COLOR_RED			"\x1b[31m"
-#define COLOR_GREEN			"\x1b[32m"
-#define COLOR_GREEN_BOLD	"\033[1m\033[32m"
-#define COLOR_YELLOW		"\x1b[33m"
-#define COLOR_BLUE			"\x1b[34m"
-#define COLOR_MAGENTA		"\x1b[35m"
-#define COLOR_CYAN			"\x1b[36m"
-#define COLOR_RED_BOLD		"\033[1m\033[31m"
-#define COLOR_RESET			"\x1b[0m"
-#define COLOR_WHITE			"\x1b[37m"
-#define COLOR_WHITE_BOLD	"\033[1m\033[37m"
-#define COLOR_GRAY			"\x1b[90m"
-#define COLOR_GRAY_BOLD		"\033[1m\033[90m"
+#define COLOR_RED           "\x1b[31m"
+#define COLOR_GREEN			    "\x1b[32m"
+#define COLOR_GREEN_BOLD    "\033[1m\033[32m"
+#define COLOR_YELLOW		    "\x1b[33m"
+#define COLOR_BLUE			    "\x1b[34m"
+#define COLOR_BLUE_BOLD     "\033[1m\033[34m"
+#define COLOR_MAGENTA		    "\x1b[35m"
+#define COLOR_CYAN			    "\x1b[36m"
+#define COLOR_RED_BOLD	    "\033[1m\033[31m"
+#define COLOR_RESET			    "\x1b[0m"
+#define COLOR_WHITE			    "\x1b[37m"
+#define COLOR_WHITE_BOLD    "\033[1m\033[37m"
+#define COLOR_GRAY			    "\x1b[90m"
+#define COLOR_GRAY_BOLD	    "\033[1m\033[90m"
 
 #define TXT_RED(STR_LIT)		COLOR_RED STR_LIT COLOR_RESET
 #define TXT_B_RED(STR_LIT)		COLOR_RED_BOLD STR_LIT COLOR_RESET
@@ -30,6 +31,7 @@
 #define TXT_B_GREEN(STR_LIT)	COLOR_GREEN_BOLD STR_LIT COLOR_RESET
 #define TXT_YELL(STR_LIT)		COLOR_YELLOW STR_LIT COLOR_RESET
 #define TXT_BLUE(STR_LIT)		COLOR_BLUE STR_LIT COLOR_RESET
+#define TXT_B_BLUE(STR_LIT)		COLOR_BLUE_BOLD STR_LIT COLOR_RESET
 #define TXT_MAGEN(STR_LIT)		COLOR_MAGENTA STR_LIT COLOR_RESET
 #define TXT_CYAN(STR_LIT)		COLOR_CYAN STR_LIT COLOR_RESET
 #define TXT_WHITE(STR_LIT)		COLOR_WHITE STR_LIT COLOR_RESET

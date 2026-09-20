@@ -30,7 +30,7 @@ static void	__json_v2_parse_ws(const char *s, size_t *pos);
 
 int json_v2_parse(const char *s, t_json_v2 **ret_json)
 {
-	if (s == NULL) {
+	if (s == NULL || ret_json == NULL) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (JSON_V2_ERR);
 	}
@@ -581,8 +581,8 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void
 		t_htbl_v2_next next = {0};
 		size_t commas = 0;
 		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
-			if (commas++) ft_ostr_append_cstr(ostring, ",");
-			ft_ostr_appendf(ostring, "\"%s\":", key);
+			if (commas++) ft_ostr_append_cstr(ostring, ", ");
+			ft_ostr_appendf(ostring, "\"%s\": ", key);
 			__json_v2_f_default_dumper(value, ostring, vctx);
 		}
 		ft_ostr_append_cstr(ostring, "}");
@@ -594,7 +594,7 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void
 		t_list_next next = {0};
 		size_t commas = 0;
 		while (ft_list_next_content(&json->as.list, &next, &content)) {
-			if (commas++) ft_ostr_append_cstr(ostring, ",");
+			if (commas++) ft_ostr_append_cstr(ostring, ", ");
 			__json_v2_f_default_dumper(content, ostring, vctx);
 		}
 		ft_ostr_append(ostring, "]", 1);
@@ -626,80 +626,125 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void
 typedef struct __s_json_v2_f_pretty_dumper_ctx {
     int cur_level;
     int max_level;
+    bool colored;
+    size_t max_width;
+    int retries;
 } __t_json_v2_f_pretty_dumper_ctx;
 
 static void	__json_v2_f_pretty_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx)
 {
+    const int max_auto_retries = 3;
+
+    size_t start = ostring->size;
+
     char ibuf[257] = {0};
+    char *line_prefix = NULL;
+    char *delim = NULL;
 
     __t_json_v2_f_pretty_dumper_ctx *ctx = vctx;
 
     if (ctx->cur_level > ctx->max_level) {
-        __json_v2_f_default_dumper(json, ostring, NULL);
+        ibuf[0] = '\0';
+        line_prefix = "";
+        delim = " ";
     }
     else {
         int indents = MIN(2*ctx->cur_level, sizeof(ibuf)-1);
+        line_prefix = "  ";
         ft_memset(ibuf, ' ', indents);
+        delim = "\n";
+    }
 
-        switch (json->type) {
-    	case JSON_V2_TYPE_OBJECT: {
-    		ft_ostr_appendf(ostring, "{\n");
-    		const char *key = NULL;
-    		void *value = NULL;
-    		t_htbl_v2_next next = {0};
-    		size_t commas = 0;
-            ctx->cur_level++;
-    		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
-    			if (commas++) ft_ostr_append_cstr(ostring, ",\n");
-    			ft_ostr_appendf(ostring, "  %s\"%s\": ", ibuf, key);
-    			__json_v2_f_pretty_dumper(value, ostring, vctx);
-    		}
-            ctx->cur_level--;
-    		ft_ostr_appendf(ostring, "\n%s}", ibuf);
-    		return;
-    	}
-    	case JSON_V2_TYPE_ARRAY: {
-    		ft_ostr_appendf(ostring, "[\n");
-    		void *content = NULL;
-    		t_list_next next = {0};
-    		size_t commas = 0;
-            ctx->cur_level++;
-    		while (ft_list_next_content(&json->as.list, &next, &content)) {
-    			if (commas++) ft_ostr_append_cstr(ostring, ",\n");
-    			ft_ostr_appendf(ostring, "  %s", ibuf);
-    			__json_v2_f_pretty_dumper(content, ostring, vctx);
-    		}
-            ctx->cur_level--;
-    		ft_ostr_appendf(ostring, "\n%s]", ibuf);
-    		return;
-    	}
-    	case JSON_V2_TYPE_STRING: {
-    		ft_ostr_appendf(ostring, "\"%s\"", json->as.cstr);
-    		return;
-    	}
-    	case JSON_V2_TYPE_NUMBER: {
-    		char *s = bnum_to_dec(&json->as.number);
-    		ft_ostr_append_cstr(ostring, s);
-    		LIBFT_FREE(s);
-    		return;
-    	}
-    	case JSON_V2_TYPE_BOOL: {
-    		ft_ostr_append_cstr(ostring, (json->as.boolean) ? "true" : "false");
-    		return;
-    	}
-    	case JSON_V2_TYPE_NULL: {
-    		ft_ostr_append_cstr(ostring, "null");
-    		return;
-    	}
-    	default:
-    		ft_ostr_append_cstr(ostring, "\"<_unknown_type_>\"");
-    	}
+    switch (json->type) {
+   	case JSON_V2_TYPE_OBJECT: {
+  		ft_ostr_appendf(ostring, "{%s", delim);
+  		const char *key = NULL;
+  		void *value = NULL;
+  		t_htbl_v2_next next = {0};
+  		size_t commas = 0;
+        ctx->cur_level++;
+  		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
+ 			if (commas++) ft_ostr_appendf(ostring, ",%s", delim);
+            if (ctx->colored)
+                ft_ostr_appendf(ostring, "%s%s" TXT_CYAN("\"%s\"") ": ", line_prefix, ibuf, key);
+            else
+                ft_ostr_appendf(ostring, "%s%s" "\"%s\": ", line_prefix, ibuf, key);
+ 			__json_v2_f_pretty_dumper(value, ostring, vctx);
+  		}
+        ctx->cur_level--;
+  		ft_ostr_appendf(ostring, "%s%s}", delim, ibuf);
+  		break;
+   	}
+   	case JSON_V2_TYPE_ARRAY: {
+  		ft_ostr_appendf(ostring, "[%s", delim);
+  		void *content = NULL;
+  		t_list_next next = {0};
+  		size_t commas = 0;
+        ctx->cur_level++;
+  		while (ft_list_next_content(&json->as.list, &next, &content)) {
+ 			if (commas++) ft_ostr_appendf(ostring, ",%s", delim);
+ 			ft_ostr_appendf(ostring, "%s%s", line_prefix, ibuf);
+ 			__json_v2_f_pretty_dumper(content, ostring, vctx);
+  		}
+        ctx->cur_level--;
+  		ft_ostr_appendf(ostring, "%s%s]", delim, ibuf);
+  		break;
+   	}
+   	case JSON_V2_TYPE_STRING: {
+  		if (ctx->colored)
+            ft_ostr_appendf(ostring, TXT_RED("\"%s\""), json->as.cstr);
+        else
+            ft_ostr_appendf(ostring, "\"%s\"", json->as.cstr);
+  		break;
+   	}
+   	case JSON_V2_TYPE_NUMBER: {
+  		char *s = bnum_to_dec(&json->as.number);
+  		if (ctx->colored)
+            ft_ostr_appendf(ostring, TXT_MAGEN("%s"), s);
+        else
+            ft_ostr_append_cstr(ostring, s);
+  		LIBFT_FREE(s);
+  		break;
+   	}
+   	case JSON_V2_TYPE_BOOL: {
+  		if (ctx->colored)
+            ft_ostr_append_cstr(ostring, (json->as.boolean) ? TXT_YELL("true") : TXT_YELL("false"));
+        else
+            ft_ostr_append_cstr(ostring, (json->as.boolean) ? "true" : "false");
+  		break;
+   	}
+   	case JSON_V2_TYPE_NULL: {
+  		if (ctx->colored)
+            ft_ostr_append_cstr(ostring, TXT_GRAY("null"));
+        else
+            ft_ostr_append_cstr(ostring, "null");
+  		break;
+   	}
+   	default:
+  		if (ctx->colored)
+            ft_ostr_append_cstr(ostring, "\"<_unknown_type_>\"");
+        else
+            ft_ostr_append_cstr(ostring, TXT_GRAY("\"<_unknown_type_>\""));
+   	}
+
+    // Automatic depth adjustment based on line length.
+    if (ctx->max_width > 0 && ctx->cur_level > ctx->max_level) {
+        if (ostring->size - start > ctx->max_width && ctx->retries < max_auto_retries) {
+            ostring->size = start;
+            int max_level = ctx->max_level;
+            ctx->retries++;
+            ctx->max_level = ctx->cur_level;
+            __json_v2_f_pretty_dumper(json, ostring, vctx);
+            ctx->max_level = max_level;
+            ctx->retries = 0;
+        }
     }
 }
 
-char	*json_v2_pretty_dumps(t_json_v2 *json, int depth)
+char	*json_v2_pretty_dumps(t_json_v2 *json, int depth, size_t width, bool colored)
 {
-    __t_json_v2_f_pretty_dumper_ctx ctx = { .max_level = depth, };
+    __t_json_v2_f_pretty_dumper_ctx ctx = { .max_level = depth, .colored = colored, };
+    if (width > 0) ctx.max_width = width;
 	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_pretty_dumper, &ctx));
 }
 
