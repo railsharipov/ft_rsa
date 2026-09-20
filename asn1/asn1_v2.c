@@ -10,34 +10,35 @@
 
 /****************************************************************************/
 
-#define ASN_V2_TAG_CLASS_NAME_UNIVERSAL   "universal"
-#define ASN_V2_TAG_CLASS_NAME_APPLICATION "application"
-#define ASN_V2_TAG_CLASS_NAME_CONTEXT     "context"
-#define ASN_V2_TAG_CLASS_NAME_PRIVATE     "private"
+#define ASN_V2_TAG_CLASS_NAME_UNIVERSAL   "UNIVERSAL"
+#define ASN_V2_TAG_CLASS_NAME_APPLICATION "APPLICATION"
+#define ASN_V2_TAG_CLASS_NAME_CONTEXT     "CONTEXT"
+#define ASN_V2_TAG_CLASS_NAME_PRIVATE     "PRIVATE"
 
-#define ASN_V2_TAG_MODE_NAME_EXPLICIT     "explicit"
-#define ASN_V2_TAG_MODE_NAME_IMPLICIT     "implicit"
-#define ASN_V2_TAG_MODE_NAME_AUTOMATIC    "automatic"
+#define ASN_V2_TAG_MODE_NAME_EXPLICIT     "EXPLICIT"
+#define ASN_V2_TAG_MODE_NAME_IMPLICIT     "IMPLICIT"
+#define ASN_V2_TAG_MODE_NAME_AUTOMATIC    "AUTOMATIC"
 
-#define ASN_V2_TYPE_NAME_BOOLEAN          "boolean"
-#define ASN_V2_TYPE_NAME_INTEGER          "integer"
-#define ASN_V2_TYPE_NAME_BIT_STRING       "bit-string"
-#define ASN_V2_TYPE_NAME_OCTET_STRING     "octet-string"
-#define ASN_V2_TYPE_NAME_IA5_STRING       "ia5-string"
-#define ASN_V2_TYPE_NAME_UTF8_STRING      "utf8-string"
-#define ASN_V2_TYPE_NAME_PRINTABLE_STRING "printable-string"
-#define ASN_V2_TYPE_NAME_OBJECT_ID        "object-id"
-#define ASN_V2_TYPE_NAME_OBJECT_DESCR     "object-descr"
-#define ASN_V2_TYPE_NAME_SEQUENCE         "sequence"
-#define ASN_V2_TYPE_NAME_SEQUENCE_OF      "sequence-of"
-#define ASN_V2_TYPE_NAME_SET              "set"
-#define ASN_V2_TYPE_NAME_SET_OF           "set-of"
-#define ASN_V2_TYPE_NAME_CHOICE           "choice"
-#define ASN_V2_TYPE_NAME_TAGGED           "tagged"
-#define ASN_V2_TYPE_NAME_NULL             "null"
+#define ASN_V2_TYPE_NAME_NULL             "NULL"
+#define ASN_V2_TYPE_NAME_BOOLEAN          "BOOLEAN"
+#define ASN_V2_TYPE_NAME_INTEGER          "INTEGER"
+#define ASN_V2_TYPE_NAME_BIT_STRING       "BIT STRING"
+#define ASN_V2_TYPE_NAME_OCTET_STRING     "OCTET STRING"
+#define ASN_V2_TYPE_NAME_IA5_STRING       "IA5 STRING"
+#define ASN_V2_TYPE_NAME_UTF8_STRING      "UTF8 STRING"
+#define ASN_V2_TYPE_NAME_PRINTABLE_STRING "PRINTABLE STRING"
+#define ASN_V2_TYPE_NAME_OBJECT_ID        "OBJECT IDENTIFIER"
+#define ASN_V2_TYPE_NAME_OBJECT_DESCR     "OBJECT DESCRIPTOR"
+#define ASN_V2_TYPE_NAME_SEQUENCE         "SEQUENCE"
+#define ASN_V2_TYPE_NAME_SEQUENCE_OF      "SEQUENCE OF"
+#define ASN_V2_TYPE_NAME_SET              "SET"
+#define ASN_V2_TYPE_NAME_SET_OF           "SET OF"
+#define ASN_V2_TYPE_NAME_CHOICE           "CHOICE"
+#define ASN_V2_TYPE_NAME_TAGGED           "TAGGED"
+#define ASN_V2_TYPE_NAME_ANY              "ANY"
 
-#define ASN_V2_CONSTRAINT_TYPE_NAME_RANGE "range"
-#define ASN_V2_CONSTRAINT_TYPE_NAME_SIZE  "size"
+#define ASN_V2_CONSTRAINT_TYPE_NAME_RANGE "RANGE"
+#define ASN_V2_CONSTRAINT_TYPE_NAME_SIZE  "SIZE"
 
 /****************************************************************************/
 
@@ -50,6 +51,7 @@
 #define __SCHEMA_TAG_MODE_NAME_IMPLICIT     ASN_V2_TAG_MODE_NAME_IMPLICIT
 #define __SCHEMA_TAG_MODE_NAME_AUTOMATIC    ASN_V2_TAG_MODE_NAME_AUTOMATIC
 
+#define __SCHEMA_TYPE_NAME_NULL             ASN_V2_TYPE_NAME_NULL
 #define __SCHEMA_TYPE_NAME_BOOLEAN          ASN_V2_TYPE_NAME_BOOLEAN
 #define __SCHEMA_TYPE_NAME_INTEGER          ASN_V2_TYPE_NAME_INTEGER
 #define __SCHEMA_TYPE_NAME_BIT_STRING       ASN_V2_TYPE_NAME_BIT_STRING
@@ -65,8 +67,7 @@
 #define __SCHEMA_TYPE_NAME_SET_OF           ASN_V2_TYPE_NAME_SET_OF
 #define __SCHEMA_TYPE_NAME_CHOICE           ASN_V2_TYPE_NAME_CHOICE
 #define __SCHEMA_TYPE_NAME_TAGGED           ASN_V2_TYPE_NAME_TAGGED
-#define __SCHEMA_TYPE_NAME_NULL             ASN_V2_TYPE_NAME_NULL
-#define __SCHEMA_TYPE_NAME_REF              "ref"
+#define __SCHEMA_TYPE_NAME_ANY              ASN_V2_TYPE_NAME_ANY
 
 #define __SCHEMA_CONSTRAINT_TYPE_NAME_RANGE ASN_V2_CONSTRAINT_TYPE_NAME_RANGE
 #define __SCHEMA_CONSTRAINT_TYPE_NAME_SIZE  ASN_V2_CONSTRAINT_TYPE_NAME_SIZE
@@ -84,7 +85,7 @@
 #define __JQ_TYPE_TAG_CLASS		    ".tagClass"
 #define __JQ_TYPE_TAG_NUMBER	    ".tagNumber"
 #define __JQ_TYPE_BASE_TYPE		    ".baseType"
-#define __JQ_TYPE_REF_NAME		    ".refName"
+#define __JQ_TYPE_DEFINED_BY_ID		".definedById"
 #define __JQ_TYPE_COMPONENT_TYPE	".componentType"
 #define __JQ_TYPE_COMPONENTS		".components"
 
@@ -107,6 +108,7 @@ const char *asn1_v2_get_type_name(t_asn_v2_type_kind type)
 	case ASN_V2_TYPE_KIND_SET_OF:           return ASN_V2_TYPE_NAME_SET_OF;
 	case ASN_V2_TYPE_KIND_CHOICE:           return ASN_V2_TYPE_NAME_CHOICE;
 	case ASN_V2_TYPE_KIND_TAGGED:           return ASN_V2_TYPE_NAME_TAGGED;
+	case ASN_V2_TYPE_KIND_ANY:              return ASN_V2_TYPE_NAME_ANY;
 	default:                                return "unknown";
 	}
 }
@@ -143,6 +145,8 @@ const char *asn1_v2_get_constraint_type_name(t_asn_v2_constraint_type type)
 
 /****************************************************************************/
 
+#define __ASN_V2_UNKNOWN_NAME 9999
+
 static t_asn_v2_constraint_type __asn1_v2_schema_get_constraint_type_by_name(const char *name)
 {
 	assert(NULL != name);
@@ -150,7 +154,7 @@ static t_asn_v2_constraint_type __asn1_v2_schema_get_constraint_type_by_name(con
 	if (ft_streq(name, __SCHEMA_CONSTRAINT_TYPE_NAME_RANGE))    return (ASN_V2_CONSTRAINT_TYPE_RANGE);
 	if (ft_streq(name, __SCHEMA_CONSTRAINT_TYPE_NAME_SIZE))	    return (ASN_V2_CONSTRAINT_TYPE_SIZE);
 
-	return (-1);
+	return (__ASN_V2_UNKNOWN_NAME);
 }
 
 static t_asn_v2_type_kind __asn1_v2_schema_get_type_by_name(const char *name)
@@ -173,8 +177,9 @@ static t_asn_v2_type_kind __asn1_v2_schema_get_type_by_name(const char *name)
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_SET_OF))			    return (ASN_V2_TYPE_KIND_SET_OF);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_CHOICE))			    return (ASN_V2_TYPE_KIND_CHOICE);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_TAGGED))			    return (ASN_V2_TYPE_KIND_TAGGED);
+	if (ft_streq(name, __SCHEMA_TYPE_NAME_ANY))			        return (ASN_V2_TYPE_KIND_ANY);
 
-	return (-1);
+	return (__ASN_V2_UNKNOWN_NAME);
 }
 
 static t_asn_v2_tag_mode __asn1_v2_schema_get_tag_mode_by_name(const char *name)
@@ -185,7 +190,7 @@ static t_asn_v2_tag_mode __asn1_v2_schema_get_tag_mode_by_name(const char *name)
 	if (ft_streq(name, __SCHEMA_TAG_MODE_NAME_IMPLICIT))		return (ASN_V2_TAG_MODE_IMPLICIT);
 	if (ft_streq(name, __SCHEMA_TAG_MODE_NAME_AUTOMATIC))		return (ASN_V2_TAG_MODE_AUTOMATIC);
 
-	return (-1);
+	return (__ASN_V2_UNKNOWN_NAME);
 }
 
 static t_asn_v2_tag_class __asn1_v2_schema_get_tag_class_by_name(const char *name)
@@ -197,7 +202,7 @@ static t_asn_v2_tag_class __asn1_v2_schema_get_tag_class_by_name(const char *nam
 	if (ft_streq(name, __SCHEMA_TAG_CLASS_NAME_CONTEXT))		return (ASN_V2_TAG_CLASS_CONTEXT);
 	if (ft_streq(name, __SCHEMA_TAG_CLASS_NAME_PRIVATE))		return (ASN_V2_TAG_CLASS_PRIVATE);
 
-	return (-1);
+	return (__ASN_V2_UNKNOWN_NAME);
 }
 
 /****************************************************************************/
@@ -236,6 +241,7 @@ static t_asn_v2_tag __asn1_v2_get_universal_tag(t_asn_v2_type_kind type)
 		return (t_asn_v2_tag){ .class = class, .constructed = true, .number = ASN_V2_TAG_NUMBER_SET_OF, };
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_TAGGED:
+	case ASN_V2_TYPE_KIND_ANY:
 		UNREACHABLE("__asn1_v2_get_universal_tag");
 	}
 }
@@ -245,29 +251,28 @@ static t_asn_v2_tag __asn1_v2_get_universal_tag(t_asn_v2_type_kind type)
 int __asn1_v2_schema_validate_constraint_type_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_constraint_type_by_name(name) < 0) return (SSL_ERR);
+	if (__asn1_v2_schema_get_constraint_type_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
 	return (SSL_OK);
 }
 
 int __asn1_v2_schema_validate_tag_mode_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_tag_mode_by_name(name) < 0) return (SSL_ERR);
+	if (__asn1_v2_schema_get_tag_mode_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
 	return (SSL_OK);
 }
 
 int __asn1_v2_schema_validate_tag_class_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_tag_class_by_name(name) < 0) return (SSL_ERR);
+	if (__asn1_v2_schema_get_tag_class_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
 	return (SSL_OK);
 }
 
 int __asn1_v2_schema_validate_type_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (ft_streq(name, __SCHEMA_TYPE_NAME_REF)) return (SSL_OK);
-	if (__asn1_v2_schema_get_type_by_name(name) < 0) return (SSL_ERR);
+	if (__asn1_v2_schema_get_type_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
 	return (SSL_OK);
 }
 
@@ -297,34 +302,46 @@ int __asn1_v2_schema_validate_type_compatibility(t_asn_v2_type_kind asn1_type, t
 	case ASN_V2_TYPE_KIND_NULL:
 		return (json_type == JSON_V2_TYPE_NULL) ? SSL_OK : SSL_ERR;
 	case ASN_V2_TYPE_KIND_TAGGED:
+	case ASN_V2_TYPE_KIND_ANY:
+	    return (SSL_OK);
 	default:
 		return (SSL_ERR);
 	}
 }
 
-static int __asn1_v2_schema_validate_type(t_json_v2 *jtype);
-static int __asn1_v2_schema_validate_component(t_json_v2 *jcomponent);
+static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *jtype);
+static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_v2 *jcomponent);
 
-static int __asn1_v2_schema_validate_type(t_json_v2 *jtype)
+static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *jtype)
 {
+    char cbuf[1024];
+
 	if (jtype->type != JSON_V2_TYPE_OBJECT) {
-		SSL_LOG(ERROR, "invalid asn1 component: expected json object but got json %s", json_v2_get_type_name(jtype->type));
+		SSL_LOG(ERROR, "invalid asn1 component: expected json object but got json %s: %s", json_v2_get_type_name(jtype->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 		return (SSL_ERR);
 	}
 
 	t_json_v2 *jkind = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind)) {
-		SSL_LOG(ERROR, "invalid asn1 type: expected `%s` key", __JQ_TYPE_KIND);
+		SSL_LOG(ERROR, "invalid asn1 type: expected `%s` key: %s", __JQ_TYPE_KIND, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 		return (SSL_ERR);
 	}
 	else {
 		if (jkind->type != JSON_V2_TYPE_STRING) {
-			SSL_LOG(ERROR, "invalid asn1 type: expected `%s` to be a json string but got json %s", __JQ_TYPE_KIND, json_v2_get_type_name(jkind->type));
+			SSL_LOG(ERROR, "invalid asn1 type: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_KIND, json_v2_get_type_name(jkind->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 		if (SSL_OK != __asn1_v2_schema_validate_type_name(jkind->as.cstr)) {
-			SSL_LOG(ERROR, "invalid asn1 type: `%s`", jkind->as.cstr);
-			return (SSL_ERR);
+		    SSL_LOG(TRACE, "unknown asn1 type: `%s`: %s", jkind->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
+		    // Check if the type name refers to a type within a module.
+            t_json_v2 *jref_type = NULL;
+            char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstr);
+            int ret = json_v2_query_nonnull(query, jschema, &jref_type);
+            SSL_FREE(query);
+            if (JSON_V2_OK != ret || jref_type->type != JSON_V2_TYPE_OBJECT) {
+                SSL_LOG(ERROR, "invalid asn1 type: bad type ref: `%s`: %s", jkind->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
+			    return (SSL_ERR);
+            }
 		}
 	}
 	t_asn_v2_type_kind asn1_type = __asn1_v2_schema_get_type_by_name(jkind->as.cstr);
@@ -336,15 +353,15 @@ static int __asn1_v2_schema_validate_type(t_json_v2 *jtype)
 		;;
 		t_json_v2 *jcomponents = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
-			SSL_LOG(ERROR, "asn1 component: no `%s` key specified", __JQ_TYPE_COMPONENTS);
+			SSL_LOG(ERROR, "asn1 component: no `%s` key specified: %s", __JQ_TYPE_COMPONENTS, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 		else {
 			void *content = NULL;
 			t_list_next next = {0};
 			while (ft_list_next_content(&jcomponents->as.list, &next, &content)) {
-				if (SSL_OK != __asn1_v2_schema_validate_component(content)) {
-					SSL_LOG(ERROR, "invalid asn1 component: `%s` contains invalid component", __JQ_TYPE_COMPONENTS);
+				if (SSL_OK != __asn1_v2_schema_validate_component(jschema, content)) {
+					SSL_LOG(ERROR, "invalid asn1 component: `%s` contains invalid component: %s", __JQ_TYPE_COMPONENTS, json_v2_dumpb(content, cbuf, sizeof(cbuf)));
 					return (SSL_ERR);
 				}
 			}
@@ -355,12 +372,12 @@ static int __asn1_v2_schema_validate_type(t_json_v2 *jtype)
 		;;
 		t_json_v2 *jelement_type = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENT_TYPE, jtype, &jelement_type)) {
-			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_COMPONENT_TYPE);
+			SSL_LOG(ERROR, "asn1 type: no `%s` key specified: %s", __JQ_TYPE_COMPONENT_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 		else {
-			if (SSL_OK != __asn1_v2_schema_validate_type(jelement_type)) {
-				SSL_LOG(ERROR, "invalid asn1 type: invalid `%s`", __JQ_TYPE_COMPONENT_TYPE);
+			if (SSL_OK != __asn1_v2_schema_validate_type(jschema, jelement_type)) {
+				SSL_LOG(ERROR, "invalid asn1 type: invalid `%s`: %s", __JQ_TYPE_COMPONENT_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 		}
@@ -370,66 +387,61 @@ static int __asn1_v2_schema_validate_type(t_json_v2 *jtype)
 		t_json_v2 *jtag_mode = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_TAG_MODE, jtype, &jtag_mode)) {
 			if (jtag_mode->type != JSON_V2_TYPE_STRING) {
-				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s", __JQ_TYPE_TAG_MODE, json_v2_get_type_name(jtag_mode->type));
+				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_TAG_MODE, json_v2_get_type_name(jtag_mode->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 			if (SSL_OK != __asn1_v2_schema_validate_tag_mode_name(jtag_mode->as.cstr)) {
-				SSL_LOG(ERROR, "invalid asn1 type: bad tag mode `%s`", jtag_mode->as.cstr);
+				SSL_LOG(ERROR, "invalid asn1 type: bad tag mode `%s`: %s", jtag_mode->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 		}
 		t_json_v2 *jtag_class = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_TAG_CLASS, jtype, &jtag_class)) {
-			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key", __JQ_TYPE_TAG_CLASS);
+			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key: %s", __JQ_TYPE_TAG_CLASS, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 		else {
 			if (jtag_class->type != JSON_V2_TYPE_STRING) {
-				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s", __JQ_TYPE_TAG_CLASS, json_v2_get_type_name(jtag_class->type));
+				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_TAG_CLASS, json_v2_get_type_name(jtag_class->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 			if (SSL_OK != __asn1_v2_schema_validate_tag_class_name(jtag_class->as.cstr)) {
-				SSL_LOG(ERROR, "invalid asn1 type: bad tag class: `%s`", jtag_class->as.cstr);
+				SSL_LOG(ERROR, "invalid asn1 type: bad tag class: `%s`: %s", jtag_class->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 		}
 		t_json_v2 *jtag_number = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_TAG_NUMBER, jtype, &jtag_number)) {
-			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key", __JQ_TYPE_TAG_NUMBER);
+			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key: %s", __JQ_TYPE_TAG_NUMBER, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 		else {
 			if (jtag_number->type != JSON_V2_TYPE_NUMBER) {
-				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json number but got json %s", __JQ_TYPE_TAG_NUMBER, json_v2_get_type_name(jtag_number->type));
+				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json number but got json %s: %s", __JQ_TYPE_TAG_NUMBER, json_v2_get_type_name(jtag_number->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 		}
 		t_json_v2 *jbase_type = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_BASE_TYPE, jtype, &jbase_type)) {
-			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key", __JQ_TYPE_BASE_TYPE);
+			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key: %s", __JQ_TYPE_BASE_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 		else {
-			if (SSL_OK != __asn1_v2_schema_validate_type(jbase_type)) {
-				SSL_LOG(ERROR, "invalid asn1 component: bad type: `%s`", __JQ_TYPE_BASE_TYPE);
+			if (SSL_OK != __asn1_v2_schema_validate_type(jschema, jbase_type)) {
+				SSL_LOG(ERROR, "invalid asn1 component: bad type: `%s`: %s", __JQ_TYPE_BASE_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
 			}
 		}
 		break;
-	// case ASN_V2_TYPE_KIND_REF:
-	// 	;;
-	// 	t_json_v2 *jref_name = NULL;
-	// 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_REF_NAME, jtype, &jref_name)) {
-	// 		SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be specified for asn1 %s type", __JQ_TYPE_REF_NAME, ASN_V2_TYPE_NAME_REF);
-	// 		return (SSL_ERR);
-	// 	}
-	// 	else {
-	// 		if (jref_name->type != JSON_V2_TYPE_STRING) {
-	// 			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s", __JQ_TYPE_KIND, json_v2_get_type_name(jref_name->type));
-	// 			return (SSL_ERR);
-	// 		}
-	// 	}
-	// 	break;
+	case ASN_V2_TYPE_KIND_ANY:
+    	;;
+    	t_json_v2 *jdefined_by_id = NULL;
+    	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
+    		if (jdefined_by_id->type != JSON_V2_TYPE_STRING) {
+    			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_DEFINED_BY_ID, json_v2_get_type_name(jdefined_by_id->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
+    			return (SSL_ERR);
+    		}
+    	}
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -446,8 +458,10 @@ static int __asn1_v2_schema_validate_type(t_json_v2 *jtype)
 	return (SSL_OK);
 }
 
-static int __asn1_v2_schema_validate_component(t_json_v2 *jcomponent)
+static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_v2 *jcomponent)
 {
+    char cbuf[1024];
+
 	if (jcomponent->type != JSON_V2_TYPE_OBJECT) {
 		SSL_LOG(ERROR, "invalid asn1 component: expected a json object but got json %s", json_v2_get_type_name(jcomponent->type));
 		return (SSL_ERR);
@@ -455,11 +469,11 @@ static int __asn1_v2_schema_validate_component(t_json_v2 *jcomponent)
 
 	t_json_v2 *jid = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_COMPONENT_ID, jcomponent, &jid)) {
-		SSL_LOG(TRACE, "no asn1 `%s` key specified ", __JQ_COMPONENT_ID);
+		SSL_LOG(TRACE, "no asn1 `%s` key specified: %s", __JQ_COMPONENT_ID, json_v2_dumpb(jcomponent, cbuf, sizeof(cbuf)));
 	}
 	else {
 		if (jid->type != JSON_V2_TYPE_STRING) {
-			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s", __JQ_COMPONENT_ID, json_v2_get_type_name(jid->type));
+			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s: %s", __JQ_COMPONENT_ID, json_v2_get_type_name(jid->type), json_v2_dumpb(jcomponent, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 	}
@@ -469,15 +483,15 @@ static int __asn1_v2_schema_validate_component(t_json_v2 *jcomponent)
 		SSL_LOG(TRACE, "no asn1 `%s` key specified ", __JQ_COMPONENT_TYPE);
 	}
 	else {
-		if (SSL_OK != __asn1_v2_schema_validate_type(jtype)) {
-			SSL_LOG(ERROR, "invalid asn1 component: invalid `%s`", __JQ_COMPONENT_TYPE);
+		if (SSL_OK != __asn1_v2_schema_validate_type(jschema, jtype)) {
+			SSL_LOG(ERROR, "invalid asn1 component: invalid `%s`: %s", __JQ_COMPONENT_TYPE, json_v2_dumpb(jcomponent, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
 		}
 	}
 
 	t_json_v2 *joptional = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_COMPONENT_OPTIONAL, jcomponent, &joptional)) {
-		SSL_LOG(TRACE, "asn1 component: no `%s` key specified", __JQ_COMPONENT_OPTIONAL);
+		SSL_LOG(TRACE, "asn1 component: no `%s` key specified: %s", __JQ_COMPONENT_OPTIONAL, json_v2_dumpb(jcomponent, cbuf, sizeof(cbuf)));
 	}
 	else {
 		if (joptional->type != JSON_V2_TYPE_BOOL) {
@@ -536,8 +550,8 @@ int	asn1_v2_schema_validate(t_json_v2 *jschema)
 	void *value = NULL;
 	t_htbl_v2_next next = {0};
 	while (ft_htbl_v2_next(&jtypes->as.htable, &next, &key, &value)) {
-		if (SSL_OK != __asn1_v2_schema_validate_type(value)) {
-		SSL_LOG(ERROR, "invalid asn1 type: %s", key);
+		if (SSL_OK != __asn1_v2_schema_validate_type(jschema, value)) {
+		SSL_LOG(ERROR, "invalid json schema: invalid asn1 type: `%s`", key);
 			return (SSL_ERR);
 		}
 	}
@@ -586,7 +600,7 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 	case ASN_V2_VALUE_TYPE_BSTRING:
 		;;
 		char *ostring_dumps = NULL;
-		ft_sprintf(&ostring_dumps, "\"<octets=%p,size=%zu\"", &asn1_value->as.ostring, asn1_value->as.ostring.size);
+		ft_sprintf(&ostring_dumps, "{\"octets\":\"<%p,size=%zu>\"}", &asn1_value->as.ostring, asn1_value->as.ostring.size);
 		return ostring_dumps;
 	case ASN_V2_VALUE_TYPE_LIST:
 		;;
@@ -617,6 +631,15 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
         }
         SSL_FREE(alt_dumps);
     	return (choice_dumps);
+	case ASN_V2_VALUE_TYPE_ANY:
+	    ;;
+    	char *any_dumps = NULL;
+        if (NULL != asn1_value->as.any.defined_by_id) {
+           	ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":\"%s\",\"octets\":\"<%p,size=%zu>\"}}", asn1_value->as.any.defined_by_id, &asn1_value->as.any.octets, asn1_value->as.any.octets.size);
+        } else {
+           	ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<%p,size=%zu>\"}}", &asn1_value->as.any.octets, asn1_value->as.any.octets.size);
+        }
+    	return (any_dumps);
 	}
 }
 
@@ -662,6 +685,12 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 		ft_ostr_appendf(&ostring, ",\"base_type\":%s", dumps);
 		SSL_FREE(dumps);
 		break;
+	case ASN_V2_TYPE_KIND_ANY:
+        if (NULL != asn1_type->as.any.defined_by_id) {
+           	ft_ostr_appendf(&ostring, ",\"defined_by_id\":\"%s\"", asn1_type->as.any.defined_by_id);
+        } else {
+           	ft_ostr_append_cstr(&ostring, ",\"defined_by_id\":null");
+        }
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -944,6 +973,11 @@ static void __asn1_v2_value_clear(t_asn_v2_value *asn1_value)
 	case ASN_V2_VALUE_TYPE_CHOICE:
 		if (NULL != asn1_value->as.choice.id) SSL_FREE(asn1_value->as.choice.id);
 		if (NULL != asn1_value->as.choice.value) __asn1_v2_value_delete(asn1_value->as.choice.value);
+		break;
+	case ASN_V2_VALUE_TYPE_ANY:
+	    if (NULL != asn1_value->as.any.defined_by_id) SSL_FREE(asn1_value->as.any.defined_by_id);
+		ft_ostr_clear(&asn1_value->as.any.octets);
+		break;
 	}
 }
 
@@ -982,12 +1016,18 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 			__asn1_v2_value_copy(content, copy_value);
 			ft_list_append_content(&dst->as.list, copy_value);
 		}
+		break;
 	case ASN_V2_VALUE_TYPE_CHOICE:
 		if (NULL != src->as.choice.id) dst->as.choice.id = ft_strdup(src->as.choice.id);
 		if (NULL != src->as.choice.value) {
 		    dst->as.choice.value = __asn1_v2_value_create();
 		    __asn1_v2_value_copy(src->as.choice.value, dst->as.choice.value);
 		}
+		break;
+	case ASN_V2_VALUE_TYPE_ANY:
+	    if (NULL != src->as.any.defined_by_id) dst->as.any.defined_by_id = ft_strdup(src->as.any.defined_by_id);
+		ft_ostr_copy(&src->as.any.octets, &dst->as.any.octets);
+		break;
 	}
 }
 
@@ -1055,6 +1095,10 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_TAGGED:
 		if (NULL != asn1_type->as.tagged.base_type) __asn1_v2_type_delete(asn1_type->as.tagged.base_type);
 		break;
+	case ASN_V2_TYPE_KIND_ANY:
+	    if (NULL != asn1_type->as.any.defined_by_id) SSL_FREE(asn1_type->as.any.defined_by_id);
+		asn1_type->as.any.defined_by_id = NULL;
+		break;
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -1112,6 +1156,9 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 		dst->as.tagged.base_type = __asn1_v2_type_create();
 		__asn1_v2_type_copy(src->as.tagged.base_type, dst->as.tagged.base_type);
 		break;
+	case ASN_V2_TYPE_KIND_ANY:
+        if (NULL != src->as.any.defined_by_id) dst->as.any.defined_by_id = ft_strdup(src->as.any.defined_by_id);
+        break;
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -1326,32 +1373,9 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	char cbuf[1024] = {0};
 
 	t_json_v2 *jkind = NULL;
-	json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind);
-	assert(NULL != jkind && jkind->type == JSON_V2_TYPE_STRING);
+	int ret = json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind);
+	assert(JSON_V2_OK == ret && jkind->type == JSON_V2_TYPE_STRING);
 	SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_KIND, json_v2_dumpb(jkind, cbuf, sizeof(cbuf)));
-
-	if (ft_streq(jkind->as.cstr, __SCHEMA_TYPE_NAME_REF)) {
-	    // Special case: a reference to another type in the module;
-		t_json_v2 *jref_name = NULL;
-		json_v2_query_nonnull(__JQ_TYPE_REF_NAME, jtype, &jref_name);
-		assert(NULL != jref_name && jref_name->type == JSON_V2_TYPE_STRING);
-		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_REF_NAME, json_v2_dumpb(jref_name, cbuf, sizeof(cbuf)));
-		t_json_v2 *jref_type = NULL;
-		char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jref_name->as.cstr);
-		json_v2_query_nonnull(query, jschema, &jref_type);
-		SSL_FREE(query);
-		if (NULL == jref_type && jref_type->type != JSON_V2_TYPE_OBJECT) {
-		    SSL_LOG(ERROR, "failed to parse `%s` from asn1 type: bad ref: %s", __JQ_TYPE_REF_NAME, jref_name->as.cstr);
-			return (SSL_ERR);
-		}
-		t_asn_v2_type *ref_atype = NULL;
-		if (SSL_OK != __asn1_v2_schema_parse_type(asn1_module, &ref_atype, jschema, jref_type)) {
-		    SSL_LOG(ERROR, "failed to parse `%s` from asn1 type: %s", __JQ_TYPE_REF_NAME, json_v2_dumpb(jref_type, cbuf, sizeof(cbuf)));
-			return (SSL_ERR);
-		}
-		*asn1_type = ref_atype;
-		return (SSL_OK);
-	}
 
 	t_asn_v2_type *atype = __asn1_v2_type_create();
 	atype->kind = __asn1_v2_schema_get_type_by_name(jkind->as.cstr);
@@ -1411,25 +1435,35 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 		}
 
 		t_json_v2 *jtag_class = NULL;
-		json_v2_query_nonnull(__JQ_TYPE_TAG_CLASS, jtype, &jtag_class);
-		assert(NULL != jtag_class && jtag_class->type == JSON_V2_TYPE_STRING);
+		ret = json_v2_query_nonnull(__JQ_TYPE_TAG_CLASS, jtype, &jtag_class);
+		assert(JSON_V2_OK == ret && jtag_class->type == JSON_V2_TYPE_STRING);
 		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_TAG_CLASS, json_v2_dumpb(jtag_class, cbuf, sizeof(cbuf)));
 		atype->as.tagged.tag.class = __asn1_v2_schema_get_tag_class_by_name(jtag_class->as.cstr);
 
 		t_json_v2 *jtag_number = NULL;
-		json_v2_query_nonnull(__JQ_TYPE_TAG_NUMBER, jtype, &jtag_number);
-		assert(NULL != jtag_number && jtag_number->type == JSON_V2_TYPE_NUMBER);
+		ret = json_v2_query_nonnull(__JQ_TYPE_TAG_NUMBER, jtype, &jtag_number);
+		assert(JSON_V2_OK == ret && jtag_number->type == JSON_V2_TYPE_NUMBER);
 		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_TAG_NUMBER, json_v2_dumpb(jtag_number, cbuf, sizeof(cbuf)));
 		atype->as.tagged.tag.number = (uint32_t)bnum_to_dig_u(&jtag_number->as.number);
 
 		t_json_v2 *jbase_type = NULL;
-		json_v2_query_nonnull(__JQ_TYPE_BASE_TYPE, jtype, &jbase_type);
-		assert(NULL != jbase_type && jbase_type->type == JSON_V2_TYPE_OBJECT);
+		ret = json_v2_query_nonnull(__JQ_TYPE_BASE_TYPE, jtype, &jbase_type);
+		assert(JSON_V2_OK == ret && jbase_type->type == JSON_V2_TYPE_OBJECT);
 		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_BASE_TYPE, json_v2_dumpb(jbase_type, cbuf, sizeof(cbuf)));
 		if (SSL_OK != __asn1_v2_schema_parse_type(asn1_module, &atype->as.tagged.base_type, jschema, jbase_type)) {
 			SSL_LOG(ERROR, "failed to parse `%s` from asn1 type: %s", __JQ_TYPE_BASE_TYPE, json_v2_dumpb(jbase_type, cbuf, sizeof(cbuf)));
 			goto label_error;
 		}
+		break;
+	case ASN_V2_TYPE_KIND_ANY:
+    	t_json_v2 *jdefined_by_id = NULL;
+    	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
+    		assert(jdefined_by_id->type == JSON_V2_TYPE_STRING);
+    		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_DEFINED_BY_ID, json_v2_dumpb(jdefined_by_id, cbuf, sizeof(cbuf)));
+    		atype->as.any.defined_by_id = ft_strdup(jdefined_by_id->as.cstr);
+    	} else {
+       		atype->as.any.defined_by_id = NULL;
+        }
 		break;
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
@@ -1442,6 +1476,21 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 		break;
+	default:
+        // Not a known type but could be a reference to another type in the module.
+	    SSL_LOG(TRACE, "asn1 type: `%s`: not a standard asn1 type: maybe type in the module?", jkind->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
+        t_json_v2 *jref_type = NULL;
+        char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstr);
+        ret = json_v2_query_nonnull(query, jschema, &jref_type);
+        SSL_FREE(query);
+        assert(JSON_V2_OK == ret && jref_type->type == JSON_V2_TYPE_OBJECT);
+        t_asn_v2_type *ref_atype = NULL;
+        if (SSL_OK != __asn1_v2_schema_parse_type(asn1_module, &ref_atype, jschema, jref_type)) {
+            SSL_LOG(ERROR, "failed to parse `%s` asn1 type reference: %s", jkind->as.cstr, json_v2_dumpb(jref_type, cbuf, sizeof(cbuf)));
+            goto label_error;
+        }
+        __asn1_v2_type_copy(ref_atype, atype);
+        __asn1_v2_type_delete(ref_atype);
 	}
 
 	*asn1_type = atype;
@@ -1521,8 +1570,8 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema)
 	}
 
 	t_json_v2 *jtypes = NULL;
-	json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes);
-	assert(NULL != jtypes && jtypes->type == JSON_V2_TYPE_OBJECT);
+	int ret = json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes);
+	assert(JSON_V2_OK == ret && jtypes->type == JSON_V2_TYPE_OBJECT);
 
 	const char *key = NULL;
 	void *value = NULL;
@@ -1606,6 +1655,7 @@ static int	__asn1_v2_type_compile_automatic_tags(const t_asn_v2_module *asn1_mod
 		return (__asn1_v2_type_compile_automatic_tags(asn1_module, asn1_type->as.collection.element_type));
 	case ASN_V2_TYPE_KIND_TAGGED:
 		return (__asn1_v2_type_compile_automatic_tags(asn1_module, asn1_type->as.tagged.base_type));
+	case ASN_V2_TYPE_KIND_ANY:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -1715,6 +1765,7 @@ static void __der_v2_type_delete(t_der_v2_type *der_type)
 		break;
 	case ASN_V2_TYPE_KIND_TAGGED:
 	    __der_v2_type_delete(der_type->as.tagged.base_type);
+	case ASN_V2_TYPE_KIND_ANY:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -1831,6 +1882,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		compiled->as.tagged.tag_mode = asn1_type->as.tagged.tag_mode;
 		compiled->as.tagged.tag = asn1_type->as.tagged.tag;
 		break;
+	case ASN_V2_TYPE_KIND_ANY:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -1928,6 +1980,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 		ft_ostr_appendf(&ostring, ",\"base_type\":%s", dumps);
 		SSL_FREE(dumps);
 		break;
+	case ASN_V2_TYPE_KIND_ANY:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INT:
 	case ASN_V2_TYPE_KIND_BOOLEAN:

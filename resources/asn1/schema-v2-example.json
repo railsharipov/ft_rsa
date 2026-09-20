@@ -1,114 +1,94 @@
 {
-  "tagMode": "automatic",
+  "tagMode": "AUTOMATIC",
   "types": {
-    "privateKeyInfo": {
-      "kind": "sequence",
+    "PrivateKeyInfo": {
+      "kind": "SEQUENCE",
       "components": [
         {
           "id": "version",
           "type": {
-            "kind": "ref",
-            "refName": "version"
+            "kind": "Version"
           },
           "default": 0
         },
         {
           "id": "authors",
           "type": {
-            "kind": "set-of",
+            "kind": "SET OF",
             "componentType": {
-              "kind": "ref",
-              "refName": "author"
+              "kind": "Author"
             }
           }
         },
         {
           "id": "algorithm",
           "type": {
-            "kind": "tagged",
-            "tagClass": "context",
+            "kind": "TAGGED",
+            "tagClass": "CONTEXT",
             "tagNumber": 0,
             "baseType": {
-              "kind": "octet-string"
+              "kind": "OCTET STRING"
             }
           }
         },
         {
           "id": "data",
           "type": {
-            "kind": "bit-string"
+            "kind": "BIT STRING"
           }
         }
       ]
     },
-    "version": {
-      "kind": "integer"
+    "Version": {
+      "kind": "INTEGER"
     },
-    "author": {
-      "kind": "choice",
+    "Author": {
+      "kind": "CHOICE",
       "components": [
         {
           "id": "fullname",
           "type": {
-            "kind": "tagged",
-            "tagMode": "implicit",
-            "tagClass": "context",
+            "kind": "TAGGED",
+            "tagMode": "IMPLICIT",
+            "tagClass": "CONTEXT",
             "tagNumber": 0,
             "baseType": {
-              "kind": "ia5-string"
+              "kind": "IA5 STRING"
             }
           }
         },
         {
           "id": "email",
           "type": {
-            "kind": "tagged",
-            "tagMode": "implicit",
-            "tagClass": "context",
+            "kind": "TAGGED",
+            "tagMode": "IMPLICIT",
+            "tagClass": "CONTEXT",
             "tagNumber": 1,
             "baseType": {
-              "kind": "ia5-string"
+              "kind": "IA5 STRING"
             }
           }
         },
         {
           "id": "id",
           "type": {
-            "kind": "tagged",
-            "tagMode": "implicit",
-            "tagClass": "application",
+            "kind": "TAGGED",
+            "tagMode": "IMPLICIT",
+            "tagClass": "APPLICATION",
             "tagNumber": 0,
             "baseType": {
-              "kind": "integer"
+              "kind": "INTEGER"
             }
           }
         }
       ]
     },
     "records": {
-      "kind": "set",
+      "kind": "SET",
       "components": [
-        {
-          "id": "001",
-          "type": {
-            "kind": "integer"
-          },
-          "optional": true
-        },
-        {
-          "id": "002",
-          "type": {
-            "kind": "integer"
-          },
-          "optional": true
-        },
-        {
-          "id": "003",
-          "type": {
-            "kind": "integer"
-          },
-          "optional": true
-        }
+        {"id": "001", "type": {"kind": "INTEGER"}, "optional": true},
+        {"id": "002", "type": {"kind": "INTEGER"}, "optional": true},
+        {"id": "003", "type": {"kind": "INTEGER"}, "optional": true}
       ]
     }
   }

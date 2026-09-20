@@ -120,6 +120,7 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_SEQUENCE_OF,
 	ASN_V2_TYPE_KIND_SET,
 	ASN_V2_TYPE_KIND_SET_OF,
+	ASN_V2_TYPE_KIND_ANY,
 	ASN_V2_TYPE_KIND_CHOICE,
 	ASN_V2_TYPE_KIND_TAGGED,
 } t_asn_v2_type_kind;
@@ -152,6 +153,7 @@ typedef enum s_asn_v2_value_type {
 	ASN_V2_VALUE_TYPE_OSTRING,
 	ASN_V2_VALUE_TYPE_LIST,
 	ASN_V2_VALUE_TYPE_CHOICE,
+	ASN_V2_VALUE_TYPE_ANY,
 } t_asn_v2_value_type;
 
 typedef struct s_asn_v2_value {
@@ -162,10 +164,8 @@ typedef struct s_asn_v2_value {
 		t_list		list;
 		bool		boolean;
 		char		*cstr;
-		struct {
-		    char *id;
-			struct s_asn_v2_value *value;
-		} choice;
+		struct { char *id; struct s_asn_v2_value *value; } choice;
+		struct { char *defined_by_id; t_ostring octets; } any;
 	} as;
 } t_asn_v2_value;
 
@@ -191,10 +191,10 @@ typedef struct s_asn_v2_constraint {
 typedef struct s_asn_v2_type {
 	t_asn_v2_type_kind kind;
 	t_list constraints;
-	bool is_ref;
 	union {
 		struct { t_list elements; } composite;
 		struct { struct s_asn_v2_type *element_type; } collection;
+		struct { char *defined_by_id; } any;
 		struct {
 			struct s_asn_v2_type *base_type;
 			t_asn_v2_tag_mode tag_mode;
@@ -214,6 +214,18 @@ typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode	tag_mode;
 	t_htbl_v2			types;
 } t_asn_v2_module;
+
+int	asn1_v2_schema_validate(t_json_v2 *jschema);
+int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
+
+char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
+char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);
+
+const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
+const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
+const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
+
+int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module);
 
 typedef struct s_der_v2_type {
 	t_asn_v2_type_kind kind;
@@ -235,18 +247,6 @@ typedef struct s_der_v2_component {
 	t_asn_v2_value *default_value;
 	bool optional;
 } t_der_v2_component;
-
-int	asn1_v2_schema_validate(t_json_v2 *jschema);
-int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
-
-char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
-char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);
-
-const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
-const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
-const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
-
-int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module);
 
 int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type);
 
