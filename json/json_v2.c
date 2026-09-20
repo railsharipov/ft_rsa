@@ -527,14 +527,14 @@ const char	*json_v2_get_type_name(t_json_v2_type type)
 
 /****************************************************************************/
 
-static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring);
+static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx);
 
 char	*json_v2_dumps(t_json_v2 *json)
 {
-	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_default_dumper));
+	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_default_dumper, NULL));
 }
 
-char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper)
+char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper, void *vctx)
 {
 	assert(NULL != json);
 	assert(NULL != f_dumper);
@@ -542,7 +542,7 @@ char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper)
 	t_ostring ostring = {0};
 	ft_ostr_init(&ostring);
 
-	f_dumper(json, &ostring);
+	f_dumper(json, &ostring, vctx);
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
 	return (dumps);
@@ -550,17 +550,17 @@ char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper)
 
 char	*json_v2_dumpb(t_json_v2 *json, char *buf, size_t size)
 {
-	return (json_v2_dumpb_with_f_dumper(json, buf, size, __json_v2_f_default_dumper));
+	return (json_v2_dumpb_with_f_dumper(json, buf, size, __json_v2_f_default_dumper, NULL));
 }
 
-char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper)
+char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper, void *vctx)
 {
 	assert(NULL != json);
 	assert(NULL != buf);
 	assert(NULL != f_dumper);
 	if (size == 0) return (NULL);
 
-	char *dumps = json_v2_dumps_with_f_dumper(json, f_dumper);
+	char *dumps = json_v2_dumps_with_f_dumper(json, f_dumper, vctx);
 	size_t len = ft_strlen(dumps);
 	if (len >= size) {
 		len = size-1;
@@ -571,7 +571,7 @@ char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_fun
 	return (buf);
 }
 
-static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
+static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx)
 {
 	switch (json->type) {
 	case JSON_V2_TYPE_OBJECT: {
@@ -583,7 +583,7 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
 			if (commas++) ft_ostr_append_cstr(ostring, ",");
 			ft_ostr_appendf(ostring, "\"%s\":", key);
-			__json_v2_f_default_dumper(value, ostring);
+			__json_v2_f_default_dumper(value, ostring, vctx);
 		}
 		ft_ostr_append_cstr(ostring, "}");
 		return;
@@ -595,7 +595,7 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 		size_t commas = 0;
 		while (ft_list_next_content(&json->as.list, &next, &content)) {
 			if (commas++) ft_ostr_append_cstr(ostring, ",");
-			__json_v2_f_default_dumper(content, ostring);
+			__json_v2_f_default_dumper(content, ostring, vctx);
 		}
 		ft_ostr_append(ostring, "]", 1);
 		return;
@@ -621,6 +621,86 @@ static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring)
 	default:
 		ft_ostr_append_cstr(ostring, "\"<_unknown_type_>\"");
 	}
+}
+
+typedef struct __s_json_v2_f_pretty_dumper_ctx {
+    int cur_level;
+    int max_level;
+} __t_json_v2_f_pretty_dumper_ctx;
+
+static void	__json_v2_f_pretty_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx)
+{
+    char ibuf[257] = {0};
+
+    __t_json_v2_f_pretty_dumper_ctx *ctx = vctx;
+
+    if (ctx->cur_level > ctx->max_level) {
+        __json_v2_f_default_dumper(json, ostring, NULL);
+    }
+    else {
+        int indents = MIN(2*ctx->cur_level, sizeof(ibuf)-1);
+        ft_memset(ibuf, ' ', indents);
+
+        switch (json->type) {
+    	case JSON_V2_TYPE_OBJECT: {
+    		ft_ostr_appendf(ostring, "{\n");
+    		const char *key = NULL;
+    		void *value = NULL;
+    		t_htbl_v2_next next = {0};
+    		size_t commas = 0;
+            ctx->cur_level++;
+    		while (ft_htbl_v2_next(&json->as.htable, &next, &key, &value)) {
+    			if (commas++) ft_ostr_append_cstr(ostring, ",\n");
+    			ft_ostr_appendf(ostring, "  %s\"%s\": ", ibuf, key);
+    			__json_v2_f_pretty_dumper(value, ostring, vctx);
+    		}
+            ctx->cur_level--;
+    		ft_ostr_appendf(ostring, "\n%s}", ibuf);
+    		return;
+    	}
+    	case JSON_V2_TYPE_ARRAY: {
+    		ft_ostr_appendf(ostring, "[\n");
+    		void *content = NULL;
+    		t_list_next next = {0};
+    		size_t commas = 0;
+            ctx->cur_level++;
+    		while (ft_list_next_content(&json->as.list, &next, &content)) {
+    			if (commas++) ft_ostr_append_cstr(ostring, ",\n");
+    			ft_ostr_appendf(ostring, "  %s", ibuf);
+    			__json_v2_f_pretty_dumper(content, ostring, vctx);
+    		}
+            ctx->cur_level--;
+    		ft_ostr_appendf(ostring, "\n%s]", ibuf);
+    		return;
+    	}
+    	case JSON_V2_TYPE_STRING: {
+    		ft_ostr_appendf(ostring, "\"%s\"", json->as.cstr);
+    		return;
+    	}
+    	case JSON_V2_TYPE_NUMBER: {
+    		char *s = bnum_to_dec(&json->as.number);
+    		ft_ostr_append_cstr(ostring, s);
+    		LIBFT_FREE(s);
+    		return;
+    	}
+    	case JSON_V2_TYPE_BOOL: {
+    		ft_ostr_append_cstr(ostring, (json->as.boolean) ? "true" : "false");
+    		return;
+    	}
+    	case JSON_V2_TYPE_NULL: {
+    		ft_ostr_append_cstr(ostring, "null");
+    		return;
+    	}
+    	default:
+    		ft_ostr_append_cstr(ostring, "\"<_unknown_type_>\"");
+    	}
+    }
+}
+
+char	*json_v2_pretty_dumps(t_json_v2 *json, int depth)
+{
+    __t_json_v2_f_pretty_dumper_ctx ctx = { .max_level = depth, };
+	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_pretty_dumper, &ctx));
 }
 
 /****************************************************************************/
