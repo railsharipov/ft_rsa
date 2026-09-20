@@ -1,0 +1,50 @@
+{
+  "tagMode": "EXPLICIT",
+  "types": {
+    "AlgorithmIdentifier": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER"}},
+        {"id": "parameters", "type": {"kind": "ANY", "definedById": "algorithm"}, "optional": true}
+      ]
+    },
+    "PrivateKeyInfo": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "version", "type": {"kind": "INTEGER"}},
+        {"id": "privateKeyAlgorithm", "type": {"kind": "AlgorithmIdentifier"}},
+        {"id": "privateKey", "type": {"kind": "OCTET STRING"}},
+        {
+          "id": "attributes",
+          "type": {"kind": "TAGGED", "tagMode": "IMPLICIT", "tagClass": "CONTEXT", "tagNumber": 0, "baseType": {"kind": "Attributes"}},
+          "optional": true
+        }
+      ]
+    },
+    "Attributes": {
+      "kind": "SET OF",
+      "componentType": {"kind": "Attribute"}
+    },
+    "Attribute": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "type", "type": {"kind": "OBJECT IDENTIFIER"}},
+        {"id": "values", "type": {"kind": "SET OF", "componentType": {"kind": "ANY"}}}
+      ]
+    },
+    "EncryptedPrivateKeyInfo": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "encryptionAlgorithm", "type": {"kind": "AlgorithmIdentifier"}},
+        {"id": "encryptedData", "type": {"kind": "OCTET STRING"}}
+      ]
+    },
+    "SubjectPublicKeyInfo": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "algorithm", "type": {"kind": "AlgorithmIdentifier"}},
+        {"id": "subjectPublicKey", "type": {"kind": "BIT STRING"}}
+      ]
+    }
+  }
+}

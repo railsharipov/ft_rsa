@@ -1,0 +1,39 @@
+{
+  "tagMode": "EXPLICIT",
+  "types": {
+    "RSAPublicKey": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "modulus", "type": {"kind": "INTEGER"}},
+        {"id": "publicExponent", "type": {"kind": "INTEGER"}}
+      ]
+    },
+    "RSAPrivateKey": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "version", "type": {"kind": "INTEGER"}, "default": 0},
+        {"id": "modulus", "type": {"kind": "INTEGER"}},
+        {"id": "publicExponent", "type": {"kind": "INTEGER"}},
+        {"id": "privateExponent", "type": {"kind": "INTEGER"}},
+        {"id": "prime1", "type": {"kind": "INTEGER"}},
+        {"id": "prime2", "type": {"kind": "INTEGER"}},
+        {"id": "exponent1", "type": {"kind": "INTEGER"}},
+        {"id": "exponent2", "type": {"kind": "INTEGER"}},
+        {"id": "coefficient", "type": {"kind": "INTEGER"}},
+        {"id": "otherPrimeInfos", "type": {"kind": "OtherPrimeInfos"}, "optional": true}
+      ]
+    },
+    "OtherPrimeInfos": {
+      "kind": "SEQUENCE OF",
+      "componentType": "OtherPrimeInfo"
+    },
+    "OtherPrimeInfo": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "prime", "type": {"kind": "INTEGER"}},
+        {"id": "exponent", "type": {"kind": "INTEGER"}},
+        {"id": "coefficient", "type": {"kind": "INTEGER"}}
+      ]
+    }
+  }
+}

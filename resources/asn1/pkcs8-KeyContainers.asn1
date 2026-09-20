@@ -1,0 +1,34 @@
+KeyContainers
+    DEFINITIONS EXPLICIT TAGS ::=
+BEGIN
+
+AlgorithmIdentifier ::= SEQUENCE {
+    algorithm   OBJECT IDENTIFIER,
+    parameters  ANY DEFINED BY algorithm OPTIONAL
+}
+
+PrivateKeyInfo ::= SEQUENCE {
+    version              INTEGER,
+    privateKeyAlgorithm  AlgorithmIdentifier,
+    privateKey           OCTET STRING,
+    attributes           [0] IMPLICIT Attributes OPTIONAL
+}
+
+Attributes ::= SET OF Attribute
+
+Attribute ::= SEQUENCE {
+    type    OBJECT IDENTIFIER,
+    values  SET OF ANY
+}
+
+EncryptedPrivateKeyInfo ::= SEQUENCE {
+    encryptionAlgorithm  AlgorithmIdentifier,
+    encryptedData        OCTET STRING
+}
+
+SubjectPublicKeyInfo ::= SEQUENCE {
+    algorithm         AlgorithmIdentifier,
+    subjectPublicKey  BIT STRING
+}
+
+END
