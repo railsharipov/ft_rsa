@@ -643,15 +643,16 @@ static void	__json_v2_f_pretty_dumper(t_json_v2 *json, t_ostring *ostring, void 
 
     __t_json_v2_f_pretty_dumper_ctx *ctx = vctx;
 
+    size_t indents = MIN(2*ctx->cur_level, sizeof(ibuf)-1);
+
     if (ctx->cur_level > ctx->max_level) {
         ibuf[0] = '\0';
         line_prefix = "";
         delim = " ";
     }
     else {
-        int indents = MIN(2*ctx->cur_level, sizeof(ibuf)-1);
-        line_prefix = "  ";
         ft_memset(ibuf, ' ', indents);
+        line_prefix = "  ";
         delim = "\n";
     }
 
@@ -729,7 +730,7 @@ static void	__json_v2_f_pretty_dumper(t_json_v2 *json, t_ostring *ostring, void 
 
     // Automatic depth adjustment based on line length.
     if (ctx->max_width > 0 && ctx->cur_level > ctx->max_level) {
-        if (ostring->size - start > ctx->max_width && ctx->retries < max_auto_retries) {
+        if (ostring->size - start + indents > ctx->max_width && ctx->retries < max_auto_retries) {
             ostring->size = start;
             int max_level = ctx->max_level;
             ctx->retries++;
