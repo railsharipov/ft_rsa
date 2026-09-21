@@ -126,7 +126,7 @@ static void __json_v2_delete_value(t_json_v2 *json)
 		ft_htbl_v2_clear(&json->as.htable, (t_func_content_del)__json_v2_delete);
 		break;
 	case JSON_V2_TYPE_STRING:
-		LIBFT_FREE(json->as.cstr);
+		LIBFT_FREE(json->as.cstring);
 		break;
 	case JSON_V2_TYPE_NUMBER:
 		bnum_clear(&json->as.number);
@@ -365,7 +365,7 @@ static int	__json_v2_parse_string(const char *s, t_json_v2 *json, size_t *pos)
 	(*pos)++;
 
 	json->type = JSON_V2_TYPE_STRING;
-	json->as.cstr = ft_strsub(s, str_start, str_end - str_start);
+	json->as.cstring = ft_strsub(s, str_start, str_end - str_start);
 
 	return (__JSON_V2_MATCH);
 }
@@ -420,7 +420,7 @@ static int	__json_v2_parse_object(const char *s, t_json_v2 *json, size_t *pos)
 			goto label_exit;
 		}
 
-		bool ok = ft_htbl_v2_set(&htable, key->as.cstr, value);
+		bool ok = ft_htbl_v2_set(&htable, key->as.cstring, value);
 		__json_v2_delete(key);
 
 		if (!ok) {
@@ -455,7 +455,7 @@ label_exit:
 static int	__json_v2_parse_array(const char *s, t_json_v2 *json, size_t *pos)
 {
 	size_t old_pos = *pos;
-	int status = __JSON_V2_NO_MATCH;
+	int status = __JSON_V2_MATCH;
 
 	__json_v2_parse_ws(s, pos);
 
@@ -601,7 +601,7 @@ static void	__json_v2_f_default_dumper(const t_json_v2 *json, t_ostring *ostring
 		return;
 	}
 	case JSON_V2_TYPE_STRING: {
-		ft_ostr_appendf(ostring, "\"%s\"", json->as.cstr);
+		ft_ostr_appendf(ostring, "\"%s\"", json->as.cstring);
 		return;
 	}
 	case JSON_V2_TYPE_NUMBER: {
@@ -640,6 +640,7 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
     char ibuf[257] = {0};
     char *line_prefix = NULL;
     char *delim = NULL;
+    char *bracket_ws = NULL;
 
     __t_json_v2_f_pretty_dumper_ctx *ctx = vctx;
 
@@ -649,16 +650,18 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
         ibuf[0] = '\0';
         line_prefix = "";
         delim = " ";
+        bracket_ws = "";
     }
     else {
         ft_memset(ibuf, ' ', indents);
         line_prefix = "  ";
         delim = "\n";
+        bracket_ws = "\n";
     }
 
     switch (json->type) {
    	case JSON_V2_TYPE_OBJECT: {
-  		ft_ostr_appendf(ostring, "{%s", delim);
+  		ft_ostr_appendf(ostring, "{%s", bracket_ws);
   		const char *key = NULL;
   		void *value = NULL;
   		t_htbl_v2_next next = {0};
@@ -673,11 +676,11 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
  			__json_v2_f_pretty_dumper(value, ostring, vctx);
   		}
         ctx->cur_level--;
-  		ft_ostr_appendf(ostring, "%s%s}", delim, ibuf);
+  		ft_ostr_appendf(ostring, "%s%s}", bracket_ws, ibuf);
   		break;
    	}
    	case JSON_V2_TYPE_ARRAY: {
-  		ft_ostr_appendf(ostring, "[%s", delim);
+  		ft_ostr_appendf(ostring, "[%s", bracket_ws);
   		void *content = NULL;
   		t_list_next next = {0};
   		size_t commas = 0;
@@ -688,14 +691,14 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
  			__json_v2_f_pretty_dumper(content, ostring, vctx);
   		}
         ctx->cur_level--;
-  		ft_ostr_appendf(ostring, "%s%s]", delim, ibuf);
+  		ft_ostr_appendf(ostring, "%s%s]", bracket_ws, ibuf);
   		break;
    	}
    	case JSON_V2_TYPE_STRING: {
   		if (ctx->colored)
-            ft_ostr_appendf(ostring, TXT_RED("\"%s\""), json->as.cstr);
+            ft_ostr_appendf(ostring, TXT_RED("\"%s\""), json->as.cstring);
         else
-            ft_ostr_appendf(ostring, "\"%s\"", json->as.cstr);
+            ft_ostr_appendf(ostring, "\"%s\"", json->as.cstring);
   		break;
    	}
    	case JSON_V2_TYPE_NUMBER: {
@@ -776,7 +779,7 @@ int	json_v2_validate(const t_json_v2 *json)
 		return (JSON_V2_OK);
 	}
 	case JSON_V2_TYPE_STRING:
-		return (NULL == json->as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
+		return (NULL == json->as.cstring) ? (JSON_V2_ERR) : (JSON_V2_OK);
 	case JSON_V2_TYPE_NUMBER:
 	case JSON_V2_TYPE_BOOL:
 	case JSON_V2_TYPE_NULL:
@@ -811,7 +814,7 @@ int	json_v2_validate_shallow(const t_json_v2 *json)
 		return (JSON_V2_OK);
 	}
 	case JSON_V2_TYPE_STRING:
-		return (NULL == json->as.cstr) ? (JSON_V2_ERR) : (JSON_V2_OK);
+		return (NULL == json->as.cstring) ? (JSON_V2_ERR) : (JSON_V2_OK);
 	case JSON_V2_TYPE_NUMBER:
 	case JSON_V2_TYPE_BOOL:
 	case JSON_V2_TYPE_NULL:

@@ -30,7 +30,7 @@ typedef struct s_json_v2 {
 		t_list    list;
 		t_num     number;
 		bool      boolean;
-		char      *cstr;
+		char      *cstring;
 	} as;
 } t_json_v2;
 
