@@ -16,7 +16,7 @@
         {"id": "privateKey", "type": {"kind": "OCTET STRING"}},
         {
           "id": "attributes",
-          "type": {"kind": "TAGGED", "tagMode": "IMPLICIT", "tagClass": "CONTEXT", "tagNumber": 0, "baseType": {"kind": "Attributes"}},
+          "type": {"kind": "TAGGED", "tagMode": "IMPLICIT", "tagClass": "CONTEXT-SPECIFIC", "tagNumber": 0, "baseType": {"kind": "Attributes"}},
           "optional": true
         }
       ]

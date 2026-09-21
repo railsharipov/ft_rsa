@@ -24,7 +24,7 @@
           "id": "algorithm",
           "type": {
             "kind": "TAGGED",
-            "tagClass": "CONTEXT",
+            "tagClass": "CONTEXT-SPECIFIC",
             "tagNumber": 0,
             "baseType": {
               "kind": "OCTET STRING"
@@ -50,7 +50,7 @@
           "type": {
             "kind": "TAGGED",
             "tagMode": "IMPLICIT",
-            "tagClass": "CONTEXT",
+            "tagClass": "CONTEXT-SPECIFIC",
             "tagNumber": 0,
             "baseType": {
               "kind": "IA5 STRING"
@@ -62,7 +62,7 @@
           "type": {
             "kind": "TAGGED",
             "tagMode": "IMPLICIT",
-            "tagClass": "CONTEXT",
+            "tagClass": "CONTEXT-SPECIFIC",
             "tagNumber": 1,
             "baseType": {
               "kind": "IA5 STRING"

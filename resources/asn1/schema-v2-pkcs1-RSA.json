@@ -25,7 +25,7 @@
     },
     "OtherPrimeInfos": {
       "kind": "SEQUENCE OF",
-      "componentType": "OtherPrimeInfo"
+      "componentType": {"kind": "OtherPrimeInfo"}
     },
     "OtherPrimeInfo": {
       "kind": "SEQUENCE",
