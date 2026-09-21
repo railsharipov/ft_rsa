@@ -126,22 +126,47 @@ typedef enum e_asn_v2_type_kind {
 } t_asn_v2_type_kind;
 
 typedef enum t_asn_v2_universal_tag_number {
-    ASN_V2_TAG_NUMBER_BOOLEAN          = 1,
-    ASN_V2_TAG_NUMBER_INTEGER          = 2,
-    ASN_V2_TAG_NUMBER_BIT_STRING       = 3,
-    ASN_V2_TAG_NUMBER_OCTET_STRING     = 4,
-    ASN_V2_TAG_NUMBER_NULL             = 5,
-    ASN_V2_TAG_NUMBER_OBJECT_ID        = 6,
-    ASN_V2_TAG_NUMBER_OBJECT_DESCR     = 7,
+    ASN_V2_TAG_NUMBER_EOC                = 0,
+    ASN_V2_TAG_NUMBER_BOOLEAN            = 1,
+    ASN_V2_TAG_NUMBER_INTEGER            = 2,
+    ASN_V2_TAG_NUMBER_BIT_STRING         = 3,
+    ASN_V2_TAG_NUMBER_OCTET_STRING       = 4,
+    ASN_V2_TAG_NUMBER_NULL               = 5,
+    ASN_V2_TAG_NUMBER_OBJECT_ID          = 6,
+    ASN_V2_TAG_NUMBER_OBJECT_DESCR       = 7,
+    ASN_V2_TAG_NUMBER_EXTERNAL           = 8,
+    ASN_V2_TAG_NUMBER_REAL               = 9,
+    ASN_V2_TAG_NUMBER_ENUMERATED         = 10,
+    ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11,
+    ASN_V2_TAG_NUMBER_UTF8_STRING        = 12,
+    ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13,
+    ASN_V2_TAG_NUMBER_TIME               = 14,
+    ASN_V2_TAG_NUMBER_RESERVED_15        = 15,
 
-    ASN_V2_TAG_NUMBER_UTF8_STRING      = 12,
-    ASN_V2_TAG_NUMBER_PRINTABLE_STRING = 19,
-    ASN_V2_TAG_NUMBER_IA5_STRING       = 22,
+    ASN_V2_TAG_NUMBER_SEQUENCE           = 16,
+    ASN_V2_TAG_NUMBER_SEQUENCE_OF        = 16,
+    ASN_V2_TAG_NUMBER_SET                = 17,
+    ASN_V2_TAG_NUMBER_SET_OF             = 17,
 
-    ASN_V2_TAG_NUMBER_SEQUENCE         = 16,
-    ASN_V2_TAG_NUMBER_SEQUENCE_OF      = 16,
-    ASN_V2_TAG_NUMBER_SET              = 17,
-    ASN_V2_TAG_NUMBER_SET_OF           = 17,
+    ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18,
+    ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19,
+    ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20,
+    ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21,
+    ASN_V2_TAG_NUMBER_IA5_STRING         = 22,
+    ASN_V2_TAG_NUMBER_UTC_TIME           = 23,
+    ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24,
+    ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25,
+    ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26,
+    ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27,
+    ASN_V2_TAG_NUMBER_UNIVERSAL_STRING   = 28,
+    ASN_V2_TAG_NUMBER_CHARACTER_STRING   = 29,
+    ASN_V2_TAG_NUMBER_BMP_STRING         = 30,
+    ASN_V2_TAG_NUMBER_DATE               = 31,
+    ASN_V2_TAG_NUMBER_TIME_OF_DAY        = 32,
+    ASN_V2_TAG_NUMBER_DATE_TIME          = 33,
+    ASN_V2_TAG_NUMBER_DURATION           = 34,
+    ASN_V2_TAG_NUMBER_OID_IRI            = 35,
+    ASN_V2_TAG_NUMBER_RELATIVE_OID_IRI   = 36
 } t_asn_v2_universal_tag_number;
 
 typedef enum s_asn_v2_value_type {
@@ -215,8 +240,8 @@ typedef struct s_asn_v2_module {
 	t_htbl_v2			types;
 } t_asn_v2_module;
 
-int	asn1_v2_schema_validate(t_json_v2 *jschema);
-int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema);
+int	asn1_v2_schema_validate(const t_json_v2 *jschema);
+int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema);
 
 char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
 char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);

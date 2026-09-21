@@ -242,7 +242,7 @@ static t_asn_v2_tag __asn1_v2_get_universal_tag(t_asn_v2_type_kind type)
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_TAGGED:
 	case ASN_V2_TYPE_KIND_ANY:
-		UNREACHABLE("__asn1_v2_get_universal_tag");
+	    return (t_asn_v2_tag){0};
 	}
 }
 
@@ -309,10 +309,10 @@ int __asn1_v2_schema_validate_type_compatibility(t_asn_v2_type_kind asn1_type, t
 	}
 }
 
-static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *jtype);
-static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_v2 *jcomponent);
+static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json_v2 *jtype);
+static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, const t_json_v2 *jcomponent);
 
-static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *jtype)
+static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json_v2 *jtype)
 {
     char cbuf[1024];
 
@@ -321,7 +321,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 		return (SSL_ERR);
 	}
 
-	t_json_v2 *jkind = NULL;
+	const t_json_v2 *jkind = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind)) {
 		SSL_LOG(ERROR, "invalid asn1 type: expected `%s` key: %s", __JQ_TYPE_KIND, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 		return (SSL_ERR);
@@ -334,7 +334,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 		if (SSL_OK != __asn1_v2_schema_validate_type_name(jkind->as.cstr)) {
 		    SSL_LOG(TRACE, "unknown asn1 type: `%s`: %s", jkind->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 		    // Check if the type name refers to a type within a module.
-            t_json_v2 *jref_type = NULL;
+            const t_json_v2 *jref_type = NULL;
             char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstr);
             int ret = json_v2_query_nonnull(query, jschema, &jref_type);
             SSL_FREE(query);
@@ -351,7 +351,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_SET:
 		;;
-		t_json_v2 *jcomponents = NULL;
+		const t_json_v2 *jcomponents = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
 			SSL_LOG(ERROR, "asn1 component: no `%s` key specified: %s", __JQ_TYPE_COMPONENTS, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
@@ -370,7 +370,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF:
 		;;
-		t_json_v2 *jelement_type = NULL;
+		const t_json_v2 *jelement_type = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENT_TYPE, jtype, &jelement_type)) {
 			SSL_LOG(ERROR, "asn1 type: no `%s` key specified: %s", __JQ_TYPE_COMPONENT_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
@@ -384,7 +384,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 		break;
 	case ASN_V2_TYPE_KIND_TAGGED:
 		;;
-		t_json_v2 *jtag_mode = NULL;
+		const t_json_v2 *jtag_mode = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_TAG_MODE, jtype, &jtag_mode)) {
 			if (jtag_mode->type != JSON_V2_TYPE_STRING) {
 				SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_TAG_MODE, json_v2_get_type_name(jtag_mode->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
@@ -395,7 +395,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 				return (SSL_ERR);
 			}
 		}
-		t_json_v2 *jtag_class = NULL;
+		const t_json_v2 *jtag_class = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_TAG_CLASS, jtype, &jtag_class)) {
 			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key: %s", __JQ_TYPE_TAG_CLASS, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
@@ -410,7 +410,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 				return (SSL_ERR);
 			}
 		}
-		t_json_v2 *jtag_number = NULL;
+		const t_json_v2 *jtag_number = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_TAG_NUMBER, jtype, &jtag_number)) {
 			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key: %s", __JQ_TYPE_TAG_NUMBER, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
@@ -421,7 +421,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 				return (SSL_ERR);
 			}
 		}
-		t_json_v2 *jbase_type = NULL;
+		const t_json_v2 *jbase_type = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_BASE_TYPE, jtype, &jbase_type)) {
 			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` key: %s", __JQ_TYPE_BASE_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 			return (SSL_ERR);
@@ -435,7 +435,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 		break;
 	case ASN_V2_TYPE_KIND_ANY:
     	;;
-    	t_json_v2 *jdefined_by_id = NULL;
+    	const t_json_v2 *jdefined_by_id = NULL;
     	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
     		if (jdefined_by_id->type != JSON_V2_TYPE_STRING) {
     			SSL_LOG(ERROR, "invalid asn1 component: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_DEFINED_BY_ID, json_v2_get_type_name(jdefined_by_id->type), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
@@ -458,7 +458,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, t_json_v2 *j
 	return (SSL_OK);
 }
 
-static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_v2 *jcomponent)
+static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, const t_json_v2 *jcomponent)
 {
     char cbuf[1024];
 
@@ -467,7 +467,7 @@ static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_
 		return (SSL_ERR);
 	}
 
-	t_json_v2 *jid = NULL;
+	const t_json_v2 *jid = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_COMPONENT_ID, jcomponent, &jid)) {
 		SSL_LOG(TRACE, "no asn1 `%s` key specified: %s", __JQ_COMPONENT_ID, json_v2_dumpb(jcomponent, cbuf, sizeof(cbuf)));
 	}
@@ -478,7 +478,7 @@ static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_
 		}
 	}
 
-	t_json_v2 *jtype = NULL;
+	const t_json_v2 *jtype = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_COMPONENT_TYPE, jcomponent, &jtype)) {
 		SSL_LOG(TRACE, "no asn1 `%s` key specified ", __JQ_COMPONENT_TYPE);
 	}
@@ -489,7 +489,7 @@ static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_
 		}
 	}
 
-	t_json_v2 *joptional = NULL;
+	const t_json_v2 *joptional = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_COMPONENT_OPTIONAL, jcomponent, &joptional)) {
 		SSL_LOG(TRACE, "asn1 component: no `%s` key specified: %s", __JQ_COMPONENT_OPTIONAL, json_v2_dumpb(jcomponent, cbuf, sizeof(cbuf)));
 	}
@@ -500,7 +500,7 @@ static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_
 		}
 	}
 
-	t_json_v2 *jdefault = NULL;
+	const t_json_v2 *jdefault = NULL;
 	if (JSON_V2_OK == json_v2_query(__JQ_COMPONENT_DEFAULT, jcomponent, &jdefault)) {
 		SSL_LOG(TRACE, "asn1 component: `%s` key is set, value type: %s", __JQ_COMPONENT_DEFAULT, json_v2_get_type_name(jdefault->type));
 	}
@@ -508,7 +508,7 @@ static int __asn1_v2_schema_validate_component(const t_json_v2 *jschema, t_json_
 	return (SSL_OK);
 }
 
-int	asn1_v2_schema_validate(t_json_v2 *jschema)
+int	asn1_v2_schema_validate(const t_json_v2 *jschema)
 {
 	if (NULL == jschema) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -521,7 +521,7 @@ int	asn1_v2_schema_validate(t_json_v2 *jschema)
 		return (SSL_ERR);
 	}
 
-	t_json_v2 *jtagmode = NULL;
+	const t_json_v2 *jtagmode = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_SCHEMA_TAG_MODE, jschema, &jtagmode)) {
 		SSL_LOG(TRACE, "no default asn1 tagging mode specified");
 	}
@@ -536,7 +536,7 @@ int	asn1_v2_schema_validate(t_json_v2 *jschema)
 		}
 	}
 
-	t_json_v2 *jtypes = NULL;
+	const t_json_v2 *jtypes = NULL;
 	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes)) {
 		SSL_LOG(ERROR, "invalid json schema: expected `%s` key", __JQ_SCHEMA_TYPES);
 		return (SSL_ERR);
@@ -1327,11 +1327,11 @@ static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *d
 
 /****************************************************************************/
 
-static int	__asn1_v2_schema_parse_component(const t_asn_v2_module *asn1_module, t_asn_v2_component **asn1_component, const t_json_v2 *jschema, t_json_v2 *jcomponent);
-static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn_v2_type **asn1_type, const t_json_v2 *jschema, t_json_v2 *jtype);
-static int	__asn1_v2_schema_parse_value(t_asn_v2_value **asn1_value, t_json_v2 *jvalue);
+static int	__asn1_v2_schema_parse_component(const t_asn_v2_module *asn1_module, t_asn_v2_component **asn1_component, const t_json_v2 *jschema, const t_json_v2 *jcomponent);
+static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn_v2_type **asn1_type, const t_json_v2 *jschema, const t_json_v2 *jtype);
+static int	__asn1_v2_schema_parse_value(t_asn_v2_value **asn1_value, const t_json_v2 *jvalue);
 
-static int	__asn1_v2_schema_parse_value(t_asn_v2_value **asn1_value, t_json_v2 *jvalue)
+static int	__asn1_v2_schema_parse_value(t_asn_v2_value **asn1_value, const t_json_v2 *jvalue)
 {
 	*asn1_value = NULL;
 
@@ -1378,14 +1378,14 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn_v2_type **asn1_type, const t_json_v2 *jschema, t_json_v2 *jtype)
+static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn_v2_type **asn1_type, const t_json_v2 *jschema, const t_json_v2 *jtype)
 {
 	assert(jtype->type == JSON_V2_TYPE_OBJECT);
 	*asn1_type = NULL;
 
 	char cbuf[1024] = {0};
 
-	t_json_v2 *jkind = NULL;
+	const t_json_v2 *jkind = NULL;
 	int ret = json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind);
 	assert(JSON_V2_OK == ret && jkind->type == JSON_V2_TYPE_STRING);
 	SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_KIND, json_v2_dumpb(jkind, cbuf, sizeof(cbuf)));
@@ -1398,7 +1398,7 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_SET:
 		;;
-		t_json_v2 *jcomponents = NULL;
+		const t_json_v2 *jcomponents = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
 			assert(jcomponents->type == JSON_V2_TYPE_ARRAY);
 			void *content = NULL;
@@ -1419,7 +1419,7 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF:
 		;;
-		t_json_v2 *jelement_type = NULL;
+		const t_json_v2 *jelement_type = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_COMPONENT_TYPE, jtype, &jelement_type)) {
 			assert(jelement_type->type == JSON_V2_TYPE_OBJECT);
 			SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_TYPE_COMPONENT_TYPE, json_v2_dumpb(jelement_type, cbuf, sizeof(cbuf)));
@@ -1431,7 +1431,7 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 		break;
 	case ASN_V2_TYPE_KIND_TAGGED:
 		;;
-		t_json_v2 *jtag_mode = NULL;
+		const t_json_v2 *jtag_mode = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_TAG_MODE, jtype, &jtag_mode)) {
 			assert(jtag_mode->type == JSON_V2_TYPE_STRING);
 			SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_TAG_MODE, json_v2_dumpb(jtag_mode, cbuf, sizeof(cbuf)));
@@ -1447,19 +1447,19 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 			}
 		}
 
-		t_json_v2 *jtag_class = NULL;
+		const t_json_v2 *jtag_class = NULL;
 		ret = json_v2_query_nonnull(__JQ_TYPE_TAG_CLASS, jtype, &jtag_class);
 		assert(JSON_V2_OK == ret && jtag_class->type == JSON_V2_TYPE_STRING);
 		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_TAG_CLASS, json_v2_dumpb(jtag_class, cbuf, sizeof(cbuf)));
 		atype->as.tagged.tag.class = __asn1_v2_schema_get_tag_class_by_name(jtag_class->as.cstr);
 
-		t_json_v2 *jtag_number = NULL;
+		const t_json_v2 *jtag_number = NULL;
 		ret = json_v2_query_nonnull(__JQ_TYPE_TAG_NUMBER, jtype, &jtag_number);
 		assert(JSON_V2_OK == ret && jtag_number->type == JSON_V2_TYPE_NUMBER);
 		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_TAG_NUMBER, json_v2_dumpb(jtag_number, cbuf, sizeof(cbuf)));
 		atype->as.tagged.tag.number = (uint32_t)bnum_to_dig_u(&jtag_number->as.number);
 
-		t_json_v2 *jbase_type = NULL;
+		const t_json_v2 *jbase_type = NULL;
 		ret = json_v2_query_nonnull(__JQ_TYPE_BASE_TYPE, jtype, &jbase_type);
 		assert(JSON_V2_OK == ret && jbase_type->type == JSON_V2_TYPE_OBJECT);
 		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_BASE_TYPE, json_v2_dumpb(jbase_type, cbuf, sizeof(cbuf)));
@@ -1469,7 +1469,8 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 		}
 		break;
 	case ASN_V2_TYPE_KIND_ANY:
-    	t_json_v2 *jdefined_by_id = NULL;
+	    ;;
+    	const t_json_v2 *jdefined_by_id = NULL;
     	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
     		assert(jdefined_by_id->type == JSON_V2_TYPE_STRING);
     		SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_DEFINED_BY_ID, json_v2_dumpb(jdefined_by_id, cbuf, sizeof(cbuf)));
@@ -1492,7 +1493,7 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	default:
         // Not a known type but could be a reference to another type in the module.
 	    SSL_LOG(TRACE, "asn1 type: `%s`: not a standard asn1 type: maybe type in the module?", jkind->as.cstr, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
-        t_json_v2 *jref_type = NULL;
+        const t_json_v2 *jref_type = NULL;
         char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstr);
         ret = json_v2_query_nonnull(query, jschema, &jref_type);
         SSL_FREE(query);
@@ -1514,7 +1515,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_component(const t_asn_v2_module *asn1_module, t_asn_v2_component **asn1_component, const t_json_v2 *jschema, t_json_v2 *jcomponent)
+static int	__asn1_v2_schema_parse_component(const t_asn_v2_module *asn1_module, t_asn_v2_component **asn1_component, const t_json_v2 *jschema, const t_json_v2 *jcomponent)
 {
 	assert(jcomponent->type == JSON_V2_TYPE_OBJECT);
 	*asn1_component = NULL;
@@ -1522,14 +1523,14 @@ static int	__asn1_v2_schema_parse_component(const t_asn_v2_module *asn1_module, 
 	t_asn_v2_component *acomponent = __asn1_v2_component_create();
 	char cbuf[1024] = {0};
 
-	t_json_v2 *jid = NULL;
+	const t_json_v2 *jid = NULL;
 	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_COMPONENT_ID, jcomponent, &jid)) {
 		assert(jid->type == JSON_V2_TYPE_STRING);
 		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_COMPONENT_ID, json_v2_dumpb(jid, cbuf, sizeof(cbuf)));
 		acomponent->id = ft_strdup(jid->as.cstr);
 	}
 
-	t_json_v2 *jtype = NULL;
+	const t_json_v2 *jtype = NULL;
 	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_COMPONENT_TYPE, jcomponent, &jtype)) {
 		assert(jtype->type == JSON_V2_TYPE_OBJECT);
 		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_COMPONENT_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
@@ -1539,14 +1540,14 @@ static int	__asn1_v2_schema_parse_component(const t_asn_v2_module *asn1_module, 
 		}
 	}
 
-	t_json_v2 *joptional = NULL;
+	const t_json_v2 *joptional = NULL;
 	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_COMPONENT_OPTIONAL, jcomponent, &joptional)) {
 		assert(joptional->type == JSON_V2_TYPE_BOOL);
 		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_COMPONENT_OPTIONAL, json_v2_dumpb(joptional, cbuf, sizeof(cbuf)));
 		acomponent->optional = joptional->as.boolean;
 	}
 
-	t_json_v2 *jdefault = NULL;
+	const t_json_v2 *jdefault = NULL;
 	if (JSON_V2_OK == json_v2_query(__JQ_COMPONENT_DEFAULT, jcomponent, &jdefault)) {
 		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_COMPONENT_DEFAULT, json_v2_dumpb(jdefault, cbuf, sizeof(cbuf)));
 		if (SSL_OK != __asn1_v2_schema_parse_value(&acomponent->default_value, jdefault)) {
@@ -1563,7 +1564,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema)
+int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema)
 {
 	if (NULL == asn1_module) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -1577,12 +1578,12 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, t_json_v2 *jschema)
 
 	t_asn_v2_module *amodule = __asn1_v2_module_create();
 
-	t_json_v2 *jtagmode = NULL;
+	const t_json_v2 *jtagmode = NULL;
 	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TAG_MODE, jschema, &jtagmode)) {
 		amodule->tag_mode = __asn1_v2_schema_get_tag_mode_by_name(jtagmode->as.cstr);
 	}
 
-	t_json_v2 *jtypes = NULL;
+	const t_json_v2 *jtypes = NULL;
 	int ret = json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes);
 	assert(JSON_V2_OK == ret && jtypes->type == JSON_V2_TYPE_OBJECT);
 

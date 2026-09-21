@@ -28,7 +28,7 @@ static int	__json_v2_parse_object(const char *s, t_json_v2 *json, size_t *pos);
 static int	__json_v2_parse_array(const char *s, t_json_v2 *json, size_t *pos);
 static void	__json_v2_parse_ws(const char *s, size_t *pos);
 
-int json_v2_parse(const char *s, t_json_v2 **ret_json)
+int json_v2_parse(const char *s, const t_json_v2 **ret_json)
 {
 	if (s == NULL || ret_json == NULL) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -51,7 +51,7 @@ int json_v2_parse(const char *s, t_json_v2 **ret_json)
 	return (JSON_V2_OK);
 }
 
-int	json_v2_parse_file(const char *filename, t_json_v2 **json)
+int	json_v2_parse_file(const char *filename, const t_json_v2 **json)
 {
 	t_ostring file_content;
 	if (JSON_V2_OK != file_read_all(filename, &file_content)) {
@@ -74,7 +74,7 @@ int	json_v2_parse_file(const char *filename, t_json_v2 **json)
 	return (JSON_V2_OK);
 }
 
-int	json_v2_parse_stream(t_io_v2_stream *stream, t_json_v2 **json)
+int	json_v2_parse_stream(t_io_v2_stream *stream, const t_json_v2 **json)
 {
 	// TODO: Refactor JSON parsing to support stream inputs.
 	// Read all data from stream into the memory before parsing JSON.
@@ -527,14 +527,14 @@ const char	*json_v2_get_type_name(t_json_v2_type type)
 
 /****************************************************************************/
 
-static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx);
+static void	__json_v2_f_default_dumper(const t_json_v2 *json, t_ostring *ostring, void *vctx);
 
-char	*json_v2_dumps(t_json_v2 *json)
+char	*json_v2_dumps(const t_json_v2 *json)
 {
 	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_default_dumper, NULL));
 }
 
-char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper, void *vctx)
+char	*json_v2_dumps_with_f_dumper(const t_json_v2 *json, t_func_json_v2_dump f_dumper, void *vctx)
 {
 	assert(NULL != json);
 	assert(NULL != f_dumper);
@@ -548,12 +548,12 @@ char	*json_v2_dumps_with_f_dumper(t_json_v2 *json, t_func_json_v2_dump f_dumper,
 	return (dumps);
 }
 
-char	*json_v2_dumpb(t_json_v2 *json, char *buf, size_t size)
+char	*json_v2_dumpb(const t_json_v2 *json, char *buf, size_t size)
 {
 	return (json_v2_dumpb_with_f_dumper(json, buf, size, __json_v2_f_default_dumper, NULL));
 }
 
-char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper, void *vctx)
+char	*json_v2_dumpb_with_f_dumper(const t_json_v2 *json, char *buf, size_t size, t_func_json_v2_dump f_dumper, void *vctx)
 {
 	assert(NULL != json);
 	assert(NULL != buf);
@@ -571,7 +571,7 @@ char	*json_v2_dumpb_with_f_dumper(t_json_v2 *json, char *buf, size_t size, t_fun
 	return (buf);
 }
 
-static void	__json_v2_f_default_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx)
+static void	__json_v2_f_default_dumper(const t_json_v2 *json, t_ostring *ostring, void *vctx)
 {
 	switch (json->type) {
 	case JSON_V2_TYPE_OBJECT: {
@@ -631,7 +631,7 @@ typedef struct __s_json_v2_f_pretty_dumper_ctx {
     int retries;
 } __t_json_v2_f_pretty_dumper_ctx;
 
-static void	__json_v2_f_pretty_dumper(t_json_v2 *json, t_ostring *ostring, void *vctx)
+static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring, void *vctx)
 {
     const int max_auto_retries = 3;
 
@@ -742,7 +742,7 @@ static void	__json_v2_f_pretty_dumper(t_json_v2 *json, t_ostring *ostring, void 
     }
 }
 
-char	*json_v2_pretty_dumps(t_json_v2 *json, int depth, size_t width, bool colored)
+char	*json_v2_pretty_dumps(const t_json_v2 *json, int depth, size_t width, bool colored)
 {
     __t_json_v2_f_pretty_dumper_ctx ctx = { .max_level = depth, .colored = colored, };
     if (width > 0) ctx.max_width = width;
@@ -751,7 +751,7 @@ char	*json_v2_pretty_dumps(t_json_v2 *json, int depth, size_t width, bool colore
 
 /****************************************************************************/
 
-int	json_v2_validate(t_json_v2 *json)
+int	json_v2_validate(const t_json_v2 *json)
 {
 	if (NULL == json) return (JSON_V2_ERR);
 	if (json_v2_validate_type(json)) return (JSON_V2_ERR);
@@ -786,7 +786,7 @@ int	json_v2_validate(t_json_v2 *json)
 	}
 }
 
-int	json_v2_validate_shallow(t_json_v2 *json)
+int	json_v2_validate_shallow(const t_json_v2 *json)
 {
 	if (NULL == json) return (JSON_V2_ERR);
 	if (json_v2_validate_type(json)) return (JSON_V2_ERR);
@@ -821,7 +821,7 @@ int	json_v2_validate_shallow(t_json_v2 *json)
 	}
 }
 
-int	json_v2_validate_type(t_json_v2 *json)
+int	json_v2_validate_type(const t_json_v2 *json)
 {
 	assert(NULL != json);
 
@@ -863,26 +863,26 @@ typedef struct __s_json_v2_query {
 	} as;
 } __t_json_v2_query;
 
-typedef int (*t_func_json_v2_select)(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
+typedef int (*t_func_json_v2_select)(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json);
 
-static int	__json_v2_query_with_f_selector(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector);
+static int	__json_v2_query_with_f_selector(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json, t_func_json_v2_select f_selector);
 
-static int 	__json_v2_run_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector);
+static int 	__json_v2_run_query(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json, t_func_json_v2_select f_selector);
 static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_t *pos);
 static void __json_v2_clear_query(__t_json_v2_query *query);
 
-static int 	__json_v2_f_default_selector(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
-static int 	__json_v2_select_object_key(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
-static int 	__json_v2_select_array_index(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json);
+static int 	__json_v2_f_default_selector(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json);
+static int 	__json_v2_select_object_key(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json);
+static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json);
 
 static const char	*__json_v2_get_query_type_name(__t_json_v2_q_type type);
 
-int json_v2_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json)
+int json_v2_query(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json)
 {
 	return (__json_v2_query_with_f_selector(s, json, ret_json, __json_v2_f_default_selector));
 }
 
-int json_v2_query_nonnull(const char *s, t_json_v2 *json, t_json_v2 **ret_json)
+int json_v2_query_nonnull(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json)
 {
 	int status = __json_v2_query_with_f_selector(s, json, ret_json, __json_v2_f_default_selector);
 	if (JSON_V2_OK == status && (*ret_json)->type == JSON_V2_TYPE_NULL) {
@@ -892,7 +892,7 @@ int json_v2_query_nonnull(const char *s, t_json_v2 *json, t_json_v2 **ret_json)
 	return (status);
 }
 
-static int __json_v2_query_with_f_selector(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector)
+static int __json_v2_query_with_f_selector(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json, t_func_json_v2_select f_selector)
 {
 	if (NULL == s) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -923,12 +923,12 @@ static int __json_v2_query_with_f_selector(const char *s, t_json_v2 *json, t_jso
 	}
 }
 
-static int __json_v2_run_query(const char *s, t_json_v2 *json, t_json_v2 **ret_json, t_func_json_v2_select f_selector)
+static int __json_v2_run_query(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json, t_func_json_v2_select f_selector)
 {
 	*ret_json = NULL;
 	int status = __JSON_V2_NO_MATCH_QUERY;
 
-	t_json_v2 *cur_json = json;
+	const t_json_v2 *cur_json = json;
 	size_t pos = 0;
 	while (s[pos] != '\0') {
 		__t_json_v2_query query = {0};
@@ -1036,7 +1036,7 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 	return (JSON_V2_OK);
 }
 
-static int 	__json_v2_f_default_selector(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
+static int 	__json_v2_f_default_selector(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json)
 {
     *ret_json = NULL;
 
@@ -1054,7 +1054,7 @@ static int 	__json_v2_f_default_selector(t_json_v2 *json, __t_json_v2_query quer
 	}
 }
 
-static int 	__json_v2_select_object_key(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
+static int 	__json_v2_select_object_key(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json)
 {
 	SSL_LOG(TRACE, "searching for object key: `%s`", query.as.key);
 
@@ -1074,7 +1074,7 @@ static int 	__json_v2_select_object_key(t_json_v2 *json, __t_json_v2_query query
 	return (__JSON_V2_NO_MATCH_QUERY);
 }
 
-static int 	__json_v2_select_array_index(t_json_v2 *json, __t_json_v2_query query, t_json_v2 **ret_json)
+static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json)
 {
 	SSL_LOG(TRACE, "indexing array at: `%s`", query.as.index);
 
