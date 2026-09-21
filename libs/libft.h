@@ -174,7 +174,7 @@ char		*ft_chunk_to_cstr(t_chunk *chunk);
 /****************************************************************************/
 
 typedef	void	(*t_func_content_del)(void *content);
-typedef	void	*(*t_func_content_copy)(void *content);
+typedef	void	*(*t_func_content_copy)(const void *content);
 
 typedef struct s_node {
 	uint64_t		hash;

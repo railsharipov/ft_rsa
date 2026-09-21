@@ -183,6 +183,25 @@ void *ft_list_pop_ref(t_list *list)
 	return (NULL);
 }
 
+bool ft_list_next_ref(const t_list *list, t_list_next *next, void **ref)
+{
+	assert(NULL != list);
+	assert(NULL != next);
+
+	if (!next->init) {
+		next->node = list->first;
+		next->init = true;
+	}
+	if (NULL != next->node) {
+		t_ref_node *ref_node = container_of(next->node, t_ref_node, base);
+		if (NULL != ref) *ref = ref_node->ptr;
+		next->node = next->node->next;
+		return (true);
+	}
+	if (NULL != ref) *ref = NULL;
+	return (false);
+}
+
 void ft_list_clear_all_ref(t_list *list)
 {
 	assert(NULL != list);

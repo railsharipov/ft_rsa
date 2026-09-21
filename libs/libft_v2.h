@@ -52,13 +52,14 @@ char 		*ft_list_dumps(t_list *list);
 void	ft_list_append_ref(t_list *list, void *ptr);
 void	ft_list_prepend_ref(t_list *list, void *ptr);
 void	*ft_list_pop_ref(t_list *list);
+bool	ft_list_next_ref(const t_list *list, t_list_next *next, void **ref);
 void	ft_list_clear_all_ref(t_list *list);
 void	ft_list_del_all_ref(t_list *list);
 
 /****************************************************************************/
 
 typedef	void (*t_func_content_del)(void *content);
-typedef	void *(*t_func_content_copy)(void *content);
+typedef	void *(*t_func_content_copy)(const void *content);
 
 void	ft_list_append_content(t_list *list, void *content);
 void	ft_list_prepend_content(t_list *list, void *content);
