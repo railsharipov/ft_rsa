@@ -3,7 +3,7 @@
 #include <libft.h>
 
 static int	__parse_opts(t_htbl *opts, t_htbl *global_opts, t_htbl *parsed_opts, const char **argv);
-static void	*__func_copy_opt(void *content);
+static void	*__func_copy_opt(const void *content);
 
 int	args_parse(t_cmd *cmd, t_arg_cmd *cmd_arg, const char **argv, int argc)
 {
@@ -107,7 +107,7 @@ static int	__parse_opts(t_htbl *opts, t_htbl *global_opts, t_htbl *parsed_opts, 
 	return (SSL_OK);
 }
 
-static void	*__func_copy_opt(void *content)
+static void	*__func_copy_opt(const void *content)
 {
 	return (args_copy_opt(content));
 }

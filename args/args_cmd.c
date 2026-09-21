@@ -3,8 +3,8 @@
 #include <args.h>
 #include <libft.h>
 
-static void	*__func_copy_cmd(void *content);
-static void	*__func_copy_opt(void *content);
+static void	*__func_copy_cmd(const void *content);
+static void	*__func_copy_opt(const void *content);
 static void	__func_del_cmd(void *content);
 static void	__func_del_opt(void *content);
 
@@ -101,13 +101,13 @@ int	args_add_global_cmd_opt(t_arg_cmd *cmd_arg, const t_arg_opt *opt_arg)
 	return (SSL_OK);
 }
 
-static void	*__func_copy_cmd(void *content)
+static void	*__func_copy_cmd(const void *content)
 {
 	t_node *node;
-	t_arg_cmd *cmd_arg, *sub_cmd, *sub_copy;
+	t_arg_cmd *sub_cmd, *sub_copy;
 	t_arg_opt *opt, *opt_copy;
 
-	cmd_arg = content;
+	const t_arg_cmd *cmd_arg = content;
 	t_arg_cmd *copy = args_new_cmd(cmd_arg->name, cmd_arg->desc, cmd_arg->func);
 
 	node = ft_htbl_node_next(cmd_arg->sub_cmds, NULL);
@@ -133,7 +133,7 @@ static void	__func_del_opt(void *content)
 	args_del_opt(opt_arg);
 }
 
-static void	*__func_copy_opt(void *content)
+static void	*__func_copy_opt(const void *content)
 {
 	return (args_copy_opt(content));
 }
