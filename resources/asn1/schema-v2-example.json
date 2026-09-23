@@ -4,39 +4,10 @@
     "PrivateKeyInfo": {
       "kind": "SEQUENCE",
       "components": [
-        {
-          "id": "version",
-          "type": {
-            "kind": "Version"
-          },
-          "default": 0
-        },
-        {
-          "id": "authors",
-          "type": {
-            "kind": "SET OF",
-            "componentType": {
-              "kind": "Author"
-            }
-          }
-        },
-        {
-          "id": "algorithm",
-          "type": {
-            "kind": "TAGGED",
-            "tagClass": "CONTEXT-SPECIFIC",
-            "tagNumber": 0,
-            "baseType": {
-              "kind": "OCTET STRING"
-            }
-          }
-        },
-        {
-          "id": "data",
-          "type": {
-            "kind": "BIT STRING"
-          }
-        }
+        { "id": "version", "type": { "kind": "Version" }, "default": 0 },
+        { "id": "authors", "type": { "kind": "SET OF", "componentType": { "kind": "Author" } } },
+        { "id": "algorithm", "type": { "kind": "OCTET STRING", "tags": [{"class": "CONTEXT-SPECIFIC", "tagNumber": 0}] } },
+        { "id": "data", "type": { "kind": "BIT STRING" } }
       ]
     },
     "Version": {
@@ -47,39 +18,15 @@
       "components": [
         {
           "id": "fullname",
-          "type": {
-            "kind": "TAGGED",
-            "tagMode": "IMPLICIT",
-            "tagClass": "CONTEXT-SPECIFIC",
-            "tagNumber": 0,
-            "baseType": {
-              "kind": "IA5 STRING"
-            }
-          }
+          "type": { "kind": "IA5 STRING", "tags": [{"mode": "IMPLICIT", "class": "CONTEXT-SPECIFIC", "number": 0}] }
         },
         {
           "id": "email",
-          "type": {
-            "kind": "TAGGED",
-            "tagMode": "IMPLICIT",
-            "tagClass": "CONTEXT-SPECIFIC",
-            "tagNumber": 1,
-            "baseType": {
-              "kind": "IA5 STRING"
-            }
-          }
+          "type": { "kind": "IA5 STRING", "tags": [{"mode": "IMPLICIT", "class": "CONTEXT-SPECIFIC", "number": 1}] }
         },
         {
           "id": "id",
-          "type": {
-            "kind": "TAGGED",
-            "tagMode": "IMPLICIT",
-            "tagClass": "APPLICATION",
-            "tagNumber": 0,
-            "baseType": {
-              "kind": "INTEGER"
-            }
-          }
+          "type": { "kind": "INTEGER", "tags": [{"mode": "IMPLICIT", "class": "APPLICATION", "number": 0}] }
         }
       ]
     },

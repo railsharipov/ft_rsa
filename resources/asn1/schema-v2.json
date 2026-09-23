@@ -3,14 +3,15 @@
   "types": {
     "<type-name>": {
         "kind": "string",
-        "tagMode": "string|null",
-        "tagClass": "string|null",
-        "tagNumber": "number",
-        "baseType": "<type>",
-        "contraints": {
-          "range": { "min": "number|null", "max": "number|null" },
-          "size": { "min": "number|null", "max": "number|null" }
-        },
+        "tags": [
+          {"mode": "string|null", "class": "string|null", "number": "number"}, /* innermost */
+          "..."
+          {"mode": "string|null", "class": "string|null", "number": "number"}, /* outermost */
+        ],
+        "contraints": [
+          {"type": "range", "min": "number|null", "max": "number|null"},
+          {"type": "size", "min": "number|null", "max": "number|null"}
+        ],
         "componentType": "<type>|null>",
         "components": [
           {
