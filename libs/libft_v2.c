@@ -98,6 +98,21 @@ t_node_v2 *ft_list_remove(t_list *list, t_node_v2 *node)
 	return (cur);
 }
 
+t_node_v2 *ft_list_at(t_list *list, size_t idx)
+{
+	assert(NULL != list);
+	if (list->size == 0) return (NULL);
+
+	t_node_v2 *node = list->first;
+	size_t i = 0;
+	while (node) {
+		if (i++ == idx) break;
+		node = node->next;
+	}
+	return (node);
+}
+
+
 void ft_list_reverse(t_list *list)
 {
 	assert(NULL != list);
@@ -237,12 +252,10 @@ static t_node_v2 *__ft_content_create_node(void *content)
 
 static void __ft_content_delete_node(t_node_v2 *node, t_func_content_del f_del)
 {
-	if (NULL != node) {
-		assert(NULL != f_del);
-		t_content_node *content_node = container_of(node, t_content_node, base);
-		f_del(content_node->content);
-		LIBFT_FREE(content_node);
-	}
+	assert(NULL != node && NULL != f_del);
+	t_content_node *content_node = container_of(node, t_content_node, base);
+	if (NULL != content_node->content) f_del(content_node->content);
+	LIBFT_FREE(content_node);
 }
 
 void ft_list_append_content(t_list *list, void *content)
@@ -253,6 +266,36 @@ void ft_list_append_content(t_list *list, void *content)
 void ft_list_prepend_content(t_list *list, void *content)
 {
 	ft_list_prepend(list, __ft_content_create_node(content));
+}
+
+void *ft_list_first_content(t_list *list)
+{
+	t_node_v2 *node = list->first;
+	if (NULL != node) {
+		t_content_node *content_node = container_of(node, t_content_node, base);
+		return (content_node->content);
+	}
+	return (NULL);
+}
+
+void *ft_list_last_content(t_list *list)
+{
+	t_node_v2 *node = list->last;
+	if (NULL != node) {
+		t_content_node *content_node = container_of(node, t_content_node, base);
+		return (content_node->content);
+	}
+	return (NULL);
+}
+
+void *ft_list_content_at(t_list *list, size_t idx)
+{
+	t_node_v2 *node = ft_list_at(list, idx);
+	if (NULL != node) {
+		t_content_node *content_node = container_of(node, t_content_node, base);
+		return (content_node->content);
+	}
+	return (NULL);
 }
 
 void *ft_list_pop_content(t_list *list)

@@ -44,6 +44,7 @@ void		ft_list_append(t_list *list, t_node_v2 *node);
 void		ft_list_prepend(t_list *list, t_node_v2 *node);
 t_node_v2	*ft_list_pop(t_list *list);
 t_node_v2	*ft_list_remove(t_list *list, t_node_v2 *node);
+t_node_v2 	*ft_list_at(t_list *list, size_t idx);
 void		ft_list_reverse(t_list *list);
 char 		*ft_list_dumps(t_list *list);
 
@@ -64,6 +65,9 @@ typedef	void *(*t_func_content_copy)(const void *content);
 void	ft_list_append_content(t_list *list, void *content);
 void	ft_list_prepend_content(t_list *list, void *content);
 void	*ft_list_pop_content(t_list *list);
+void	*ft_list_first_content(t_list *list);
+void	*ft_list_last_content(t_list *list);
+void	*ft_list_content_at(t_list *list, size_t idx);
 bool	ft_list_next_content(const t_list *list, t_list_next *next, void **content);
 void	ft_list_copy_all_content(const t_list *src, t_list *dst, t_func_content_copy f_copy);
 void	ft_list_move_all_content(t_list *src, t_list *dst);
