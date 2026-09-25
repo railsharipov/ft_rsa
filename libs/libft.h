@@ -436,9 +436,9 @@ void		ft_ostr_copy(const t_ostring *src, t_ostring *dst);
 t_ostring	*ft_ostr_dup(const t_ostring *ostring);
 t_ostring	*ft_ostr_append_cstr(t_ostring *ostring, const char *cstr);
 t_ostring	*ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr);
-t_ostring	*ft_ostr_append(t_ostring *ostring, void *content, size_t size);
+t_ostring	*ft_ostr_append(t_ostring *ostring, const void *content, size_t size);
 t_ostring	*ft_ostr_appendf(t_ostring *ostring, const char *fmt, ...);
-t_ostring	*ft_ostr_prepend(t_ostring *ostring, void *content, size_t size);
+t_ostring	*ft_ostr_prepend(t_ostring *ostring, const void *content, size_t size);
 char		*ft_ostr_to_cstr(const t_ostring *ostr, size_t offset, size_t len);
 
 /****************************************************************************/

@@ -3384,10 +3384,10 @@ t_ostring	*ft_ostr_append_ostr(t_ostring *ostring, const t_ostring *ostr)
 	if (NULL == ostring || NULL == ostr) {
 		return (NULL);
 	}
-	return (ft_ostr_append(ostring, (void *)ostr->content, ostr->size));
+	return (ft_ostr_append(ostring, ostr->content, ostr->size));
 }
 
-t_ostring	*ft_ostr_append(t_ostring *ostring, void *content, size_t size)
+t_ostring	*ft_ostr_append(t_ostring *ostring, const void *content, size_t size)
 {
 	if (NULL == ostring) {
 		return (NULL);
@@ -3415,7 +3415,7 @@ t_ostring	*ft_ostr_append(t_ostring *ostring, void *content, size_t size)
 	return (ostring);
 }
 
-t_ostring	*ft_ostr_prepend(t_ostring *ostring, void *content, size_t size)
+t_ostring	*ft_ostr_prepend(t_ostring *ostring, const void *content, size_t size)
 {
 	if (NULL == ostring) {
 		return (NULL);
