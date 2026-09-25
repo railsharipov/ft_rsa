@@ -680,7 +680,7 @@ void	ft_bytes_dumpb_hex_pretty(const void *bytes, size_t size, int cols, int del
 	LIBFT_FREE(hex);
 }
 
-char	*ft_bytes_dumps_bits(const void *ptr, size_t size)
+char	*ft_bytes_dumps_bin(const void *ptr, size_t size)
 {
 	const uint8_t *octets = ptr;
 	char *dumps, *p;
@@ -699,20 +699,20 @@ char	*ft_bytes_dumps_bits(const void *ptr, size_t size)
 	return (dumps);
 }
 
-// Convert bitstring literal such as "0100101" to bytes.
-void	ft_bits_to_bytes(uint8_t *bytes, size_t size, const char *bstring, size_t bstrlen)
+// Convert binary string literal such as "0100101" to bytes.
+void	ft_bins_to_bytes(uint8_t *bytes, size_t size, const char *bins, size_t binslen)
 {
 	if (NULL == bytes || size == 0) return;
 	ft_memset(bytes, 0, size);
 
-	size_t len = MIN(size, NBITS_TO_NBYTES(bstrlen));
+	size_t len = MIN(size, NBITS_TO_NBYTES(binslen));
 	if (len == 0) return;
 
-	const char *p = bstring;
+	const char *p = bins;
 	size_t n = 0;
 	// First byte might be incomplete.
-	if (bstrlen % 8 > 0) {
-		for (size_t i = 0; i < bstrlen % 8; i++) {
+	if (binslen % 8 > 0) {
+		for (size_t i = 0; i < binslen % 8; i++) {
 			bytes[n] <<= 1;
 			bytes[n] |= (*p++ == '0') ? 0u : 1u;
 		}
