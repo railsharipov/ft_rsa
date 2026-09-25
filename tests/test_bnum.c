@@ -550,7 +550,7 @@ static int	__test_bnum_from_bytes_u(void)
 	binsize = NBITS_TO_NBYTES(4 * hexsize);
 	SSL_ALLOC(bin, binsize);
 
-	ft_hex_to_bytes(bin, hex, hexsize);
+	ft_hexs_to_bytes(bin, hex, hexsize);
 
 	bnum_init(&test_num);
 	bnum_from_bytes_u(&test_num, bin, binsize);

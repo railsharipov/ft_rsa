@@ -216,7 +216,7 @@ static int	__test_pem_encode_pkcs1_encrypted(void)
 	uint8_t		salt[8];
 	int			ret, idx;
 
-	ft_hex_to_bytes(salt, salthex, ft_strlen(salthex));
+	ft_hexs_to_bytes(salt, salthex, ft_strlen(salthex));
     pem = pem_create("RSA PRIVATE KEY", salt, PEM_PROC_TYPE_ENCRYPTED, PEM_CIPHER_DES_CBC);
 	TEST_ASSERT(pem->has_salt == 1);
 

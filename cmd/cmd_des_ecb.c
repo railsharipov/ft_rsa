@@ -83,7 +83,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 				SSL_LOG(ERROR, "key must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hex_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+			ft_hexs_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
 				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
@@ -99,7 +99,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 				SSL_LOG(ERROR, "salt must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hex_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
+			ft_hexs_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
 
 			char des_pass[_PASSWORD_LEN+1] = {0};
 
@@ -228,7 +228,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 				SSL_LOG(ERROR, "key must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hex_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+			ft_hexs_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
 				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
@@ -244,7 +244,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 				SSL_LOG(ERROR, "salt must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hex_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
+			ft_hexs_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
 			// Get user password
 			char des_pass[_PASSWORD_LEN+1] = {0};
 			if (ft_htbl_has(cmd->opts, "-p")) {

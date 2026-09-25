@@ -792,7 +792,7 @@ char	*ft_bytes_dumps_hex(const void *bin, size_t binsize)
 }
 
 // TODO: add binsize parameter.
-void	ft_hex_to_bytes(void *bin, const char *hex, size_t hexsize)
+void	ft_hexs_to_bytes(void *bin, const char *hex, size_t hexsize)
 {
 	unsigned char	*buf;
 	unsigned char	*ptr;

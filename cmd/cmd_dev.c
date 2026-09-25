@@ -20,13 +20,13 @@ int	cmd_dev(const t_cmd *cmd)
 	// const char *asn1_type_name = "EncryptedPrivateKeyInfo";
 	// const char *der_filename = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
 
-	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
-	// const char *asn1_type_name = "RSAPrivateKey";
-	// const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
+	const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
+	const char *asn1_type_name = "RSAPrivateKey";
+	const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
 
-	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
-	const char *asn1_type_name = "PrivateKeyInfo";
-	const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
+	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
+	// const char *asn1_type_name = "PrivateKeyInfo";
+	// const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
 
 	const t_json_v2 *jschema = NULL;
 	if (JSON_OK != json_v2_parse_file(jschema_filename, &jschema)) {
@@ -37,16 +37,14 @@ int	cmd_dev(const t_cmd *cmd)
 		SSL_LOG(ERROR, "invalid json");
 		return (SSL_ERR);
 	}
-
-	// char *json_dumps = json_v2_pretty_dumps(jschema, 2, 240, true);
-	// ft_printf("%s\n", json_dumps);
-
 	if (SSL_OK != asn1_v2_schema_validate(jschema)) {
 		SSL_LOG(ERROR, "invalid asn1 schema");
 		return (SSL_ERR);
 	} else {
 		SSL_LOG(INFO, "asn1 schema is valid");
 	}
+	char *json_dumps = json_v2_pretty_dumps(jschema, 2, 240, true);
+	ft_printf("%s\n", json_dumps);
 
 	t_asn_v2_module *asn1_module = NULL;
 	if (SSL_OK != asn1_v2_schema_parse(&asn1_module, jschema)) {
@@ -55,9 +53,8 @@ int	cmd_dev(const t_cmd *cmd)
 	} else {
 		SSL_LOG(INFO, "asn1 schema parse success");
 	}
-
-	// char *atype_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
-	// ft_printf("%s\n", atype_dumps);
+	char *atype_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
+	ft_printf("%s\n", atype_dumps);
 
 	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, asn1_type_name);
 	assert(NULL != asn1_type);
@@ -69,7 +66,6 @@ int	cmd_dev(const t_cmd *cmd)
 	} else {
 		SSL_LOG(INFO, "asn1 type compile success");
 	}
-
 	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
 	ft_printf("%s\n", dtype_dumps);
 
@@ -86,7 +82,6 @@ int	cmd_dev(const t_cmd *cmd)
 	} else {
 		SSL_LOG(INFO, "der decode success");
 	}
-
 	char *dvalue_dumps = der_v2_value_dumps(der_value);
 	ft_printf("%s\n", dvalue_dumps);
 

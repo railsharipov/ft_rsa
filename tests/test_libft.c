@@ -1114,7 +1114,7 @@ static int __test_ft_hex_to_bytes(void)
 	char test_str[6] = {0};
 	char *hex = "9017f030f00";
 
-	ft_hex_to_bytes(test_str, hex, strlen(hex));
+	ft_hexs_to_bytes(test_str, hex, strlen(hex));
 	TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
 	TEST_PASS();

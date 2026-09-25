@@ -139,7 +139,7 @@ char		*ft_bytes_dumps_hex_pretty(const void *bytes, size_t size, int cols, int d
 void		ft_bytes_dumpb_hex_pretty(const void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize);
 char		*ft_bytes_dumps_bits(const void *, size_t);
 void		ft_bytes_write_hex(int fd, const void *bytes, size_t size);
-void		ft_hex_to_bytes(void *bytes, const char *hex, size_t hexsize);
+void		ft_hexs_to_bytes(void *bytes, const char *hex, size_t hexsize);
 void		ft_bits_to_bytes(uint8_t *bytes, size_t size, const char *bstring, size_t bstrlen);
 void		ft_bytes_reverse_bits(void *bytes, size_t size);
 uint64_t	ft_bytes_to_uint(const void *bytes, size_t size);

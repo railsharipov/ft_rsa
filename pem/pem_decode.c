@@ -78,7 +78,7 @@ int pem_decode(t_pem *pem, t_ostring *enc, t_ostring *data, const char *pass)
 		} else {
 			pos += textutil_seekf((char *)enc->content + pos, enc->size - pos, "DEK-Info: DES-CBC,%s\n", salthex);
 		}
-        ft_hex_to_bytes(salt, salthex, 16);
+        ft_hexs_to_bytes(salt, salthex, 16);
         /* For PEM Proc-Type encryption, the DEK-Info value is the cipher IV and
          * is also used as the salt for openssl's EVP_BytesToKey. The actual cipher IV used
          * must be the header IV, not a derived IV. */
