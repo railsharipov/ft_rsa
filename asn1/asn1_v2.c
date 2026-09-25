@@ -103,7 +103,7 @@
 #define __JQ_CONSTRAINT_MIN			".min"
 #define __JQ_CONSTRAINT_MAX			".max"
 
-const char *asn1_v2_get_type_name(t_asn_v2_type_kind type)
+const char *asn1_v2_get_type_kind_name(t_asn_v2_type_kind type)
 {
 	switch (type) {
 	case ASN_V2_TYPE_KIND_INTEGER:          return ASN_V2_TYPE_NAME_INTEGER;
@@ -746,7 +746,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 	t_ostring ostring = {0};
 	ft_ostr_init_with_capacity(&ostring, 1024);
 
-	ft_ostr_appendf(&ostring, "{\"kind\":\"%s\"", asn1_v2_get_type_name(asn1_type->kind));
+	ft_ostr_appendf(&ostring, "{\"kind\":\"%s\"", asn1_v2_get_type_kind_name(asn1_type->kind));
 
 	if (asn1_type->tags.size > 0) {
 		ft_ostr_append_cstr(&ostring, ",\"tags\":[");
@@ -1853,9 +1853,15 @@ static t_der_v2_tag *__der_v2_tag_create(void)
 	return (der_tag);
 }
 
-static void __der_v2_tag_delete(t_der_v2_tag *der_tag)
+static inline void __der_v2_tag_delete(t_der_v2_tag *der_tag)
 {
 	SSL_FREE(der_tag);
+}
+
+static inline bool __der_v2_tag_eq(const t_der_v2_tag *a, const t_der_v2_tag *b)
+{
+	// return (a->class == b->class && a->number == b->number && a->constructed == b->constructed);
+	return (ft_memcmp(a, b, sizeof(t_der_v2_tag)) == 0);
 }
 
 static t_der_v2_value *__der_v2_value_create(void)
@@ -2008,7 +2014,7 @@ static void __der_v2_type_delete(t_der_v2_type *der_type)
 	SSL_FREE(der_type);
 }
 
-static t_der_v2_tag __asn1_v2_get_tag_universal(t_asn_v2_type_kind type)
+static t_der_v2_tag __der_v2_get_tag_universal(t_asn_v2_type_kind type)
 {
 	t_asn_v2_tag_class uclass = ASN_V2_TAG_CLASS_UNIVERSAL;
 	switch (type) {
@@ -2161,7 +2167,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	char cbuf[1024] = {0};
 	*der_type = NULL;
 
-	SSL_LOG(TRACE, "compiling `%s` asn1 type", asn1_v2_get_type_name(asn1_type->kind));
+	SSL_LOG(TRACE, "compiling `%s` asn1 type", asn1_v2_get_type_kind_name(asn1_type->kind));
 
 	t_der_v2_type *compiled = __der_v2_type_create();
 
@@ -2174,7 +2180,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
 			t_der_v2_component *compiled_element = NULL;
 			if (SSL_OK != __asn1_v2_component_compile(&compiled_element, content)) {
-				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_name(asn1_type->kind), __asn1_v2_type_dumpb(content, cbuf, sizeof(cbuf)));
+				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_kind_name(asn1_type->kind), __asn1_v2_type_dumpb(content, cbuf, sizeof(cbuf)));
 				goto label_error;
 			}
 			ft_list_append_content(&compiled->as.composite.elements, compiled_element);
@@ -2187,15 +2193,15 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
 			t_der_v2_component *compiled_element = NULL;
 			if (SSL_OK != __asn1_v2_component_compile(&compiled_element, content)) {
-				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_name(asn1_type->kind), __asn1_v2_type_dumpb(content, cbuf, sizeof(cbuf)));
+				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_kind_name(asn1_type->kind), __asn1_v2_type_dumpb(content, cbuf, sizeof(cbuf)));
 				goto label_error;
 			}
 			if (NULL == compiled_element->id) {
-				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: missing id for choice element", asn1_v2_get_type_name(asn1_type->kind));
+				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: missing id for choice element", asn1_v2_get_type_kind_name(asn1_type->kind));
 				goto label_error;
 			}
 			if (NULL != compiled_element->default_value) {
-				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: unexpected default value for choice element", asn1_v2_get_type_name(asn1_type->kind));
+				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: unexpected default value for choice element", asn1_v2_get_type_kind_name(asn1_type->kind));
 				goto label_error;
 			}
 			ft_list_append_content(&compiled->as.composite.elements, compiled_element);
@@ -2206,7 +2212,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF:
 		if (SSL_OK != asn1_v2_type_compile(&compiled->as.collection.element_type, asn1_type->as.collection.element_type)) {
-			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_name(asn1_type->kind), __asn1_v2_type_dumpb(asn1_type, cbuf, sizeof(cbuf)));
+			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_kind_name(asn1_type->kind), __asn1_v2_type_dumpb(asn1_type, cbuf, sizeof(cbuf)));
 			goto label_error;
 		}
 		compiled->kind = asn1_type->kind;
@@ -2231,7 +2237,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	// CHOICE and ANY do not have their own tag.
 	if (ASN_V2_TYPE_KIND_CHOICE != asn1_type->kind && ASN_V2_TYPE_KIND_ANY != asn1_type->kind) {
 		// Semantic tag is the one describing which type decoder should expect.
-		const t_der_v2_tag semantic_tag = __asn1_v2_get_tag_universal(asn1_type->kind);
+		const t_der_v2_tag semantic_tag = __der_v2_get_tag_universal(asn1_type->kind);
 		// The innermost tag shall be the one that wraps the value of a type known to decoder.
 		t_der_v2_tag *inner_tag = __der_v2_tag_create();
 		*inner_tag = semantic_tag;
@@ -2244,10 +2250,14 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	void *content = NULL;
 	while (ft_list_next_content(&asn1_type->tags, &next, &content)) {
 		t_asn_v2_tag *asn1_tag = content;
+		if (ASN_V2_TAG_CLASS_UNIVERSAL == asn1_tag->class) {
+			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: cannot use reserved tag: %s", asn1_v2_get_type_kind_name(asn1_type->kind), __asn1_v2_tag_dumpb(asn1_tag, cbuf, sizeof(cbuf)));
+			goto label_error;
+		}
 		t_der_v2_tag *compiled_tag = NULL;
 		switch (asn1_tag->mode) {
 		case ASN_V2_TAG_MODE_AUTOMATIC:
-			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: unexpected automatic tag mode", asn1_v2_get_type_name(asn1_type->kind));
+			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: unexpected automatic tag mode", asn1_v2_get_type_kind_name(asn1_type->kind));
 			goto label_error;
 		case ASN_V2_TAG_MODE_EXPLICIT:
 			compiled_tag = __der_v2_tag_create();
@@ -2258,14 +2268,14 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 			break;
 		case ASN_V2_TAG_MODE_IMPLICIT:
 			if (ASN_V2_TYPE_KIND_CHOICE == asn1_type->kind || ASN_V2_TYPE_KIND_ANY == asn1_type->kind) {
-				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: implicit tags are not allowed for this type", asn1_v2_get_type_name(asn1_type->kind));
+				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: implicit tags are not allowed for this type", asn1_v2_get_type_kind_name(asn1_type->kind));
 				goto label_error;
 			}
 			compiled_tag = __der_v2_tag_create();
 			compiled_tag->class = asn1_tag->class;
 			compiled_tag->number = asn1_tag->number;
 			// An implicit tag's constructedness is defined by the type it wraps.
-			const t_der_v2_tag semantic_tag = __asn1_v2_get_tag_universal(asn1_type->kind);
+			const t_der_v2_tag semantic_tag = __der_v2_get_tag_universal(asn1_type->kind);
 			compiled_tag->constructed = semantic_tag.constructed;
 			// An implicit tag replaces all underlying tags, including the innermost tag.
 			ft_list_clear_all_content(&compiled->tags, __asn1_v2_tag_delete_adapter);
@@ -2313,11 +2323,15 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 	case ASN_V2_VALUE_TYPE_CSTRING:
 		return ft_strjoin_multi(3, "\"", der_value->as.cstring, "\"");
 	case ASN_V2_VALUE_TYPE_OSTRING:
-	case ASN_V2_VALUE_TYPE_BSTRING:
 		;;
 		char *ostring_dumps = NULL;
-		ft_sprintf(&ostring_dumps, "{\"octets\":\"<%p,size=%zu>\"}", &der_value->as.ostring, der_value->as.ostring.size);
+		ft_sprintf(&ostring_dumps, "\"<octet_string=%p,size=%zu>\"", &der_value->as.ostring, der_value->as.ostring.size);
 		return ostring_dumps;
+	case ASN_V2_VALUE_TYPE_BSTRING:
+		;;
+		char *bstring_dumps = NULL;
+		ft_sprintf(&bstring_dumps, "\"<bit_string=%p,size=%zu>\"", &der_value->as.ostring, der_value->as.ostring.size);
+		return bstring_dumps;
 	case ASN_V2_VALUE_TYPE_LIST:
 		;;
 		t_ostring ostring = {0};
@@ -2331,7 +2345,7 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 			SSL_FREE(dumps);
 		}
 		ft_ostr_append_cstr(&ostring, "]");
-		char *dumps = ft_ostr_to_cstr(&der_value->as.ostring, 0, der_value->as.ostring.size);
+		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 		ft_ostr_clear(&ostring);
 		return (dumps);
 	case ASN_V2_VALUE_TYPE_CHOICE:
@@ -2349,9 +2363,9 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 		;;
 		char *any_dumps = NULL;
 		if (NULL != der_value->as.any.defined_by_id) {
-			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":\"%s\",\"octets\":\"<%p,size=%zu>\"}}", der_value->as.any.defined_by_id, &der_value->as.any.octets, der_value->as.any.octets.size);
+			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":\"%s\",\"octets\":\"<octet_string=%p,size=%zu>\"}}", der_value->as.any.defined_by_id, &der_value->as.any.octets, der_value->as.any.octets.size);
 		} else {
-			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<%p,size=%zu>\"}}", &der_value->as.any.octets, der_value->as.any.octets.size);
+			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<octet_string=%p,size=%zu>\"}}", &der_value->as.any.octets, der_value->as.any.octets.size);
 		}
 		return (any_dumps);
 	}
@@ -2388,6 +2402,11 @@ static char *__der_v2_component_dumps(const t_der_v2_component *der_component)
 	return (dumps);
 }
 
+char *der_v2_value_dumps(const t_der_v2_value *der_value)
+{
+	return (__der_v2_value_dumps(der_value));
+}
+
 char *der_v2_type_dumps(const t_der_v2_type *der_type)
 {
 	if (NULL == der_type) return ft_strdup("null");
@@ -2395,7 +2414,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	t_ostring ostring = {0};
 	ft_ostr_init_with_capacity(&ostring, 1024);
 
-	ft_ostr_appendf(&ostring, "{\"kind\":\"%s\"", asn1_v2_get_type_name(der_type->kind));
+	ft_ostr_appendf(&ostring, "{\"kind\":\"%s\"", asn1_v2_get_type_kind_name(der_type->kind));
 
 	if (der_type->tags.size > 0) {
 		ft_ostr_append_cstr(&ostring, ",\"tags\":[");
@@ -2494,4 +2513,847 @@ char *der_v2_type_dumpb(const t_der_v2_type *der_type, char *buf, size_t size)
 	buf[len] = '\0';
 	SSL_FREE(dumps);
 	return (buf);
+}
+
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+
+typedef struct s_der_v2_tlv {
+	t_der_v2_tag tag;
+	size_t length;
+	const uint8_t *value;
+} t_der_v2_tlv;
+
+static const t_asn_v2_tag_class DER_V2_TAG_CLASS_MAP[] = {
+	ASN_V2_TAG_CLASS_UNIVERSAL,
+	ASN_V2_TAG_CLASS_APPLICATION,
+	ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC,
+	ASN_V2_TAG_CLASS_PRIVATE,
+};
+
+typedef int (*t_func_der_v2_generic_decode)(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+
+static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv);
+
+static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int __der_v2_generic_decode_choice(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+
+static int	__der_v2_generic_decode_ostring(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_bitstring(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_boolean(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_sequence(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_null(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_integer(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+
+static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv)
+{
+	ssize_t rbytes = 0;
+	uint8_t octet = 0;
+
+	// Get next TLV position using pointer arithmetic.
+	if (NULL != tlv->value && (tlv->value >= enc && tlv->value <= enc + encsize)) {
+		ptrdiff_t diff = tlv->value - enc;
+		if (diff + tlv->length < encsize) {
+			enc = tlv->value + tlv->length;
+			encsize -= (size_t)(diff + tlv->length);
+		} else {
+			return false;
+		}
+	}
+	SSL_LOG(TRACE, "reading tlv: enc=%p, encsize=%zu", enc, encsize);
+
+	if (encsize == 0) return false;
+	octet = enc[rbytes++];
+
+	tlv->tag.class = DER_V2_TAG_CLASS_MAP[octet & 0xC0];
+	tlv->tag.constructed = (octet & 0x20) > 0;
+	uint32_t number = octet & 0x1F;
+	if (number == 0x1F) {
+		octet = 0;
+		number = 0;
+		do {
+			if (rbytes >= encsize) { SSL_LOG(ERROR, "bad tag read"); return false; }
+			octet = enc[rbytes++];
+			number <<= 7;
+			number |= (uint32_t)octet & 0x7F;
+		} while (octet & 0x80);
+	}
+	tlv->tag.number = number;
+
+	if (rbytes >= encsize) { SSL_LOG(ERROR, "bad length read"); return false; }
+	octet = enc[rbytes++];
+	size_t length = octet;
+	if (length & 0x80) {
+		uint8_t lensize = octet & 0x7F;
+		if (lensize > sizeof(length)) {
+			SSL_LOG(ERROR, "encoding size exceeds supported max");
+			return false;
+		}
+		length = 0;
+		for (size_t i = 0; i < lensize; i++) {
+			if (rbytes >= encsize) { SSL_LOG(ERROR, "bad length read"); return false; }
+			octet = enc[rbytes++];
+			length <<= 8;
+			length |= (size_t)octet;
+		}
+	}
+	tlv->length = length;
+
+	if (rbytes + tlv->length > encsize) { SSL_LOG(ERROR, "bad content read"); return false; }
+	tlv->value = enc + rbytes;
+
+	SSL_LOG(TRACE, "tlv read: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv->tag.class, tlv->tag.number, tlv->tag.constructed, tlv->length, tlv->value);
+	return true;
+}
+
+static struct s_der_v2_generic_decode {
+	t_func_der_v2_generic_decode f_decode;
+	const char *name;
+} DER_V2_GENERIC_DECODE_TYPE_MAP[] = {
+	/* ASN_V2_TAG_NUMBER_EOC                = 0 */	{ NULL, "EOC" },
+	/* ASN_V2_TAG_NUMBER_BOOLEAN            = 1 */	{ __der_v2_generic_decode_boolean, "BOOLEAN" },
+	/* ASN_V2_TAG_NUMBER_INTEGER            = 2 */	{ __der_v2_generic_decode_integer, "INTEGER" },
+	/* ASN_V2_TAG_NUMBER_BIT_STRING         = 3 */	{ __der_v2_generic_decode_bitstring, "BIT_STRING" },
+	/* ASN_V2_TAG_NUMBER_OCTET_STRING       = 4 */	{ __der_v2_generic_decode_ostring, "OCTET_STRING" },
+	/* ASN_V2_TAG_NUMBER_NULL               = 5 */	{ __der_v2_generic_decode_null, "NULL" },
+	/* ASN_V2_TAG_NUMBER_OBJECT_ID          = 6 */	{ __der_v2_generic_decode_object_id, "OBJECT_ID" },
+	/* ASN_V2_TAG_NUMBER_OBJECT_DESCR       = 7 */	{ NULL, "OBJECT_DESCR" },
+	/* ASN_V2_TAG_NUMBER_EXTERNAL           = 8 */	{ NULL, "EXTERNAL" },
+	/* ASN_V2_TAG_NUMBER_REAL               = 9 */	{ NULL, "REAL" },
+	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ NULL, "ENUMERATED" },
+	/* ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11 */	{ NULL, "EMBEDDED_PDV" },
+	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ NULL, "UTF8_STRING" },
+	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ NULL, "RELATIVE_OBJECT_ID" },
+	/* ASN_V2_TAG_NUMBER_TIME               = 14 */	{ NULL, "TIME" },
+	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
+	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_generic_decode_sequence, "SEQUENCE" },
+	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ NULL, "SET" },
+	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ NULL, "NUMERIC_STRING" },
+	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ NULL, "PRINTABLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
+	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
+	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ NULL, "IA5_STRING" },
+	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
+	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
+	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
+	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ NULL, "VISIBLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27 */	{ NULL, "GENERAL_STRING" },
+	/* ASN_V2_TAG_NUMBER_UNIVERSAL_STRING   = 28 */	{ NULL, "UNIVERSAL_STRING" },
+	/* ASN_V2_TAG_NUMBER_CHARACTER_STRING   = 29 */	{ NULL, "CHARACTER_STRING" },
+	/* ASN_V2_TAG_NUMBER_BMP_STRING         = 30 */	{ NULL, "BMP_STRING" },
+	/* ASN_V2_TAG_NUMBER_DATE               = 31 */	{ NULL, "DATE" },
+	/* ASN_V2_TAG_NUMBER_TIME_OF_DAY        = 32 */	{ NULL, "TIME_OF_DAY" },
+	/* ASN_V2_TAG_NUMBER_DATE_TIME          = 33 */	{ NULL, "DATE_TIME" },
+	/* ASN_V2_TAG_NUMBER_DURATION           = 34 */	{ NULL, "DURATION" },
+	/* ASN_V2_TAG_NUMBER_OID_IRI            = 35 */	{ NULL, "OID_IRI" },
+	/* ASN_V2_TAG_NUMBER_RELATIVE_OID_IRI   = 36 */	{ NULL, "RELATIVE_OID_IRI" },
+};
+static const size_t DER_V2_GENERIC_DECODE_TYPE_COUNT = sizeof(DER_V2_GENERIC_DECODE_TYPE_MAP)/sizeof(DER_V2_GENERIC_DECODE_TYPE_MAP[0]);
+
+int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value **der_value)
+{
+	if (NULL == encoded || NULL == der_value) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	// Read root TLV.
+	t_der_v2_tlv root = {0};
+	if (!__der_v2_next_tlv(encoded, encsize, &root)) {
+		SSL_LOG(ERROR, "bad nested tlv read");
+		return (SSL_ERR);
+	}
+	if (SSL_OK != __der_v2_generic_decode_value(root, der_value)) {
+		SSL_LOG(ERROR, "bad decode");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
+
+static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	bool done = false;
+	while (!done) {
+		SSL_LOG(TRACE, "tlv: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv.tag.class, tlv.tag.number, tlv.tag.constructed, tlv.length, tlv.value);
+		switch (tlv.tag.class) {
+		case ASN_V2_TAG_CLASS_UNIVERSAL: {
+			// This is must be a standard asn1 type and we should know how to decode the value.
+			SSL_LOG(TRACE, "universal: standard asn1 type");
+			if (tlv.tag.number >= DER_V2_GENERIC_DECODE_TYPE_COUNT) {
+				SSL_LOG(ERROR, "universal: bad tag: unknown tag number: %lu", tlv.tag.number);
+				goto label_error;
+			}
+			t_func_der_v2_generic_decode f_decode = DER_V2_GENERIC_DECODE_TYPE_MAP[tlv.tag.number].f_decode;
+			if (NULL == f_decode) {
+				SSL_LOG(ERROR, "universal: decoding for `%s` asn1 type is not implemented", DER_V2_GENERIC_DECODE_TYPE_MAP[tlv.tag.number].name);
+				goto label_error;
+			}
+			SSL_LOG(TRACE, "universal: decoding standard asn1 type: %s", DER_V2_GENERIC_DECODE_TYPE_MAP[tlv.tag.number].name);
+			if (SSL_OK != f_decode(tlv, der_value)) {
+				SSL_LOG(ERROR, "universal: bad decode");
+				goto label_error;
+			}
+			done = true;
+			continue;
+		}
+		case ASN_V2_TAG_CLASS_APPLICATION: {
+			SSL_LOG(ERROR, "application: no application scoped asn1 tags currently implemented", tlv.tag.number);
+			goto label_error;
+		}
+		case ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC: {
+			if (tlv.tag.constructed) {
+				// This is in external tag with nested TLV. Unwrap nested TLV.
+				SSL_LOG(TRACE, "context-specific: nested tlv");
+				t_der_v2_tlv nested_tlv = {0};
+				if (!__der_v2_next_tlv(tlv.value, tlv.length, &nested_tlv)) {
+					SSL_LOG(ERROR, "context-specific: bad nested tlv read");
+					goto label_error;
+				}
+				tlv.value = nested_tlv.value;
+				tlv.length = nested_tlv.length;
+				continue;
+			}
+			else {
+				SSL_LOG(TRACE, "context-specific: implicit tag");
+				// We don't know how to decode the value and we have no type metadata.
+				{
+					t_der_v2_value *dvalue = __der_v2_value_create();
+					dvalue->type = ASN_V2_VALUE_TYPE_ANY;
+					ft_ostr_append(&dvalue->as.any.octets, tlv.value, tlv.length);
+					*der_value = dvalue;
+				}
+				done = true;
+				continue;
+			}
+		}
+		case ASN_V2_TAG_CLASS_PRIVATE: {
+			SSL_LOG(ERROR, "private: no private scoped asn1 tags currently implemented", tlv.tag.number);
+			goto label_error;
+		}}
+	}
+	return (SSL_OK);
+
+label_error:
+	return (SSL_ERR);
+}
+
+static int	__der_v2_generic_decode_sequence(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "sequence: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_tlv element_tlv = {0};
+	t_list element_values = {0};
+	while (__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
+		t_der_v2_value *element_value = NULL;
+		if (SSL_OK != __der_v2_generic_decode_value(element_tlv, &element_value)) {
+			SSL_LOG(ERROR, "sequence: bad decode element");
+			goto label_error;
+		}
+		assert(element_value != NULL);
+		ft_list_append_content(&element_values, element_value);
+	}
+	// Compile the list of values.
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_LIST;
+	SSL_ALLOC(dvalue->as.array.items, element_values.size * sizeof(t_der_v2_value));
+	dvalue->as.array.count = element_values.size;
+
+	t_list_next next = {0};
+	void *content = NULL;
+	size_t idx = 0;
+	while (ft_list_next_content(&element_values, &next, &content)) {
+		__der_v2_value_copy(content, dvalue->as.array.items + idx);
+		idx++;
+	}
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+
+	SSL_LOG(TRACE, "sequence: done");
+	*der_value = dvalue;
+	return (SSL_OK);
+
+label_error:
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+	return (SSL_ERR);
+}
+
+static int	__der_v2_generic_decode_ostring(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "octet string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_OSTRING;
+	if (tlv.length > 0) {
+		ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
+		ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
+	} else {
+		ft_ostr_init(&dvalue->as.ostring);
+	}
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_bitstring(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "bit string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	if (tlv.length < 1) {
+		SSL_LOG(ERROR, "bit string: bad length");
+		return (SSL_ERR);
+	}
+	SSL_LOG(TRACE, "bit string: unused bits: %u", tlv.value[0]);
+	// TODO: check last value octet: unused octet bits must be unset.
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_OSTRING;
+	ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
+	ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_boolean(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "boolean: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	if (tlv.length != 1) {
+		SSL_LOG(ERROR, "boolean: bad length");
+		return (SSL_ERR);
+	}
+	bool boolean = false;
+	if (tlv.value[0] == 0xFF) {
+		boolean = true;
+	} else if (tlv.value[0] == 0x0) {
+		boolean = false;
+	} else {
+		SSL_LOG(ERROR, "boolean: bad value");
+		return (SSL_ERR);
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_NULL;
+	dvalue->as.boolean = boolean;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_null(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "null: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_NULL;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_integer(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "integer: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_NUMBER;
+	bnum_from_bytes_u(&dvalue->as.number, tlv.value, tlv.length);
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	if (tlv.length == 0) {
+		SSL_LOG(ERROR, "bad length");
+		return (SSL_ERR);
+	}
+	const uint8_t *enc = tlv.value;
+	size_t encsize = tlv.length;
+
+	uint32_t sub_ids[encsize + 1];
+	int num_sub_ids = 0;
+
+	for (size_t i = 0; i < encsize; ) {
+		sub_ids[num_sub_ids] = 0;
+		// Get 7-bit blocks, up to the last one
+		while (i < encsize && enc[i] & 0x80) {
+			sub_ids[num_sub_ids] <<= 7;
+			sub_ids[num_sub_ids] |= enc[i] & 0x7F;
+			i++;
+		}
+		// If we've reached the end of the encoded content, then we've got an invalid der encoding
+		if (i >= encsize) {
+			SSL_LOG(ERROR, "bad value");
+			return (SSL_ERR);
+		}
+		// Get the last block
+		sub_ids[num_sub_ids] <<= 7;
+		sub_ids[num_sub_ids] |= enc[i] & 0x7F;
+		i++;
+		num_sub_ids++;
+	}
+	if (num_sub_ids < 2) {
+		SSL_LOG(ERROR, "bad value");
+		return (SSL_ERR);
+	}
+	//	First two ids are concatenated into one single id using following formula:
+	//	CONCAT_ID = 40 * ID_0 + ID_1
+	char *sub_id_strings[encsize + 1];
+	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
+	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
+
+	// Get the rest of ids, except the last one
+	for (int i = 1; i < num_sub_ids-1; i++) {
+		ft_sprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
+	}
+	// Get the last id
+	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
+	// Join all sub-id strings into an object id string
+	char *obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
+	SSL_LOG(TRACE, "object id: %s", obj_id);
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_CSTRING;
+	dvalue->as.cstring = obj_id;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+
+typedef int (*t_func_der_v2_decode)(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+
+static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+
+static int	__der_v2_decode_ostring(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_bitstring(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_null(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+
+static struct s_der_v2_decode {
+	t_func_der_v2_decode f_decode;
+	const char *name;
+} DER_V2_DECODE_TYPE_MAP[] = {
+	/* ASN_V2_TAG_NUMBER_EOC                = 0 */	{ NULL, "EOC" },
+	/* ASN_V2_TAG_NUMBER_BOOLEAN            = 1 */	{ __der_v2_decode_boolean, "BOOLEAN" },
+	/* ASN_V2_TAG_NUMBER_INTEGER            = 2 */	{ __der_v2_decode_integer, "INTEGER" },
+	/* ASN_V2_TAG_NUMBER_BIT_STRING         = 3 */	{ __der_v2_decode_bitstring, "BIT_STRING" },
+	/* ASN_V2_TAG_NUMBER_OCTET_STRING       = 4 */	{ __der_v2_decode_ostring, "OCTET_STRING" },
+	/* ASN_V2_TAG_NUMBER_NULL               = 5 */	{ __der_v2_decode_null, "NULL" },
+	/* ASN_V2_TAG_NUMBER_OBJECT_ID          = 6 */	{ __der_v2_decode_object_id, "OBJECT_ID" },
+	/* ASN_V2_TAG_NUMBER_OBJECT_DESCR       = 7 */	{ NULL, "OBJECT_DESCR" },
+	/* ASN_V2_TAG_NUMBER_EXTERNAL           = 8 */	{ NULL, "EXTERNAL" },
+	/* ASN_V2_TAG_NUMBER_REAL               = 9 */	{ NULL, "REAL" },
+	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ NULL, "ENUMERATED" },
+	/* ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11 */	{ NULL, "EMBEDDED_PDV" },
+	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ NULL, "UTF8_STRING" },
+	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ NULL, "RELATIVE_OBJECT_ID" },
+	/* ASN_V2_TAG_NUMBER_TIME               = 14 */	{ NULL, "TIME" },
+	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
+	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_decode_sequence, "SEQUENCE" },
+	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ NULL, "SET" },
+	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ NULL, "NUMERIC_STRING" },
+	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ NULL, "PRINTABLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
+	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
+	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ NULL, "IA5_STRING" },
+	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
+	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
+	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
+	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ NULL, "VISIBLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27 */	{ NULL, "GENERAL_STRING" },
+	/* ASN_V2_TAG_NUMBER_UNIVERSAL_STRING   = 28 */	{ NULL, "UNIVERSAL_STRING" },
+	/* ASN_V2_TAG_NUMBER_CHARACTER_STRING   = 29 */	{ NULL, "CHARACTER_STRING" },
+	/* ASN_V2_TAG_NUMBER_BMP_STRING         = 30 */	{ NULL, "BMP_STRING" },
+	/* ASN_V2_TAG_NUMBER_DATE               = 31 */	{ NULL, "DATE" },
+	/* ASN_V2_TAG_NUMBER_TIME_OF_DAY        = 32 */	{ NULL, "TIME_OF_DAY" },
+	/* ASN_V2_TAG_NUMBER_DATE_TIME          = 33 */	{ NULL, "DATE_TIME" },
+	/* ASN_V2_TAG_NUMBER_DURATION           = 34 */	{ NULL, "DURATION" },
+	/* ASN_V2_TAG_NUMBER_OID_IRI            = 35 */	{ NULL, "OID_IRI" },
+	/* ASN_V2_TAG_NUMBER_RELATIVE_OID_IRI   = 36 */	{ NULL, "RELATIVE_OID_IRI" },
+};
+static const size_t DER_V2_DECODE_TYPE_COUNT = sizeof(DER_V2_DECODE_TYPE_MAP)/sizeof(DER_V2_DECODE_TYPE_MAP[0]);
+
+int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	if (NULL == encoded || NULL == der_type || NULL == der_value) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	// Read root TLV.
+	t_der_v2_tlv root = {0};
+	if (!__der_v2_next_tlv(encoded, encsize, &root)) {
+		SSL_LOG(ERROR, "bad nested tlv read");
+		return (SSL_ERR);
+	}
+	if (SSL_OK != __der_v2_decode_value(root, der_type, der_value)) {
+		SSL_LOG(ERROR, "bad decode");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
+
+static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	// Choice is a special case: value type can be one of the alternative types.
+	if (ASN_V2_TYPE_KIND_CHOICE == der_type->kind) {
+		return (__der_v2_decode_choice(tlv, der_type, der_value));
+	}
+	// ANY is a special case: value type can be of any type. We must use generic decoder.
+	if (ASN_V2_TYPE_KIND_ANY == der_type->kind) {
+		SSL_LOG(TRACE, "using generic decoder for type ANY");
+		return (__der_v2_generic_decode_value(tlv, der_value));
+	}
+
+	// Get a list of tag references from metadata in reverse order: outermost to innermost tag.
+	t_list tags = {0};
+	t_list_next next = {0};
+	void *content = NULL;
+	while (ft_list_next_content(&der_type->tags, &next, &content)) {
+		ft_list_prepend_ref(&tags, content);
+	}
+
+	bool done = false;
+	while (!done) {
+		SSL_LOG(TRACE, "tlv: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv.tag.class, tlv.tag.number, tlv.tag.constructed, tlv.length, tlv.value);
+		SSL_LOG(TRACE, "metadata type: kind: %s", asn1_v2_get_type_kind_name(der_type->kind));
+		// Use type metadata to validate the TLV tag.
+		const t_der_v2_tag *meta_tag = ft_list_pop_ref(&tags);
+		if (NULL != meta_tag) {
+			SSL_LOG(TRACE, "type metadata: tag={class=%d,number=%d,constructed=%d}", meta_tag->class, meta_tag->number, meta_tag->constructed);
+		} else {
+			SSL_LOG(ERROR, "type metadata: missing tag");
+			goto label_error;
+		}
+		if (!__der_v2_tag_eq(&tlv.tag, meta_tag)) {
+			SSL_LOG(ERROR, "type metadata: tag mismatch");
+			goto label_error;
+		}
+		// Decode the value in TLV.
+		switch (tlv.tag.class) {
+		case ASN_V2_TAG_CLASS_UNIVERSAL: {
+			// This is must be a standard asn1 type and we should know how to decode the value.
+			SSL_LOG(TRACE, "universal: standard asn1 type");
+			if (tlv.tag.number >= DER_V2_DECODE_TYPE_COUNT) {
+				SSL_LOG(ERROR, "universal: bad tag: unknown tag number: %lu", tlv.tag.number);
+				goto label_error;
+			}
+			t_func_der_v2_decode f_decode = DER_V2_DECODE_TYPE_MAP[tlv.tag.number].f_decode;
+			if (NULL == f_decode) {
+				SSL_LOG(ERROR, "universal: decoding for `%s` asn1 type is not implemented", asn1_v2_get_type_kind_name(der_type->kind));
+				goto label_error;
+			}
+			SSL_LOG(TRACE, "universal: decoding standard asn1 type: %s", DER_V2_DECODE_TYPE_MAP[tlv.tag.number].name);
+			if (SSL_OK != f_decode(tlv, der_type, der_value)) {
+				SSL_LOG(ERROR, "universal: bad decode");
+				goto label_error;
+			}
+			done = true;
+			continue;
+		}
+		case ASN_V2_TAG_CLASS_APPLICATION: {
+			SSL_LOG(ERROR, "application: no application scoped asn1 tags currently implemented", tlv.tag.number);
+			goto label_error;
+		}
+		case ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC: {
+			if (tlv.tag.constructed) {
+				// This is in external tag with nested TLV. Unwrap nested TLV.
+				SSL_LOG(TRACE, "context-specific: nested tlv");
+				t_der_v2_tlv nested_tlv = {0};
+				if (!__der_v2_next_tlv(tlv.value, tlv.length, &nested_tlv)) {
+					SSL_LOG(ERROR, "context-specific: bad nested tlv read");
+					goto label_error;
+				}
+				tlv.value = nested_tlv.value;
+				tlv.length = nested_tlv.length;
+				continue;
+			}
+			else {
+				SSL_LOG(TRACE, "context-specific: implicit tag");
+				// Must be an implicit tag. Certain types cannot have implicit tags.
+				assert(ASN_V2_TYPE_KIND_CHOICE != der_type->kind && ASN_V2_TYPE_KIND_ANY != der_type->kind);
+				// Context specific implicit tags wrap raw value and we can't infer the actual type from the tag.
+				// We must use type metadata to know how to decode the value.
+				assert(NULL != meta_tag);
+				tlv.tag = *meta_tag;
+				continue;
+			}
+		}
+		case ASN_V2_TAG_CLASS_PRIVATE: {
+			SSL_LOG(ERROR, "private: no private scoped asn1 tags currently implemented", tlv.tag.number);
+			goto label_error;
+		}}
+	}
+	ft_list_clear_all_ref(&tags);
+	return (SSL_OK);
+
+label_error:
+	ft_list_clear_all_ref(&tags);
+	return (SSL_ERR);
+}
+
+static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "choice: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_value *chosen_value = NULL;
+	t_der_v2_component *chosen_element = NULL;
+	t_list_next next = {0};
+	void *content = NULL;
+	while (ft_list_next_content(&der_type->as.composite.elements, &next, &content)) {
+		t_der_v2_component *element = content;
+		SSL_LOG(TRACE, "choice: checking element with id: %s", element->id);
+		// TODO: choice element type cannot be ANY, ensure type compilation handles this before decoding.
+		assert(ASN_V2_TYPE_KIND_ANY == element->type->kind);
+		// Element type can also be a choice.
+		if (ASN_V2_TYPE_KIND_CHOICE == element->type->kind) {
+			if (SSL_OK == __der_v2_decode_choice(tlv, element->type, &chosen_value)) {
+				chosen_element = element;
+				break;
+			}
+		}
+		// Choice element type must have its own tag unless the element is also a choice.
+		if (element->type->tags.size > 0) {
+			SSL_LOG(ERROR, "choice: bad type metadata");
+			return (SSL_ERR);
+		}
+		// Compare element type's outermost tag with TLV tag.
+		if (__der_v2_tag_eq(&tlv.tag, ft_list_last_content(&element->type->tags))) {
+			if (SSL_OK == __der_v2_decode_value(tlv, element->type, &chosen_value)) {
+				chosen_element = element;
+				break;
+			} else {
+				SSL_LOG(ERROR, "choice: bad decode");
+				return (SSL_ERR);
+			}
+		}
+	}
+	if (NULL == chosen_element) {
+		SSL_LOG(ERROR, "choice: bad tlv");
+		return (SSL_ERR);
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_CHOICE;
+	dvalue->as.choice.id = chosen_element->id;
+	dvalue->as.choice.value = chosen_value;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "sequence: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_tlv element_tlv = {0};
+	t_list element_values = {0};
+	t_list_next next = {0};
+	void *content = NULL;
+
+	if (!__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
+		SSL_LOG(ERROR, "sequence: bad element tlv read");
+		goto label_error;
+	}
+	while (true) {
+		// Get element type metadata.
+		if (!ft_list_next_content(&der_type->as.composite.elements, &next, &content)) {
+			SSL_LOG(ERROR, "sequence: bad element metadata read");
+			goto label_error;
+		}
+		t_der_v2_component *element = content;
+		// Decode the element value.
+		SSL_LOG(TRACE, "sequence: decoding element with id: %s", element->id);
+		t_der_v2_value *element_value = NULL;
+		if (SSL_OK != __der_v2_decode_value(element_tlv, element->type, &element_value)) {
+			if (element->optional) {
+				// Retry with next element type metadata;
+				continue;
+			} else {
+				SSL_LOG(ERROR, "sequence: bad decode element");
+				goto label_error;
+			}
+		}
+		assert(element_value != NULL);
+		ft_list_append_content(&element_values, element_value);
+		// Get next TLV.
+		if (!__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
+			break;
+		}
+	}
+	// Compile the list of values.
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_LIST;
+	SSL_ALLOC(dvalue->as.array.items, element_values.size * sizeof(t_der_v2_value));
+	dvalue->as.array.count = element_values.size;
+	next = (t_list_next){0};
+	size_t idx = 0;
+	while (ft_list_next_content(&element_values, &next, &content)) {
+		__der_v2_value_copy(content, dvalue->as.array.items + idx);
+		idx++;
+	}
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+
+	SSL_LOG(TRACE, "sequence: done");
+	*der_value = dvalue;
+	return (SSL_OK);
+
+label_error:
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+	return (SSL_ERR);
+}
+
+static int	__der_v2_decode_ostring(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "octet string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_OSTRING;
+	if (tlv.length > 0) {
+		ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
+		ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
+	} else {
+		ft_ostr_init(&dvalue->as.ostring);
+	}
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_bitstring(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "bit string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	if (tlv.length < 1) {
+		SSL_LOG(ERROR, "bit string: bad length");
+		return (SSL_ERR);
+	}
+	SSL_LOG(TRACE, "bit string: unused bits: %u", tlv.value[0]);
+	// TODO: check last value octet: unused octet bits must be unset.
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_OSTRING;
+	ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
+	ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "boolean: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	if (tlv.length != 1) {
+		SSL_LOG(ERROR, "boolean: bad length");
+		return (SSL_ERR);
+	}
+	bool boolean = false;
+	if (tlv.value[0] == 0xFF) {
+		boolean = true;
+	} else if (tlv.value[0] == 0x0) {
+		boolean = false;
+	} else {
+		SSL_LOG(ERROR, "boolean: bad value");
+		return (SSL_ERR);
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_NULL;
+	dvalue->as.boolean = boolean;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_null(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "null: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_NULL;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "integer: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_NUMBER;
+	bnum_from_bytes_u(&dvalue->as.number, tlv.value, tlv.length);
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	if (tlv.length == 0) {
+		SSL_LOG(ERROR, "bad length");
+		return (SSL_ERR);
+	}
+	const uint8_t *enc = tlv.value;
+	size_t encsize = tlv.length;
+
+	uint32_t sub_ids[encsize + 1];
+	int num_sub_ids = 0;
+
+	for (size_t i = 0; i < encsize; ) {
+		sub_ids[num_sub_ids] = 0;
+		// Get 7-bit blocks, up to the last one
+		while (i < encsize && enc[i] & 0x80) {
+			sub_ids[num_sub_ids] <<= 7;
+			sub_ids[num_sub_ids] |= enc[i] & 0x7F;
+			i++;
+		}
+		// If we've reached the end of the encoded content, then we've got an invalid der encoding
+		if (i >= encsize) {
+			SSL_LOG(ERROR, "bad value");
+			return (SSL_ERR);
+		}
+		// Get the last block
+		sub_ids[num_sub_ids] <<= 7;
+		sub_ids[num_sub_ids] |= enc[i] & 0x7F;
+		i++;
+		num_sub_ids++;
+	}
+	if (num_sub_ids < 2) {
+		SSL_LOG(ERROR, "bad value");
+		return (SSL_ERR);
+	}
+	//	First two ids are concatenated into one single id using following formula:
+	//	CONCAT_ID = 40 * ID_0 + ID_1
+	char *sub_id_strings[encsize + 1];
+	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
+	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
+
+	// Get the rest of ids, except the last one
+	for (int i = 1; i < num_sub_ids-1; i++) {
+		ft_sprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
+	}
+	// Get the last id
+	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
+	// Join all sub-id strings into an object id string
+	char *obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
+	SSL_LOG(TRACE, "object id: %s", obj_id);
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->type = ASN_V2_VALUE_TYPE_CSTRING;
+	dvalue->as.cstring = obj_id;
+
+	*der_value = dvalue;
+	return (SSL_OK);
 }

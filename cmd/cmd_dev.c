@@ -16,8 +16,20 @@
 
 int	cmd_dev(const t_cmd *cmd)
 {
+	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
+	// const char *asn1_type_name = "EncryptedPrivateKeyInfo";
+	// const char *der_filename = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
+
+	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
+	// const char *asn1_type_name = "RSAPrivateKey";
+	// const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
+
+	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
+	const char *asn1_type_name = "PrivateKeyInfo";
+	const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
+
 	const t_json_v2 *jschema = NULL;
-	if (JSON_OK != json_v2_parse_file("resources/asn1/schema-v2-pkcs8-KeyContainers.json", &jschema)) {
+	if (JSON_OK != json_v2_parse_file(jschema_filename, &jschema)) {
 		SSL_LOG(ERROR, "json parse error");
 		return (SSL_ERR);
 	}
@@ -47,7 +59,7 @@ int	cmd_dev(const t_cmd *cmd)
 	// char *atype_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
 	// ft_printf("%s\n", atype_dumps);
 
-	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, "PrivateKeyInfo");
+	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, asn1_type_name);
 	assert(NULL != asn1_type);
 
 	t_der_v2_type *der_type = NULL;
@@ -60,6 +72,23 @@ int	cmd_dev(const t_cmd *cmd)
 
 	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
 	ft_printf("%s\n", dtype_dumps);
+
+	t_ostring encoded = {0};
+	if (SSL_OK != file_read_all(der_filename, &encoded)) {
+		SSL_LOG(ERROR, "file read error: %s", der_filename);
+		return (SSL_ERR);
+	}
+
+	t_der_v2_value *der_value = NULL;
+	if (SSL_OK != der_v2_decode(encoded.content, encoded.size, der_type, &der_value)) {
+		SSL_LOG(ERROR, "der decode failed");
+		return (SSL_ERR);
+	} else {
+		SSL_LOG(INFO, "der decode success");
+	}
+
+	char *dvalue_dumps = der_v2_value_dumps(der_value);
+	ft_printf("%s\n", dvalue_dumps);
 
 	return (SSL_OK);
 }

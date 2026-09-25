@@ -288,7 +288,12 @@ typedef struct s_der_v2_component {
 int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type);
 
 char *der_v2_type_dumps(const t_der_v2_type *der_type);
+char *der_v2_value_dumps(const t_der_v2_value *der_value);
 char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, int depth, size_t width, bool colored);
+
 char *der_v2_type_dumpb(const t_der_v2_type *der_type, char *buf, size_t size);
+
+int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value **der_value);
 
 #endif
