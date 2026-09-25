@@ -588,23 +588,23 @@ void	ft_bytes_rshift(void *bytes, size_t size, int shift)
 	}
 }
 
-void	ft_bytes_write_hex(int fd, const void *ptr, size_t size)
+void	ft_bytes_write_hex(int fd, const void *bytes, size_t size)
 {
-	unsigned char		*octets;
-	uint32_t	bytes;
+	uint8_t		*octets;
+	uint32_t	qoctet;
 	int			ix;
 	int			iy;
 
-	if ((size <= 0) || (NULL == ptr) || (fd < 0)) {
+	if (size == 0 || NULL == bytes || fd < 0) {
 		return ;
 	}
 
-	octets = (unsigned char *)(ptr);
-	bytes = 0;
+	octets = (uint8_t *)bytes;
+	qoctet = 0; // Quadriple octet: 4 octets.
 
 	ix = 0;
 	while (ix < size) {
-		ft_fprintf(fd, "%.4x -", bytes);
+		ft_fprintf(fd, "%.4x -", qoctet);
 
 		iy = 0;
 		while ((iy < COL) && (ix < size)) {
@@ -626,7 +626,7 @@ void	ft_bytes_write_hex(int fd, const void *ptr, size_t size)
 			ix++;
 		}
 		ft_fprintf(fd, "\n");
-		bytes += iy;
+		qoctet += iy;
 	}
 }
 
@@ -680,14 +680,14 @@ void	ft_bytes_dumpb_hex_pretty(const void *bytes, size_t size, int cols, int del
 	LIBFT_FREE(hex);
 }
 
-char	*ft_bytes_dumps_bin(const void *ptr, size_t size)
+char	*ft_bytes_dumps_bin(const void *bytes, size_t size)
 {
-	const uint8_t *octets = ptr;
-	char *dumps, *p;
-
-	if (size == 0 || NULL == ptr) {
+	if (size == 0 || NULL == bytes) {
 		return (NULL);
 	}
+	const uint8_t *octets = bytes;
+	char *dumps, *p;
+
 	LIBFT_ALLOC(dumps, 8*(size+1));
 
 	p = dumps;
@@ -726,14 +726,14 @@ void	ft_bins_to_bytes(uint8_t *bytes, size_t size, const char *bins, size_t bins
 	}
 }
 
-void	ft_bytes_reverse_bits(void *ptr, size_t size)
+void	ft_bytes_reverse_bits(void *bytes, size_t size)
 {
 	unsigned char	*p;
 	unsigned char	num;
 	size_t			i;
 	size_t			j;
 
-	p = ptr;
+	p = bytes;
 	i = 0;
 	while (i < size) {
 		num = 0;
@@ -749,12 +749,12 @@ void	ft_bytes_reverse_bits(void *ptr, size_t size)
 	}
 }
 
-char	*ft_bytes_dumps_hex_upper(const void *bin, size_t binsize)
+char	*ft_bytes_dumps_hex_upper(const void *bytes, size_t size)
 {
 	char	*hex;
 	size_t	ix;
 
-	hex = ft_bytes_dumps_hex(bin, binsize);
+	hex = ft_bytes_dumps_hex(bytes, size);
 
 	if (hex != NULL) {
 		ix = 0;
@@ -766,7 +766,7 @@ char	*ft_bytes_dumps_hex_upper(const void *bin, size_t binsize)
 	return (hex);
 }
 
-char	*ft_bytes_dumps_hex(const void *bin, size_t binsize)
+char	*ft_bytes_dumps_hex(const void *bytes, size_t size)
 {
 	unsigned char	*bptr;
 	char			*hptr;
@@ -774,15 +774,15 @@ char	*ft_bytes_dumps_hex(const void *bin, size_t binsize)
 	size_t			hexsize;
 	size_t			ix;
 
-	if (NULL == bin || binsize == 0) {
+	if (NULL == bytes || size == 0) {
 		return (NULL);
 	}
-	hexsize = 2*binsize;
+	hexsize = 2*size;
 	LIBFT_ALLOC(hex, hexsize+1);
 	hptr = hex;
-	bptr = (unsigned char *)bin;
+	bptr = (unsigned char *)bytes;
 
-	for (ix = 0; ix < binsize; ix++) {
+	for (ix = 0; ix < size; ix++) {
 		*hptr++ = A[bptr[ix]>>4];
 		*hptr++ = A[bptr[ix]&0xF];
 	}
@@ -792,33 +792,27 @@ char	*ft_bytes_dumps_hex(const void *bin, size_t binsize)
 }
 
 // TODO: add binsize parameter.
-void	ft_hexs_to_bytes(void *bin, const char *hex, size_t hexsize)
+void	ft_hexs_to_bytes(uint8_t *bytes, size_t size, const char *hexs, size_t hexslen)
 {
-	unsigned char	*buf;
-	unsigned char	*ptr;
-	size_t			bufsize;
-	ssize_t			ix;
-
-	if ((NULL == hex) || (NULL == bin)) {
+	if (NULL == hexs || NULL == bytes) {
 		return ;
 	}
+	size_t len = MIN(size, CEIL_DIV(hexslen, 2));
 
-	bufsize = 2 * NBITS_TO_NBYTES(4 * hexsize);
-	LIBFT_ALLOC(buf, bufsize);
-	ft_bzero(buf, bufsize);
-
-	ptr = (unsigned char *)buf+bufsize-1;
-
-	for (ix = hexsize-1; ix >= 0; ix--)
-		*ptr-- = hex[ix] - B[hex[ix] & 0x7F];
-
-	ptr = (unsigned char *)buf;
-
-	for (ix = 0; ix < bufsize/2; ix++) {
-		((unsigned char *)bin)[ix] = *ptr++ << 4;
-		((unsigned char *)bin)[ix] |= *ptr++;
+	const char *p = hexs;
+	size_t n = 0;
+	// First byte might be incomplete.
+	if (hexslen % 2 > 0) {
+		bytes[n] = *p - B[*p & 0x7F];
+		p++;
+		n++;
 	}
-	LIBFT_FREE(buf);
+	for (; n < len; n++) {
+		bytes[n] = (*p - B[*p & 0x7F]) << 4;
+		p++;
+		bytes[n] |= (*p - B[*p & 0x7F]);
+		p++;
+	}
 }
 
 /****************************************************************************/

@@ -84,7 +84,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 				SSL_LOG(ERROR, "key must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hexs_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+			ft_hexs_to_bytes(des_key, sizeof(des_key), des_hexkey, MIN(16, ft_strlen(des_hexkey)));
 			if (ft_htbl_has(cmd->opts, "-v")) {
 				// Initial vector is provided by user
 				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
@@ -92,7 +92,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 					SSL_LOG(ERROR, "key must be in hex format");
 					return (SSL_ERR);
 				}
-				ft_hexs_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+				ft_hexs_to_bytes(des_iv, sizeof(des_iv), des_hexiv, MIN(16, ft_strlen(des_hexiv)));
 			}
 			else {
 				SSL_LOG(ERROR, "iv is not provided");
@@ -113,7 +113,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 				SSL_LOG(ERROR, "salt must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hexs_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
+			ft_hexs_to_bytes(des_salt, sizeof(des_salt), des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
 			// Get user password
 			char des_pass[_PASSWORD_LEN+1] = {0};
 			if (ft_htbl_has(cmd->opts, "-p")) {
@@ -142,7 +142,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 					return (SSL_ERR);
 				}
 				ft_bzero(des_iv, sizeof(des_iv));
-				ft_hexs_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+				ft_hexs_to_bytes(des_iv, sizeof(des_iv), des_hexiv, MIN(16, ft_strlen(des_hexiv)));
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
@@ -194,7 +194,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 					return (SSL_ERR);
 				}
 				ft_bzero(des_iv, sizeof(des_iv));
-				ft_hexs_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+				ft_hexs_to_bytes(des_iv, sizeof(des_iv), des_hexiv, MIN(16, ft_strlen(des_hexiv)));
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
@@ -264,7 +264,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 				SSL_LOG(ERROR, "key must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hexs_to_bytes(&des_key, des_hexkey, MIN(16, ft_strlen(des_hexkey)));
+			ft_hexs_to_bytes(des_key, sizeof(des_key), des_hexkey, MIN(16, ft_strlen(des_hexkey)));
 			if (ft_htbl_has(cmd->opts, "-v")) {
 				// Initial vector is provided by user.
 				char *des_hexiv = ft_htbl_get(cmd->opts, "-v");
@@ -273,7 +273,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 					return (SSL_ERR);
 				}
 				ft_bzero(des_iv, sizeof(des_iv));
-				ft_hexs_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+				ft_hexs_to_bytes(des_iv, sizeof(des_iv), des_hexiv, MIN(16, ft_strlen(des_hexiv)));
 			}
 			else {
 				SSL_LOG(ERROR, "iv is not provided");
@@ -295,7 +295,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 				SSL_LOG(ERROR, "salt must be in hex format");
 				return (SSL_ERR);
 			}
-			ft_hexs_to_bytes(&des_salt, des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
+			ft_hexs_to_bytes(des_salt, sizeof(des_salt), des_hexsalt, MIN(16, ft_strlen(des_hexsalt)));
 			// Get user password
 			char des_pass[_PASSWORD_LEN+1] = {0};
 			if (ft_htbl_has(cmd->opts, "-p")) {
@@ -324,7 +324,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 					return (SSL_ERR);
 				}
 				ft_bzero(des_iv, sizeof(des_iv));
-				ft_hexs_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+				ft_hexs_to_bytes(des_iv, sizeof(des_iv), des_hexiv, MIN(16, ft_strlen(des_hexiv)));
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
@@ -371,7 +371,7 @@ int	cmd_des_cbc(const t_cmd *cmd)
 					return (SSL_ERR);
 				}
 				ft_bzero(des_iv, sizeof(des_iv));
-				ft_hexs_to_bytes(&des_iv, des_hexiv, MIN(16, ft_strlen(des_hexiv)));
+				ft_hexs_to_bytes(des_iv, sizeof(des_iv), des_hexiv, MIN(16, ft_strlen(des_hexiv)));
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
