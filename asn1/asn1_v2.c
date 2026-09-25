@@ -1369,7 +1369,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_value **asn1_value, const t_jso
 	avalue->as.cstring = ft_strdup(jvalue->as.cstring);
 
 	*asn1_value = avalue;
-	return (SSL_ERR);
+	return (SSL_OK);
 }
 
 static int	__asn1_v2_schema_parse_tag(const t_asn_v2_module *asn1_module, t_asn_v2_tag **asn1_tag, const t_json_v2 *jschema, const t_json_v2 *jtag)
