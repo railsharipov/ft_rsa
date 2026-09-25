@@ -62,13 +62,14 @@
 #define IS_NONZERO_INT64(X)	((((X)|(0-(X)))>>63)&1)
 
 #define IS_OF_TYPE(X, T)	_Generic((X), T:1, default:0)
-#define DO_NOTHING			(void)0;
+#define UNUSED(X)			(void)(X)
 
 # define FLAG(FLAG, FLAGS)	((int)(((FLAGS)&(FLAG))==(FLAG)))
 
-# define NOT_IMPLEMENTED(MES)	do { ft_printf("%@" TXT_YELL("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
-# define UNREACHABLE(MES)		do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
-# define TODO(MES)				do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+#define NOT_IMPLEMENTED(MES)	do { ft_printf("%@" TXT_YELL("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+#define UNREACHABLE(MES)		do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+#define TODO(MES)				do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)"), MES, __FILE__, __LINE__); abort(); } while (0)
+
 
 typedef enum e_libft_status {
 	LIBFT_OK = 0,
