@@ -5,8 +5,8 @@
         "kind": "string",
         "tags": [
           {"mode": "string|null", "class": "string|null", "number": "number"}, /* innermost */
-          "..."
-          {"mode": "string|null", "class": "string|null", "number": "number"}, /* outermost */
+          "...",
+          {"mode": "string|null", "class": "string|null", "number": "number"} /* outermost */
         ],
         "contraints": [
           {"type": "range", "min": "number|null", "max": "number|null"},
@@ -18,13 +18,13 @@
             "id": "component_1",
             "type": "<type>",
             "optional": "false|true",
-            "default": "any"
+            "default": "string"
           },
           {
             "id": "component_2",
             "type": "<type>",
             "optional": "false|true",
-            "default": "any"
+            "default": "string"
           }
         ]
       }

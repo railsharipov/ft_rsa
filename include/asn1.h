@@ -168,20 +168,8 @@ typedef enum t_asn_v2_universal_tag_number {
     ASN_V2_TAG_NUMBER_RELATIVE_OID_IRI   = 36
 } t_asn_v2_universal_tag_number;
 
-typedef enum s_asn_v2_value_kind {
-	ASN_V2_VALUE_TYPE_NULL,
-	ASN_V2_VALUE_TYPE_BOOLEAN,
-	ASN_V2_VALUE_TYPE_NUMBER,
-	ASN_V2_VALUE_TYPE_CSTRING,
-	ASN_V2_VALUE_TYPE_BSTRING,
-	ASN_V2_VALUE_TYPE_OSTRING,
-	ASN_V2_VALUE_TYPE_LIST,
-	ASN_V2_VALUE_TYPE_CHOICE,
-	ASN_V2_VALUE_TYPE_ANY,
-} t_asn_v2_value_kind;
-
 typedef struct s_asn_v2_value {
-	t_asn_v2_value_kind	kind;
+	t_asn_v2_type_kind	kind;
 	union {
 		t_ostring	ostring;
 		t_num		number;
@@ -200,8 +188,8 @@ typedef struct s_asn_v2_tag {
 } t_asn_v2_tag;
 
 typedef enum e_asn_v2_constraint_kind {
-	ASN_V2_CONSTRAINT_TYPE_RANGE,
-	ASN_V2_CONSTRAINT_TYPE_SIZE,
+	ASN_V2_CONSTRAINT_KIND_RANGE,
+	ASN_V2_CONSTRAINT_KIND_SIZE,
 } t_asn_v2_constraint_kind;
 
 typedef struct s_asn_v2_constraint {
@@ -245,7 +233,6 @@ char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, int depth,
 const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
 const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
-const char	*asn1_v2_get_value_type_name(t_asn_v2_value_kind type);
 
 int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module);
 
@@ -256,7 +243,7 @@ typedef struct s_der_v2_tag {
 } t_der_v2_tag;
 
 typedef struct s_der_v2_value {
-	t_asn_v2_value_kind	kind;
+	t_asn_v2_type_kind	kind;
 	union {
 		t_ostring	ostring;
 		char		*cstring;

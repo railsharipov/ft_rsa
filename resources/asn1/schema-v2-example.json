@@ -4,7 +4,7 @@
     "PrivateKeyInfo": {
       "kind": "SEQUENCE",
       "components": [
-        { "id": "version", "type": { "kind": "Version" }, "default": 0 },
+        { "id": "version", "type": { "kind": "Version" }, "default": "0" },
         { "id": "authors", "type": { "kind": "SET OF", "componentType": { "kind": "Author" } } },
         { "id": "algorithm", "type": { "kind": "OCTET STRING", "tags": [{"class": "CONTEXT-SPECIFIC", "tagNumber": 0}] } },
         { "id": "data", "type": { "kind": "BIT STRING" } }
