@@ -2006,7 +2006,7 @@ static int __test_ft_ntree(void)
 		// if word is "}", drop it
 		else if (strcmp(words[idx], "}") == 0)
 		{
-			DO_NOTHING;
+			;;
 		}
 		// anything else leave unchanged
 		else
