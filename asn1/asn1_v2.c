@@ -3142,7 +3142,7 @@ static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_typ
 	}
 	t_der_v2_value *dvalue = __der_v2_value_create();
 	dvalue->type = ASN_V2_VALUE_TYPE_CHOICE;
-	dvalue->as.choice.id = chosen_element->id;
+	dvalue->as.choice.id = ft_strdup(chosen_element->id);
 	dvalue->as.choice.value = chosen_value;
 
 	*der_value = dvalue;
