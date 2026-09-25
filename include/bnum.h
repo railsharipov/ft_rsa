@@ -87,7 +87,7 @@ void    bnum_divmod(const t_num *a, const t_num *b, t_num *res, t_num *mod);
 void    bnum_divmod_dig(const t_num *a, uint64_t b, t_num *res, uint64_t *mod);
 void    bnum_exp(const t_num *a, uint64_t b, t_num *res);
 void    bnum_exp2(t_num *num, int bits);
-void    bnum_from_bytes_u(t_num *num, const char *bytes, int len);
+void    bnum_from_bytes_u(t_num *num, const uint8_t *bytes, int len);
 t_num   *bnum_from_dec(const char *dec);
 t_num   *bnum_from_hex_u(const char *hex);
 void    bnum_gcd(const t_num *a, const t_num *b, t_num *res);

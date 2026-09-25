@@ -2,12 +2,11 @@
 
 /* Convert bytes representing unsigned integer to bignum */
 
-void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
+void	bnum_from_bytes_u(t_num *num, const uint8_t *buf, int bufsize)
 {
-	unsigned char	*octets;
-	size_t			ndigits;
-	size_t			nbits;
-	int				idx;
+	size_t	ndigits;
+	size_t	nbits;
+	int		idx;
 
 	if (NULL == num || NULL == buf) {
 		return ;
@@ -25,12 +24,10 @@ void	bnum_from_bytes_u(t_num *num, const char *buf, int bufsize)
 		bnum_increase_size(num, ndigits);
 	}
 
-	octets = (unsigned char *)buf;
-
 	idx = 0;
 	while (idx < bufsize) {
 		bnum_lsh_bit_inpl(num, 8);
-		*(num->val) |= octets[idx++];
+		*(num->val) |= buf[idx++];
 	}
 	bnum_skip_zeros(num);
 }

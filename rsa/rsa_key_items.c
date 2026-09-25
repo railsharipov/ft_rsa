@@ -104,21 +104,17 @@ static t_num	*__asn1_int(t_htbl *htbl, const char *key)
 {
 	t_num	*num;
 	t_iasn	*item;
-	char	*content;
-	size_t	size;
 
 	item = (t_iasn *)ft_htbl_get(htbl, key);
 
 	if (NULL == item) {
 		return (NULL);
 	}
-	content = (char *)item->content;
-	size = item->size;
-	// TODO: find why content is always NULL
-	printf("%p\n", content);
+	TODO("find why content is always NULL");
+	printf("%p\n", item->content);
 
 	num = bnum_create();
-	bnum_from_bytes_u(num, content, size);
+	bnum_from_bytes_u(num, item->content, item->size);
 
 	return (num);
 }
