@@ -114,7 +114,7 @@ static void __json_v2_delete_value(t_json_v2 *json)
 {
 	assert(NULL != json);
 
-	switch (json->type) {
+	switch (json->kind) {
 	case JSON_V2_TYPE_NULL:
 		break;
 	case JSON_V2_TYPE_BOOL:
@@ -134,7 +134,7 @@ static void __json_v2_delete_value(t_json_v2 *json)
 	default:
 		UNREACHABLE("__json_v2_delete_value");
 	}
-	json->type = JSON_V2_TYPE_NULL;
+	json->kind = JSON_V2_TYPE_NULL;
 }
 
 static t_json_v2 *__json_v2_create(void)
@@ -142,7 +142,7 @@ static t_json_v2 *__json_v2_create(void)
 	t_json_v2 *json = NULL;
 	LIBFT_ALLOC(json, sizeof(t_json_v2));
 	*json = (t_json_v2){0};
-	json->type = JSON_V2_TYPE_NULL;
+	json->kind = JSON_V2_TYPE_NULL;
 	return (json);
 }
 
@@ -196,7 +196,7 @@ static int	__json_v2_parse_null(const char *s, t_json_v2 *json, size_t *pos)
 
 	if (ft_strncmp(s + *pos, "null", 4) == 0) {
 		*pos += 4;
-		json->type = JSON_V2_TYPE_NULL;
+		json->kind = JSON_V2_TYPE_NULL;
 		return (__JSON_V2_MATCH);
 	} else {
 		SSL_LOG(TRACE, "no match at index %zu: %c", *pos, s[*pos]);
@@ -214,12 +214,12 @@ static int	__json_v2_parse_boolean(const char *s, t_json_v2 *json, size_t *pos)
 
 	if (ft_strncmp(s + *pos, "true", 4) == 0) {
 		*pos += 4;
-		json->type = JSON_V2_TYPE_BOOL;
+		json->kind = JSON_V2_TYPE_BOOL;
 		json->as.boolean = 1;
 		return (__JSON_V2_MATCH);
 	} else if (ft_strncmp(s + *pos, "false", 5) == 0) {
 		*pos += 5;
-		json->type = JSON_V2_TYPE_BOOL;
+		json->kind = JSON_V2_TYPE_BOOL;
 		json->as.boolean = 0;
 		return (__JSON_V2_MATCH);
 	} else {
@@ -331,7 +331,7 @@ static int	__json_v2_parse_number(const char *s, t_json_v2 *json, size_t *pos)
 	}
 	bnum_del(mantissa);
 
-	json->type = JSON_V2_TYPE_NUMBER;
+	json->kind = JSON_V2_TYPE_NUMBER;
 	json->as.number = number;
 
 	return (__JSON_V2_MATCH);
@@ -364,7 +364,7 @@ static int	__json_v2_parse_string(const char *s, t_json_v2 *json, size_t *pos)
 	}
 	(*pos)++;
 
-	json->type = JSON_V2_TYPE_STRING;
+	json->kind = JSON_V2_TYPE_STRING;
 	json->as.cstring = ft_strsub(s, str_start, str_end - str_start);
 
 	return (__JSON_V2_MATCH);
@@ -397,7 +397,7 @@ static int	__json_v2_parse_object(const char *s, t_json_v2 *json, size_t *pos)
 			SSL_LOG(TRACE, "no match at index %zu: %c", *pos, s[*pos]);
 			goto label_exit;
 		}
-		if (key->type != JSON_V2_TYPE_STRING) {
+		if (key->kind != JSON_V2_TYPE_STRING) {
 			SSL_LOG(TRACE, "bad format: expected string at index %zu: %c", *pos, s[*pos]);
 			status = __JSON_V2_BAD_FORMAT;
 			__json_v2_delete(key);
@@ -441,7 +441,7 @@ static int	__json_v2_parse_object(const char *s, t_json_v2 *json, size_t *pos)
 	}
 	(*pos)++;
 
-	json->type = JSON_V2_TYPE_OBJECT;
+	json->kind = JSON_V2_TYPE_OBJECT;
 	json->as.htable = htable;
 
 label_exit:
@@ -489,7 +489,7 @@ static int	__json_v2_parse_array(const char *s, t_json_v2 *json, size_t *pos)
 	}
 	(*pos)++;
 
-	json->type = JSON_V2_TYPE_ARRAY;
+	json->kind = JSON_V2_TYPE_ARRAY;
 	json->as.list = list;
 
 label_exit:
@@ -511,7 +511,7 @@ label_exit:
 # define __JSON_V2_TYPE_NAME_NULL		"null"
 # define __JSON_V2_TYPE_NAME_UNKNOWN	"unknown"
 
-const char	*json_v2_get_type_name(t_json_v2_type type)
+const char	*json_v2_get_type_name(t_json_v2_kind type)
 {
 	switch (type) {
 	case JSON_V2_TYPE_OBJECT:	return __JSON_V2_TYPE_NAME_OBJECT;
@@ -573,7 +573,7 @@ char	*json_v2_dumpb_with_f_dumper(const t_json_v2 *json, char *buf, size_t size,
 
 static void	__json_v2_f_default_dumper(const t_json_v2 *json, t_ostring *ostring, void *vctx)
 {
-	switch (json->type) {
+	switch (json->kind) {
 	case JSON_V2_TYPE_OBJECT: {
 		ft_ostr_append_cstr(ostring, "{");
 		const char *key = NULL;
@@ -659,7 +659,7 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
         bracket_ws = "\n";
     }
 
-    switch (json->type) {
+    switch (json->kind) {
    	case JSON_V2_TYPE_OBJECT: {
   		ft_ostr_appendf(ostring, "{%s", bracket_ws);
   		const char *key = NULL;
@@ -759,7 +759,7 @@ int	json_v2_validate(const t_json_v2 *json)
 	if (NULL == json) return (JSON_V2_ERR);
 	if (json_v2_validate_type(json)) return (JSON_V2_ERR);
 
-	switch (json->type) {
+	switch (json->kind) {
 	case JSON_V2_TYPE_OBJECT: {
 		const char *key = NULL;
 		void *value = NULL;
@@ -794,7 +794,7 @@ int	json_v2_validate_shallow(const t_json_v2 *json)
 	if (NULL == json) return (JSON_V2_ERR);
 	if (json_v2_validate_type(json)) return (JSON_V2_ERR);
 
-	switch (json->type) {
+	switch (json->kind) {
 	case JSON_V2_TYPE_OBJECT: {
 		const char *key = NULL;
 		void *value = NULL;
@@ -828,7 +828,7 @@ int	json_v2_validate_type(const t_json_v2 *json)
 {
 	assert(NULL != json);
 
-	switch (json->type) {
+	switch (json->kind) {
 	case JSON_V2_TYPE_NULL:
 	case JSON_V2_TYPE_ARRAY:
 	case JSON_V2_TYPE_OBJECT:
@@ -852,14 +852,14 @@ enum __e_json_v2_q_status {
 	__JSON_V2_NO_MATCH_QUERY,
 };
 
-typedef enum __e_json_v2_q_type {
+typedef enum __e_json_v2_q_kind {
     __JSON_V2_Q_TYPE_OBJECT_KEY,
     __JSON_V2_Q_TYPE_ARRAY_INDEX,
     __JSON_V2_Q_TYPE_SELF,
-} __t_json_v2_q_type;
+} __t_json_v2_q_kind;
 
 typedef struct __s_json_v2_query {
-	__t_json_v2_q_type	type;
+	__t_json_v2_q_kind	kind;
 	union {
 		char	*key;
 		size_t	index;
@@ -878,7 +878,7 @@ static int 	__json_v2_f_default_selector(const t_json_v2 *json, __t_json_v2_quer
 static int 	__json_v2_select_object_key(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json);
 static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json);
 
-static const char	*__json_v2_get_query_type_name(__t_json_v2_q_type type);
+static const char	*__json_v2_get_query_type_name(__t_json_v2_q_kind type);
 
 int json_v2_query(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json)
 {
@@ -888,7 +888,7 @@ int json_v2_query(const char *s, const t_json_v2 *json, const t_json_v2 **ret_js
 int json_v2_query_nonnull(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json)
 {
 	int status = __json_v2_query_with_f_selector(s, json, ret_json, __json_v2_f_default_selector);
-	if (JSON_V2_OK == status && (*ret_json)->type == JSON_V2_TYPE_NULL) {
+	if (JSON_V2_OK == status && (*ret_json)->kind == JSON_V2_TYPE_NULL) {
 		*ret_json = NULL;
 		return (JSON_V2_ERR);
 	}
@@ -940,7 +940,7 @@ static int __json_v2_run_query(const char *s, const t_json_v2 *json, const t_jso
 			SSL_LOG(ERROR, "failed to parse query");
 			break;
 		}
-		SSL_LOG(TRACE, "parsed %s", __json_v2_get_query_type_name(query.type));
+		SSL_LOG(TRACE, "parsed %s", __json_v2_get_query_type_name(query.kind));
 
 		status = f_selector(cur_json, query, ret_json);
 		__json_v2_clear_query(&query);
@@ -954,7 +954,7 @@ static int __json_v2_run_query(const char *s, const t_json_v2 *json, const t_jso
 
 static void __json_v2_clear_query(__t_json_v2_query *query)
 {
-	switch (query->type) {
+	switch (query->kind) {
 	case __JSON_V2_Q_TYPE_OBJECT_KEY:
 		LIBFT_FREE(query->as.key);
 		query->as.key = NULL;
@@ -983,9 +983,9 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 		end = *pos;
 
 		if (begin == end) {
-			query->type = __JSON_V2_Q_TYPE_SELF;
+			query->kind = __JSON_V2_Q_TYPE_SELF;
 		} else {
-			query->type = __JSON_V2_Q_TYPE_OBJECT_KEY;
+			query->kind = __JSON_V2_Q_TYPE_OBJECT_KEY;
 			query->as.key = ft_strsub(s, begin, end - begin);
 		}
 	}
@@ -1000,7 +1000,7 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 				(*pos)++;
 			}
 			end = *pos;
-			query->type = __JSON_V2_Q_TYPE_ARRAY_INDEX;
+			query->kind = __JSON_V2_Q_TYPE_ARRAY_INDEX;
 			char *nums = ft_strsub(s, begin, end - begin);
 			query->as.index = (size_t)ft_atoi(nums);
 			LIBFT_FREE(nums);
@@ -1021,7 +1021,7 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 			}
 			end = *pos;
 			(*pos)++;
-			query->type = __JSON_V2_Q_TYPE_OBJECT_KEY;
+			query->kind = __JSON_V2_Q_TYPE_OBJECT_KEY;
 			query->as.key = ft_strsub(s, begin, end - begin);
 		}
 
@@ -1043,7 +1043,7 @@ static int 	__json_v2_f_default_selector(const t_json_v2 *json, __t_json_v2_quer
 {
     *ret_json = NULL;
 
-	switch (query.type) {
+	switch (query.kind) {
 	case __JSON_V2_Q_TYPE_OBJECT_KEY:
 		return (__json_v2_select_object_key(json, query, ret_json));
 	case __JSON_V2_Q_TYPE_ARRAY_INDEX:
@@ -1061,14 +1061,14 @@ static int 	__json_v2_select_object_key(const t_json_v2 *json, __t_json_v2_query
 {
 	SSL_LOG(TRACE, "searching for object key: `%s`", query.as.key);
 
-	if (json->type != JSON_V2_TYPE_OBJECT) {
+	if (json->kind != JSON_V2_TYPE_OBJECT) {
 		SSL_LOG(TRACE, "using key for non-object type");
 		return (JSON_V2_ERR);
 	}
 
 	t_json_v2 *value = ft_htbl_v2_get(&json->as.htable, query.as.key);
 	if (value != NULL) {
-		SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name(value->type));
+		SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name(value->kind));
 		*ret_json = value;
 		return (__JSON_V2_MATCH_QUERY);
 	}
@@ -1081,7 +1081,7 @@ static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_quer
 {
 	SSL_LOG(TRACE, "indexing array at: `%s`", query.as.index);
 
-	if (json->type != JSON_V2_TYPE_ARRAY) {
+	if (json->kind != JSON_V2_TYPE_ARRAY) {
 		SSL_LOG(TRACE, "using index for non-array type");
 		return (JSON_V2_ERR);
 	}
@@ -1092,7 +1092,7 @@ static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_quer
 	while (ft_list_next_content(&json->as.list, &next, &content)) {
 		if (idx == target_idx) {
 			*ret_json = content;
-			SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name((*ret_json)->type));
+			SSL_LOG(TRACE, "found node of type `%s`", json_v2_get_type_name((*ret_json)->kind));
 			return (__JSON_V2_MATCH_QUERY);
 		}
 		idx++;
@@ -1101,7 +1101,7 @@ static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_quer
 	return (__JSON_V2_NO_MATCH_QUERY);
 }
 
-static const char	*__json_v2_get_query_type_name(__t_json_v2_q_type type)
+static const char	*__json_v2_get_query_type_name(__t_json_v2_q_kind type)
 {
 	switch (type) {
 	case __JSON_V2_Q_TYPE_OBJECT_KEY:

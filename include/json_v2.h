@@ -7,14 +7,14 @@
 # include <bnum.h>
 # include <io.h>
 
-typedef enum e_json_v2_type {
+typedef enum e_json_v2_kind {
     JSON_V2_TYPE_NULL = 0,
     JSON_V2_TYPE_ARRAY,
     JSON_V2_TYPE_OBJECT,
     JSON_V2_TYPE_STRING,
     JSON_V2_TYPE_NUMBER,
     JSON_V2_TYPE_BOOL,
-} t_json_v2_type;
+} t_json_v2_kind;
 
 enum e_json_v2_status {
 	JSON_V2_OK,
@@ -24,7 +24,7 @@ enum e_json_v2_status {
 
 typedef struct s_json_v2 {
 	t_node_v2       base;
-	t_json_v2_type  type;
+	t_json_v2_kind  kind;
 	union {
 		t_htbl_v2 htable;
 		t_list    list;
@@ -48,7 +48,7 @@ int	json_v2_validate_type(const t_json_v2 *json);
 int	json_v2_query(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json);
 int	json_v2_query_nonnull(const char *s, const t_json_v2 *json, const t_json_v2 **ret_json);
 
-const char	*json_v2_get_type_name(t_json_v2_type type);
+const char	*json_v2_get_type_name(t_json_v2_kind kind);
 
 char	*json_v2_dumps(const t_json_v2 *json);
 char	*json_v2_dumps_with_f_dumper(const t_json_v2 *json, t_func_json_v2_dump f_dumper, void *vctx);
