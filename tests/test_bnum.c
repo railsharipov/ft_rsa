@@ -553,7 +553,7 @@ static int	__test_bnum_from_bytes_u(void)
 	ft_hexs_to_bytes(bin, hex, hexsize);
 
 	bnum_init(&test_num);
-	bnum_from_bytes_u(&test_num, bin, binsize);
+	bnum_init_from_bytes_u(&test_num, bin, binsize);
 	test_hex = bnum_to_hex_u(&test_num);
 
 	TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);

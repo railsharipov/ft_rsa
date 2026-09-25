@@ -114,7 +114,7 @@ static t_num	*__asn1_int(t_htbl *htbl, const char *key)
 	printf("%p\n", item->content);
 
 	num = bnum_create();
-	bnum_from_bytes_u(num, item->content, item->size);
+	bnum_init_from_bytes_u(num, item->content, item->size);
 
 	return (num);
 }

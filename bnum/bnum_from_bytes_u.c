@@ -2,7 +2,7 @@
 
 /* Convert bytes representing unsigned integer to bignum */
 
-void	bnum_from_bytes_u(t_num *num, const uint8_t *buf, int bufsize)
+void	bnum_init_from_bytes_u(t_num *num, const uint8_t *buf, int bufsize)
 {
 	size_t	ndigits;
 	size_t	nbits;
@@ -30,4 +30,12 @@ void	bnum_from_bytes_u(t_num *num, const uint8_t *buf, int bufsize)
 		*(num->val) |= buf[idx++];
 	}
 	bnum_skip_zeros(num);
+}
+
+t_num	*bnum_from_bytes_u(const uint8_t *buf, int bufsize)
+{
+	t_num *num = bnum_create();
+	bnum_init(num);
+	bnum_init_from_bytes_u(num, buf, bufsize);
+	return (num);
 }

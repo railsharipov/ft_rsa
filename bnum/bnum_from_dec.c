@@ -1,26 +1,23 @@
 #include <bnum.h>
 #include <libft.h>
 
-t_num	*bnum_from_dec(const char *dec)
+void	bnum_init_from_dec(t_num *num, const char *dec)
 {
-	t_num	*num;
 	size_t	decsize;
 	size_t	idx;
 	int		sign;
 
-	if (NULL == dec) {
-		return (NULL);
+	if (NULL == num || NULL == dec) {
+		return ;
 	}
+
 	if (*dec == '-') {
 		sign = BNUM_NEG;
 		dec++;
 	} else {
 		sign = BNUM_POS;
 	}
-
 	decsize = ft_strlen(dec);
-
-	num = bnum_create();
 	bnum_set_dig_u(num, 0u);
 
 	idx = 0;
@@ -30,6 +27,11 @@ t_num	*bnum_from_dec(const char *dec)
 		idx++;
 	}
 	num->sign = sign;
+}
 
+t_num	*bnum_from_dec(const char *dec)
+{
+	t_num *num = bnum_create();
+	bnum_init_from_dec(num, dec);
 	return (num);
 }

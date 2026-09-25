@@ -451,7 +451,7 @@ static int	__decode_int(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 	}
 
 	t_num *num = bnum_create();
-	bnum_from_bytes_u(num, encoded->content, encoded->size);
+	bnum_init_from_bytes_u(num, encoded->content, encoded->size);
 	decoded->content = (uint8_t *)num;
 	decoded->size = 0;
 

@@ -5,7 +5,7 @@
 
 int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 {
-	bnum_from_bytes_u(num, octets, osize);
+	bnum_init_from_bytes_u(num, octets, osize);
 
 	return (SSL_OK);
 }
