@@ -1095,13 +1095,13 @@ static int __test_ft_bytes_to_hex(void)
 	char octets[] = {9, 1, 127, 3, 15, 0};
 	char *ref_str = "09017f030f00";
 
-	test_str = ft_bytes_to_hex(NULL, 20);
+	test_str = ft_bytes_dumps_hex(NULL, 20);
 	TEST_ASSERT(test_str == NULL);
 
-	test_str = ft_bytes_to_hex(octets, 0);
+	test_str = ft_bytes_dumps_hex(octets, 0);
 	TEST_ASSERT(test_str == NULL);
 
-	test_str = ft_bytes_to_hex(octets, sizeof(octets));
+	test_str = ft_bytes_dumps_hex(octets, sizeof(octets));
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	free(test_str);
 

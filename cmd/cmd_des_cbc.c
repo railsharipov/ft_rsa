@@ -100,9 +100,9 @@ int	cmd_des_cbc(const t_cmd *cmd)
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
-				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
-				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
-				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_dumps_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_dumps_hex(des_iv, sizeof(des_iv));
 				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
 			}
 		}
@@ -146,9 +146,9 @@ int	cmd_des_cbc(const t_cmd *cmd)
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
-				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
-				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
-				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_dumps_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_dumps_hex(des_iv, sizeof(des_iv));
 				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
 			}
 		}
@@ -198,9 +198,9 @@ int	cmd_des_cbc(const t_cmd *cmd)
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
-				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
-				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
-				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_dumps_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_dumps_hex(des_iv, sizeof(des_iv));
 				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
 			}
 		}
@@ -281,9 +281,9 @@ int	cmd_des_cbc(const t_cmd *cmd)
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
-				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
-				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
-				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_dumps_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_dumps_hex(des_iv, sizeof(des_iv));
 				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
 			}
 		}
@@ -328,9 +328,9 @@ int	cmd_des_cbc(const t_cmd *cmd)
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
-				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
-				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
-				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_dumps_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_dumps_hex(des_iv, sizeof(des_iv));
 				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
 			}
 		}
@@ -375,9 +375,9 @@ int	cmd_des_cbc(const t_cmd *cmd)
 			}
 			if (ft_htbl_has(cmd->opts, "-n")) {
 				// Dump vectors in hex format
-				char *khex = ft_bytes_to_hex(des_key, sizeof(des_key));
-				char *shex = ft_bytes_to_hex(des_salt, sizeof(des_salt));
-				char *ivhex = ft_bytes_to_hex(des_iv, sizeof(des_iv));
+				char *khex = ft_bytes_dumps_hex(des_key, sizeof(des_key));
+				char *shex = ft_bytes_dumps_hex(des_salt, sizeof(des_salt));
+				char *ivhex = ft_bytes_dumps_hex(des_iv, sizeof(des_iv));
 				ft_printf("salt=%.16s\nkey=%.16s\niv=%.16s\n", shex, khex, ivhex);
 			}
 			// Write the encryption header.

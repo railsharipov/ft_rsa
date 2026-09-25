@@ -508,7 +508,7 @@ static const int	B[128] = {
 	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	87,	0,	0,	0,	0,	0,
 };
 
-void	ft_bytes_xor(void *res, void *bytes1, void *bytes2, size_t size)
+void	ft_bytes_xor(void *res, const void *bytes1, const void *bytes2, size_t size)
 {
 	uint8_t	*rptr;
 	uint8_t	*b1ptr;
@@ -526,7 +526,7 @@ void	ft_bytes_xor(void *res, void *bytes1, void *bytes2, size_t size)
 	}
 }
 
-uint64_t	ft_bytes_to_uint(void *bytes, size_t size)
+uint64_t	ft_bytes_to_uint(const void *bytes, size_t size)
 {
 	uint8_t		*ptr;
 	uint64_t	num;
@@ -588,7 +588,7 @@ void	ft_bytes_rshift(void *bytes, size_t size, int shift)
 	}
 }
 
-void	ft_bytes_write_hex(int fd, void *ptr, size_t size)
+void	ft_bytes_write_hex(int fd, const void *ptr, size_t size)
 {
 	unsigned char		*octets;
 	uint32_t	bytes;
@@ -630,7 +630,7 @@ void	ft_bytes_write_hex(int fd, void *ptr, size_t size)
 	}
 }
 
-char	*ft_bytes_dumps_hex(void *bytes, size_t size, int cols, int del)
+char	*ft_bytes_dumps_hex_pretty(const void *bytes, size_t size, int cols, int del)
 {
 	unsigned char	*octets;
 	char	hex[size*4];
@@ -662,7 +662,7 @@ char	*ft_bytes_dumps_hex(void *bytes, size_t size, int cols, int del)
 	return (ft_strdup(hex));
 }
 
-void	ft_bytes_dumpb_hex(void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize)
+void	ft_bytes_dumpb_hex_pretty(const void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize)
 {
 	char	*hex;
 
@@ -674,36 +674,55 @@ void	ft_bytes_dumpb_hex(void *bytes, size_t size, int cols, int del, char *buf, 
 		return ;
 	}
 
-	hex = ft_bytes_dumps_hex(bytes, size, cols, del);
+	hex = ft_bytes_dumps_hex_pretty(bytes, size, cols, del);
 	ft_strncpy(buf, hex, bufsize-1);
 	buf[bufsize-1] = '\0';
 	LIBFT_FREE(hex);
 }
 
-void	ft_bytes_print_bits(void *ptr, size_t size)
+char	*ft_bytes_dumps_bits(const void *ptr, size_t size)
 {
-	size_t			i;
-	size_t			j;
+	const uint8_t *octets = ptr;
+	char *dumps, *p;
 
-	i = 0;
-	while (i < size) {
-		j = 0;
-		while (j < 8) {
-			if ((((unsigned char *)ptr)[i] << j) & (1 << 7)) {
-				write(1, "1", 1);
-			}
-			else
-				write(1, "0", 1);
-			j++;
-		}
-		write(1, " ", 1);
-		if ((i + 1) % 8 == 0) {
-			write(1, "\n", 1);
-		}
-		i++;
+	if (size == 0 || NULL == ptr) {
+		return (NULL);
 	}
-	if (i % 8 != 0) {
-		write(1, "\n", 1);
+	LIBFT_ALLOC(dumps, 8*(size+1));
+
+	p = dumps;
+	for (size_t i = 0; i < size; i++) {
+		for (size_t j = 0; j < 8; j++) {
+			*p++ = ((octets[i] << j) & (1 << 7)) ? '1' : '0';
+		}
+	}
+	return (dumps);
+}
+
+// Convert bitstring literal such as "0100101" to bytes.
+void	ft_bits_to_bytes(uint8_t *bytes, size_t size, const char *bstring, size_t bstrlen)
+{
+	if (NULL == bytes || size == 0) return;
+	ft_memset(bytes, 0, size);
+
+	size_t len = MIN(size, NBITS_TO_NBYTES(bstrlen));
+	if (len == 0) return;
+
+	const char *p = bstring;
+	size_t n = 0;
+	// First byte might be incomplete.
+	if (bstrlen % 8 > 0) {
+		for (size_t i = 0; i < bstrlen % 8; i++) {
+			bytes[n] <<= 1;
+			bytes[n] |= (*p++ == '0') ? 0u : 1u;
+		}
+		n++;
+	}
+	for (; n < len; n++) {
+		for (size_t i = 0; i < 8; i++) {
+			bytes[n] <<= 1;
+			bytes[n] |= (*p++ == '0') ? 0u : 1u;
+		}
 	}
 }
 
@@ -730,12 +749,12 @@ void	ft_bytes_reverse_bits(void *ptr, size_t size)
 	}
 }
 
-char	*ft_bytes_to_hex_upper(const void *bin, size_t binsize)
+char	*ft_bytes_dumps_hex_upper(const void *bin, size_t binsize)
 {
 	char	*hex;
 	size_t	ix;
 
-	hex = ft_bytes_to_hex(bin, binsize);
+	hex = ft_bytes_dumps_hex(bin, binsize);
 
 	if (hex != NULL) {
 		ix = 0;
@@ -747,7 +766,7 @@ char	*ft_bytes_to_hex_upper(const void *bin, size_t binsize)
 	return (hex);
 }
 
-char	*ft_bytes_to_hex(const void *bin, size_t binsize)
+char	*ft_bytes_dumps_hex(const void *bin, size_t binsize)
 {
 	unsigned char	*bptr;
 	char			*hptr;
@@ -772,6 +791,7 @@ char	*ft_bytes_to_hex(const void *bin, size_t binsize)
 	return (hex);
 }
 
+// TODO: add binsize parameter.
 void	ft_hex_to_bytes(void *bin, const char *hex, size_t hexsize)
 {
 	unsigned char	*buf;

@@ -82,7 +82,7 @@ int	pem_encode(t_pem *pem, t_ostring *data, t_ostring *enc, const char *pass)
 				goto label_exit;
 			}
 			SSL_LOG(TRACE, "converting des salt to hex");
-			salthex = ft_bytes_to_hex_upper(salt, 8);
+			salthex = ft_bytes_dumps_hex_upper(salt, 8);
 
 			SSL_LOG(TRACE, "writing dek info header: salt: %s", salthex);
 			ft_ostr_appendf(&pemenc, "DEK-Info: DES-CBC,%s\n\n", salthex);

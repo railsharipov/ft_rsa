@@ -83,7 +83,7 @@ static int	__test_md5(void)
 	}
 	md5_final_block(&ctx, in.content + rbytes, in.size - rbytes);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __small_text_md5_hash_hex));
 
 	TEST_PASS();
@@ -141,7 +141,7 @@ static int	__test_md5_transform(void)
 	TEST_ASSERT(tconsumed == insize);
 	TEST_ASSERT(tproduced == insize);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __large_text_md5_hash_hex));
 
 	TEST_PASS();
@@ -167,7 +167,7 @@ static int	__test_sha1(void)
 	}
 	sha1_final_block(&ctx, in.content + rbytes, in.size - rbytes);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __small_text_sha1_hash_hex));
 
 	TEST_PASS();
@@ -225,7 +225,7 @@ static int	__test_sha1_transform(void)
 	TEST_ASSERT(tconsumed == insize);
 	TEST_ASSERT(tproduced == insize);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __large_text_sha1_hash_hex));
 
 	TEST_PASS();
@@ -251,7 +251,7 @@ static int	__test_sha256(void)
 	}
 	sha256_final_block(&ctx, in.content + rbytes, in.size - rbytes);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __small_text_sha256_hash_hex));
 
 	TEST_PASS();
@@ -309,7 +309,7 @@ static int	__test_sha256_transform(void)
 	TEST_ASSERT(tconsumed == insize);
 	TEST_ASSERT(tproduced == insize);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __large_text_sha256_hash_hex));
 
 	TEST_PASS();
@@ -367,7 +367,7 @@ static int	__test_sha224_transform(void)
 	TEST_ASSERT(tconsumed == insize);
 	TEST_ASSERT(tproduced == insize);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __large_text_sha224_hash_hex));
 
 	TEST_PASS();
@@ -393,7 +393,7 @@ static int	__test_sha512(void)
 	}
 	sha512_final_block(&ctx, in.content + rbytes, in.size - rbytes);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __small_text_sha512_hash_hex));
 
 	TEST_PASS();
@@ -451,7 +451,7 @@ static int	__test_sha512_transform(void)
 	TEST_ASSERT(tconsumed == insize);
 	TEST_ASSERT(tproduced == insize);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __large_text_sha512_hash_hex));
 
 	TEST_PASS();
@@ -509,7 +509,7 @@ static int	__test_sha384_transform(void)
 	TEST_ASSERT(tconsumed == insize);
 	TEST_ASSERT(tproduced == insize);
 
-	char *hex = ft_bytes_to_hex(ctx.hash, ctx.hashsize);
+	char *hex = ft_bytes_dumps_hex(ctx.hash, ctx.hashsize);
 	TEST_ASSERT(ft_streq(hex, __large_text_sha384_hash_hex));
 
 	TEST_PASS();

@@ -575,7 +575,7 @@ static int	__test_bnum_to_bytes_u(void)
 	test_num = bnum_from_hex_u(hex);
 	bnum_to_bytes_u(test_num, &bin, &binsize);
 
-	test_hex = ft_bytes_to_hex(bin, binsize);
+	test_hex = ft_bytes_dumps_hex(bin, binsize);
 
 	TEST_ASSERT(ft_strcmp(hex, test_hex) == 0);
 

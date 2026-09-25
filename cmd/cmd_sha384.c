@@ -90,7 +90,7 @@ int	cmd_sha384(const t_cmd *cmd)
 	}
 	out = textutil_filter;
 	// Write checksum in hex format
-	char *hexhash = ft_bytes_to_hex(sha384_ctx.hash, sha384_ctx.hashsize);
+	char *hexhash = ft_bytes_dumps_hex(sha384_ctx.hash, sha384_ctx.hashsize);
 	if (io_v2_write_all(out, hexhash, ft_strlen(hexhash)) < 0) {
 		SSL_LOG(ERROR, "failed to output digest checksum");
 		return (SSL_ERR);

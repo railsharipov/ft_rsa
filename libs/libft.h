@@ -133,18 +133,19 @@ t_transform_result ft_buffer_transform(t_buffer *src, t_buffer *dst, t_func_tran
 
 /****************************************************************************/
 
-char		*ft_bytes_to_hex(const void *bytes, size_t size);
-char		*ft_bytes_to_hex_upper(const void *bytes, size_t size);
+char		*ft_bytes_dumps_hex(const void *bytes, size_t size);
+char		*ft_bytes_dumps_hex_upper(const void *bytes, size_t size);
+char		*ft_bytes_dumps_hex_pretty(const void *bytes, size_t size, int cols, int del);
+void		ft_bytes_dumpb_hex_pretty(const void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize);
+char		*ft_bytes_dumps_bits(const void *, size_t);
+void		ft_bytes_write_hex(int fd, const void *bytes, size_t size);
+void		ft_hex_to_bytes(void *bytes, const char *hex, size_t hexsize);
+void		ft_bits_to_bytes(uint8_t *bytes, size_t size, const char *bstring, size_t bstrlen);
 void		ft_bytes_reverse_bits(void *bytes, size_t size);
-uint64_t	ft_bytes_to_uint(void *bytes, size_t size);
+uint64_t	ft_bytes_to_uint(const void *bytes, size_t size);
 void		ft_bytes_lshift(void *bytes, size_t size, int shift);
 void		ft_bytes_rshift(void *bytes, size_t size, int shift);
-char		*ft_bytes_dumps_hex(void *bytes, size_t size, int cols, int del);
-void		ft_bytes_dumpb_hex(void *bytes, size_t size, int cols, int del, char *buf, size_t bufsize);
-void		ft_bytes_write_hex(int fd, void *bytes, size_t size);
-void		ft_bytes_print_bits(void *, size_t);
-void		ft_bytes_xor(void *res, void *bytes1, void *bytes2, size_t size);
-void		ft_hex_to_bytes(void *bytes, const char *hex, size_t hexsize);
+void		ft_bytes_xor(void *res, const void *bytes1, const void *bytes2, size_t size);
 
 /****************************************************************************/
 
