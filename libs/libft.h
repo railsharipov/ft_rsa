@@ -140,7 +140,9 @@ void		ft_bytes_dumpb_hex_pretty(const void *bytes, size_t size, int cols, int de
 char		*ft_bytes_dumps_bin(const void *, size_t);
 void		ft_bytes_write_hex(int fd, const void *bytes, size_t size);
 void		ft_hexs_to_bytes(uint8_t *bytes, size_t size, const char *hexs, size_t hexlen);
+void		ft_hexs_to_bytes_left_align(uint8_t *bytes, size_t size, const char *hexs, size_t hexslen);
 void		ft_bins_to_bytes(uint8_t *bytes, size_t size, const char *bins, size_t binslen);
+void		ft_bins_to_bytes_left_align(uint8_t *bytes, size_t size, const char *bins, size_t binslen);
 void		ft_bytes_reverse_bits(void *bytes, size_t size);
 uint64_t	ft_bytes_to_uint(const void *bytes, size_t size);
 void		ft_bytes_lshift(void *bytes, size_t size, int shift);

@@ -699,7 +699,8 @@ char	*ft_bytes_dumps_bin(const void *bytes, size_t size)
 	return (dumps);
 }
 
-// Convert binary string literal such as "0100101" to bytes.
+// Convert binary string to bytes such that LSBit of input is placed at LSBit of the last byte of output.
+// If output buffer is not large enough the output is truncated.
 void	ft_bins_to_bytes(uint8_t *bytes, size_t size, const char *bins, size_t binslen)
 {
 	if (NULL == bytes || size == 0) return;
@@ -723,6 +724,32 @@ void	ft_bins_to_bytes(uint8_t *bytes, size_t size, const char *bins, size_t bins
 			bytes[n] <<= 1;
 			bytes[n] |= (*p++ == '0') ? 0u : 1u;
 		}
+	}
+}
+
+// Convert binary string to bytes such that MSBit of input is placed at MSBit of the first byte of output.
+// If output buffer is not large enough the output is truncated.
+void	ft_bins_to_bytes_left_align(uint8_t *bytes, size_t size, const char *bins, size_t binslen)
+{
+	if (NULL == bytes || size == 0) return;
+	ft_memset(bytes, 0, size);
+
+	size_t len = MIN(size, NBITS_TO_NBYTES(binslen));
+	if (len == 0) return;
+
+	const char *p = bins;
+	size_t n = 0;
+	size_t i = 0;
+	for (; n < len-1; n++) {
+		for (size_t x = 0; x < 8; x++) {
+			bytes[n] <<= 1;
+			bytes[n] |= (p[i++] == '0') ? 0u : 1u;
+		}
+	}
+	// Last byte might be incomplete.
+	for (size_t x = 0; x < 8; x++) {
+		bytes[n] <<= 1;
+		if (i < binslen) bytes[n] |= (p[i++] == '0') ? 0u : 1u;
 	}
 }
 
@@ -791,7 +818,8 @@ char	*ft_bytes_dumps_hex(const void *bytes, size_t size)
 	return (hex);
 }
 
-// TODO: add binsize parameter.
+// Convert hex string to bytes such that LSBit of last hex is placed at LSBit of the last byte of output.
+// If output buffer is not large enough the output is truncated.
 void	ft_hexs_to_bytes(uint8_t *bytes, size_t size, const char *hexs, size_t hexslen)
 {
 	if (NULL == hexs || NULL == bytes) {
@@ -812,6 +840,26 @@ void	ft_hexs_to_bytes(uint8_t *bytes, size_t size, const char *hexs, size_t hexs
 		p++;
 		bytes[n] |= (*p - B[*p & 0x7F]);
 		p++;
+	}
+}
+
+// Convert hex string to binary such that MSBit of first hex is placed at MSBit of the first byte of output.
+// If output buffer is not large enough the output is truncated.
+void	ft_hexs_to_bytes_left_align(uint8_t *bytes, size_t size, const char *hexs, size_t hexslen)
+{
+	if (NULL == hexs || NULL == bytes) {
+		return ;
+	}
+	size_t len = MIN(size, CEIL_DIV(hexslen, 2));
+
+	size_t i = 0;
+	for (size_t n = 0; n < len; n++) {
+		bytes[n] = (hexs[i] - B[hexs[i] & 0x7F]) << 4;
+		i++;
+		if (i < hexslen) {
+			bytes[n] |= (hexs[i] - B[hexs[i] & 0x7F]);
+			i++;
+		}
 	}
 }
 
