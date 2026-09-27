@@ -973,21 +973,9 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 	char	quote;
 
 	if (s[*pos] == '.') {
-		SSL_LOG(TRACE, "parsing object key");
+		SSL_LOG(TRACE, "parsing self");
 		(*pos)++;
-		begin = *pos;
-
-		while (s[*pos] != '\0' && s[*pos] != '.' && s[*pos] != '[') {
-			(*pos)++;
-		}
-		end = *pos;
-
-		if (begin == end) {
-			query->kind = __JSON_V2_Q_TYPE_SELF;
-		} else {
-			query->kind = __JSON_V2_Q_TYPE_OBJECT_KEY;
-			query->as.key = ft_strsub(s, begin, end - begin);
-		}
+		query->kind = __JSON_V2_Q_TYPE_SELF;
 	}
 	else if (s[*pos] == '[') {
 		(*pos)++;
@@ -1032,8 +1020,22 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 		(*pos)++;
 	}
 	else {
-		SSL_LOG(ERROR, __JSON_V2_Q_BAD_SELECTOR_ERROR ": `%c`", s[*pos]);
-		return (JSON_V2_FMT);
+		SSL_LOG(TRACE, "parsing object key");
+		begin = *pos;
+
+		while (s[*pos] != '\0' && s[*pos] != '.' && s[*pos] != '[') {
+			(*pos)++;
+		}
+		end = *pos;
+
+		if (begin == end) {
+			SSL_LOG(ERROR, __JSON_V2_Q_BAD_SELECTOR_ERROR ": expected object key");
+			return (JSON_V2_FMT);
+		}
+		else {
+			query->kind = __JSON_V2_Q_TYPE_OBJECT_KEY;
+			query->as.key = ft_strsub(s, begin, end - begin);
+		}
 	}
 
 	return (JSON_V2_OK);

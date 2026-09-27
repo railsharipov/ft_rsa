@@ -23,7 +23,6 @@ enum e_json_v2_status {
 };
 
 typedef struct s_json_v2 {
-	t_node_v2       base;
 	t_json_v2_kind  kind;
 	union {
 		t_htbl_v2 htable;
