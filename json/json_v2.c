@@ -1081,7 +1081,7 @@ static int 	__json_v2_select_object_key(const t_json_v2 *json, __t_json_v2_query
 
 static int 	__json_v2_select_array_index(const t_json_v2 *json, __t_json_v2_query query, const t_json_v2 **ret_json)
 {
-	SSL_LOG(TRACE, "indexing array at: `%s`", query.as.index);
+	SSL_LOG(TRACE, "indexing array at: `%d`", query.as.index);
 
 	if (json->kind != JSON_V2_TYPE_ARRAY) {
 		SSL_LOG(TRACE, "using index for non-array type");
