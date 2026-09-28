@@ -173,9 +173,10 @@ typedef struct s_asn_v2_value {
 	union {
 		t_ostring	ostring;
 		t_num		number;
-		t_list		list;
 		bool		boolean;
 		char		*cstring;
+		struct { t_list	elements; } composite;
+		struct { char *id; t_num *arcs; size_t narcs; } object;
 		struct { char *id; struct s_asn_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
 	} as;
@@ -249,7 +250,7 @@ typedef struct s_der_v2_value {
 		char		*cstring;
 		t_num		number;
 		bool		boolean;
-		struct { struct s_der_v2_value *items; size_t count; } array;
+		struct { struct s_der_v2_value *items; size_t count; } composite;
 		struct { char *id; struct s_der_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
 	} as;

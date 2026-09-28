@@ -11,7 +11,7 @@
     "RSAPrivateKey": {
       "kind": "SEQUENCE",
       "components": [
-        {"id": "version", "type": {"kind": "INTEGER"}, "default": "0"},
+        {"id": "version", "type": {"kind": "INTEGER"}, "default": 0},
         {"id": "modulus", "type": {"kind": "INTEGER"}},
         {"id": "publicExponent", "type": {"kind": "INTEGER"}},
         {"id": "privateExponent", "type": {"kind": "INTEGER"}},
