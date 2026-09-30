@@ -20,13 +20,13 @@ int	cmd_dev(const t_cmd *cmd)
 	// const char *asn1_type_name = "EncryptedPrivateKeyInfo";
 	// const char *der_filename = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
 
-	const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
-	const char *asn1_type_name = "RSAPrivateKey";
-	const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
+	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
+	// const char *asn1_type_name = "RSAPrivateKey";
+	// const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
 
-	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
-	// const char *asn1_type_name = "PrivateKeyInfo";
-	// const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
+	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
+	const char *asn1_type_name = "PrivateKeyInfo";
+	const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
 
 	const t_json_v2 *jschema = NULL;
 	if (JSON_OK != json_v2_parse_file(jschema_filename, &jschema)) {

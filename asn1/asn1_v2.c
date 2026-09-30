@@ -209,6 +209,128 @@ static t_asn_v2_tag_class __asn1_v2_schema_get_tag_class_by_name(const char *nam
 
 /****************************************************************************/
 
+typedef struct s_asn1_v2_object {
+	t_node_v2 base;
+	const struct t_asn1_v2_object_id *parent;
+	t_asn1_v2_object_id id;
+} t_asn1_v2_object;
+
+static t_asn1_v2_object *__asn1_v2_object_create()
+{
+	t_asn1_v2_object *oid_node = NULL;
+	SSL_ALLOC(oid_node, sizeof(t_asn1_v2_object));
+	*oid_node = (t_asn1_v2_object){0};
+	return (oid_node);
+}
+
+static void __asn1_v2_object_delete(t_asn1_v2_object *oid_node)
+{
+	if (NULL != oid_node->id) SSL_FREE(oid_node->id);
+	oid_node->id = NULL;
+	bnum_clear(&oid_node->number);
+	SSL_FREE(oid_node);
+}
+
+static inline void __asn1_v2_object_delete_adapter(t_node_v2 *node)
+{
+	__asn1_v2_object_delete(container_of(node, t_asn1_v2_object, base));
+}
+
+t_asn1_v2_object *asn1_v2_object_arcs_parse(const t_json_v2 *jobject)
+{
+	// Use ntree to represent the structure of asn1 object.
+	// Each ntree node is an asn1 object, where ntree branches represent object arcs.
+	assert(NULL != jobject);
+	if (jobject->kind != JSON_V2_TYPE_OBJECT) return (NULL);
+
+	// Current object.
+	t_asn1_v2_object *object = __asn1_v2_object_create();
+	object->parent = NULL;
+
+	const t_json_v2 *jnumber = NULL;
+	int ret = json_v2_query_nonnull("number", jobject, &jnumber);
+	if (JSON_V2_OK != ret || jnumber->kind != JSON_V2_TYPE_NUMBER) goto label_error;
+	bnum_copy(&jnumber->as.number, &object->number);
+
+	const t_json_v2 *jid = NULL;
+	ret = json_v2_query_nonnull("id", jobject, &jid);
+	if (JSON_V2_OK != ret || jid->kind != JSON_V2_TYPE_STRING) goto label_error;
+	if (NULL == jid->as.cstring) goto label_error;
+	object->id = ft_strdup(jid->as.cstring);
+
+	const t_json_v2 *jchild_objects = NULL;
+	if (JSON_V2_OK == json_v2_query_nonnull("arcs", jobject, &jchild_objects)) {
+		t_list child_objects = {0};
+		t_list_next next = {0};
+		void *content = NULL;
+		while (ft_list_next_content(&jchild_objects->as.list, &next, &content)) {
+			const t_json_v2 *jchild_object = content;
+			t_asn1_v2_object *child_object = asn1_v2_object_arcs_parse(jchild_object);
+			if (NULL == child_object) {
+				ft_list_clear(&child_objects, __asn1_v2_object_delete_adapter);
+				goto label_error;
+			}
+			child_object->parent = object;
+			ft_list_append(&child_objects, &child_object->base);
+		}
+		object->base.nodes = child_objects.first;
+	}
+	else {
+		object->base.nodes = NULL;
+	}
+	// We don't expect next nodes.
+	object->base.next = NULL;
+	return (object);
+
+label_error:
+	SSL_LOG(ERROR, "failed to initialize asn1 object tree");
+	__asn1_v2_object_delete(object);
+	return (NULL);
+}
+
+static bool __asn1_v2_object_find_by_id(t_node_v2 *node, const void *vctx)
+{
+	t_asn1_v2_object *object = container_of(node, t_asn1_v2_object, base);
+	const char *id = vctx;
+	if (ft_streq(object->id, id)) return true;
+	return false;
+}
+
+static bool __asn1_v2_object_find_by_number(t_node_v2 *node, const void *vctx)
+{
+	t_asn1_v2_object *object = container_of(node, t_asn1_v2_object, base);
+	const t_num *number = vctx;
+	if (bnum_cmp(&object->number, number) == 0) return true;
+	return false;
+}
+
+const t_asn1_v2_object *asn1_v2_get_object_by_arcs(t_asn1_v2_object *asn1_object_tree, const t_num *arcs, size_t narcs)
+{
+	assert(NULL != asn1_object_tree);
+
+	t_asn1_v2_object *object = asn1_object_tree;
+	for (size_t i = 0; i < narcs && NULL == object; i++) {
+		while (NULL == object) {
+			if (bnum_cmp(&object->number, arcs + i) == 0) break;
+			object = container_next(object, t_asn1_v2_object, base);
+		}
+	}
+	return (object);
+}
+
+const t_asn1_v2_object *asn1_v2_get_object_by_id(t_asn1_v2_object *asn1_object_tree, const char *id)
+{
+	assert(NULL != asn1_object_tree);
+
+	t_node_v2 *node = ft_ntree_v2_dfs(&asn1_object_tree->base, __asn1_v2_object_find_by_id, id);
+	if (NULL != node) {
+		return (container_of(node, t_asn1_v2_object, base));
+	}
+	return (NULL);
+}
+
+/****************************************************************************/
+
 int __asn1_v2_schema_validate_constraint_type_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
@@ -673,7 +795,7 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 		return ft_strjoin_multi(3, "\"", asn1_value->as.cstring, "\"");
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
-		if (NULL != asn1_value->as.object.id) return ft_strdup(asn1_value->as.object.id);
+		if (NULL != asn1_value->as.object.id) return ft_strjoin_multi(3, "\"", asn1_value->as.object.id, "\"");
 		t_ostring ostring = {0};
 		ft_ostr_append_cstr(&ostring, "[");
 		size_t commas = 0;
@@ -1435,31 +1557,31 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
-		if (jvalue->kind == JSON_V2_TYPE_STRING) {
-			// TODO: Lookup object id in the asn1 tree to get arcs.
-			NOT_IMPLEMENTED("__asn1_v2_schema_parse_value: ASN_V2_TYPE_KIND_OBJECT_ID");
-		}
-		else if (jvalue->kind == JSON_V2_TYPE_ARRAY) {
-			if (jvalue->as.list.size < 2) goto label_error;
-			t_list_next next = {0};
-			void *content = NULL;
-			while (ft_list_next_content(&jvalue->as.list, &next, &content)) {
-				t_json_v2 *jarc = content;
-				if (jarc->kind != JSON_V2_TYPE_NUMBER) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_error;
+		if (jvalue->as.list.size < 1) goto label_error;
+		t_list_next next = {0};
+		void *content = NULL;
+		while (ft_list_next_content(&jvalue->as.list, &next, &content)) {
+			t_json_v2 *jarc = content;
+			if (jvalue->kind == JSON_V2_TYPE_STRING) {
+				avalue->as.object.id = ft_strdup(jvalue->as.cstring);
 			}
-			avalue->as.object.id = NULL;
-			SSL_ALLOC(avalue->as.object.arcs, jvalue->as.list.size * sizeof(t_num));
-			avalue->as.object.narcs = jvalue->as.list.size;
-			next = (t_list_next){0};
-			size_t idx = 0;
-			while (ft_list_next_content(&jvalue->as.list, &next, &content)) {
-				t_json_v2 *jarc = content;
-				bnum_copy(&jarc->as.number, &avalue->as.object.arcs[idx]);
-				idx++;
+			else if (jarc->kind == JSON_V2_TYPE_NUMBER) {
+
+			}
+			else {
+				goto label_error;
 			}
 		}
-		else {
-			goto label_error;
+		avalue->as.object.id = NULL;
+		SSL_ALLOC(avalue->as.object.arcs, jvalue->as.list.size * sizeof(t_num));
+		avalue->as.object.narcs = jvalue->as.list.size;
+		next = (t_list_next){0};
+		size_t idx = 0;
+		while (ft_list_next_content(&jvalue->as.list, &next, &content)) {
+			t_json_v2 *jarc = content;
+			bnum_copy(&jarc->as.number, &avalue->as.object.arcs[idx]);
+			idx++;
 		}
 		break;
 	}
@@ -2389,11 +2511,14 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 		bnum_copy(&asn1_value->as.number, &compiled->as.number);
 		break;
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 		compiled->kind = asn1_value->kind;
 		if (NULL != asn1_value->as.cstring) compiled->as.cstring = ft_strdup(asn1_value->as.cstring);
+		break;
+	case ASN_V2_TYPE_KIND_OBJECT_ID:
+		compiled->kind = asn1_value->kind;
+
 		break;
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_OCTET_STRING:

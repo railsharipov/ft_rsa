@@ -168,6 +168,11 @@ typedef enum t_asn_v2_universal_tag_number {
     ASN_V2_TAG_NUMBER_RELATIVE_OID_IRI   = 36
 } t_asn_v2_universal_tag_number;
 
+typedef struct s_asn1_v2_object_id {
+	char *name;
+	t_num number;
+} t_asn1_v2_object_id;
+
 typedef struct s_asn_v2_value {
 	t_asn_v2_type_kind	kind;
 	union {
@@ -176,7 +181,7 @@ typedef struct s_asn_v2_value {
 		bool		boolean;
 		char		*cstring;
 		struct { t_list	elements; } composite;
-		struct { char *id; t_num *arcs; size_t narcs; } object;
+		struct { t_list ids; } object;
 		struct { char *id; struct s_asn_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
 	} as;
@@ -251,6 +256,7 @@ typedef struct s_der_v2_value {
 		t_num		number;
 		bool		boolean;
 		struct { struct s_der_v2_value *items; size_t count; } composite;
+		struct { t_num *arcs; size_t narcs; } object;
 		struct { char *id; struct s_der_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
 	} as;

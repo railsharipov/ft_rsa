@@ -1,220 +1,224 @@
 {
-  "description": "iso",
-  "arc": 1,
-  "nodes": [
+  "arcs": [
     {
-      "description": "member-body",
-      "arc": 2,
-      "nodes": [
+      "id": "iso",
+      "number": 1,
+      "arcs": [
         {
-          "description": "us",
-          "arc": 840,
-          "nodes": [
+          "id": "member-body",
+          "number": 2,
+          "arcs": [
             {
-              "description": "rsadsi",
-              "arc": 113549,
-              "nodes": [
+              "id": "us",
+              "number": 840,
+              "arcs": [
                 {
-                  "description": "pkcs",
-                  "arc": 1,
-                  "nodes": [
+                  "id": "rsadsi",
+                  "number": 113549,
+                  "arcs": [
                     {
-                      "description": "pkcs-1",
-                      "arc": 1,
-                      "nodes": [
+                      "id": "pkcs",
+                      "number": 1,
+                      "arcs": [
                         {
-                          "description": "rsaEncryption",
-                          "arc": 1
-                        },
-                        {
-                          "description": "md2withRSAEncryption",
-                          "arc": 2
-                        },
-                        {
-                          "description": "md5withRSAEncryption",
-                          "arc": 4
-                        },
-                        {
-                          "description": "sha1WithRSAEncryption",
-                          "arc": 5
-                        }
-                      ]
-                    },
-                    {
-                      "description": "pkcs-3",
-                      "id": 3,
-                      "nodes": [
-                        {
-                          "description": "dhKeyAgreement",
-                          "id": 1
-                        }
-                      ]
-                    },
-                    {
-                      "description": "pkcs-5",
-                      "arc": 5,
-                      "nodes": [
-                        {
-                          "description": "pbeWithMD2AndDES-CBC",
-                          "arc": 1
-                        },
-                        {
-                          "description": "pbeWithMD5AndDES-CBC",
-                          "arc": 3
-                        }
-                      ]
-                    },
-                    {
-                      "description": "pkcs-7",
-                      "arc": 7,
-                      "nodes": [
-                        {
-                          "description": "data",
-                          "arc": 1
-                        },
-                        {
-                          "description": "signedData",
-                          "arc": 2
-                        },
-                        {
-                          "description": "envelopedData",
-                          "arc": 3
-                        },
-                        {
-                          "description": "signedAndEnvelopedData",
-                          "arc": 4
-                        },
-                        {
-                          "description": "digestData",
-                          "arc": 5
-                        },
-                        {
-                          "description": "encryptedData",
-                          "arc": 6
-                        }
-                      ]
-                    },
-                    {
-                      "description": "pkcs-9",
-                      "arc": 9,
-                      "nodes": [
-                        {
-                          "description": "emailAddress",
-                          "arc": 1
-                        },
-                        {
-                          "description": "unstructuredName",
-                          "arc": 2
-                        },
-                        {
-                          "description": "contentType",
-                          "arc": 3
-                        },
-                        {
-                          "description": "messageDigest",
-                          "arc": 4
-                        },
-                        {
-                          "description": "signingTime",
-                          "arc": 5
-                        },
-                        {
-                          "description": "countersignature",
-                          "arc": 6
-                        },
-                        {
-                          "description": "challengePassword",
-                          "arc": 7
-                        },
-                        {
-                          "description": "unstructuredAddress",
-                          "arc": 8
-                        },
-                        {
-                          "description": "extendedCertificateAttributes",
-                          "arc": 9
-                        }
-                      ]
-                    },
-                    {
-                      "description": "pkcs-11",
-                      "arc": 11
-                    },
-                    {
-                      "description": "pkcs-12",
-                      "arc": 12,
-                      "nodes": [
-                        {
-                          "description": "pkcs-12PbeIds",
-                          "arc": 1,
-                          "nodes": [
+                          "id": "pkcs-1",
+                          "number": 1,
+                          "arcs": [
                             {
-                              "description": "pbeWithSHA1And128BitRC4",
-                              "arc": 1
+                              "id": "rsaEncryption",
+                              "number": 1
                             },
                             {
-                              "description": "pbeWithSHA1And40BitRC4",
-                              "arc": 2
+                              "id": "md2withRSAEncryption",
+                              "number": 2
                             },
                             {
-                              "description": "pbeWithSHA1And3-KeyTripleDES-CBC",
-                              "arc": 3
+                              "id": "md5withRSAEncryption",
+                              "number": 4
                             },
                             {
-                              "description": "pbeWithSHA1And2-KeyTripleDES-CBC",
-                              "arc": 4
+                              "id": "sha1WithRSAEncryption",
+                              "number": 5
+                            }
+                          ]
+                        },
+                        {
+                          "id": "pkcs-3",
+                          "number": 3,
+                          "arcs": [
+                            {
+                              "id": "dhKeyAgreement",
+                              "number": 1
+                            }
+                          ]
+                        },
+                        {
+                          "id": "pkcs-5",
+                          "number": 5,
+                          "arcs": [
+                            {
+                              "id": "pbeWithMD2AndDES-CBC",
+                              "number": 1
                             },
                             {
-                              "description": "pbeWithSHA1And128BitRC2-CBC",
-                              "arc": 5
+                              "id": "pbeWithMD5AndDES-CBC",
+                              "number": 3
+                            }
+                          ]
+                        },
+                        {
+                          "id": "pkcs-7",
+                          "number": 7,
+                          "arcs": [
+                            {
+                              "id": "data",
+                              "number": 1
                             },
                             {
-                              "description": "pbeWithSHA1And40BitRC2-CBC",
-                              "arc": 6
+                              "id": "signedData",
+                              "number": 2
+                            },
+                            {
+                              "id": "envelopedData",
+                              "number": 3
+                            },
+                            {
+                              "id": "signedAndEnvelopedData",
+                              "number": 4
+                            },
+                            {
+                              "id": "digestData",
+                              "number": 5
+                            },
+                            {
+                              "id": "encryptedData",
+                              "number": 6
+                            }
+                          ]
+                        },
+                        {
+                          "id": "pkcs-9",
+                          "number": 9,
+                          "arcs": [
+                            {
+                              "id": "emailAddress",
+                              "number": 1
+                            },
+                            {
+                              "id": "unstructuredName",
+                              "number": 2
+                            },
+                            {
+                              "id": "contentType",
+                              "number": 3
+                            },
+                            {
+                              "id": "messageDigest",
+                              "number": 4
+                            },
+                            {
+                              "id": "signingTime",
+                              "number": 5
+                            },
+                            {
+                              "id": "countersignature",
+                              "number": 6
+                            },
+                            {
+                              "id": "challengePassword",
+                              "number": 7
+                            },
+                            {
+                              "id": "unstructuredAddress",
+                              "number": 8
+                            },
+                            {
+                              "id": "extendedCertificateAttributes",
+                              "number": 9
+                            }
+                          ]
+                        },
+                        {
+                          "id": "pkcs-11",
+                          "number": 11
+                        },
+                        {
+                          "id": "pkcs-12",
+                          "number": 12,
+                          "arcs": [
+                            {
+                              "id": "pkcs-12PbeIds",
+                              "number": 1,
+                              "arcs": [
+                                {
+                                  "id": "pbeWithSHA1And128BitRC4",
+                                  "number": 1
+                                },
+                                {
+                                  "id": "pbeWithSHA1And40BitRC4",
+                                  "number": 2
+                                },
+                                {
+                                  "id": "pbeWithSHA1And3-KeyTripleDES-CBC",
+                                  "number": 3
+                                },
+                                {
+                                  "id": "pbeWithSHA1And2-KeyTripleDES-CBC",
+                                  "number": 4
+                                },
+                                {
+                                  "id": "pbeWithSHA1And128BitRC2-CBC",
+                                  "number": 5
+                                },
+                                {
+                                  "id": "pbeWithSHA1And40BitRC2-CBC",
+                                  "number": 6
+                                }
+                              ]
                             }
                           ]
                         }
                       ]
-                    }
-                  ]
-                },
-                {
-                  "description": "digestAlgorithm",
-                  "arc": 2,
-                  "nodes": [
-                    {
-                      "description": "md2",
-                      "arc": 2
                     },
                     {
-                      "description": "md4",
-                      "arc": 4
+                      "id": "digestAlgorithm",
+                      "number": 2,
+                      "arcs": [
+                        {
+                          "id": "md2",
+                          "number": 2
+                        },
+                        {
+                          "id": "md4",
+                          "number": 4
+                        },
+                        {
+                          "id": "md5",
+                          "number": 5
+                        }
+                      ]
                     },
                     {
-                      "description": "md5",
-                      "arc": 5
-                    }
-                  ]
-                },
-                {
-                  "description": "encryptionAlgorithm",
-                  "arc": 3,
-                  "nodes": [
-                    {
-                      "description": "rc2-cbc",
-                      "arc": 2
-                    },
-                    {
-                      "description": "des-ede3-cbc",
-                      "arc": 7
-                    },
-                    {
-                      "description": "RC5CBC",
-                      "arc": 8
-                    },
-                    {
-                      "description": "RC5CBCPAD",
-                      "arc": 9
+                      "id": "encryptionAlgorithm",
+                      "number": 3,
+                      "arcs": [
+                        {
+                          "id": "rc2-cbc",
+                          "number": 2
+                        },
+                        {
+                          "id": "des-ede3-cbc",
+                          "number": 7
+                        },
+                        {
+                          "id": "RC5CBC",
+                          "number": 8
+                        },
+                        {
+                          "id": "RC5CBCPAD",
+                          "number": 9
+                        }
+                      ]
                     }
                   ]
                 }
