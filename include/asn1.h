@@ -93,20 +93,20 @@ char	*asn1_oid_get_oid(const char *name);
 //////////////
 
 typedef enum e_asn_v2_tag_mode {
-	ASN_V2_TAG_MODE_EXPLICIT,
+	ASN_V2_TAG_MODE_EXPLICIT = 0,
 	ASN_V2_TAG_MODE_IMPLICIT,
 	ASN_V2_TAG_MODE_AUTOMATIC,
 } t_asn_v2_tag_mode;
 
 typedef enum e_asn_v2_tag_class {
-	ASN_V2_TAG_CLASS_UNIVERSAL,
+	ASN_V2_TAG_CLASS_UNIVERSAL = 0,
 	ASN_V2_TAG_CLASS_APPLICATION,
 	ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC,
 	ASN_V2_TAG_CLASS_PRIVATE,
 } t_asn_v2_tag_class;
 
 typedef enum e_asn_v2_type_kind {
-	ASN_V2_TYPE_KIND_NULL,
+	ASN_V2_TYPE_KIND_NULL = 0,
 	ASN_V2_TYPE_KIND_BOOLEAN,
 	ASN_V2_TYPE_KIND_INTEGER,
 	ASN_V2_TYPE_KIND_BIT_STRING,
@@ -173,7 +173,7 @@ typedef enum t_asn_v2_universal_tag_number {
 #define ASN_V2_OID_MAX_ARC_NUMBER SIZE_MAX
 
 typedef enum e_asn_v2_oid_arc_kind {
-	ASN_V2_OID_ARC_KIND_NUMERIC,
+	ASN_V2_OID_ARC_KIND_NUMERIC = 0,
 	ASN_V2_OID_ARC_KIND_NAMED,
 } t_asn_v2_oid_arc_kind;
 
@@ -211,7 +211,7 @@ typedef struct s_asn_v2_tag {
 } t_asn_v2_tag;
 
 typedef enum e_asn_v2_constraint_kind {
-	ASN_V2_CONSTRAINT_KIND_RANGE,
+	ASN_V2_CONSTRAINT_KIND_RANGE = 0,
 	ASN_V2_CONSTRAINT_KIND_SIZE,
 } t_asn_v2_constraint_kind;
 
@@ -263,7 +263,7 @@ int		asn1_v2_oid_tree_create(const char *filename, t_node_v2 **tree);
 void	asn1_v2_oid_tree_delete(t_node_v2 *tree);
 
 const char	*asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn1_v2_oid *oid);
-const t_asn1_v2_oid	*asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name);
+int	asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn1_v2_oid *oid);
 char *asn1_v2_oid_dumps(const t_asn1_v2_oid *oid);
 
 typedef struct s_der_v2_tag {
@@ -306,10 +306,11 @@ typedef struct s_der_v2_component {
 int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type);
 
 char *der_v2_type_dumps(const t_der_v2_type *der_type);
-char *der_v2_value_dumps(const t_der_v2_value *der_value);
+char *der_v2_type_dumpb(const t_der_v2_type *der_type, char *buf, size_t size);
 char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, int depth, size_t width, bool colored);
 
-char *der_v2_type_dumpb(const t_der_v2_type *der_type, char *buf, size_t size);
+char *der_v2_value_dumps(const t_der_v2_value *der_value);
+char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, int depth, size_t width, bool colored);
 
 int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value **der_value);

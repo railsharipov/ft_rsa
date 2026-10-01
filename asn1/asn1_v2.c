@@ -220,13 +220,17 @@ static t_asn1_v2_oid_arc *__asn1_v2_oid_arc_create(void)
 static void __asn1_v2_oid_arc_clear(t_asn1_v2_oid_arc *arc)
 {
 	switch (arc->kind) {
-	case ASN_V2_OID_ARC_KIND_NUMERIC:
+	case ASN_V2_OID_ARC_KIND_NUMERIC: {
 		break;
-	case ASN_V2_OID_ARC_KIND_NAMED:
+	}
+	case ASN_V2_OID_ARC_KIND_NAMED: {
 		if (NULL != arc->as.name) SSL_FREE(arc->as.name);
 		arc->as.name = NULL;
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 oid arc type: %d", arc->kind);
+	}}
 }
 
 static void __asn1_v2_oid_arc_delete(t_asn1_v2_oid_arc *arc)
@@ -238,13 +242,18 @@ static void __asn1_v2_oid_arc_delete(t_asn1_v2_oid_arc *arc)
 static void __asn1_v2_oid_arc_copy(const t_asn1_v2_oid_arc *src, t_asn1_v2_oid_arc *dst)
 {
 	switch (src->kind) {
-	case ASN_V2_OID_ARC_KIND_NUMERIC:
-		break;
+	case ASN_V2_OID_ARC_KIND_NUMERIC: {
 		dst->as.number = src->as.number;
-	case ASN_V2_OID_ARC_KIND_NAMED:
-		if (NULL != src->as.name) dst->as.name = ft_strdup(src->as.name);
 		break;
 	}
+	case ASN_V2_OID_ARC_KIND_NAMED: {
+		assert(NULL != src->as.name);
+		dst->as.name = ft_strdup(src->as.name);
+		break;
+	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 oid arc type: %d", src->kind);
+	}}
 }
 
 static inline void __asn1_v2_oid_arc_delete_adapter(void *vctx)
@@ -401,18 +410,22 @@ static bool __asn1_v2_oid_node_find_by_name(t_node_v2 *node, const void *vctx)
 	return false;
 }
 
-const t_asn1_v2_oid *asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name)
+int asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn1_v2_oid *oid)
 {
-	if (NULL == tree || NULL == name) {
+	if (NULL == tree || NULL == name || NULL == oid) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (NULL);
+		return (SSL_ERR);
 	}
 	t_node_v2 *node = ft_ntree_v2_dfs(tree, __asn1_v2_oid_node_find_by_name, name);
 	if (NULL != node) {
 		const t_asn1_v2_oid_node *oid_node = container_of(node, const t_asn1_v2_oid_node, base);
-		return (&oid_node->oid);
+		for (size_t i = 0; i < oid_node->oid.narcs; i++) {
+			oid->arc_nums[i] = oid_node->oid.arc_nums[i];
+			oid->narcs++;
+		}
+		return (SSL_OK);
 	}
-	return (NULL);
+	return (SSL_ERR);
 }
 
 char *asn1_v2_oid_dumps(const t_asn1_v2_oid *oid)
@@ -596,8 +609,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	switch (asn1_type) {
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_CHOICE:
-	case ASN_V2_TYPE_KIND_SET:
-		;;
+	case ASN_V2_TYPE_KIND_SET: {
 		const t_json_v2 *jcomponents = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
 			SSL_LOG(ERROR, "asn1 type: no `%s` key specified: %s", __JQ_TYPE_COMPONENTS, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
@@ -614,9 +626,9 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 			}
 		}
 		break;
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-	case ASN_V2_TYPE_KIND_SET_OF:
-		;;
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		const t_json_v2 *jelement_type = NULL;
 		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENT_TYPE, jtype, &jelement_type)) {
 			SSL_LOG(ERROR, "asn1 type: no `%s` key specified: %s", __JQ_TYPE_COMPONENT_TYPE, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
@@ -629,8 +641,8 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 			}
 		}
 		break;
-	case ASN_V2_TYPE_KIND_ANY:
-		;;
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
 		const t_json_v2 *jdefined_by_id = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
 			if (jdefined_by_id->kind != JSON_V2_TYPE_STRING) {
@@ -638,6 +650,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 				return (SSL_ERR);
 			}
 		}
+	}
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INTEGER:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -647,9 +660,12 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
+	default: {
+		UNREACHABLE("__asn1_v2_schema_validate_type");
+	}}
 
 	const t_json_v2 *jtags = NULL;
 	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_TAGS, jtype, &jtags)) {
@@ -819,7 +835,7 @@ static char *__asn1_v2_constraint_dumps(const t_asn_v2_constraint *asn1_constrai
 	t_ostring ostring = {0};
 
 	switch (asn1_constraint->kind) {
-	case ASN_V2_CONSTRAINT_KIND_RANGE:
+	case ASN_V2_CONSTRAINT_KIND_RANGE: {
 		ft_ostr_append_cstr(&ostring, "{\"type\":\"range\"");
 		if (NULL != asn1_constraint->as.range.min) {
 			char *min_dumps = bnum_to_dec(asn1_constraint->as.range.min);
@@ -837,10 +853,14 @@ static char *__asn1_v2_constraint_dumps(const t_asn_v2_constraint *asn1_constrai
 		}
 		ft_ostr_append_cstr(&ostring, "}");
 		break;
-	case ASN_V2_CONSTRAINT_KIND_SIZE:
+	}
+	case ASN_V2_CONSTRAINT_KIND_SIZE: {
 		ft_ostr_appendf(&ostring, "{\"type\":\"size\",\"min\":%zu,\"min\":%zu}", asn1_constraint->as.size.min, asn1_constraint->as.size.max);
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 constraint type: %d", asn1_constraint->kind);
+	}}
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
 	return (dumps);
@@ -874,13 +894,18 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 		while (ft_list_next_content(&asn1_value->as.object_id.arcs, &next, &content)) {
 			if (commas++) ft_ostr_append_cstr(&ostring, ",");
 			t_asn1_v2_oid_arc *arc = content;
-			if (NULL != arc->as.name) {
+			switch (arc->kind) {
+			case ASN_V2_OID_ARC_KIND_NAMED: {
+				assert(NULL != arc->as.name);
 				ft_ostr_appendf(&ostring, "\"%s\"", arc->as.name);
-			} else  {
+				break;
+			}
+			case ASN_V2_OID_ARC_KIND_NUMERIC: {
 				char *arcs = ft_itoa_zu(arc->as.number);
 				ft_ostr_append_cstr(&ostring, arcs);
 				SSL_FREE(arcs);
-			}
+				break;
+			}}
 		}
 		ft_ostr_append_cstr(&ostring, "]");
 		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
@@ -940,6 +965,9 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 			ft_sprintf(&dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<%p,size=%zu>\"}}", &asn1_value->as.any.octets, asn1_value->as.any.octets.size);
 		}
 		return (dumps);
+	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 value type: %d", asn1_value->kind);
 	}}
 }
 
@@ -983,8 +1011,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 	switch (asn1_type->kind) {
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_CHOICE:
-	case ASN_V2_TYPE_KIND_SET:
-		;;
+	case ASN_V2_TYPE_KIND_SET: {
 		t_list_next next = {0};
 		void *content = NULL;
 		size_t commas = 0;
@@ -997,17 +1024,19 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 		}
 		ft_ostr_append_cstr(&ostring, "]");
 		break;
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-	case ASN_V2_TYPE_KIND_SET_OF:
-		;;
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		char *dumps = __asn1_v2_type_dumps(asn1_type->as.collection.element_type);
 		ft_ostr_appendf(&ostring, ",\"element_type\":%s", dumps);
 		SSL_FREE(dumps);
 		break;
-	case ASN_V2_TYPE_KIND_ANY:
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
 		if (NULL != asn1_type->as.any.defined_by_id) {
 			ft_ostr_appendf(&ostring, ",\"defined_by_id\":\"%s\"", asn1_type->as.any.defined_by_id);
 		}
+	}
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INTEGER:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -1017,9 +1046,12 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
+	}}
 
 	ft_ostr_append_cstr(&ostring, "}");
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
@@ -1317,6 +1349,8 @@ static void __asn1_v2_value_clear(t_asn_v2_value *asn1_value)
 		asn1_value->as.any.defined_by_id = NULL;
 		ft_ostr_clear(&asn1_value->as.any.octets);
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown asn1 value type: %d", asn1_value->kind);
 	}
 }
 
@@ -1331,32 +1365,37 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 	dst->kind = src->kind;
 
 	switch (src->kind) {
-	case ASN_V2_TYPE_KIND_NULL:
+	case ASN_V2_TYPE_KIND_NULL: {
 		break;
-	case ASN_V2_TYPE_KIND_BOOLEAN:
+	}
+	case ASN_V2_TYPE_KIND_BOOLEAN: {
 		dst->as.boolean = src->as.boolean;
 		break;
-	case ASN_V2_TYPE_KIND_INTEGER:
+	}
+	case ASN_V2_TYPE_KIND_INTEGER: {
 		bnum_copy(&src->as.number, &dst->as.number);
 		break;
+	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
-	case ASN_V2_TYPE_KIND_IA5_STRING:
+	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		dst->as.cstring = ft_strdup(src->as.cstring);
 		break;
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	}
+	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		ft_list_copy_all_content(&src->as.object_id.arcs, &dst->as.object_id.arcs, __asn1_v2_oid_arc_copy_adapter);
 		break;
+	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
-	case ASN_V2_TYPE_KIND_OCTET_STRING:
+	case ASN_V2_TYPE_KIND_OCTET_STRING: {
 		ft_ostr_copy(&src->as.ostring, &dst->as.ostring);
 		break;
+	}
 	case ASN_V2_TYPE_KIND_SET:
 	case ASN_V2_TYPE_KIND_SET_OF:
 	case ASN_V2_TYPE_KIND_SEQUENCE:
-	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-		;;
+	case ASN_V2_TYPE_KIND_SEQUENCE_OF: {
 		void *content = NULL;
 		t_list_next next = {0};
 		while (ft_list_next_content(&src->as.composite.elements, &next, &content)) {
@@ -1365,18 +1404,23 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 			ft_list_append_content(&dst->as.composite.elements, copy_value);
 		}
 		break;
-	case ASN_V2_TYPE_KIND_CHOICE:
+	}
+	case ASN_V2_TYPE_KIND_CHOICE: {
 		if (NULL != src->as.choice.id) dst->as.choice.id = ft_strdup(src->as.choice.id);
 		if (NULL != src->as.choice.value) {
 			dst->as.choice.value = __asn1_v2_value_create();
 			__asn1_v2_value_copy(src->as.choice.value, dst->as.choice.value);
 		}
 		break;
-	case ASN_V2_TYPE_KIND_ANY:
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
 		if (NULL != src->as.any.defined_by_id) dst->as.any.defined_by_id = ft_strdup(src->as.any.defined_by_id);
 		ft_ostr_copy(&src->as.any.octets, &dst->as.any.octets);
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 value type: %d", src->kind);
+	}}
 }
 
 static t_asn_v2_constraint *__asn1_v2_constraint_create(void)
@@ -1400,6 +1444,8 @@ static void	__asn1_v2_constraint_clear(t_asn_v2_constraint *asn1_constraint)
 		asn1_constraint->as.size.min = 0;
 		asn1_constraint->as.size.max = SIZE_MAX;
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown asn1 constrain type: %d", asn1_constraint->kind);
 	}
 }
 
@@ -1421,6 +1467,8 @@ static void	__asn1_v2_constraint_copy(const t_asn_v2_constraint *src, t_asn_v2_c
 		dst->as.size.min = src->as.size.min;
 		dst->as.size.max = src->as.size.max;
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown asn1 constrain type: %d", src->kind);
 	}
 }
 
@@ -1459,6 +1507,8 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
 	}
 	ft_list_clear_all_content(&asn1_type->tags, __asn1_v2_tag_delete_adapter);
 	ft_list_clear_all_content(&asn1_type->constraints, __asn1_v2_constraint_delete_adapter);
@@ -1515,6 +1565,8 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown asn1 type: %d", src->kind);
 	}
 }
 
@@ -1627,10 +1679,10 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&jvalue->as.list, &next, &content)) {
-			t_asn1_v2_oid_arc *arc = NULL;
 			t_json_v2 *jarc = content;
+			t_asn1_v2_oid_arc *arc = NULL;
 			if (jarc->kind == JSON_V2_TYPE_STRING) {
-				if (NULL != jarc->as.cstring) goto label_error;
+				if (NULL == jarc->as.cstring) goto label_error;
 				arc = __asn1_v2_oid_arc_create();
 				arc->kind = ASN_V2_OID_ARC_KIND_NAMED;
 				arc->as.name = ft_strdup(jarc->as.cstring);
@@ -1868,6 +1920,10 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 	case ASN_V2_TYPE_KIND_ANY: {
 		SSL_LOG(ERROR, "parsing values for `%s` type is not supported", asn1_v2_get_type_name(asn1_type->kind));
 		goto label_error;
+	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
+		goto label_error;
 	}}
 
 	*asn1_value = avalue;
@@ -1956,6 +2012,8 @@ static int	__asn1_v2_schema_parse_constraint(const t_asn_v2_module *asn1_module,
 		aconstraint->as.size.min = (NULL == jmin) ? (size_t)bnum_to_dig_u(&jmin->as.number) : 0;
 		aconstraint->as.size.max = (NULL == jmax) ? (size_t)bnum_to_dig_u(&jmax->as.number) : SIZE_MAX;
 		break;
+	default:
+		UNREACHABLE("__asn1_v2_schema_parse_constraint");
 	}
 
 	*asn1_constraint = aconstraint;
@@ -2223,8 +2281,7 @@ static int	__asn1_v2_type_compile_automatic_tags(const t_asn_v2_module *asn1_mod
 	switch (asn1_type->kind) {
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_CHOICE:
-	case ASN_V2_TYPE_KIND_SET:
-		;;
+	case ASN_V2_TYPE_KIND_SET: {
 		bool has_tagged_component = false;
 		void *content = NULL;
 		t_list_next next = {0};
@@ -2251,9 +2308,11 @@ static int	__asn1_v2_type_compile_automatic_tags(const t_asn_v2_module *asn1_mod
 			}
 		}
 		return (SSL_OK);
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-	case ASN_V2_TYPE_KIND_SET_OF:
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		return (__asn1_v2_type_compile_automatic_tags(asn1_module, asn1_type->as.collection.element_type));
+	}
 	case ASN_V2_TYPE_KIND_ANY:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INTEGER:
@@ -2264,9 +2323,13 @@ static int	__asn1_v2_type_compile_automatic_tags(const t_asn_v2_module *asn1_mod
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		return (SSL_OK);
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
+		return (SSL_ERR);
+	}}
 }
 
 static int	__asn1_v2_component_compile_automatic_tags(const t_asn_v2_module *asn1_module, t_asn_v2_component *asn1_component)
@@ -2404,6 +2467,8 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 		if (NULL != src->as.any.defined_by_id) dst->as.any.defined_by_id = ft_strdup(src->as.any.defined_by_id);
 		ft_ostr_copy(&src->as.any.octets, &dst->as.any.octets);
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown der value type: %d", src->kind);
 	}
 	dst->kind = src->kind;
 }
@@ -2453,6 +2518,8 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 		der_value->as.any.defined_by_id = NULL;
 		ft_ostr_clear(&der_value->as.any.octets);
 		return;
+	default:
+		SSL_LOG(ERROR, "unknown der value type: %d", der_value->kind);
 	}
 }
 
@@ -2515,6 +2582,8 @@ static void __der_v2_type_delete(t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 		break;
+	default:
+		SSL_LOG(ERROR, "unknown der value type: %d", der_type->kind);
 	}
 	SSL_FREE(der_type);
 }
@@ -2554,6 +2623,9 @@ static t_der_v2_tag __der_v2_get_tag_universal(t_asn_v2_type_kind type)
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_ANY:
 		return (t_der_v2_tag){0};
+	default:
+		SSL_LOG(ERROR, "unknown asn1 type: %d", type);
+		return (t_der_v2_tag){0};
 	}
 }
 
@@ -2566,24 +2638,28 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 	t_der_v2_value *compiled = __der_v2_value_create();
 
 	switch (asn1_value->kind) {
-	case ASN_V2_TYPE_KIND_NULL:
+	case ASN_V2_TYPE_KIND_NULL: {
 		compiled->kind = asn1_value->kind;
 		break;
-	case ASN_V2_TYPE_KIND_BOOLEAN:
+	}
+	case ASN_V2_TYPE_KIND_BOOLEAN: {
 		compiled->kind = asn1_value->kind;
 		compiled->as.boolean = asn1_value->as.boolean;
 		break;
-	case ASN_V2_TYPE_KIND_INTEGER:
+	}
+	case ASN_V2_TYPE_KIND_INTEGER: {
 		compiled->kind = asn1_value->kind;
 		bnum_copy(&asn1_value->as.number, &compiled->as.number);
 		break;
+	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
-	case ASN_V2_TYPE_KIND_IA5_STRING:
+	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		compiled->kind = asn1_value->kind;
 		if (NULL != asn1_value->as.cstring) compiled->as.cstring = ft_strdup(asn1_value->as.cstring);
 		break;
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	}
+	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		compiled->kind = asn1_value->kind;
 		t_list_next next = {0};
 		void *content = NULL;
@@ -2591,10 +2667,12 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 		while (ft_list_next_content(&asn1_value->as.object_id.arcs, &next, &content)) {
 			t_asn1_v2_oid_arc *arc = content;
 			switch (arc->kind) {
-			case ASN_V2_OID_ARC_KIND_NUMERIC:
+			case ASN_V2_OID_ARC_KIND_NUMERIC: {
 				if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) goto label_error;
 				compiled_oid->arc_nums[compiled_oid->narcs++] = arc->as.number;
-			case ASN_V2_OID_ARC_KIND_NAMED:
+				break;
+			}
+			case ASN_V2_OID_ARC_KIND_NAMED: {
 				assert(NULL != arc->as.name);
 				// TODO: Initializing oid tree every time it is required is not very effective but it is very small so this is ok for now.
 				t_node_v2 *oid_tree = NULL;
@@ -2602,26 +2680,30 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 					SSL_LOG(ERROR, "failed to init asn1 oid tree");
 					goto label_error;
 				}
+				t_asn1_v2_oid named_arc_oid = {0};
+				int ret = asn1_v2_get_oid_by_name(oid_tree, arc->as.name, &named_arc_oid);
 				ft_ntree_v2_del(oid_tree, __asn1_v2_oid_node_delete_adapter);
-				const t_asn1_v2_oid *named_arc_oid = asn1_v2_get_oid_by_name(oid_tree, arc->as.name);
-				if (NULL == named_arc_oid) goto label_error;
-				for (size_t i = 0; i < named_arc_oid->narcs; i++) {
+				if (SSL_OK != ret) goto label_error;
+				for (size_t i = 0; i < named_arc_oid.narcs; i++) {
 					if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) goto label_error;
-					compiled_oid->arc_nums[compiled_oid->narcs++] = named_arc_oid->arc_nums[i];
+					compiled_oid->arc_nums[compiled_oid->narcs++] = named_arc_oid.arc_nums[i];
 				}
-			}
+				break;
+			}}
 		}
 		break;
+	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
-	case ASN_V2_TYPE_KIND_BIT_STRING:
+	case ASN_V2_TYPE_KIND_BIT_STRING: {
 		compiled->kind = asn1_value->kind;
 		ft_ostr_copy(&asn1_value->as.ostring, &compiled->as.ostring);
 		break;
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET:
-	case ASN_V2_TYPE_KIND_SET_OF:
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		compiled->kind = asn1_value->kind;
 		if (asn1_value->as.composite.elements.size > 0) {
 			SSL_ALLOC(compiled->as.composite.items, asn1_value->as.composite.elements.size * sizeof(t_der_v2_value));
@@ -2639,19 +2721,25 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 			}
 		}
 		break;
-	case ASN_V2_TYPE_KIND_CHOICE:
+	}
+	case ASN_V2_TYPE_KIND_CHOICE: {
 		compiled->kind = asn1_value->kind;
 		if (NULL != asn1_value->as.choice.id) compiled->as.choice.id = ft_strdup(asn1_value->as.choice.id);
 		if (SSL_OK != __asn1_v2_value_compile(&compiled->as.choice.value, asn1_value->as.choice.value)) {
 			goto label_error;
 		}
 		break;
-	case ASN_V2_TYPE_KIND_ANY:
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
 		compiled->kind = asn1_value->kind;
 		if (NULL != asn1_value->as.any.defined_by_id) compiled->as.any.defined_by_id = ft_strdup(asn1_value->as.any.defined_by_id);
 		ft_ostr_copy(&asn1_value->as.any.octets, &compiled->as.any.octets);
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 value type: %d", asn1_value->kind);
+		goto label_error;
+	}}
 	*der_value = compiled;
 	return (SSL_OK);
 
@@ -2713,8 +2801,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 
 	switch (asn1_type->kind) {
 	case ASN_V2_TYPE_KIND_SEQUENCE:
-	case ASN_V2_TYPE_KIND_SET:
-		;;
+	case ASN_V2_TYPE_KIND_SET: {
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
@@ -2727,9 +2814,10 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		}
 		compiled->kind = asn1_type->kind;
 		break;
-	case ASN_V2_TYPE_KIND_CHOICE:
-		next = (t_list_next){0};
-		content = NULL;
+	}
+	case ASN_V2_TYPE_KIND_CHOICE: {
+		t_list_next next = {0};
+		void *content = NULL;
 		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
 			t_der_v2_component *compiled_element = NULL;
 			if (SSL_OK != __asn1_v2_component_compile(&compiled_element, content)) {
@@ -2749,17 +2837,20 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		// Choice does not have an implicit tag, its tag is a choice from a set of its alternatives.
 		compiled->kind = asn1_type->kind;
 		break;
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-	case ASN_V2_TYPE_KIND_SET_OF:
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		if (SSL_OK != asn1_v2_type_compile(&compiled->as.collection.element_type, asn1_type->as.collection.element_type)) {
 			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: %s", asn1_v2_get_type_name(asn1_type->kind), __asn1_v2_type_dumpb(asn1_type, cbuf, sizeof(cbuf)));
 			goto label_error;
 		}
 		compiled->kind = asn1_type->kind;
 		break;
-	case ASN_V2_TYPE_KIND_ANY:
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
 		compiled->kind = asn1_type->kind;
 		break;
+	}
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INTEGER:
 	case ASN_V2_TYPE_KIND_BOOLEAN:
@@ -2769,10 +2860,14 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		compiled->kind = asn1_type->kind;
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
+		goto label_error;
+	}}
 
 	// CHOICE and ANY do not have their own tag.
 	if (ASN_V2_TYPE_KIND_CHOICE != asn1_type->kind && ASN_V2_TYPE_KIND_ANY != asn1_type->kind) {
@@ -2796,17 +2891,19 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		}
 		t_der_v2_tag *compiled_tag = NULL;
 		switch (asn1_tag->mode) {
-		case ASN_V2_TAG_MODE_AUTOMATIC:
+		case ASN_V2_TAG_MODE_AUTOMATIC: {
 			SSL_LOG(ERROR, "failed to compile `%s` asn1 type: unexpected automatic tag mode", asn1_v2_get_type_name(asn1_type->kind));
 			goto label_error;
-		case ASN_V2_TAG_MODE_EXPLICIT:
+		}
+		case ASN_V2_TAG_MODE_EXPLICIT: {
 			compiled_tag = __der_v2_tag_create();
 			compiled_tag->class = asn1_tag->class;
 			compiled_tag->number = asn1_tag->number;
 			compiled_tag->constructed = true;
 			ft_list_append_content(&compiled->tags, compiled_tag);
 			break;
-		case ASN_V2_TAG_MODE_IMPLICIT:
+		}
+		case ASN_V2_TAG_MODE_IMPLICIT: {
 			if (ASN_V2_TYPE_KIND_CHOICE == asn1_type->kind || ASN_V2_TYPE_KIND_ANY == asn1_type->kind) {
 				SSL_LOG(ERROR, "failed to compile `%s` asn1 type: implicit tags are not allowed for this type", asn1_v2_get_type_name(asn1_type->kind));
 				goto label_error;
@@ -2822,6 +2919,10 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 			ft_list_append_content(&compiled->tags, compiled_tag);
 			break;
 		}
+		default: {
+			SSL_LOG(ERROR, "unknown asn1 tag mode: %d", asn1_tag->mode);
+			goto label_error;
+		}}
 	}
 
 	ft_list_copy_all_content(&asn1_type->constraints, &compiled->constraints, __asn1_v2_constraint_copy_adapter);
@@ -2922,6 +3023,10 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<octet_string=%p,size=%zu>\"}}", &der_value->as.any.octets, der_value->as.any.octets.size);
 		}
 		return (any_dumps);
+	}
+	default: {
+		SSL_LOG(ERROR, "unknown der value type: %d", der_value->kind);
+		return (ft_strdup("<_unknown_value_type_>"));
 	}}
 }
 
@@ -3001,8 +3106,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	switch (der_type->kind) {
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_CHOICE:
-	case ASN_V2_TYPE_KIND_SET:
-		;;
+	case ASN_V2_TYPE_KIND_SET: {
 		t_list_next next = {0};
 		void *content;
 		size_t commas = 0;
@@ -3015,13 +3119,14 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 		}
 		ft_ostr_append_cstr(&ostring, "]");
 		break;
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-	case ASN_V2_TYPE_KIND_SET_OF:
-		;;
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		char *dumps = der_v2_type_dumps(der_type->as.collection.element_type);
 		ft_ostr_appendf(&ostring, ",\"element_type\":%s", dumps);
 		SSL_FREE(dumps);
 		break;
+	}
 	case ASN_V2_TYPE_KIND_ANY:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INTEGER:
@@ -3032,9 +3137,12 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
+	default: {
+		SSL_LOG(ERROR, "unknown der type: %d", der_type->kind);
+	}}
 
 	ft_ostr_append_cstr(&ostring, "}");
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
@@ -3045,6 +3153,19 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, int depth, size_t width, bool colored)
 {
 	char *dumps = der_v2_type_dumps(der_type);
+	const t_json_v2 *json = NULL;
+	int status = json_v2_parse(dumps, &json);
+	if (JSON_V2_OK == status) {
+		SSL_FREE(dumps);
+		return (json_v2_pretty_dumps(json, depth, width, colored));
+	} else {
+		return (dumps);
+	}
+}
+
+char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, int depth, size_t width, bool colored)
+{
+	char *dumps = der_v2_value_dumps(der_value);
 	const t_json_v2 *json = NULL;
 	int status = json_v2_parse(dumps, &json);
 	if (JSON_V2_OK == status) {
@@ -3104,6 +3225,9 @@ static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **
 
 static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv)
 {
+	assert(NULL != tlv);
+
+	// SSL_LOG(TRACE, "current tlv: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv->tag.class, tlv->tag.number, tlv->tag.constructed, tlv->length, tlv->value);
 	ssize_t rbytes = 0;
 	uint8_t octet = 0;
 
@@ -3122,7 +3246,7 @@ static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *
 	if (encsize == 0) return false;
 	octet = enc[rbytes++];
 
-	tlv->tag.class = DER_V2_TAG_CLASS_MAP[octet & 0xC0];
+	tlv->tag.class = DER_V2_TAG_CLASS_MAP[(octet & 0xC0)>>6];
 	tlv->tag.constructed = (octet & 0x20) > 0;
 	uint32_t number = octet & 0x1F;
 	if (number == 0x1F) {
@@ -3265,6 +3389,7 @@ static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_
 					SSL_LOG(ERROR, "context-specific: bad nested tlv read");
 					goto label_error;
 				}
+				tlv.tag = nested_tlv.tag;
 				tlv.value = nested_tlv.value;
 				tlv.length = nested_tlv.length;
 				continue;
@@ -3284,6 +3409,10 @@ static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_
 		}
 		case ASN_V2_TAG_CLASS_PRIVATE: {
 			SSL_LOG(ERROR, "private: no private scoped asn1 tags currently implemented", tlv.tag.number);
+			goto label_error;
+		}
+		default: {
+			SSL_LOG(ERROR, "unknown tag class: %d", tlv.tag.class);
 			goto label_error;
 		}}
 	}
@@ -3626,6 +3755,7 @@ static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type
 					SSL_LOG(ERROR, "context-specific: bad nested tlv read");
 					goto label_error;
 				}
+				tlv.tag = nested_tlv.tag;
 				tlv.value = nested_tlv.value;
 				tlv.length = nested_tlv.length;
 				continue;
@@ -3643,6 +3773,10 @@ static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type
 		}
 		case ASN_V2_TAG_CLASS_PRIVATE: {
 			SSL_LOG(ERROR, "private: no private scoped asn1 tags currently implemented", tlv.tag.number);
+			goto label_error;
+		}
+		default: {
+			SSL_LOG(ERROR, "unknown tag class: %d", tlv.tag.class);
 			goto label_error;
 		}}
 	}
