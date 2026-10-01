@@ -777,13 +777,9 @@ t_node_v2 *ft_ntree_v2_dfs(t_node_v2 *node, t_func_node_find f_find, const void 
 	if (f_find(node, vctx)) {
 		return (node);
 	}
-	t_node_v2 *result_node = NULL;
-	t_node_v2 *child_node = node->nodes;
-	while (NULL != child_node) {
-		result_node = ft_ntree_v2_dfs(child_node, f_find, vctx);
-		if (NULL != result_node) return (result_node);
-		child_node = child_node->next;
-	}
+	t_node_v2 *result_node = ft_ntree_v2_dfs(node->nodes, f_find, vctx);
+	if (NULL != result_node) return (result_node);
+
 	result_node = ft_ntree_v2_dfs(node->next, f_find, vctx);
 	if (NULL != result_node) return (result_node);
 
@@ -798,15 +794,10 @@ t_node_v2 *ft_ntree_v2_dfs_with_unwind(t_node_v2 *node, t_func_node_find f_find,
 	if (f_find(node, find_vctx)) {
 		return (node);
 	}
-	t_node_v2 *result_node = NULL;
-	t_node_v2 *child_node = node->nodes;
-	while (NULL != child_node) {
-		result_node = ft_ntree_v2_dfs_with_unwind(child_node, f_find, find_vctx, f_on_unwind, unwind_vctx);
-		if (NULL != result_node) {
-			f_on_unwind(child_node, unwind_vctx);
-			return (result_node);
-		}
-		child_node = child_node->next;
+	t_node_v2 *result_node = ft_ntree_v2_dfs_with_unwind(node->nodes, f_find, find_vctx, f_on_unwind, unwind_vctx);
+	if (NULL != result_node) {
+		f_on_unwind(node->nodes, unwind_vctx);
+		return (result_node);
 	}
 	result_node = ft_ntree_v2_dfs_with_unwind(node->next, f_find, find_vctx, f_on_unwind, unwind_vctx);
 	if (NULL != result_node) {
@@ -823,11 +814,7 @@ void ft_ntree_v2_dfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx)
 
 	f_map(node, vctx);
 
-	t_node_v2 *child_node = node->nodes;
-	while (NULL != child_node) {
-		ft_ntree_v2_dfs_map(child_node, f_map, vctx);
-		child_node = child_node->next;
-	}
+	ft_ntree_v2_dfs_map(node->nodes, f_map, vctx);
 	ft_ntree_v2_dfs_map(node->next, f_map, vctx);
 }
 
@@ -836,11 +823,7 @@ void ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del)
 	assert(NULL != f_del);
 	if (NULL == node) return;
 
-	t_node_v2 *child_node = node->nodes;
-	while (NULL != child_node) {
-		ft_ntree_v2_del(child_node, f_del);
-		child_node = child_node->next;
-	}
+	ft_ntree_v2_del(node->nodes, f_del);
 	ft_ntree_v2_del(node->next, f_del);
 	f_del(node);
 }
