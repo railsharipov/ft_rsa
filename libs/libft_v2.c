@@ -131,6 +131,47 @@ void ft_list_reverse(t_list *list)
 	list->first = prev;
 }
 
+void ft_list_copy(const t_list *src, t_list *dst, t_func_node_copy f_copy)
+{
+	assert(NULL != src && NULL != dst);
+	assert(NULL != f_copy);
+
+	t_node_v2 *node = src->first;
+	while (NULL != node) {
+		ft_list_append(dst, f_copy(node));
+		node = node->next;
+	}
+}
+
+void ft_list_move(t_list *src, t_list *dst)
+{
+	assert(NULL != src && NULL != dst);
+
+	while (src->size > 0) {
+		ft_list_append(dst, ft_list_pop(src));
+	}
+}
+
+void ft_list_clear(t_list *list, t_func_node_del f_del)
+{
+	assert(NULL != list);
+	assert(NULL != f_del);
+
+	t_node_v2 *node = ft_list_pop(list);
+	while (NULL != node) {
+		f_del(node);
+		node = ft_list_pop(list);
+	}
+}
+
+void ft_list_del(t_list *list, t_func_node_del f_del)
+{
+	if (NULL == list) return;
+
+	ft_list_clear(list, f_del);
+	LIBFT_FREE(list);
+}
+
 char *ft_list_dumps(t_list *list)
 {
 	if (NULL == list) {
@@ -682,14 +723,12 @@ char *ft_htbl_v2_dumps(t_htbl_v2 *htbl)
 
 /****************************************************************************/
 
-t_node_v2 *ft_ntree_v2_bfs(t_ntree *ntree, t_func_node_op f_find, const void *vctx)
+t_node_v2 *ft_ntree_v2_bfs(t_node_v2 *node, t_func_node_find f_find, const void *vctx)
 {
-	assert(NULL != ntree);
 	assert(NULL != f_find);
-	if (NULL == ntree->root) return (NULL);
+	if (NULL == node) return (NULL);
 
 	t_list list = {0};
-	t_node_v2 *node = ntree->root;
 	while (NULL != node) {
 		ft_list_append_ref(&list, node);
 		node = node->next;
@@ -709,40 +748,99 @@ t_node_v2 *ft_ntree_v2_bfs(t_ntree *ntree, t_func_node_op f_find, const void *vc
 	return (NULL);
 }
 
-t_node_v2 *ft_ntree_v2_dfs(t_ntree *ntree, t_func_node_op f_find, const void *vctx)
+void ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx)
 {
-	assert(NULL != ntree);
-	assert(NULL != f_find);
-	if (NULL == ntree->root) return (NULL);
+	assert(NULL != f_map);
+	if (NULL == node) return;
 
-	t_node_v2 *node = ntree->root;
+	t_list list = {0};
+	while (NULL != node) {
+		ft_list_append_ref(&list, node);
+		node = node->next;
+	}
+	while (list.size != 0) {
+		node = ft_list_pop_ref(&list);
+		t_node_v2 *child_node = node->nodes;
+		while (NULL != child_node) {
+			ft_list_append_ref(&list, child_node);
+			child_node = child_node->next;
+		}
+		f_map(node, vctx);
+	}
+}
+
+t_node_v2 *ft_ntree_v2_dfs(t_node_v2 *node, t_func_node_find f_find, const void *vctx)
+{
+	assert(NULL != f_find);
+	if (NULL == node) return (NULL);
+
 	if (f_find(node, vctx)) {
 		return (node);
 	}
-	t_ntree nodes_ntree = { .root = node->nodes };
-	if (NULL != ft_ntree_v2_dfs(&nodes_ntree, f_find, vctx)) {
-		return (node->nodes);
+	t_node_v2 *result_node = NULL;
+	t_node_v2 *child_node = node->nodes;
+	while (NULL != child_node) {
+		result_node = ft_ntree_v2_dfs(child_node, f_find, vctx);
+		if (NULL != result_node) return (result_node);
+		child_node = child_node->next;
 	}
-	t_ntree next_ntree = { .root = node->next };
-	if (NULL != ft_ntree_v2_dfs(&next_ntree, f_find, vctx)) {
-		return (node->next);
+	result_node = ft_ntree_v2_dfs(node->next, f_find, vctx);
+	if (NULL != result_node) return (result_node);
+
+	return (NULL);
+}
+
+t_node_v2 *ft_ntree_v2_dfs_with_unwind(t_node_v2 *node, t_func_node_find f_find, const void *find_vctx, t_func_node_map f_on_unwind, void *unwind_vctx)
+{
+	assert(NULL != f_find && NULL != f_on_unwind);
+	if (NULL == node) return (NULL);
+
+	if (f_find(node, find_vctx)) {
+		return (node);
+	}
+	t_node_v2 *result_node = NULL;
+	t_node_v2 *child_node = node->nodes;
+	while (NULL != child_node) {
+		result_node = ft_ntree_v2_dfs_with_unwind(child_node, f_find, find_vctx, f_on_unwind, unwind_vctx);
+		if (NULL != result_node) {
+			f_on_unwind(child_node, unwind_vctx);
+			return (result_node);
+		}
+		child_node = child_node->next;
+	}
+	result_node = ft_ntree_v2_dfs_with_unwind(node->next, f_find, find_vctx, f_on_unwind, unwind_vctx);
+	if (NULL != result_node) {
+		f_on_unwind(node->next, unwind_vctx);
+		return (result_node);
 	}
 	return (NULL);
 }
 
-void ft_ntree_v2_del(t_ntree *ntree, t_func_node_delete f_del, const void *vctx)
+void ft_ntree_v2_dfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx)
 {
-	assert(NULL != ntree);
+	assert(NULL != f_map);
+	if (NULL == node) return;
+
+	f_map(node, vctx);
+
+	t_node_v2 *child_node = node->nodes;
+	while (NULL != child_node) {
+		ft_ntree_v2_dfs_map(child_node, f_map, vctx);
+		child_node = child_node->next;
+	}
+	ft_ntree_v2_dfs_map(node->next, f_map, vctx);
+}
+
+void ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del)
+{
 	assert(NULL != f_del);
-	if (NULL == ntree->root) return;
+	if (NULL == node) return;
 
-	t_node_v2 *node = ntree->root;
-
-	t_ntree nodes_ntree = { .root = node->nodes };
-	ft_ntree_v2_del(&nodes_ntree, f_del, vctx);
-
-	t_ntree next_ntree = { .root = node->next };
-	ft_ntree_v2_del(&next_ntree, f_del, vctx);
-
-	f_del(node, vctx);
+	t_node_v2 *child_node = node->nodes;
+	while (NULL != child_node) {
+		ft_ntree_v2_del(child_node, f_del);
+		child_node = child_node->next;
+	}
+	ft_ntree_v2_del(node->next, f_del);
+	f_del(node);
 }

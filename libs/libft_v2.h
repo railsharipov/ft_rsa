@@ -20,10 +20,11 @@ typedef struct s_node_v2 {
 	struct s_node_v2 *nodes;
 } t_node_v2;
 
-typedef void (*t_func_node_delete)(t_node_v2 *node, const void *vctx);
-typedef void (*t_func_node_map)(t_node_v2 *node, const void *vctx);
-typedef bool (*t_func_node_op)(t_node_v2 *node, const void *vctx);
-typedef t_node_v2 *(*t_func_node_copy)(t_node_v2 *node, const void *vctx);
+typedef void (*t_func_node_del)(t_node_v2 *node);
+typedef void (*t_func_node_map)(t_node_v2 *node, void *vctx);
+typedef bool (*t_func_node_op)(t_node_v2 *node, void *vctx);
+typedef bool (*t_func_node_find)(t_node_v2 *node, const void *vctx);
+typedef t_node_v2 *(*t_func_node_copy)(t_node_v2 *node);
 
 /****************************************************************************/
 
@@ -56,6 +57,10 @@ void	*ft_list_pop_ref(t_list *list);
 bool	ft_list_next_ref(const t_list *list, t_list_next *next, void **ref);
 void	ft_list_clear_all_ref(t_list *list);
 void	ft_list_del_all_ref(t_list *list);
+void	ft_list_copy(const t_list *src, t_list *dst, t_func_node_copy f_copy);
+void	ft_list_move(t_list *src, t_list *dst);
+void	ft_list_clear(t_list *list, t_func_node_del f_del);
+void	ft_list_del(t_list *list, t_func_node_del f_del);
 
 /****************************************************************************/
 
@@ -102,12 +107,11 @@ char		*ft_htbl_v2_dumps(t_htbl_v2 *htbl);
 
 /****************************************************************************/
 
-typedef struct s_ntree {
-	t_node_v2 *root;
-} t_ntree;
-
-t_node_v2	*ft_ntree_v2_dfs(t_ntree *ntree, t_func_node_op f_find, const void *vctx);
-t_node_v2	*ft_ntree_v2_bfs(t_ntree *ntree, t_func_node_op f_find, const void *vctx);
-void		ft_ntree_v2_del(t_ntree *ntree, t_func_node_delete f_del, const void *vctx);
+t_node_v2	*ft_ntree_v2_dfs(t_node_v2 *node, t_func_node_find f_find, const void *vctx);
+t_node_v2	*ft_ntree_v2_dfs_with_unwind(t_node_v2 *node, t_func_node_find f_find, const void *find_vctx, t_func_node_map f_on_unwind, void *unwind_vctx);
+void		ft_ntree_v2_dfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
+t_node_v2	*ft_ntree_v2_bfs(t_node_v2 *node, t_func_node_find f_find, const void *vctx);
+void		ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
+void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
 
 #endif //LIBFT_V2_H
