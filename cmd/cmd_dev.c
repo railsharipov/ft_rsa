@@ -16,74 +16,98 @@
 
 int	cmd_dev(const t_cmd *cmd)
 {
-	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
-	// const char *asn1_type_name = "EncryptedPrivateKeyInfo";
-	// const char *der_filename = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
-
-	const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
-	const char *asn1_type_name = "RSAPrivateKey";
-	const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
-
-	// const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
-	// const char *asn1_type_name = "PrivateKeyInfo";
-	// const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
-
-	const t_json_v2 *jschema = NULL;
-	if (JSON_OK != json_v2_parse_file(jschema_filename, &jschema)) {
-		SSL_LOG(ERROR, "json parse error");
-		return (SSL_ERR);
-	}
-	if (JSON_OK != json_v2_validate(jschema)) {
-		SSL_LOG(ERROR, "invalid json");
-		return (SSL_ERR);
-	}
-	if (SSL_OK != asn1_v2_schema_validate(jschema)) {
-		SSL_LOG(ERROR, "invalid asn1 schema");
+	const char *joid_tree_filename = "resources/asn1/oid-tree.json";
+	t_node_v2 *tree = NULL;
+	if (SSL_OK != asn1_v2_oid_tree_create(joid_tree_filename, &tree)) {
+		SSL_LOG(ERROR, "asn1 oid tree create error");
 		return (SSL_ERR);
 	} else {
-		SSL_LOG(INFO, "asn1 schema is valid");
+		SSL_LOG(INFO, "asn1 oid tree create success");
 	}
-	char *json_dumps = json_v2_pretty_dumps(jschema, 2, 240, true);
-	ft_printf("%s\n", json_dumps);
 
-	t_asn_v2_module *asn1_module = NULL;
-	if (SSL_OK != asn1_v2_schema_parse(&asn1_module, jschema)) {
-		SSL_LOG(ERROR, "asn1 schema parse failed");
-		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "asn1 schema parse success");
-	}
-	char *atype_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
-	ft_printf("%s\n", atype_dumps);
-
-	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, asn1_type_name);
-	assert(NULL != asn1_type);
-
-	t_der_v2_type *der_type = NULL;
-	if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
-		SSL_LOG(ERROR, "asn1 type compile failed");
-		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "asn1 type compile success");
-	}
-	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
-	ft_printf("%s\n", dtype_dumps);
-
-	t_ostring encoded = {0};
-	if (SSL_OK != file_read_all(der_filename, &encoded)) {
-		SSL_LOG(ERROR, "file read error: %s", der_filename);
+	const t_asn1_v2_oid *oid = asn1_v2_get_oid_by_name(tree, "rsaEncryption");
+	if (NULL == oid) {
+		SSL_LOG(ERROR, "expected object id but got null");
 		return (SSL_ERR);
 	}
+	char *oid_dumps = asn1_v2_get_oid_dumps(oid);
+	ft_printf("%s\n", oid_dumps);
 
-	t_der_v2_value *der_value = NULL;
-	if (SSL_OK != der_v2_decode(encoded.content, encoded.size, der_type, &der_value)) {
-		SSL_LOG(ERROR, "der decode failed");
+	const char *oname = asn1_v2_get_oid_name(tree, oid);
+	if (NULL == oname) {
+		SSL_LOG(ERROR, "expected object name but got null");
 		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "der decode success");
 	}
-	char *dvalue_dumps = der_v2_value_dumps(der_value);
-	ft_printf("%s\n", dvalue_dumps);
+	ft_printf("\"%s\"\n", oname);
+
+// 	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
+// 	const char *asn1_type_name = "EncryptedPrivateKeyInfo";
+// 	const char *der_filename = "tests/files/keys/pkcs8-encryptedPrivateKeyInfo.der";
+//
+// 	const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
+// 	const char *asn1_type_name = "RSAPrivateKey";
+// 	const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
+
+// 	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
+// 	const char *asn1_type_name = "PrivateKeyInfo";
+// 	const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
+//
+// 	const t_json_v2 *jschema = NULL;
+// 	if (JSON_OK != json_v2_parse_file(jschema_filename, &jschema)) {
+// 		SSL_LOG(ERROR, "json parse error");
+// 		return (SSL_ERR);
+// 	}
+// 	if (JSON_OK != json_v2_validate(jschema)) {
+// 		SSL_LOG(ERROR, "invalid json");
+// 		return (SSL_ERR);
+// 	}
+// 	if (SSL_OK != asn1_v2_schema_validate(jschema)) {
+// 		SSL_LOG(ERROR, "invalid asn1 schema");
+// 		return (SSL_ERR);
+// 	} else {
+// 		SSL_LOG(INFO, "asn1 schema is valid");
+// 	}
+// 	char *json_dumps = json_v2_pretty_dumps(jschema, 2, 240, true);
+// 	ft_printf("%s\n", json_dumps);
+//
+// 	t_asn_v2_module *asn1_module = NULL;
+// 	if (SSL_OK != asn1_v2_schema_parse(&asn1_module, jschema)) {
+// 		SSL_LOG(ERROR, "asn1 schema parse failed");
+// 		return (SSL_ERR);
+// 	} else {
+// 		SSL_LOG(INFO, "asn1 schema parse success");
+// 	}
+// 	char *atype_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
+// 	ft_printf("%s\n", atype_dumps);
+//
+// 	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, asn1_type_name);
+// 	assert(NULL != asn1_type);
+//
+// 	t_der_v2_type *der_type = NULL;
+// 	if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
+// 		SSL_LOG(ERROR, "asn1 type compile failed");
+// 		return (SSL_ERR);
+// 	} else {
+// 		SSL_LOG(INFO, "asn1 type compile success");
+// 	}
+// 	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
+// 	ft_printf("%s\n", dtype_dumps);
+//
+// 	t_ostring encoded = {0};
+// 	if (SSL_OK != file_read_all(der_filename, &encoded)) {
+// 		SSL_LOG(ERROR, "file read error: %s", der_filename);
+// 		return (SSL_ERR);
+// 	}
+//
+// 	t_der_v2_value *der_value = NULL;
+// 	if (SSL_OK != der_v2_decode(encoded.content, encoded.size, der_type, &der_value)) {
+// 		SSL_LOG(ERROR, "der decode failed");
+// 		return (SSL_ERR);
+// 	} else {
+// 		SSL_LOG(INFO, "der decode success");
+// 	}
+// 	char *dvalue_dumps = der_v2_value_dumps(der_value);
+// 	ft_printf("%s\n", dvalue_dumps);
 
 	return (SSL_OK);
 }
