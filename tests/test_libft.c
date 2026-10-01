@@ -629,37 +629,37 @@ static int __test_ft_atoi(void)
 {
 	long long res = 0;
 
-	res = ft_atoi("0");
+	res = ft_atoi_zd("0");
 	TEST_ASSERT(res == 0);
 
-	res = ft_atoi("+0");
+	res = ft_atoi_zd("+0");
 	TEST_ASSERT(res == 0);
 
-	res = ft_atoi("-0");
+	res = ft_atoi_zd("-0");
 	TEST_ASSERT(res == 0);
 
-	res = ft_atoi("");
+	res = ft_atoi_zd("");
 	TEST_ASSERT(res == 0);
 
-	res = ft_atoi("12316235");
+	res = ft_atoi_zd("12316235");
 	TEST_ASSERT(res == 12316235);
 
-	res = ft_atoi("12316aa235");
+	res = ft_atoi_zd("12316aa235");
 	TEST_ASSERT(res == 12316);
 
-	res = ft_atoi("aa235");
+	res = ft_atoi_zd("aa235");
 	TEST_ASSERT(res == 0);
 
-	res = ft_atoi("123-235");
+	res = ft_atoi_zd("123-235");
 	TEST_ASSERT(res == 123);
 
-	res = ft_atoi("123+235");
+	res = ft_atoi_zd("123+235");
 	TEST_ASSERT(res == 123);
 
-	res = ft_atoi("+123235");
+	res = ft_atoi_zd("+123235");
 	TEST_ASSERT(res == 123235);
 
-	res = ft_atoi("-123235");
+	res = ft_atoi_zd("-123235");
 	TEST_ASSERT(res == -123235);
 
 	TEST_PASS();
@@ -819,43 +819,43 @@ static int __test_ft_itoa_base(void)
 	char *res = NULL;
 	intmax_t	ref_num;
 
-	res = ft_itoa_base(0, 10);
+	res = ft_itoa_jd_base(0, 10);
 	TEST_ASSERT(strcmp(res, "0") == 0);
 	free(res);
 
-	res = ft_itoa_base(0, 16);
+	res = ft_itoa_jd_base(0, 16);
 	TEST_ASSERT(strcmp(res, "0") == 0);
 	free(res);
 
-	res = ft_itoa_base(1234, 10);
+	res = ft_itoa_jd_base(1234, 10);
 	TEST_ASSERT(strcmp(res, "1234") == 0);
 	free(res);
 
-	res = ft_itoa_base(-1234, 10);
+	res = ft_itoa_jd_base(-1234, 10);
 	TEST_ASSERT(strcmp(res, "-1234") == 0);
 	free(res);
 
-	res = ft_itoa_base(-255, 16);
+	res = ft_itoa_jd_base(-255, 16);
 	TEST_ASSERT(strcmp(res, "ff") == 0);
 	free(res);
 
-	res = ft_itoa_base(255, 16);
+	res = ft_itoa_jd_base(255, 16);
 	TEST_ASSERT(strcmp(res, "ff") == 0);
 	free(res);
 
-	res = ft_itoa_base(255, 2);
+	res = ft_itoa_jd_base(255, 2);
 	TEST_ASSERT(strcmp(res, "11111111") == 0);
 	free(res);
 
-	res = ft_itoa_base(255, 8);
+	res = ft_itoa_jd_base(255, 8);
 	TEST_ASSERT(strcmp(res, "377") == 0);
 	free(res);
 
-	res = ft_itoa_base(255, 12);
+	res = ft_itoa_jd_base(255, 12);
 	TEST_ASSERT(strcmp(res, "193") == 0);
 	free(res);
 
-	res = ft_itoa_base(INTMAX_MAX, 10);
+	res = ft_itoa_jd_base(INTMAX_MAX, 10);
 	ref_num = strtoimax(res, NULL, 10);
 	TEST_ASSERT(ref_num == INTMAX_MAX);
 	free(res);
@@ -868,19 +868,19 @@ static int __test_ft_itoa(void)
 	char *res = NULL;
 	intmax_t	ref_num;
 
-	res = ft_itoa(0);
+	res = ft_itoa_jd(0);
 	TEST_ASSERT(strcmp(res, "0") == 0);
 	free(res);
 
-	res = ft_itoa(1234);
+	res = ft_itoa_jd(1234);
 	TEST_ASSERT(strcmp(res, "1234") == 0);
 	free(res);
 
-	res = ft_itoa(-1234);
+	res = ft_itoa_jd(-1234);
 	TEST_ASSERT(strcmp(res, "-1234") == 0);
 	free(res);
 
-	res = ft_itoa(INTMAX_MAX);
+	res = ft_itoa_jd(INTMAX_MAX);
 	ref_num = strtoimax(res, NULL, 10);
 	TEST_ASSERT(ref_num == INTMAX_MAX);
 	free(res);
@@ -1111,10 +1111,10 @@ static int __test_ft_bytes_to_hex(void)
 static int __test_ft_hex_to_bytes(void)
 {
 	char ref_str[6] = {9, 1, 127, 3, 15, 0};
-	char test_str[6] = {0};
+	uint8_t test_str[6] = {0};
 	char *hex = "9017f030f00";
 
-	ft_hexs_to_bytes(test_str, hex, strlen(hex));
+	ft_hexs_to_bytes(test_str, sizeof(test_str), hex, strlen(hex));
 	TEST_ASSERT(memcmp(test_str, ref_str, sizeof(test_str)) == 0);
 
 	TEST_PASS();
@@ -1253,7 +1253,7 @@ static int __test_ft_list(void)
 	// test list append
 	idx = 0;
 	while (idx < nwords) {
-		node_key = ft_itoa(idx);
+		node_key = ft_itoa_jd(idx);
 		node = ft_node_new(node_key, words[idx], strlen(words[idx]));
 		TEST_ASSERT(node != NULL);
 
@@ -1274,7 +1274,7 @@ static int __test_ft_list(void)
 	idx = 0;
 	tmp_node = lst;
 	while (tmp_node != NULL) {
-		node_key = ft_itoa(idx);
+		node_key = ft_itoa_jd(idx);
 
 		TEST_ASSERT(idx < nwords);
 		TEST_ASSERT(strcmp(tmp_node->key, node_key) == 0);
@@ -1316,7 +1316,7 @@ static int __test_ft_list(void)
 	// test list prepend
 	idx = 0;
 	while (idx < nwords) {
-		node_key = ft_itoa(idx);
+		node_key = ft_itoa_jd(idx);
 		node = ft_node_new(node_key, words[idx], strlen(words[idx]));
 		TEST_ASSERT(node != NULL);
 
@@ -1406,7 +1406,7 @@ static int __test_ft_stack(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 		ft_stack_push(stack, key, words[idx], strlen(words[idx]));
 
 		node = stack->top;
@@ -1465,7 +1465,7 @@ static int __test_ft_queue(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 		ft_queue_enqueue(queue, key, words[idx], strlen(words[idx]));
 
 		node = queue->last;
@@ -1503,7 +1503,7 @@ static int __test_ft_queue(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 		ft_queue_enqueue(queue, key, words[idx], strlen(words[idx]));
 
 		if (key != NULL) {
@@ -1780,7 +1780,7 @@ static int __test_ft_htbl_conversion(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 
 		node = ft_node_new(key, words[idx], strlen(words[idx]));
 		ft_lst_prepend(&lst, node);
@@ -1797,7 +1797,7 @@ static int __test_ft_htbl_conversion(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 		word = ft_htbl_get(htbl, key);
 
 		TEST_ASSERT(word != NULL);
@@ -1816,7 +1816,7 @@ static int __test_ft_htbl_conversion(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 		word = ft_htbl_get(htbl, key);
 
 		TEST_ASSERT(word != NULL);
@@ -1835,7 +1835,7 @@ static int __test_ft_htbl_conversion(void)
 
 	idx = 0;
 	while (idx < nwords) {
-		key = ft_itoa(idx);
+		key = ft_itoa_jd(idx);
 		word = ft_htbl_get(htbl, key);
 
 		TEST_ASSERT(word != NULL);

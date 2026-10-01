@@ -542,7 +542,8 @@ static int	__test_bnum_decrem_u(void)
 static int	__test_bnum_from_bytes_u(void)
 {
 	const char	*hex = "179672f4b9ce4ff1ce809d56dbdc138ec5c";
-	char		*test_hex, *bin;
+	char		*test_hex;
+	uint8_t		*bin;
 	size_t		binsize, hexsize;
 	t_num		test_num;
 
@@ -550,7 +551,7 @@ static int	__test_bnum_from_bytes_u(void)
 	binsize = NBITS_TO_NBYTES(4 * hexsize);
 	SSL_ALLOC(bin, binsize);
 
-	ft_hexs_to_bytes(bin, hex, hexsize);
+	ft_hexs_to_bytes(bin, binsize, hex, hexsize);
 
 	bnum_init(&test_num);
 	bnum_init_from_bytes_u(&test_num, bin, binsize);

@@ -89,8 +89,8 @@ static int	__test_des_setup(void)
 		TEST_LOG(ERROR, FILE_READ_ERROR);
 		return (SSL_ERR);
 	}
-	ft_hexs_to_bytes(__key, __keyhex, 16);
-	ft_hexs_to_bytes(__iv, __ivhex, 16);
+	ft_hexs_to_bytes(__key, sizeof(__key), __keyhex, 16);
+	ft_hexs_to_bytes(__iv, sizeof(__iv), __ivhex, 16);
 
 	return (SSL_OK);
 }
