@@ -3215,10 +3215,13 @@ static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *
 static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int __der_v2_generic_decode_choice(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 
+static int	__der_v2_generic_decode_ia5_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_printable_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_ostring(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_bitstring(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_boolean(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_sequence(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_set(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_null(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_integer(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **der_value);
@@ -3308,12 +3311,12 @@ static struct s_der_v2_generic_decode {
 	/* ASN_V2_TAG_NUMBER_TIME               = 14 */	{ NULL, "TIME" },
 	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
 	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_generic_decode_sequence, "SEQUENCE" },
-	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ NULL, "SET" },
+	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ __der_v2_generic_decode_set, "SET" },
 	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ NULL, "NUMERIC_STRING" },
-	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ NULL, "PRINTABLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ __der_v2_generic_decode_printable_string, "PRINTABLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
-	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ NULL, "IA5_STRING" },
+	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ __der_v2_generic_decode_ia5_string, "IA5_STRING" },
 	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
 	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
@@ -3461,6 +3464,89 @@ label_error:
 	return (SSL_ERR);
 }
 
+static int	__der_v2_generic_decode_set(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "set: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_tlv element_tlv = {0};
+	t_list element_values = {0};
+	while (__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
+		t_der_v2_value *element_value = NULL;
+		if (SSL_OK != __der_v2_generic_decode_value(element_tlv, &element_value)) {
+			SSL_LOG(ERROR, "set: bad decode element");
+			goto label_error;
+		}
+		assert(element_value != NULL);
+		ft_list_append_content(&element_values, element_value);
+	}
+	// Compile the list of values.
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_SET;
+	SSL_ALLOC(dvalue->as.composite.items, element_values.size * sizeof(t_der_v2_value));
+	dvalue->as.composite.count = element_values.size;
+
+	t_list_next next = {0};
+	void *content = NULL;
+	size_t idx = 0;
+	while (ft_list_next_content(&element_values, &next, &content)) {
+		__der_v2_value_copy(content, dvalue->as.composite.items + idx);
+		idx++;
+	}
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+
+	SSL_LOG(TRACE, "set: done");
+	*der_value = dvalue;
+	return (SSL_OK);
+
+label_error:
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+	return (SSL_ERR);
+}
+
+static int	__der_v2_generic_decode_ia5_string(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "ia5 string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	for (size_t i = 0; i < tlv.length; i++) {
+		if (!ft_isascii((int)tlv.value[i])) {
+			SSL_LOG(ERROR, "ia5 string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_IA5_STRING;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_printable_string(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "printable string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	for (size_t i = 0; i < tlv.length; i++) {
+		if (!ft_isprint((int)tlv.value[i])) {
+			SSL_LOG(ERROR, "printable string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_PRINTABLE_STRING;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
 static int	__der_v2_generic_decode_ostring(t_der_v2_tlv tlv, t_der_v2_value **der_value)
 {
 	SSL_LOG(TRACE, "octet string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
@@ -3515,7 +3601,7 @@ static int	__der_v2_generic_decode_boolean(t_der_v2_tlv tlv, t_der_v2_value **de
 		return (SSL_ERR);
 	}
 	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_NULL;
+	dvalue->kind = ASN_V2_TYPE_KIND_BOOLEAN;
 	dvalue->as.boolean = boolean;
 
 	*der_value = dvalue;
@@ -3576,29 +3662,23 @@ static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **
 		i++;
 		num_sub_ids++;
 	}
-	if (num_sub_ids < 2) {
+	if (num_sub_ids < 2 || num_sub_ids+1 > ASN_V2_OID_MAX_NARCS) {
 		SSL_LOG(ERROR, "bad value");
 		return (SSL_ERR);
 	}
-	//	First two ids are concatenated into one single id using following formula:
-	//	CONCAT_ID = 40 * ID_0 + ID_1
-	char *sub_id_strings[encsize + 1];
-	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
-	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
-
-	// Get the rest of ids, except the last one
-	for (int i = 1; i < num_sub_ids-1; i++) {
-		ft_sprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
-	}
-	// Get the last id
-	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
-	// Join all sub-id strings into an object id string
-	char *obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
-	SSL_LOG(TRACE, "object id: %s", obj_id);
 
 	t_der_v2_value *dvalue = __der_v2_value_create();
 	dvalue->kind = ASN_V2_TYPE_KIND_OBJECT_ID;
-	dvalue->as.cstring = obj_id;
+	t_asn1_v2_oid *oid = &dvalue->as.object_id;
+	//	First two ids are concatenated into one single id using following formula:
+	//	CONCAT_ID = 40 * ID_0 + ID_1
+	oid->arc_nums[oid->narcs++] = sub_ids[0] / 40;
+	oid->arc_nums[oid->narcs++] = sub_ids[0] % 40;
+
+	// Get the rest of ids, except the last one
+	for (size_t i = 1; i < num_sub_ids; i++) {
+		oid->arc_nums[oid->narcs++] = sub_ids[i];
+	}
 
 	*der_value = dvalue;
 	return (SSL_OK);
@@ -3955,7 +4035,7 @@ static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_ty
 		return (SSL_ERR);
 	}
 	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_NULL;
+	dvalue->kind = ASN_V2_TYPE_KIND_BOOLEAN;
 	dvalue->as.boolean = boolean;
 
 	*der_value = dvalue;
