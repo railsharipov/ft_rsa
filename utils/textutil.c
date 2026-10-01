@@ -581,7 +581,7 @@ static size_t __parse_number(const char *in, size_t inlen, size_t inpos, ssize_t
     while (end < inlen && ft_isdigit(in[end])) {
         end++;
     }
-    *res = ft_atoi(in + start);
+    *res = ft_atoi_zd(in + start);
 
     return (end - inpos);
 }
@@ -602,7 +602,7 @@ static size_t __parse_number_u(const char *in, size_t inlen, size_t inpos, size_
     while (end < inlen && ft_isdigit(in[end])) {
         end++;
     }
-    *res = ft_atoi_u(in + start);
+    *res = ft_atoi_zu(in + start);
 
     return (end - inpos);
 }

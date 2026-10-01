@@ -475,10 +475,10 @@ static int	__encode_oid(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	// Convert sub-identifiers to integers
 	uint32_t sub_ids[64] = {0};
 	int num_sub_ids = num_sub_id_cstrs - 1;
-	sub_ids[0] = 40 * ft_atoi(sub_id_cstrs[0]) + ft_atoi(sub_id_cstrs[1]);
+	sub_ids[0] = 40 * ft_atoi_zd(sub_id_cstrs[0]) + ft_atoi_zd(sub_id_cstrs[1]);
 
 	for (int i = 1; i < num_sub_ids; i++) {
-		sub_ids[i] = ft_atoi(sub_id_cstrs[i + 1]);
+		sub_ids[i] = ft_atoi_zd(sub_id_cstrs[i + 1]);
 	}
 
 	SSL_LOG(TRACE, "converted to %d integer sub-identifiers", num_sub_ids);

@@ -94,7 +94,7 @@ static int	__is_blank(char c)
 	return (0);
 }
 
-ssize_t	ft_atoi(const char *str)
+ssize_t	ft_atoi_zd(const char *str)
 {
 	int		i;
 	ssize_t	nb;
@@ -117,7 +117,7 @@ ssize_t	ft_atoi(const char *str)
 	return (neg * nb);
 }
 
-size_t	ft_atoi_u(const char *str)
+size_t	ft_atoi_zu(const char *str)
 {
 	int		i;
 	size_t	nb;
@@ -2148,16 +2148,25 @@ static char	*__to_cstring(char *raw, size_t rawsize)
 
 /****************************************************************************/
 
-void	__tostr(char *str, intmax_t nb, intmax_t mult)
+char	*ft_itoa_jd(intmax_t n)
 {
-	int	i;
+	intmax_t nb = n;
+	intmax_t mult = 1;
+	size_t len = 1;
 
-	i = 0;
+	if (n < 0) len++;
 
+	while (n / 10) {
+		mult = mult * 10;
+		n = n / 10;
+		len++;
+	}
+	char *str = NULL;
+	LIBFT_ALLOC(str, len + 1);
+
+	size_t i = 0;
 	if (nb < 0) {
 		str[i++] = '-';
-	}
-	if (nb < 0) {
 		nb = -nb;
 	}
 	while (mult) {
@@ -2166,26 +2175,31 @@ void	__tostr(char *str, intmax_t nb, intmax_t mult)
 		mult = mult / 10;
 	}
 	str[i] = 0;
+
+	return (str);
 }
 
-char	*ft_itoa(intmax_t n)
+char	*ft_itoa_zu(size_t n)
 {
-	intmax_t	nb;
-	intmax_t	mult;
-	char		*str;
-	int			len;
-
-	mult = 1;
-	len = (n < 0) ? 2 : 1;
-	nb = n;
+	size_t mult = 1;
+	size_t len = 1;
+	size_t nb = n;
 
 	while (n / 10) {
 		mult = mult * 10;
 		n = n / 10;
 		len++;
 	}
+	char *str = NULL;
 	LIBFT_ALLOC(str, len + 1);
-	__tostr(str, nb, mult);
+
+	size_t i = 0;
+	while (mult) {
+		str[i++] = nb / mult + 48;
+		nb = nb % mult;
+		mult = mult / 10;
+	}
+	str[i] = 0;
 
 	return (str);
 }
@@ -2241,7 +2255,7 @@ void	__base_str(char *s, uint8_t *arr, int len, int is_neg)
 	*p = 0;
 }
 
-char	*ft_itoa_base(intmax_t value, int base)
+char	*ft_itoa_jd_base(intmax_t value, int base)
 {
 	int		is_neg;
 	int		len;
@@ -3917,14 +3931,14 @@ static void	__get_data(t_pf *data, const char *s, int *i)
 	if (__is_flag(s[*i], &(data->flag))) {
 		*i += 1;
 	} else if (s[*i] >= '0' && s[*i] <= '9') {
-		data->fwid = (int)ft_atoi(s + *i);
+		data->fwid = (int)ft_atoi_zd(s + *i);
 
 		while (s[*i] && s[*i] >= '0' && s[*i] <= '9') {
 			*i += 1;
 		}
 	} else if (s[*i] == '.' && (*i += 1)) {
 		data->flag |= PF_PREC;
-		data->prec = (int)ft_atoi(s + *i);
+		data->prec = (int)ft_atoi_zd(s + *i);
 
 		while (s[*i] && s[*i] >= '0' && s[*i] <= '9') {
 			*i += 1;

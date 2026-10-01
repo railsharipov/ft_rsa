@@ -50,7 +50,7 @@
 // 		return (SSL_ERR);
 // 	}
 
-// 	__modsize = ft_atoi(opt);
+// 	__modsize = ft_atoi_zd(opt);
 
 // 	return (SSL_OK);
 // }

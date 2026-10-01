@@ -310,7 +310,7 @@ static int	__json_v2_parse_number(const char *s, t_json_v2 *json, size_t *pos)
 	uint64_t exponent = 1;
 	if (is_exponent) {
 		char *exponent_str = ft_strsub(s, exponent_start, exponent_end - exponent_start);
-		exponent = (uint64_t)ft_atoi(exponent_str);
+		exponent = (uint64_t)ft_atoi_zd(exponent_str);
 		LIBFT_FREE(exponent_str);
 	}
 
@@ -990,7 +990,7 @@ static int 	__json_v2_parse_query(const char *s, __t_json_v2_query *query, size_
 			end = *pos;
 			query->kind = __JSON_V2_Q_TYPE_ARRAY_INDEX;
 			char *nums = ft_strsub(s, begin, end - begin);
-			query->as.index = (size_t)ft_atoi(nums);
+			query->as.index = (size_t)ft_atoi_zd(nums);
 			LIBFT_FREE(nums);
 		}
 		else if (s[*pos] == '"' || s[*pos] == '\'') {

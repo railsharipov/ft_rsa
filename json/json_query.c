@@ -229,7 +229,7 @@ static int 	__select_array_index(t_node *node, t_node *query, t_node **ret_node)
 	}
 
 	arr_item = node->content;
-	target_idx = ft_atoi(query->content);
+	target_idx = ft_atoi_zd(query->content);
 
 	SSL_LOG(TRACE, "array has %d items", ft_lst_size(arr_item));
 

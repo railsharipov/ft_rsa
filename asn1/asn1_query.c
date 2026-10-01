@@ -54,7 +54,7 @@ static int 	__f_asn1_node_selector(t_node *node, t_node *query, t_node **ret_nod
 
 		asn1_item = node->content;
 		arr_item = asn1_item->content;
-		target_idx = ft_atoi(query->content);
+		target_idx = ft_atoi_zd(query->content);
 
 		SSL_LOG(TRACE, "array has %d items", ft_lst_size(arr_item));
 

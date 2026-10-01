@@ -277,7 +277,7 @@ static int	__parse_number(const char *s, t_node *node)
 	}
 	if (is_exponent) {
 		exponent_str = ft_strsub(s, exponent_start, exponent_end - exponent_start);
-		exponent = (uint64_t)ft_atoi(exponent_str);
+		exponent = (uint64_t)ft_atoi_zd(exponent_str);
 		LIBFT_FREE(exponent_str);
 	}
 

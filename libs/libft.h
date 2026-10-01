@@ -70,7 +70,6 @@
 #define UNREACHABLE(MES)		do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
 #define TODO(MES)				do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
 
-
 typedef enum e_libft_status {
 	LIBFT_OK = 0,
 	LIBFT_ERR,
@@ -408,10 +407,11 @@ void	*ft_memdup(void *src, size_t srcsize);
 
 /****************************************************************************/
 
-ssize_t	    ft_atoi(const char *str);
-size_t		ft_atoi_u(const char *str);
-char		*ft_itoa(intmax_t n);
-char		*ft_itoa_base(intmax_t value, int base);
+ssize_t	    ft_atoi_zd(const char *str);
+size_t		ft_atoi_zu(const char *str);
+char		*ft_itoa_zu(size_t n);
+char		*ft_itoa_jd(intmax_t n);
+char		*ft_itoa_jd_base(intmax_t value, int base);
 
 /****************************************************************************/
 

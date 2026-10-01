@@ -88,7 +88,7 @@ int	cmd_base64(const t_cmd *cmd)
 			SSL_LOG(WARN, "ignoring line width option in decode mode");
 		}
 		else {
-			int line_width = ft_atoi(ft_htbl_get(cmd->opts, "-b"));
+			int line_width = ft_atoi_zd(ft_htbl_get(cmd->opts, "-b"));
 			if (line_width < 0) {
 				SSL_LOG(ERROR, "invalid line width: %d", line_width);
 				return (SSL_ERR);
