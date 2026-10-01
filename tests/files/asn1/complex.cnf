@@ -1,0 +1,83 @@
+asn1 = SEQUENCE:root
+
+[root]
+version        = EXPLICIT:0,INTEGER:2
+algorithm      = SEQUENCE:algorithm_id
+subject        = SET:subject_set
+payload        = EXPLICIT:1,SEQUENCE:payload_sequence
+public_key     = BITWRAP,SEQUENCE:public_key_sequence
+extensions     = EXPLICIT:3,SEQUENCE:extensions_sequence
+embedded_der   = OCTWRAP,SEQUENCE:embedded_sequence
+choice_integer = EXPLICIT:4,INTEGER:12345
+choice_string  = EXPLICIT:5,IA5STRING:chosen-string
+
+[algorithm_id]
+oid            = OID:1.2.840.113549.1.1.11
+parameters     = NULL
+
+[subject_set]
+cn             = SEQUENCE:rdn_common_name
+org            = SEQUENCE:rdn_organization
+
+[rdn_common_name]
+type           = OID:2.5.4.3
+value          = IA5STRING:Example Common Name
+
+[rdn_organization]
+type           = OID:2.5.4.10
+value          = PRINTABLESTRING:Example-Org
+
+[payload_sequence]
+enabled        = BOOLEAN:TRUE
+serial         = INTEGER:0x123456789ABCDEF
+object_id      = OID:1.2.840.113549.1.9.1
+comment        = IA5STRING:admin@example.test
+blob           = FORMAT:HEX,OCTETSTRING:DEADBEEF01234567
+bits           = FORMAT:HEX,BITSTRING:A5C0
+nested         = SEQUENCE:payload_nested
+
+[payload_nested]
+negative       = INTEGER:-123456
+text           = IA5STRING:Nested value
+nil            = NULL
+empty_seq      = SEQUENCE
+empty_set      = SET
+
+[public_key_sequence]
+modulus        = INTEGER:0xC34F5689ABCDEF0123456789ABCDEF0123456789ABCDEF
+exponent       = INTEGER:65537
+
+[extensions_sequence]
+extension_1    = SEQUENCE:extension_basic
+extension_2    = SEQUENCE:extension_custom
+
+[extension_basic]
+extension_id   = OID:2.5.29.19
+critical       = BOOLEAN:TRUE
+extension_data = OCTWRAP,SEQUENCE:basic_constraints
+
+[basic_constraints]
+ca             = BOOLEAN:TRUE
+path_len       = INTEGER:3
+
+[extension_custom]
+extension_id   = OID:1.3.6.1.4.1.55555.1
+extension_data = OCTWRAP,SEQUENCE:custom_extension_data
+
+[custom_extension_data]
+name           = IA5STRING:private-extension
+flags          = SET:flag_set
+
+[flag_set]
+flag_a         = BOOLEAN:TRUE
+flag_b         = BOOLEAN:FALSE
+flag_c         = INTEGER:7
+
+[embedded_sequence]
+name           = IA5STRING:DER-inside-octets
+values         = SEQUENCE:value_list
+
+[value_list]
+first          = INTEGER:1
+second         = INTEGER:2
+third          = INTEGER:3
