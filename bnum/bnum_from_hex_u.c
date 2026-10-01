@@ -46,6 +46,6 @@ void	bnum_init_from_hex_u(t_num *num, const char *hex)
 t_num	*bnum_from_hex_u(const char *hex)
 {
 	t_num *num = bnum_create();
-	bnum_init_from_dec(num, hex);
+	bnum_init_from_hex_u(num, hex);
 	return (num);
 }
