@@ -168,10 +168,25 @@ typedef enum t_asn_v2_universal_tag_number {
     ASN_V2_TAG_NUMBER_RELATIVE_OID_IRI   = 36
 } t_asn_v2_universal_tag_number;
 
-#define ASN_V2_OID_MAX_ARCS 32
+#define ASN_V2_OID_TREE_FILE_PATH "resources/asn1/oid-tree.json"
+#define ASN_V2_OID_MAX_NARCS 16
+#define ASN_V2_OID_MAX_ARC_NUMBER SIZE_MAX
+
+typedef enum e_asn_v2_oid_arc_kind {
+	ASN_V2_OID_ARC_KIND_NUMERIC,
+	ASN_V2_OID_ARC_KIND_NAMED,
+} t_asn_v2_oid_arc_kind;
+
+typedef struct s_asn1_v2_oid_arc {
+	t_asn_v2_oid_arc_kind kind;
+	union {
+		char *name;
+		size_t number;
+	} as;
+} t_asn1_v2_oid_arc;
 
 typedef struct s_asn1_v2_oid {
-	const t_num *arcs[ASN_V2_OID_MAX_ARCS];
+	size_t arc_nums[ASN_V2_OID_MAX_NARCS];
 	size_t narcs;
 } t_asn1_v2_oid;
 
@@ -249,7 +264,7 @@ void	asn1_v2_oid_tree_delete(t_node_v2 *tree);
 
 const char	*asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn1_v2_oid *oid);
 const t_asn1_v2_oid	*asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name);
-char *asn1_v2_get_oid_dumps(const t_asn1_v2_oid *oid);
+char *asn1_v2_oid_dumps(const t_asn1_v2_oid *oid);
 
 typedef struct s_der_v2_tag {
 	t_asn_v2_tag_class	class;
@@ -264,8 +279,8 @@ typedef struct s_der_v2_value {
 		char		*cstring;
 		t_num		number;
 		bool		boolean;
+		t_asn1_v2_oid object_id;
 		struct { struct s_der_v2_value *items; size_t count; } composite;
-		struct { t_num *arcs; size_t narcs; } object_id;
 		struct { char *id; struct s_der_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
 	} as;

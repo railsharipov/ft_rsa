@@ -1,177 +1,177 @@
 {
   "arcs": [
     {
-      "id": "iso",
+      "name": "iso",
       "number": 1,
       "arcs": [
         {
-          "id": "member-body",
+          "name": "member-body",
           "number": 2,
           "arcs": [
             {
-              "id": "us",
+              "name": "us",
               "number": 840,
               "arcs": [
                 {
-                  "id": "rsadsi",
+                  "name": "rsadsi",
                   "number": 113549,
                   "arcs": [
                     {
-                      "id": "pkcs",
+                      "name": "pkcs",
                       "number": 1,
                       "arcs": [
                         {
-                          "id": "pkcs-1",
+                          "name": "pkcs-1",
                           "number": 1,
                           "arcs": [
                             {
-                              "id": "rsaEncryption",
+                              "name": "rsaEncryption",
                               "number": 1
                             },
                             {
-                              "id": "md2withRSAEncryption",
+                              "name": "md2withRSAEncryption",
                               "number": 2
                             },
                             {
-                              "id": "md5withRSAEncryption",
+                              "name": "md5withRSAEncryption",
                               "number": 4
                             },
                             {
-                              "id": "sha1WithRSAEncryption",
+                              "name": "sha1WithRSAEncryption",
                               "number": 5
                             }
                           ]
                         },
                         {
-                          "id": "pkcs-3",
+                          "name": "pkcs-3",
                           "number": 3,
                           "arcs": [
                             {
-                              "id": "dhKeyAgreement",
+                              "name": "dhKeyAgreement",
                               "number": 1
                             }
                           ]
                         },
                         {
-                          "id": "pkcs-5",
+                          "name": "pkcs-5",
                           "number": 5,
                           "arcs": [
                             {
-                              "id": "pbeWithMD2AndDES-CBC",
+                              "name": "pbeWithMD2AndDES-CBC",
                               "number": 1
                             },
                             {
-                              "id": "pbeWithMD5AndDES-CBC",
+                              "name": "pbeWithMD5AndDES-CBC",
                               "number": 3
                             }
                           ]
                         },
                         {
-                          "id": "pkcs-7",
+                          "name": "pkcs-7",
                           "number": 7,
                           "arcs": [
                             {
-                              "id": "data",
+                              "name": "data",
                               "number": 1
                             },
                             {
-                              "id": "signedData",
+                              "name": "signedData",
                               "number": 2
                             },
                             {
-                              "id": "envelopedData",
+                              "name": "envelopedData",
                               "number": 3
                             },
                             {
-                              "id": "signedAndEnvelopedData",
+                              "name": "signedAndEnvelopedData",
                               "number": 4
                             },
                             {
-                              "id": "digestData",
+                              "name": "digestData",
                               "number": 5
                             },
                             {
-                              "id": "encryptedData",
+                              "name": "encryptedData",
                               "number": 6
                             }
                           ]
                         },
                         {
-                          "id": "pkcs-9",
+                          "name": "pkcs-9",
                           "number": 9,
                           "arcs": [
                             {
-                              "id": "emailAddress",
+                              "name": "emailAddress",
                               "number": 1
                             },
                             {
-                              "id": "unstructuredName",
+                              "name": "unstructuredName",
                               "number": 2
                             },
                             {
-                              "id": "contentType",
+                              "name": "contentType",
                               "number": 3
                             },
                             {
-                              "id": "messageDigest",
+                              "name": "messageDigest",
                               "number": 4
                             },
                             {
-                              "id": "signingTime",
+                              "name": "signingTime",
                               "number": 5
                             },
                             {
-                              "id": "countersignature",
+                              "name": "countersignature",
                               "number": 6
                             },
                             {
-                              "id": "challengePassword",
+                              "name": "challengePassword",
                               "number": 7
                             },
                             {
-                              "id": "unstructuredAddress",
+                              "name": "unstructuredAddress",
                               "number": 8
                             },
                             {
-                              "id": "extendedCertificateAttributes",
+                              "name": "extendedCertificateAttributes",
                               "number": 9
                             }
                           ]
                         },
                         {
-                          "id": "pkcs-11",
+                          "name": "pkcs-11",
                           "number": 11
                         },
                         {
-                          "id": "pkcs-12",
+                          "name": "pkcs-12",
                           "number": 12,
                           "arcs": [
                             {
-                              "id": "pkcs-12PbeIds",
+                              "name": "pkcs-12PbeIds",
                               "number": 1,
                               "arcs": [
                                 {
-                                  "id": "pbeWithSHA1And128BitRC4",
+                                  "name": "pbeWithSHA1And128BitRC4",
                                   "number": 1
                                 },
                                 {
-                                  "id": "pbeWithSHA1And40BitRC4",
+                                  "name": "pbeWithSHA1And40BitRC4",
                                   "number": 2
                                 },
                                 {
-                                  "id": "pbeWithSHA1And3-KeyTripleDES-CBC",
+                                  "name": "pbeWithSHA1And3-KeyTripleDES-CBC",
                                   "number": 3
                                 },
                                 {
-                                  "id": "pbeWithSHA1And2-KeyTripleDES-CBC",
+                                  "name": "pbeWithSHA1And2-KeyTripleDES-CBC",
                                   "number": 4
                                 },
                                 {
-                                  "id": "pbeWithSHA1And128BitRC2-CBC",
+                                  "name": "pbeWithSHA1And128BitRC2-CBC",
                                   "number": 5
                                 },
                                 {
-                                  "id": "pbeWithSHA1And40BitRC2-CBC",
+                                  "name": "pbeWithSHA1And40BitRC2-CBC",
                                   "number": 6
                                 }
                               ]
@@ -181,41 +181,41 @@
                       ]
                     },
                     {
-                      "id": "digestAlgorithm",
+                      "name": "digestAlgorithm",
                       "number": 2,
                       "arcs": [
                         {
-                          "id": "md2",
+                          "name": "md2",
                           "number": 2
                         },
                         {
-                          "id": "md4",
+                          "name": "md4",
                           "number": 4
                         },
                         {
-                          "id": "md5",
+                          "name": "md5",
                           "number": 5
                         }
                       ]
                     },
                     {
-                      "id": "encryptionAlgorithm",
+                      "name": "encryptionAlgorithm",
                       "number": 3,
                       "arcs": [
                         {
-                          "id": "rc2-cbc",
+                          "name": "rc2-cbc",
                           "number": 2
                         },
                         {
-                          "id": "des-ede3-cbc",
+                          "name": "des-ede3-cbc",
                           "number": 7
                         },
                         {
-                          "id": "RC5CBC",
+                          "name": "RC5CBC",
                           "number": 8
                         },
                         {
-                          "id": "RC5CBCPAD",
+                          "name": "RC5CBCPAD",
                           "number": 9
                         }
                       ]

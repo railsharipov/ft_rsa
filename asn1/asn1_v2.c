@@ -209,11 +209,6 @@ static t_asn_v2_tag_class __asn1_v2_schema_get_tag_class_by_name(const char *nam
 
 /****************************************************************************/
 
-typedef struct s_asn1_v2_oid_arc {
-	char	*name;
-	t_num	*number;
-} t_asn1_v2_oid_arc;
-
 static t_asn1_v2_oid_arc *__asn1_v2_oid_arc_create(void)
 {
 	t_asn1_v2_oid_arc *arc = NULL;
@@ -222,19 +217,34 @@ static t_asn1_v2_oid_arc *__asn1_v2_oid_arc_create(void)
 	return (arc);
 }
 
+static void __asn1_v2_oid_arc_clear(t_asn1_v2_oid_arc *arc)
+{
+	switch (arc->kind) {
+	case ASN_V2_OID_ARC_KIND_NUMERIC:
+		break;
+	case ASN_V2_OID_ARC_KIND_NAMED:
+		if (NULL != arc->as.name) SSL_FREE(arc->as.name);
+		arc->as.name = NULL;
+		break;
+	}
+}
+
 static void __asn1_v2_oid_arc_delete(t_asn1_v2_oid_arc *arc)
 {
-	if (NULL != arc->name) SSL_FREE(arc->name);
-	arc->name = NULL;
-	if (NULL != arc->number) bnum_del(arc->number);
-	arc->number = NULL;
+	__asn1_v2_oid_arc_clear(arc);
 	SSL_FREE(arc);
 }
 
 static void __asn1_v2_oid_arc_copy(const t_asn1_v2_oid_arc *src, t_asn1_v2_oid_arc *dst)
 {
-	if (NULL != src->name) dst->name = ft_strdup(src->name);
-	if (NULL != src->number) dst->number = bnum_clone(src->number);
+	switch (src->kind) {
+	case ASN_V2_OID_ARC_KIND_NUMERIC:
+		break;
+		dst->as.number = src->as.number;
+	case ASN_V2_OID_ARC_KIND_NAMED:
+		if (NULL != src->as.name) dst->as.name = ft_strdup(src->as.name);
+		break;
+	}
 }
 
 static inline void __asn1_v2_oid_arc_delete_adapter(void *vctx)
@@ -251,11 +261,12 @@ static void *__asn1_v2_oid_arc_copy_adapter(const void *vctx)
 
 typedef struct s_asn1_v2_oid_node {
 	t_node_v2 base;
-	t_asn1_v2_oid_arc arc;
+	char *name;
+	size_t number;
 	t_asn1_v2_oid oid;
 } t_asn1_v2_oid_node;
 
-static t_asn1_v2_oid_node *__asn1_v2_oid_create(void)
+static t_asn1_v2_oid_node *__asn1_v2_oid_node_create(void)
 {
 	t_asn1_v2_oid_node *oid_node = NULL;
 	SSL_ALLOC(oid_node, sizeof(t_asn1_v2_oid_node));
@@ -263,46 +274,46 @@ static t_asn1_v2_oid_node *__asn1_v2_oid_create(void)
 	return (oid_node);
 }
 
-static void __asn1_v2_oid_delete(t_asn1_v2_oid_node *oid_node)
+static void __asn1_v2_oid_node_delete(t_asn1_v2_oid_node *oid_node)
 {
-	if (NULL != oid_node->arc.name) SSL_FREE(oid_node->arc.name);
-	if (NULL != oid_node->arc.number) bnum_del(oid_node->arc.number);
+	if (NULL != oid_node->name) SSL_FREE(oid_node->name);
 	SSL_FREE(oid_node);
 }
 
-static inline void __asn1_v2_oid_delete_adapter(t_node_v2 *node)
+static inline void __asn1_v2_oid_node_delete_adapter(t_node_v2 *node)
 {
-	__asn1_v2_oid_delete(container_of(node, t_asn1_v2_oid_node, base));
+	__asn1_v2_oid_node_delete(container_of(node, t_asn1_v2_oid_node, base));
 }
 
 static t_asn1_v2_oid_node *__asn1_v2_oid_tree_parse(const t_json_v2 *joid_tree, const t_asn1_v2_oid_node *parent, size_t depth)
 {
 	if (joid_tree->kind != JSON_V2_TYPE_OBJECT) return (NULL);
-	if (depth > ASN_V2_OID_MAX_ARCS) return (NULL);
+	if (depth > ASN_V2_OID_MAX_NARCS) return (NULL);
 
 	// Each tree node represents an arc of an object id. A path from root node to a specific node represents some object id.
 	// For example: object id = { root arc -> arc1 -> arc2 -> arc3 -> arc4 }.
 
-	t_asn1_v2_oid_node *oid_node = __asn1_v2_oid_create();
+	t_asn1_v2_oid_node *oid_node = __asn1_v2_oid_node_create();
 
 	if (NULL != parent) {
 		const t_json_v2 *jnumber = NULL;
 		int ret = json_v2_query_nonnull("number", joid_tree, &jnumber);
 		if (JSON_V2_OK != ret || jnumber->kind != JSON_V2_TYPE_NUMBER) goto label_error;
-		oid_node->arc.number = bnum_clone(&jnumber->as.number);
+		if (bnum_cmp_dig(&jnumber->as.number, ASN_V2_OID_MAX_ARC_NUMBER) > 0) goto label_error;
+		oid_node->number = bnum_to_dig_u(&jnumber->as.number);
 
-		const t_json_v2 *jid = NULL;
-		ret = json_v2_query_nonnull("id", joid_tree, &jid);
-		if (JSON_V2_OK != ret || jid->kind != JSON_V2_TYPE_STRING) goto label_error;
-		if (NULL == jid->as.cstring) goto label_error;
-		oid_node->arc.name = ft_strdup(jid->as.cstring);
+		const t_json_v2 *jname = NULL;
+		ret = json_v2_query_nonnull("name", joid_tree, &jname);
+		if (JSON_V2_OK != ret || jname->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (NULL == jname->as.cstring) goto label_error;
+		oid_node->name = ft_strdup(jname->as.cstring);
 
 		for (size_t i = 0; i < parent->oid.narcs; i++) {
-			oid_node->oid.arcs[i] = parent->oid.arcs[i];
+			oid_node->oid.arc_nums[i] = parent->oid.arc_nums[i];
 			oid_node->oid.narcs++;
 		}
-		oid_node->oid.arcs[oid_node->oid.narcs++] = oid_node->arc.number;
-		// SSL_LOG(TRACE, "%s: %s", oid_node->arc.name, asn1_v2_get_oid_dumps(&oid_node->oid));
+		oid_node->oid.arc_nums[oid_node->oid.narcs++] = oid_node->number;
+		// SSL_LOG(TRACE, "%s: %s", oid_node->arc.name, asn1_v2_oid_dumps(&oid_node->oid));
 	}
 
 	const t_json_v2 *jarcs = NULL;
@@ -315,7 +326,7 @@ static t_asn1_v2_oid_node *__asn1_v2_oid_tree_parse(const t_json_v2 *joid_tree, 
 			const t_json_v2 *jarc = content;
 			t_asn1_v2_oid_node *child_oid_node = __asn1_v2_oid_tree_parse(jarc, oid_node, depth+1);
 			if (NULL == child_oid_node) {
-				ft_list_clear(&child_oid_nodes, __asn1_v2_oid_delete_adapter);
+				ft_list_clear(&child_oid_nodes, __asn1_v2_oid_node_delete_adapter);
 				goto label_error;
 			}
 			ft_list_append(&child_oid_nodes, &child_oid_node->base);
@@ -326,7 +337,7 @@ static t_asn1_v2_oid_node *__asn1_v2_oid_tree_parse(const t_json_v2 *joid_tree, 
 
 label_error:
 	SSL_LOG(ERROR, "failed to parse asn1 object id tree");
-	__asn1_v2_oid_delete(oid_node);
+	__asn1_v2_oid_node_delete(oid_node);
 	return (NULL);
 }
 
@@ -354,7 +365,7 @@ int asn1_v2_oid_tree_create(const char *filename, t_node_v2 **tree)
 void asn1_v2_oid_tree_delete(t_node_v2 *tree)
 {
 	if (NULL == tree) return;
-	ft_ntree_v2_del(tree, __asn1_v2_oid_delete_adapter);
+	ft_ntree_v2_del(tree, __asn1_v2_oid_node_delete_adapter);
 }
 
 static bool __asn1_v2_oid_node_find_by_oid(t_node_v2 *node, const void *vctx)
@@ -363,7 +374,7 @@ static bool __asn1_v2_oid_node_find_by_oid(t_node_v2 *node, const void *vctx)
 	t_asn1_v2_oid_node *oid_node = container_of(node, t_asn1_v2_oid_node, base);
 	if (oid->narcs != oid_node->oid.narcs) return false;
 	for (size_t i = 0; i < oid->narcs; i++) {
-		if (bnum_cmp(oid->arcs[i], oid_node->oid.arcs[i])) return false;
+		if (oid->arc_nums[i] != oid_node->oid.arc_nums[i]) return false;
 	}
 	return true;
 }
@@ -377,7 +388,7 @@ const char *asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn1_v2_oid *oid)
 	t_node_v2 *node = ft_ntree_v2_dfs(tree, __asn1_v2_oid_node_find_by_oid, oid);
 	if (NULL != node) {
 		const t_asn1_v2_oid_node *oid_node = container_of(node, const t_asn1_v2_oid_node, base);
-		return (oid_node->arc.name);
+		return (oid_node->name);
 	}
 	return (NULL);
 }
@@ -386,7 +397,7 @@ static bool __asn1_v2_oid_node_find_by_name(t_node_v2 *node, const void *vctx)
 {
 	const char *name = vctx;
 	t_asn1_v2_oid_node *oid_node = container_of(node, t_asn1_v2_oid_node, base);
-	if (ft_streq(oid_node->arc.name, name)) return true;
+	if (ft_streq(oid_node->name, name)) return true;
 	return false;
 }
 
@@ -404,14 +415,14 @@ const t_asn1_v2_oid *asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name)
 	return (NULL);
 }
 
-char *asn1_v2_get_oid_dumps(const t_asn1_v2_oid *oid)
+char *asn1_v2_oid_dumps(const t_asn1_v2_oid *oid)
 {
 	t_ostring ostring = {0};
 	ft_ostr_append_cstr(&ostring, "[");
 	size_t commas = 0;
 	for (size_t i = 0; i < oid->narcs; i++) {
 		if (commas++) ft_ostr_append_cstr(&ostring, ",");
-		char *nums = bnum_to_dec(oid->arcs[i]);
+		char *nums = ft_itoa_zu(oid->arc_nums[i]);
 		ft_ostr_append_cstr(&ostring, nums);
 		SSL_FREE(nums);
 	}
@@ -863,14 +874,12 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 		while (ft_list_next_content(&asn1_value->as.object_id.arcs, &next, &content)) {
 			if (commas++) ft_ostr_append_cstr(&ostring, ",");
 			t_asn1_v2_oid_arc *arc = content;
-			if (NULL != arc->name) {
-				ft_ostr_appendf(&ostring, "\"%s\"", arc->name);
-			} else if (NULL != arc->number) {
-				char *arcs = bnum_to_dec(arc->number);
+			if (NULL != arc->as.name) {
+				ft_ostr_appendf(&ostring, "\"%s\"", arc->as.name);
+			} else  {
+				char *arcs = ft_itoa_zu(arc->as.number);
 				ft_ostr_append_cstr(&ostring, arcs);
 				SSL_FREE(arcs);
-			} else {
-				ft_ostr_append_cstr(&ostring, "null");
 			}
 		}
 		ft_ostr_append_cstr(&ostring, "]");
@@ -1623,11 +1632,13 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 			if (jarc->kind == JSON_V2_TYPE_STRING) {
 				if (NULL != jarc->as.cstring) goto label_error;
 				arc = __asn1_v2_oid_arc_create();
-				arc->name = ft_strdup(jarc->as.cstring);
+				arc->kind = ASN_V2_OID_ARC_KIND_NAMED;
+				arc->as.name = ft_strdup(jarc->as.cstring);
 			}
 			else if (jarc->kind == JSON_V2_TYPE_NUMBER) {
 				arc = __asn1_v2_oid_arc_create();
-				arc->number = bnum_clone(&jarc->as.number);
+				arc->kind = ASN_V2_OID_ARC_KIND_NUMERIC;
+				arc->as.number = bnum_to_dig_u(&jarc->as.number);
 			}
 			else {
 				goto label_error;
@@ -2359,10 +2370,14 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 		bnum_copy(&src->as.number, &dst->as.number);
 		break;
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 		if (NULL != src->as.cstring) dst->as.cstring = ft_strdup(src->as.cstring);
+	case ASN_V2_TYPE_KIND_OBJECT_ID:
+		for (size_t i = 0; i < src->as.object_id.narcs; i++) {
+			dst->as.object_id.arc_nums[i] = src->as.object_id.arc_nums[i];
+			dst->as.object_id.narcs++;
+		}
 		break;
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
@@ -2404,11 +2419,12 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 		bnum_clear(&der_value->as.number);
 		return;
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 		if (NULL != der_value->as.cstring) SSL_FREE(der_value->as.cstring);
 		der_value->as.cstring = NULL;
+	case ASN_V2_TYPE_KIND_OBJECT_ID:
+		der_value->as.object_id.narcs = 0;
 		return;
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
@@ -2569,7 +2585,32 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 		break;
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 		compiled->kind = asn1_value->kind;
-
+		t_list_next next = {0};
+		void *content = NULL;
+		t_asn1_v2_oid *compiled_oid = &compiled->as.object_id;
+		while (ft_list_next_content(&asn1_value->as.object_id.arcs, &next, &content)) {
+			t_asn1_v2_oid_arc *arc = content;
+			switch (arc->kind) {
+			case ASN_V2_OID_ARC_KIND_NUMERIC:
+				if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) goto label_error;
+				compiled_oid->arc_nums[compiled_oid->narcs++] = arc->as.number;
+			case ASN_V2_OID_ARC_KIND_NAMED:
+				assert(NULL != arc->as.name);
+				// TODO: Initializing oid tree every time it is required is not very effective but it is very small so this is ok for now.
+				t_node_v2 *oid_tree = NULL;
+				if (SSL_OK != asn1_v2_oid_tree_create(ASN_V2_OID_TREE_FILE_PATH, &oid_tree)) {
+					SSL_LOG(ERROR, "failed to init asn1 oid tree");
+					goto label_error;
+				}
+				ft_ntree_v2_del(oid_tree, __asn1_v2_oid_node_delete_adapter);
+				const t_asn1_v2_oid *named_arc_oid = asn1_v2_get_oid_by_name(oid_tree, arc->as.name);
+				if (NULL == named_arc_oid) goto label_error;
+				for (size_t i = 0; i < named_arc_oid->narcs; i++) {
+					if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) goto label_error;
+					compiled_oid->arc_nums[compiled_oid->narcs++] = named_arc_oid->arc_nums[i];
+				}
+			}
+		}
 		break;
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
@@ -2813,37 +2854,40 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 	if (NULL == der_value) return ft_strdup("null");
 
 	switch (der_value->kind) {
-	case ASN_V2_TYPE_KIND_NULL:
+	case ASN_V2_TYPE_KIND_NULL: {
 		return ft_strdup("null");
-	case ASN_V2_TYPE_KIND_BOOLEAN:
+	}
+	case ASN_V2_TYPE_KIND_BOOLEAN: {
 		return (der_value->as.boolean) ? ft_strdup("true") : ft_strdup("false");
-	case ASN_V2_TYPE_KIND_INTEGER:
+	}
+	case ASN_V2_TYPE_KIND_INTEGER: {
 		return bnum_to_dec(&der_value->as.number);
+	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
-	case ASN_V2_TYPE_KIND_IA5_STRING:
+	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		return ft_strjoin_multi(3, "\"", der_value->as.cstring, "\"");
+	}
+	case ASN_V2_TYPE_KIND_OBJECT_ID: {
+		return asn1_v2_oid_dumps(&der_value->as.object_id);
+	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
-		;;
-		char *ustring_dumps = NULL;
-		ft_sprintf(&ustring_dumps, "\"<utf8_string=%p,size=%zu>\"", &der_value->as.ostring, der_value->as.ostring.size);
-		return ustring_dumps;
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
-		;;
-		char *ostring_dumps = NULL;
-		ft_sprintf(&ostring_dumps, "\"<octet_string=%p,size=%zu>\"", &der_value->as.ostring, der_value->as.ostring.size);
-		return ostring_dumps;
-	case ASN_V2_TYPE_KIND_BIT_STRING:
-		;;
-		char *bstring_dumps = NULL;
-		ft_sprintf(&bstring_dumps, "\"<bit_string=%p,size=%zu>\"", &der_value->as.ostring, der_value->as.ostring.size);
-		return bstring_dumps;
+	case ASN_V2_TYPE_KIND_BIT_STRING: {
+		t_ostring ostring = {0};
+		ft_ostr_append_cstr(&ostring, "\"'");
+		char *hexs = ft_bytes_dumps_hex_upper(der_value->as.ostring.content, der_value->as.ostring.size);
+		ft_ostr_append_cstr(&ostring, hexs);
+		SSL_FREE(hexs);
+		ft_ostr_append_cstr(&ostring, "'H\"");
+		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+		ft_ostr_clear(&ostring);
+		return (dumps);
+	}
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET:
-	case ASN_V2_TYPE_KIND_SET_OF:
-		;;
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		t_ostring ostring = {0};
 		ft_ostr_init_with_capacity(&ostring, 1024);
 		ft_ostr_append_cstr(&ostring, "[");
@@ -2858,8 +2902,8 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 		ft_ostr_clear(&ostring);
 		return (dumps);
-	case ASN_V2_TYPE_KIND_CHOICE:
-		;;
+	}
+	case ASN_V2_TYPE_KIND_CHOICE: {
 		char *choice_dumps = NULL;
 		char *alt_dumps = __der_v2_value_dumps(der_value->as.choice.value);
 		if (NULL != der_value->as.choice.id) {
@@ -2869,8 +2913,8 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 		}
 		SSL_FREE(alt_dumps);
 		return (choice_dumps);
-	case ASN_V2_TYPE_KIND_ANY:
-		;;
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
 		char *any_dumps = NULL;
 		if (NULL != der_value->as.any.defined_by_id) {
 			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":\"%s\",\"octets\":\"<octet_string=%p,size=%zu>\"}}", der_value->as.any.defined_by_id, &der_value->as.any.octets, der_value->as.any.octets.size);
@@ -2878,7 +2922,7 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<octet_string=%p,size=%zu>\"}}", &der_value->as.any.octets, der_value->as.any.octets.size);
 		}
 		return (any_dumps);
-	}
+	}}
 }
 
 static char *__der_v2_component_dumps(const t_der_v2_component *der_component)
@@ -3819,7 +3863,7 @@ static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_
 	size_t encsize = tlv.length;
 
 	uint32_t sub_ids[encsize + 1];
-	int num_sub_ids = 0;
+	size_t num_sub_ids = 0;
 
 	for (size_t i = 0; i < encsize; ) {
 		sub_ids[num_sub_ids] = 0;
@@ -3840,29 +3884,23 @@ static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_
 		i++;
 		num_sub_ids++;
 	}
-	if (num_sub_ids < 2) {
+	if (num_sub_ids < 2 || num_sub_ids+1 > ASN_V2_OID_MAX_NARCS) {
 		SSL_LOG(ERROR, "bad value");
 		return (SSL_ERR);
 	}
-	//	First two ids are concatenated into one single id using following formula:
-	//	CONCAT_ID = 40 * ID_0 + ID_1
-	char *sub_id_strings[encsize + 1];
-	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
-	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
-
-	// Get the rest of ids, except the last one
-	for (int i = 1; i < num_sub_ids-1; i++) {
-		ft_sprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
-	}
-	// Get the last id
-	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
-	// Join all sub-id strings into an object id string
-	char *obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");
-	SSL_LOG(TRACE, "object id: %s", obj_id);
 
 	t_der_v2_value *dvalue = __der_v2_value_create();
 	dvalue->kind = ASN_V2_TYPE_KIND_OBJECT_ID;
-	dvalue->as.cstring = obj_id;
+	t_asn1_v2_oid *oid = &dvalue->as.object_id;
+	//	First two ids are concatenated into one single id using following formula:
+	//	CONCAT_ID = 40 * ID_0 + ID_1
+	oid->arc_nums[oid->narcs++] = sub_ids[0] / 40;
+	oid->arc_nums[oid->narcs++] = sub_ids[0] % 40;
+
+	// Get the rest of ids, except the last one
+	for (size_t i = 1; i < num_sub_ids; i++) {
+		oid->arc_nums[oid->narcs++] = sub_ids[i];
+	}
 
 	*der_value = dvalue;
 	return (SSL_OK);
