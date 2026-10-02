@@ -3367,7 +3367,15 @@ void 	ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity)
 	ostring->capacity = capacity;
 }
 
-void	ft_ostr_init_with_content(t_ostring *ostring, void *content, size_t size)
+void	ft_ostr_init_from_cstr(t_ostring *ostring, const char *cstr)
+{
+	size_t slen = ft_strlen(cstr);
+	ft_ostr_init_with_capacity(ostring, slen);
+	ft_memcpy(ostring->content, cstr, slen);
+	ostring->size = slen;
+}
+
+void	ft_ostr_borrow_content(t_ostring *ostring, void *content, size_t size)
 {
 	if (NULL == ostring) {
 		return;

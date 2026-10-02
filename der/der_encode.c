@@ -131,7 +131,7 @@ static int	__encode(t_node *asn1_node, t_io_v2_stream *out)
 
 	SSL_LOG(TRACE, "encoding content: %p, size: %zu", asn1_item->content, asn1_item->size);
 	t_ostring data, encoded;
-	ft_ostr_init_with_content(&data, asn1_item->content, asn1_item->size);
+	ft_ostr_borrow_content(&data, asn1_item->content, asn1_item->size);
 	ft_ostr_init(&encoded);
 
 	if (SSL_OK != f_encode(tag, &encoded, &data)) {
