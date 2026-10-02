@@ -21,7 +21,7 @@ org            = SEQUENCE:rdn_organization
 
 [rdn_common_name]
 type           = OID:2.5.4.3
-value          = IA5STRING:Example Common Name
+value          = FORMAT:UTF8,UTF8STRING:䰾䲁䲘䴉
 
 [rdn_organization]
 type           = OID:2.5.4.10
