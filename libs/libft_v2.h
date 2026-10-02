@@ -114,4 +114,9 @@ t_node_v2	*ft_ntree_v2_bfs(t_node_v2 *node, t_func_node_find f_find, const void 
 void		ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
 void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
 
+/****************************************************************************/
+
+bool	utf8_next(const uint8_t *bytes, size_t size, size_t *next);
+bool	utf8_is_valid(const uint8_t *bytes, size_t size);
+
 #endif //LIBFT_V2_H
