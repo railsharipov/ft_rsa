@@ -148,8 +148,6 @@ const char *asn1_v2_get_constraint_name(t_asn_v2_constraint_kind type)
 
 /****************************************************************************/
 
-#define __ASN_V2_UNKNOWN_NAME 9999
-
 static t_asn_v2_constraint_kind __asn1_v2_schema_get_constraint_type_by_name(const char *name)
 {
 	assert(NULL != name);
@@ -157,7 +155,7 @@ static t_asn_v2_constraint_kind __asn1_v2_schema_get_constraint_type_by_name(con
 	if (ft_streq(name, __SCHEMA_CONSTRAINT_NAME_RANGE))		return (ASN_V2_CONSTRAINT_KIND_RANGE);
 	if (ft_streq(name, __SCHEMA_CONSTRAINT_NAME_SIZE))		return (ASN_V2_CONSTRAINT_KIND_SIZE);
 
-	return (__ASN_V2_UNKNOWN_NAME);
+	return (-1);
 }
 
 static t_asn_v2_type_kind __asn1_v2_schema_get_type_by_name(const char *name)
@@ -181,7 +179,7 @@ static t_asn_v2_type_kind __asn1_v2_schema_get_type_by_name(const char *name)
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_CHOICE))			    return (ASN_V2_TYPE_KIND_CHOICE);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_ANY))			        return (ASN_V2_TYPE_KIND_ANY);
 
-	return (__ASN_V2_UNKNOWN_NAME);
+	return (-1);
 }
 
 static t_asn_v2_tag_mode __asn1_v2_schema_get_tag_mode_by_name(const char *name)
@@ -192,7 +190,7 @@ static t_asn_v2_tag_mode __asn1_v2_schema_get_tag_mode_by_name(const char *name)
 	if (ft_streq(name, __SCHEMA_TAG_MODE_NAME_IMPLICIT))		return (ASN_V2_TAG_MODE_IMPLICIT);
 	if (ft_streq(name, __SCHEMA_TAG_MODE_NAME_AUTOMATIC))		return (ASN_V2_TAG_MODE_AUTOMATIC);
 
-	return (__ASN_V2_UNKNOWN_NAME);
+	return (-1);
 }
 
 static t_asn_v2_tag_class __asn1_v2_schema_get_tag_class_by_name(const char *name)
@@ -204,7 +202,7 @@ static t_asn_v2_tag_class __asn1_v2_schema_get_tag_class_by_name(const char *nam
 	if (ft_streq(name, __SCHEMA_TAG_CLASS_NAME_CONTEXT))		return (ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC);
 	if (ft_streq(name, __SCHEMA_TAG_CLASS_NAME_PRIVATE))		return (ASN_V2_TAG_CLASS_PRIVATE);
 
-	return (__ASN_V2_UNKNOWN_NAME);
+	return (-1);
 }
 
 /****************************************************************************/
@@ -450,28 +448,28 @@ char *asn1_v2_oid_dumps(const t_asn1_v2_oid *oid)
 int __asn1_v2_schema_validate_constraint_type_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_constraint_type_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
+	if (__asn1_v2_schema_get_constraint_type_by_name(name) == -1) return (SSL_ERR);
 	return (SSL_OK);
 }
 
 int __asn1_v2_schema_validate_tag_mode_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_tag_mode_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
+	if (__asn1_v2_schema_get_tag_mode_by_name(name) == -1) return (SSL_ERR);
 	return (SSL_OK);
 }
 
 int __asn1_v2_schema_validate_tag_class_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_tag_class_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
+	if (__asn1_v2_schema_get_tag_class_by_name(name) == -1) return (SSL_ERR);
 	return (SSL_OK);
 }
 
-int __asn1_v2_schema_validate_type_name(const char *name)
+int __asn1_v2_schema_validate_standard_type_name(const char *name)
 {
 	if (NULL == name) return (SSL_ERR);
-	if (__asn1_v2_schema_get_type_by_name(name) == __ASN_V2_UNKNOWN_NAME) return (SSL_ERR);
+	if (__asn1_v2_schema_get_type_by_name(name) == -1) return (SSL_ERR);
 	return (SSL_OK);
 }
 
@@ -586,24 +584,11 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 		SSL_LOG(ERROR, "invalid asn1 type: expected `%s` key: %s", __JQ_TYPE_KIND, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
 		return (SSL_ERR);
 	}
-	else {
-		if (jkind->kind != JSON_V2_TYPE_STRING) {
-			SSL_LOG(ERROR, "invalid asn1 type: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_KIND, json_v2_get_type_name(jkind->kind), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
-			return (SSL_ERR);
-		}
-		if (SSL_OK != __asn1_v2_schema_validate_type_name(jkind->as.cstring)) {
-			SSL_LOG(TRACE, "unknown asn1 type: `%s`: %s", jkind->as.cstring, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
-			// Check if the type name refers to a type within a module.
-			const t_json_v2 *jref_type = NULL;
-			char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstring);
-			int ret = json_v2_query_nonnull(query, jschema, &jref_type);
-			SSL_FREE(query);
-			if (JSON_V2_OK != ret || jref_type->kind != JSON_V2_TYPE_OBJECT) {
-				SSL_LOG(ERROR, "invalid asn1 type: bad type ref: `%s`: %s", jkind->as.cstring, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
-				return (SSL_ERR);
-			}
-		}
+	if (jkind->kind != JSON_V2_TYPE_STRING) {
+		SSL_LOG(ERROR, "invalid asn1 type: expected `%s` to be a json string but got json %s: %s", __JQ_TYPE_KIND, json_v2_get_type_name(jkind->kind), json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
+		return (SSL_ERR);
 	}
+
 	t_asn_v2_type_kind asn1_type = __asn1_v2_schema_get_type_by_name(jkind->as.cstring);
 
 	switch (asn1_type) {
@@ -664,7 +649,16 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 		break;
 	}
 	default: {
-		UNREACHABLE("__asn1_v2_schema_validate_type");
+		SSL_LOG(TRACE, "unknown asn1 type: `%s`: %s", jkind->as.cstring, json_v2_dumpb(jtype, cbuf, sizeof(cbuf)));
+		// Check if the type name refers to a type within a module.
+		const t_json_v2 *jref_type = NULL;
+		char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstring);
+		int ret = json_v2_query_nonnull(query, jschema, &jref_type);
+		SSL_FREE(query);
+		if (JSON_V2_OK != ret || jref_type->kind != JSON_V2_TYPE_OBJECT) {
+			SSL_LOG(ERROR, "unknown asn1 type name: %s", jkind->as.cstring);
+			return (SSL_ERR);
+		}
 	}}
 
 	const t_json_v2 *jtags = NULL;
