@@ -3748,7 +3748,7 @@ int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *d
 	// Read root TLV.
 	t_der_v2_tlv root = {0};
 	if (!__der_v2_next_tlv(encoded, encsize, &root)) {
-		SSL_LOG(ERROR, "bad nested tlv read");
+		SSL_LOG(ERROR, "bad tlv read");
 		return (SSL_ERR);
 	}
 	if (SSL_OK != __der_v2_decode_value(root, der_type, der_value)) {
@@ -3797,7 +3797,7 @@ static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type
 		// Decode the value in TLV.
 		switch (tlv.tag.class) {
 		case ASN_V2_TAG_CLASS_UNIVERSAL: {
-			// This is must be a standard asn1 type and we should know how to decode the value.
+			// This must be a standard asn1 type and we should know how to decode the value.
 			SSL_LOG(TRACE, "universal: standard asn1 type");
 			if (tlv.tag.number >= DER_V2_DECODE_TYPE_COUNT) {
 				SSL_LOG(ERROR, "universal: bad tag: unknown tag number: %lu", tlv.tag.number);
@@ -3817,12 +3817,12 @@ static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type
 			continue;
 		}
 		case ASN_V2_TAG_CLASS_APPLICATION: {
-			SSL_LOG(ERROR, "application: no application scoped asn1 tags currently implemented", tlv.tag.number);
+			SSL_LOG(ERROR, "application: no application scoped asn1 tags currently implemented");
 			goto label_error;
 		}
 		case ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC: {
 			if (tlv.tag.constructed) {
-				// This is in external tag with nested TLV. Unwrap nested TLV.
+				// This is an external tag with nested TLV. Unwrap nested TLV.
 				SSL_LOG(TRACE, "context-specific: nested tlv");
 				t_der_v2_tlv nested_tlv = {0};
 				if (!__der_v2_next_tlv(tlv.value, tlv.length, &nested_tlv)) {
@@ -3846,7 +3846,7 @@ static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type
 			}
 		}
 		case ASN_V2_TAG_CLASS_PRIVATE: {
-			SSL_LOG(ERROR, "private: no private scoped asn1 tags currently implemented", tlv.tag.number);
+			SSL_LOG(ERROR, "private: no private scoped asn1 tags currently implemented");
 			goto label_error;
 		}
 		default: {
@@ -3875,7 +3875,7 @@ static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_typ
 		SSL_LOG(TRACE, "choice: checking element with id: %s", element->id);
 		// TODO: choice element type cannot be ANY, ensure type compilation handles this before decoding.
 		assert(ASN_V2_TYPE_KIND_ANY == element->type->kind);
-		// Element type can also be a choice.
+		// Element type can be choice as well.
 		if (ASN_V2_TYPE_KIND_CHOICE == element->type->kind) {
 			if (SSL_OK == __der_v2_decode_choice(tlv, element->type, &chosen_value)) {
 				chosen_element = element;
