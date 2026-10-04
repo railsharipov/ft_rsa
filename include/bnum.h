@@ -5,7 +5,8 @@
 # include <inttypes.h>
 # include <stddef.h>
 # include <sys/errno.h>
-#include <libft.h>
+# include <libft.h>
+# include <libft_v2.h>
 # include <printnl.h>
 
 # define SSL_PRIME_TEST
@@ -88,6 +89,7 @@ void    bnum_divmod_dig(const t_num *a, uint64_t b, t_num *res, uint64_t *mod);
 void    bnum_exp(const t_num *a, uint64_t b, t_num *res);
 void    bnum_exp2(t_num *num, int bits);
 t_num   *bnum_from_bytes_u(const uint8_t *bytes, int size);
+t_num	*bnum_from_bytes(const uint8_t *buf, int bufsize);
 t_num   *bnum_from_dec(const char *dec);
 t_num   *bnum_from_hex_u(const char *hex);
 void    bnum_gcd(const t_num *a, const t_num *b, t_num *res);
@@ -97,11 +99,13 @@ void    bnum_init(t_num *num);
 void    bnum_init_multi(t_num *num, ...);
 void    bnum_init_with_size(t_num *num, int size);
 void    bnum_init_from_bytes_u(t_num *num, const uint8_t *bytes, int size);
+void	bnum_init_from_bytes(t_num *num, const uint8_t *buf, int bufsize);
 void	bnum_init_from_dec(t_num *num, const char *dec);
 void	bnum_init_from_hex_u(t_num *num, const char *hex);
 void    bnum_invmod(const t_num *a, const t_num *b, t_num *res);
 void    bnum_lcm(const t_num *a, const t_num *b, t_num *res);
 int     bnum_lmbit(const t_num *num);
+void	bnum_inv_bits(const t_num *num, t_num *res);
 void    bnum_lsh_bit_inpl(t_num *num, int bits);
 void    bnum_lsh_dig_inpl(t_num *num, int shifts);
 void    bnum_m_powmod(const t_num *a, const t_num *b, const t_num *c, t_num *res);

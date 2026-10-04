@@ -1,5 +1,6 @@
 #include <bnum.h>
 
+// Find msbit position, counting from 1. If result is zero, the number must have had a magnitude of zero.
 int bnum_lmbit(const t_num *num)
 {
 	int			setbit, i;
