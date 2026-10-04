@@ -27,6 +27,8 @@
 #define ASN_V2_TYPE_NAME_IA5_STRING         "IA5 STRING"
 #define ASN_V2_TYPE_NAME_UTF8_STRING        "UTF8 STRING"
 #define ASN_V2_TYPE_NAME_PRINTABLE_STRING   "PRINTABLE STRING"
+#define ASN_V2_TYPE_NAME_NUMERIC_STRING		"NUMERIC STRING"
+#define ASN_V2_TYPE_NAME_VISIBLE_STRING  	"VISIBLE STRING"
 #define ASN_V2_TYPE_NAME_OBJECT_ID          "OBJECT IDENTIFIER"
 #define ASN_V2_TYPE_NAME_OBJECT_DESCR       "OBJECT DESCRIPTOR"
 #define ASN_V2_TYPE_NAME_SEQUENCE           "SEQUENCE"
@@ -103,6 +105,8 @@ const char *asn1_v2_get_type_name(t_asn_v2_type_kind type)
 	case ASN_V2_TYPE_KIND_IA5_STRING:       return ASN_V2_TYPE_NAME_IA5_STRING;
 	case ASN_V2_TYPE_KIND_UTF8_STRING:      return ASN_V2_TYPE_NAME_UTF8_STRING;
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: return ASN_V2_TYPE_NAME_PRINTABLE_STRING;
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING: 	return ASN_V2_TYPE_NAME_NUMERIC_STRING;
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING: 	return ASN_V2_TYPE_NAME_VISIBLE_STRING;
 	case ASN_V2_TYPE_KIND_NULL:             return ASN_V2_TYPE_NAME_NULL;
 	case ASN_V2_TYPE_KIND_OBJECT_ID:        return ASN_V2_TYPE_NAME_OBJECT_ID;
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:     return ASN_V2_TYPE_NAME_OBJECT_DESCR;
@@ -643,6 +647,8 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
@@ -891,6 +897,8 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		ft_ostr_appendf(&ostring, "\"%s\"", asn1_value->as.cstring);
 		break;
@@ -1055,6 +1063,8 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
@@ -1330,6 +1340,8 @@ static void __asn1_v2_value_clear(t_asn_v2_value *asn1_value)
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 		SSL_FREE(asn1_value->as.cstring);
 		asn1_value->as.cstring = NULL;
 		break;
@@ -1389,6 +1401,8 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		dst->as.cstring = ft_strdup(src->as.cstring);
 		break;
@@ -1514,6 +1528,8 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
@@ -1572,6 +1588,8 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
@@ -1678,6 +1696,17 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 		avalue->as.cstring = ft_strdup(jvalue->as.cstring);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING: {
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		size_t len = ft_strlen(jvalue->as.cstring);
+		const char *s = jvalue->as.cstring;
+		for (size_t i = 0; i < len; i++) {
+			if (!ft_isdigit(s[i]) && s[i] != ' ') goto label_error;
+		}
+		avalue->as.cstring = ft_strdup(jvalue->as.cstring);
+		break;
+	}
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: {
 		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
 		if (!ft_str_isprint(jvalue->as.cstring)) goto label_error;
@@ -2102,6 +2131,8 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
@@ -2324,6 +2355,8 @@ static int	__asn1_v2_type_compile_automatic_tags(const t_asn_v2_module *asn1_mod
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
@@ -2437,6 +2470,8 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 		break;
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 		if (NULL != src->as.cstring) dst->as.cstring = ft_strdup(src->as.cstring);
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
@@ -2489,6 +2524,8 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 		return;
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 		if (NULL != der_value->as.cstring) SSL_FREE(der_value->as.cstring);
 		der_value->as.cstring = NULL;
@@ -2582,6 +2619,8 @@ static void __der_v2_type_delete(t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
@@ -2610,6 +2649,10 @@ static t_der_v2_tag __der_v2_get_tag_universal(t_asn_v2_type_kind type)
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_UTF8_STRING, };
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_PRINTABLE_STRING, };
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_NUMERIC_STRING, };
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_VISIBLE_STRING, };
 	case ASN_V2_TYPE_KIND_NULL:
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_NULL, };
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
@@ -2658,6 +2701,8 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		compiled->kind = asn1_value->kind;
 		if (NULL != asn1_value->as.cstring) compiled->as.cstring = ft_strdup(asn1_value->as.cstring);
@@ -2862,6 +2907,8 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
@@ -2985,6 +3032,8 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		ft_ostr_appendf(&ostring, "\"%s\"", der_value->as.cstring);
 		break;
@@ -3161,6 +3210,8 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_UTF8_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
@@ -3244,6 +3295,8 @@ static int __der_v2_generic_decode_choice(t_der_v2_tlv tlv, t_der_v2_value **der
 
 static int	__der_v2_generic_decode_ia5_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_printable_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_numeric_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_visible_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_octet_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_bit_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_utf8_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
@@ -3355,7 +3408,7 @@ static struct s_der_v2_generic_decode {
 	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
 	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_generic_decode_sequence, "SEQUENCE" },
 	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ __der_v2_generic_decode_set, "SET" },
-	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ NULL, "NUMERIC_STRING" },
+	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ __der_v2_generic_decode_numeric_string, "NUMERIC_STRING" },
 	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ __der_v2_generic_decode_printable_string, "PRINTABLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
@@ -3363,7 +3416,7 @@ static struct s_der_v2_generic_decode {
 	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
 	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
-	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ NULL, "VISIBLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ __der_v2_generic_decode_visible_string, "VISIBLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27 */	{ NULL, "GENERAL_STRING" },
 	/* ASN_V2_TAG_NUMBER_UNIVERSAL_STRING   = 28 */	{ NULL, "UNIVERSAL_STRING" },
 	/* ASN_V2_TAG_NUMBER_CHARACTER_STRING   = 29 */	{ NULL, "CHARACTER_STRING" },
@@ -3590,6 +3643,50 @@ static int	__der_v2_generic_decode_printable_string(t_der_v2_tlv tlv, t_der_v2_v
 	return (SSL_OK);
 }
 
+static int	__der_v2_generic_decode_visible_string(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "visible string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	for (size_t i = 0; i < tlv.length; i++) {
+		if (!ft_isprint((int)tlv.value[i])) {
+			SSL_LOG(ERROR, "visible string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_VISIBLE_STRING;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_numeric_string(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "numeric string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	for (size_t i = 0; i < tlv.length; i++) {
+		if (!ft_isdigit((int)tlv.value[i]) && tlv.value[i] != ' ') {
+			SSL_LOG(ERROR, "numeric string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_NUMERIC_STRING;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
 static int	__der_v2_generic_decode_octet_string(t_der_v2_tlv tlv, t_der_v2_value **der_value)
 {
 	SSL_LOG(TRACE, "octet string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
@@ -3690,7 +3787,7 @@ static int	__der_v2_generic_decode_integer(t_der_v2_tlv tlv, t_der_v2_value **de
 
 	t_der_v2_value *dvalue = __der_v2_value_create();
 	dvalue->kind = ASN_V2_TYPE_KIND_INTEGER;
-	bnum_init_from_bytes_u(&dvalue->as.number, tlv.value, tlv.length);
+	bnum_init_from_bytes(&dvalue->as.number, tlv.value, tlv.length);
 
 	*der_value = dvalue;
 	return (SSL_OK);
@@ -3760,6 +3857,8 @@ static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_typ
 
 static int	__der_v2_decode_ia5_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_printable_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_numeric_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_visible_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_octet_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_bit_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_utf8_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
@@ -3792,7 +3891,7 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
 	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_decode_sequence, "SEQUENCE" },
 	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ __der_v2_decode_set, "SET" },
-	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ NULL, "NUMERIC_STRING" },
+	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ __der_v2_decode_numeric_string, "NUMERIC_STRING" },
 	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ __der_v2_decode_printable_string, "PRINTABLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
@@ -3800,7 +3899,7 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
 	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
-	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ NULL, "VISIBLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ __der_v2_decode_visible_string, "VISIBLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27 */	{ NULL, "GENERAL_STRING" },
 	/* ASN_V2_TAG_NUMBER_UNIVERSAL_STRING   = 28 */	{ NULL, "UNIVERSAL_STRING" },
 	/* ASN_V2_TAG_NUMBER_CHARACTER_STRING   = 29 */	{ NULL, "CHARACTER_STRING" },
@@ -4153,210 +4252,66 @@ label_error:
 
 static int	__der_v2_decode_ia5_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "ia5 string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	for (size_t i = 0; i < tlv.length; i++) {
-		if (!ft_isascii((int)tlv.value[i])) {
-			SSL_LOG(ERROR, "ia5 string: bad value");
-			return (SSL_ERR);
-		}
-	}
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_IA5_STRING;
-	char *cstr = NULL;
-	SSL_ALLOC(cstr, tlv.length+1);
-	ft_memcpy(cstr, tlv.value, tlv.length);
-	cstr[tlv.length] = 0;
-	dvalue->as.cstring = cstr;
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_ia5_string(tlv, der_value));
 }
 
 static int	__der_v2_decode_printable_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "printable string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	for (size_t i = 0; i < tlv.length; i++) {
-		if (!ft_isprint((int)tlv.value[i])) {
-			SSL_LOG(ERROR, "printable string: bad value");
-			return (SSL_ERR);
-		}
-	}
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_PRINTABLE_STRING;
-	char *cstr = NULL;
-	SSL_ALLOC(cstr, tlv.length+1);
-	ft_memcpy(cstr, tlv.value, tlv.length);
-	cstr[tlv.length] = 0;
-	dvalue->as.cstring = cstr;
+	return (__der_v2_generic_decode_printable_string(tlv, der_value));
+}
 
-	*der_value = dvalue;
-	return (SSL_OK);
+static int	__der_v2_decode_numeric_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	UNUSED(der_type);
+	return (__der_v2_generic_decode_numeric_string(tlv, der_value));
+}
+
+static int	__der_v2_decode_visible_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	UNUSED(der_type);
+	return (__der_v2_generic_decode_visible_string(tlv, der_value));
 }
 
 static int	__der_v2_decode_octet_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "octet string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_OCTET_STRING;
-	if (tlv.length > 0) {
-		ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
-		ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
-	} else {
-		ft_ostr_init(&dvalue->as.ostring);
-	}
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_octet_string(tlv, der_value));
 }
 
 static int	__der_v2_decode_bit_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "bit string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	if (tlv.length < 1) {
-		SSL_LOG(ERROR, "bit string: bad length");
-		return (SSL_ERR);
-	}
-	SSL_LOG(TRACE, "bit string: unused bits: %u", tlv.value[0]);
-	// TODO: check last value octet: unused octet bits must be unset.
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_OCTET_STRING;
-	ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
-	ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_bit_string(tlv, der_value));
 }
 
 static int	__der_v2_decode_utf8_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "utf8s string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	if (!utf8_is_valid(tlv.value, tlv.length)) {
-		SSL_LOG(ERROR, "utf8 string: bad value");
-		return (SSL_ERR);
-	}
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_UTF8_STRING;
-	if (tlv.length > 0) {
-		ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
-		ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
-	} else {
-		ft_ostr_init(&dvalue->as.ostring);
-	}
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_utf8_string(tlv, der_value));
 }
 
 static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "boolean: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	if (tlv.length != 1) {
-		SSL_LOG(ERROR, "boolean: bad length");
-		return (SSL_ERR);
-	}
-	bool boolean = false;
-	if (tlv.value[0] == 0xFF) {
-		boolean = true;
-	} else if (tlv.value[0] == 0x0) {
-		boolean = false;
-	} else {
-		SSL_LOG(ERROR, "boolean: bad value");
-		return (SSL_ERR);
-	}
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_BOOLEAN;
-	dvalue->as.boolean = boolean;
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_boolean(tlv, der_value));
 }
 
 static int	__der_v2_decode_null(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "null: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_NULL;
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_null(tlv, der_value));
 }
 
 static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "integer: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
-
 	UNUSED(der_type);
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_INTEGER;
-	bnum_init_from_bytes_u(&dvalue->as.number, tlv.value, tlv.length);
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	return (__der_v2_generic_decode_integer(tlv, der_value));
 }
 
 static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	if (tlv.length == 0) {
-		SSL_LOG(ERROR, "bad length");
-		return (SSL_ERR);
-	}
-	const uint8_t *enc = tlv.value;
-	size_t encsize = tlv.length;
-
-	uint32_t sub_ids[encsize + 1];
-	size_t num_sub_ids = 0;
-
-	for (size_t i = 0; i < encsize; ) {
-		sub_ids[num_sub_ids] = 0;
-		// Get 7-bit blocks, up to the last one
-		while (i < encsize && enc[i] & 0x80) {
-			sub_ids[num_sub_ids] <<= 7;
-			sub_ids[num_sub_ids] |= enc[i] & 0x7F;
-			i++;
-		}
-		// If we've reached the end of the encoded content, then we've got an invalid der encoding
-		if (i >= encsize) {
-			SSL_LOG(ERROR, "bad value");
-			return (SSL_ERR);
-		}
-		// Get the last block
-		sub_ids[num_sub_ids] <<= 7;
-		sub_ids[num_sub_ids] |= enc[i] & 0x7F;
-		i++;
-		num_sub_ids++;
-	}
-	if (num_sub_ids < 2 || num_sub_ids+1 > ASN_V2_OID_MAX_NARCS) {
-		SSL_LOG(ERROR, "bad value");
-		return (SSL_ERR);
-	}
-
-	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_OBJECT_ID;
-	t_asn1_v2_oid *oid = &dvalue->as.object_id;
-	//	First two ids are concatenated into one single id using following formula:
-	//	CONCAT_ID = 40 * ID_0 + ID_1
-	oid->arc_nums[oid->narcs++] = sub_ids[0] / 40;
-	oid->arc_nums[oid->narcs++] = sub_ids[0] % 40;
-
-	// Get the rest of ids, except the last one
-	for (size_t i = 1; i < num_sub_ids; i++) {
-		oid->arc_nums[oid->narcs++] = sub_ids[i];
-	}
-
-	*der_value = dvalue;
-	return (SSL_OK);
+	UNUSED(der_type);
+	return (__der_v2_generic_decode_object_id(tlv, der_value));
 }
