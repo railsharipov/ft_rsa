@@ -864,23 +864,38 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 {
 	if (NULL == asn1_value) return ft_strdup("null");
 
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 1024);
+
+	const char *type_name = asn1_v2_get_type_name(asn1_value->kind);
+	ft_ostr_appendf(&ostring, "{\"%s\":", type_name);
+
 	switch (asn1_value->kind) {
 	case ASN_V2_TYPE_KIND_NULL: {
-		return ft_strdup("null");
+		ft_ostr_append_cstr(&ostring, "null");
+		break;
 	}
 	case ASN_V2_TYPE_KIND_BOOLEAN: {
-		return (asn1_value->as.boolean) ? ft_strdup("true") : ft_strdup("false");
+		if (asn1_value->as.boolean) {
+			ft_ostr_append_cstr(&ostring, "true");
+		} else {
+			ft_ostr_append_cstr(&ostring, "false");
+		}
+		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER: {
-		return bnum_to_dec(&asn1_value->as.number);
+		char *dumps = bnum_to_dec(&asn1_value->as.number);
+		ft_ostr_append_cstr(&ostring, dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
-		return ft_strjoin_multi(3, "\"", asn1_value->as.cstring, "\"");
+		ft_ostr_appendf(&ostring, "\"%s\"", asn1_value->as.cstring);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
-		t_ostring ostring = {0};
 		ft_ostr_append_cstr(&ostring, "[");
 		t_list_next next = {0};
 		void *content = NULL;
@@ -902,34 +917,27 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 			}}
 		}
 		ft_ostr_append_cstr(&ostring, "]");
-		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
-		ft_ostr_clear(&ostring);
-		return (dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING: {
-		char *cstr = ft_ostr_to_cstr(&asn1_value->as.ostring, 0, asn1_value->as.ostring.size);
-		char *dumps = ft_strjoin_multi(3, "\"", cstr, "\"");
-		SSL_FREE(cstr);
-		return (dumps);
+		char *dumps = ft_ostr_to_cstr(&asn1_value->as.ostring, 0, asn1_value->as.ostring.size);
+		ft_ostr_appendf(&ostring, "\"%s\"", dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
 	case ASN_V2_TYPE_KIND_BIT_STRING: {
-		t_ostring ostring = {0};
 		ft_ostr_append_cstr(&ostring, "\"'");
 		char *hexs = ft_bytes_dumps_hex_upper(asn1_value->as.ostring.content, asn1_value->as.ostring.size);
 		ft_ostr_append_cstr(&ostring, hexs);
 		SSL_FREE(hexs);
 		ft_ostr_append_cstr(&ostring, "'H\"");
-		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
-		ft_ostr_clear(&ostring);
-		return (dumps);
+		break;
 	}
-	case ASN_V2_TYPE_KIND_SET:
-	case ASN_V2_TYPE_KIND_SET_OF:
 	case ASN_V2_TYPE_KIND_SEQUENCE:
-	case ASN_V2_TYPE_KIND_SEQUENCE_OF: {
-		t_ostring ostring = {0};
-		ft_ostr_init_with_capacity(&ostring, 1024);
+	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
+	case ASN_V2_TYPE_KIND_SET:
+	case ASN_V2_TYPE_KIND_SET_OF: {
 		t_list_next next = {0};
 		void *content;
 		size_t commas = 0;
@@ -941,33 +949,37 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 			SSL_FREE(dumps);
 		}
 		ft_ostr_append_cstr(&ostring, "]");
-		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
-		ft_ostr_clear(&ostring);
-		return (dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_CHOICE: {
-		char *dumps = NULL;
-		char *alt_dumps = __asn1_v2_value_dumps(asn1_value->as.choice.value);
+		char *dumps = __asn1_v2_value_dumps(asn1_value->as.choice.value);
 		if (NULL != asn1_value->as.choice.id) {
-			ft_sprintf(&dumps, "{\"choice\":{\"id\":\"%s\",\"value\":%s}}", asn1_value->as.choice.id, alt_dumps);
+			ft_ostr_appendf(&ostring, "{\"%s\":%s}", asn1_value->as.choice.id, dumps);
 		} else {
-			ft_sprintf(&dumps, "{\"choice\":{\"id\":null,\"value\":%s}}", alt_dumps);
+			ft_ostr_append_cstr(&ostring, dumps);
 		}
-		SSL_FREE(alt_dumps);
-		return (dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		char *dumps = NULL;
+		char *dumps = ft_bytes_dumps_hex_upper(asn1_value->as.any.octets.content, asn1_value->as.any.octets.size);
 		if (NULL != asn1_value->as.any.defined_by_id) {
-			ft_sprintf(&dumps, "{\"any\":{\"defined_by_id\":\"%s\",\"octets\":\"<%p,size=%zu>\"}}", asn1_value->as.any.defined_by_id, &asn1_value->as.any.octets, asn1_value->as.any.octets.size);
+			ft_ostr_appendf(&ostring, "{\"defined_by\":\"%s\",\"octets\":\"'%s'H\"}", asn1_value->as.any.defined_by_id, dumps);
 		} else {
-			ft_sprintf(&dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<%p,size=%zu>\"}}", &asn1_value->as.any.octets, asn1_value->as.any.octets.size);
+			ft_ostr_appendf(&ostring, "\"'%s'H\"", dumps);
 		}
-		return (dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	default: {
-		SSL_LOG(ERROR, "unknown asn1 value type: %d", asn1_value->kind);
+		SSL_LOG(ERROR, "unknown der value type: %d", asn1_value->kind);
+		ft_ostr_append_cstr(&ostring, "\"???\"");
+		break;
 	}}
+	ft_ostr_append_cstr(&ostring, "}");
+	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+	return (dumps);
 }
 
 static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
@@ -1655,7 +1667,7 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 
 	switch (asn1_type->kind) {
 	case ASN_V2_TYPE_KIND_NULL: {
-		if (jvalue->kind != JSON_V2_TYPE_BOOL) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_NULL) goto label_error;
 		avalue->as.boolean = jvalue->as.boolean;
 		break;
 	}
@@ -1855,14 +1867,8 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 			assert(NULL != element->id && NULL != element->type);
 			t_asn_v2_value *element_value = NULL;
 
-			const t_json_v2 *jelement = ft_htbl_v2_get(&jvalue->as.htable, element->id);
-			if (NULL != jelement) {
-				const t_json_v2 *jelement_id = NULL;
-				const t_json_v2 *jelement_value = NULL;
-				if (jelement->kind != JSON_V2_TYPE_OBJECT) goto label_error;
-				if (JSON_V2_OK != json_v2_query_nonnull(".id", jelement, &jelement_id)) goto label_error;
-				if (jelement_id->kind == JSON_V2_TYPE_STRING)  goto label_error;
-				if (JSON_V2_OK != json_v2_query_nonnull(".value", jelement, &jelement_value)) goto label_error;
+			const t_json_v2 *jelement_value = NULL;
+			if (JSON_V2_OK == json_v2_query_nonnull(element->id, jvalue, &jelement_value)) {
 				if (SSL_OK != __asn1_v2_schema_parse_value(element->type, &element_value, jelement_value)) {
 					element_value = NULL; // Must be null, but let me be paranoid.
 				};
@@ -1894,22 +1900,17 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 	}
 	case ASN_V2_TYPE_KIND_CHOICE: {
 		if (jvalue->kind != JSON_V2_TYPE_OBJECT) goto label_error;
-		const t_json_v2 *jalt_id = NULL;
-		const t_json_v2 *jalt_value = NULL;
-		int ret = json_v2_query_nonnull(".id", jvalue, &jalt_id);
-		assert(JSON_V2_OK == ret && jalt_id->kind == JSON_V2_TYPE_STRING);
-		ret = json_v2_query_nonnull(".value", jvalue, &jalt_value);
-		assert(JSON_V2_OK == ret);
 		t_list_next next = {0};
 		void *content = NULL;
 		bool found = false;
 		while (!found && ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
 			t_asn_v2_component *alt = content;
 			assert(NULL != alt->id && NULL != alt->type);
-			if (ft_streq(alt->id, jalt_id->as.cstring)) {
+			const t_json_v2 *jalt_value = NULL;
+			if (JSON_V2_OK == json_v2_query(alt->id, jvalue, &jalt_value)) {
 				found = true;
 				t_asn_v2_value *alt_value = NULL;
-				if (SSL_OK != __asn1_v2_schema_parse_value(alt->type, &alt_value, jvalue)) {
+				if (SSL_OK != __asn1_v2_schema_parse_value(alt->type, &alt_value, jalt_value)) {
 					goto label_error;
 				};
 				avalue->as.choice.id = ft_strdup(alt->id);
@@ -1917,6 +1918,7 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 			}
 		}
 		if (!found) goto label_error;
+		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
 		SSL_LOG(ERROR, "parsing values for `%s` type is not supported", asn1_v2_get_type_name(asn1_type->kind));
@@ -2462,6 +2464,7 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 		break;
 	case ASN_V2_TYPE_KIND_CHOICE:
 		if (NULL != src->as.choice.id) dst->as.choice.id = ft_strdup(src->as.choice.id);
+		dst->as.choice.value = __der_v2_value_create();
 		__der_v2_value_copy(src->as.choice.value, dst->as.choice.value);
 		break;
 	case ASN_V2_TYPE_KIND_ANY:
@@ -2955,48 +2958,62 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 {
 	if (NULL == der_value) return ft_strdup("null");
 
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 1024);
+
+	const char *type_name = asn1_v2_get_type_name(der_value->kind);
+	ft_ostr_appendf(&ostring, "{\"%s\":", type_name);
+
 	switch (der_value->kind) {
 	case ASN_V2_TYPE_KIND_NULL: {
-		return ft_strdup("null");
+		ft_ostr_append_cstr(&ostring, "null");
+		break;
 	}
 	case ASN_V2_TYPE_KIND_BOOLEAN: {
-		return (der_value->as.boolean) ? ft_strdup("true") : ft_strdup("false");
+		if (der_value->as.boolean) {
+			ft_ostr_append_cstr(&ostring, "true");
+		} else {
+			ft_ostr_append_cstr(&ostring, "false");
+		}
+		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER: {
-		return bnum_to_dec(&der_value->as.number);
+		char *dumps = bnum_to_dec(&der_value->as.number);
+		ft_ostr_append_cstr(&ostring, dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
-		return ft_strjoin_multi(3, "\"", der_value->as.cstring, "\"");
+		ft_ostr_appendf(&ostring, "\"%s\"", der_value->as.cstring);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
-		return asn1_v2_oid_dumps(&der_value->as.object_id);
+		char *dumps = asn1_v2_oid_dumps(&der_value->as.object_id);
+		ft_ostr_append_cstr(&ostring, dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING: {
-		char *cstr = ft_ostr_to_cstr(&der_value->as.ostring, 0, der_value->as.ostring.size);
-		char *dumps = ft_strjoin_multi(3, "\"", cstr, "\"");
-		SSL_FREE(cstr);
-		return (dumps);
+		char *dumps = ft_ostr_to_cstr(&der_value->as.ostring, 0, der_value->as.ostring.size);
+		ft_ostr_appendf(&ostring, "\"%s\"", dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
 	case ASN_V2_TYPE_KIND_BIT_STRING: {
-		t_ostring ostring = {0};
 		ft_ostr_append_cstr(&ostring, "\"'");
 		char *hexs = ft_bytes_dumps_hex_upper(der_value->as.ostring.content, der_value->as.ostring.size);
 		ft_ostr_append_cstr(&ostring, hexs);
 		SSL_FREE(hexs);
 		ft_ostr_append_cstr(&ostring, "'H\"");
-		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
-		ft_ostr_clear(&ostring);
-		return (dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET:
 	case ASN_V2_TYPE_KIND_SET_OF: {
-		t_ostring ostring = {0};
-		ft_ostr_init_with_capacity(&ostring, 1024);
 		ft_ostr_append_cstr(&ostring, "[");
 		size_t commas = 0;
 		for (size_t idx = 0; idx < der_value->as.composite.count; idx++) {
@@ -3006,34 +3023,37 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 			SSL_FREE(dumps);
 		}
 		ft_ostr_append_cstr(&ostring, "]");
-		char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
-		ft_ostr_clear(&ostring);
-		return (dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_CHOICE: {
-		char *choice_dumps = NULL;
-		char *alt_dumps = __der_v2_value_dumps(der_value->as.choice.value);
+		char *dumps = __der_v2_value_dumps(der_value->as.choice.value);
 		if (NULL != der_value->as.choice.id) {
-			ft_sprintf(&choice_dumps, "{\"choice\":{\"id\":\"%s\",\"value\":%s}}", der_value->as.choice.id, alt_dumps);
+			ft_ostr_appendf(&ostring, "{\"%s\":%s}", der_value->as.choice.id, dumps);
 		} else {
-			ft_sprintf(&choice_dumps, "{\"choice\":{\"id\":null,\"value\":%s}}", alt_dumps);
+			ft_ostr_append_cstr(&ostring, dumps);
 		}
-		SSL_FREE(alt_dumps);
-		return (choice_dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		char *any_dumps = NULL;
+		char *dumps = ft_bytes_dumps_hex_upper(der_value->as.any.octets.content, der_value->as.any.octets.size);
 		if (NULL != der_value->as.any.defined_by_id) {
-			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":\"%s\",\"octets\":\"<octet_string=%p,size=%zu>\"}}", der_value->as.any.defined_by_id, &der_value->as.any.octets, der_value->as.any.octets.size);
+			ft_ostr_appendf(&ostring, "{\"defined_by\":\"%s\",\"octets\":\"'%s'H\"}", der_value->as.any.defined_by_id, dumps);
 		} else {
-			ft_sprintf(&any_dumps, "{\"any\":{\"defined_by_id\":null,\"octets\":\"<octet_string=%p,size=%zu>\"}}", &der_value->as.any.octets, der_value->as.any.octets.size);
+			ft_ostr_appendf(&ostring, "\"'%s'H\"", dumps);
 		}
-		return (any_dumps);
+		SSL_FREE(dumps);
+		break;
 	}
 	default: {
 		SSL_LOG(ERROR, "unknown der value type: %d", der_value->kind);
-		return (ft_strdup("<_unknown_value_type_>"));
+		ft_ostr_append_cstr(&ostring, "\"???\"");
+		break;
 	}}
+	ft_ostr_append_cstr(&ostring, "}");
+	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+	return (dumps);
 }
 
 static char *__der_v2_component_dumps(const t_der_v2_component *der_component)
@@ -3217,6 +3237,7 @@ static const t_asn_v2_tag_class DER_V2_TAG_CLASS_MAP[] = {
 typedef int (*t_func_der_v2_generic_decode)(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 
 static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv);
+static bool __der_v2_next_tlv_as(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv, t_der_v2_type *type);
 
 static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int __der_v2_generic_decode_choice(t_der_v2_tlv tlv, t_der_v2_value **der_value);
@@ -3294,6 +3315,21 @@ static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *
 	tlv->value = enc + rbytes;
 
 	SSL_LOG(TRACE, "tlv read: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv->tag.class, tlv->tag.number, tlv->tag.constructed, tlv->length, tlv->value);
+	return true;
+}
+
+static bool __der_v2_next_tlv_as(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv, t_der_v2_type *type)
+{
+	assert(NULL != tlv);
+
+	t_der_v2_tlv tmp = *tlv;
+	if (!__der_v2_next_tlv(enc, encsize, &tmp)) return false;
+
+	// Some types like CHOICE don't have their own tags.
+	if (type->tags.size > 0) {
+		if (!__der_v2_tag_eq(&tmp.tag, ft_list_last_content(&type->tags))) return false;
+	}
+	*tlv = tmp;
 	return true;
 }
 
@@ -3722,10 +3758,14 @@ typedef int (*t_func_der_v2_decode)(t_der_v2_tlv tlv, const t_der_v2_type *der_t
 static int __der_v2_decode_value(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 
+static int	__der_v2_decode_ia5_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_printable_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_octet_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_bit_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_utf8_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_set(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_null(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
@@ -3746,17 +3786,17 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_REAL               = 9 */	{ NULL, "REAL" },
 	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ NULL, "ENUMERATED" },
 	/* ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11 */	{ NULL, "EMBEDDED_PDV" },
-	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ NULL, "UTF8_STRING" },
+	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ __der_v2_decode_utf8_string, "UTF8_STRING" },
 	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ NULL, "RELATIVE_OBJECT_ID" },
 	/* ASN_V2_TAG_NUMBER_TIME               = 14 */	{ NULL, "TIME" },
 	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
 	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_decode_sequence, "SEQUENCE" },
-	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ NULL, "SET" },
+	/* ASN_V2_TAG_NUMBER_SET(_OF)           = 17 */	{ __der_v2_decode_set, "SET" },
 	/* ASN_V2_TAG_NUMBER_NUMERIC_STRING     = 18 */	{ NULL, "NUMERIC_STRING" },
-	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ NULL, "PRINTABLE_STRING" },
+	/* ASN_V2_TAG_NUMBER_PRINTABLE_STRING   = 19 */	{ __der_v2_decode_printable_string, "PRINTABLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
-	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ NULL, "IA5_STRING" },
+	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ __der_v2_decode_ia5_string, "IA5_STRING" },
 	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
 	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
@@ -3909,7 +3949,7 @@ static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_typ
 		t_der_v2_component *element = content;
 		SSL_LOG(TRACE, "choice: checking element with id: %s", element->id);
 		// TODO: choice element type cannot be ANY, ensure type compilation handles this before decoding.
-		assert(ASN_V2_TYPE_KIND_ANY == element->type->kind);
+		assert(ASN_V2_TYPE_KIND_ANY != element->type->kind);
 		// Element type can be choice as well.
 		if (ASN_V2_TYPE_KIND_CHOICE == element->type->kind) {
 			if (SSL_OK == __der_v2_decode_choice(tlv, element->type, &chosen_value)) {
@@ -3918,7 +3958,7 @@ static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_typ
 			}
 		}
 		// Choice element type must have its own tag unless the element is also a choice.
-		if (element->type->tags.size > 0) {
+		if (element->type->tags.size == 0) {
 			SSL_LOG(ERROR, "choice: bad type metadata");
 			return (SSL_ERR);
 		}
@@ -3948,42 +3988,62 @@ static int __der_v2_decode_choice(t_der_v2_tlv tlv, const t_der_v2_type *der_typ
 
 static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
 {
-	SSL_LOG(TRACE, "sequence: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+	SSL_LOG(TRACE, "sequence: tlv: tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
 
 	t_der_v2_tlv element_tlv = {0};
 	t_list element_values = {0};
 	t_list_next next = {0};
 	void *content = NULL;
 
-	if (!__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
-		SSL_LOG(ERROR, "sequence: bad element tlv read");
-		goto label_error;
-	}
-	while (true) {
-		// Get element type metadata.
-		if (!ft_list_next_content(&der_type->as.composite.elements, &next, &content)) {
-			SSL_LOG(ERROR, "sequence: bad element metadata read");
-			goto label_error;
-		}
-		t_der_v2_component *element = content;
-		// Decode the element value.
-		SSL_LOG(TRACE, "sequence: decoding element with id: %s", element->id);
+	// Decode the element value gracefully handling optional elements and elements with default values.
+	// SEQUENCE element TLV order must match the element metadata order.
+	while (__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
 		t_der_v2_value *element_value = NULL;
-		if (SSL_OK != __der_v2_decode_value(element_tlv, element->type, &element_value)) {
-			if (element->optional) {
-				// Retry with next element type metadata;
-				continue;
-			} else {
+		while (ft_list_next_content(&der_type->as.composite.elements, &next, &content)) {
+			t_der_v2_component *element = content;
+			SSL_LOG(TRACE, "sequence: element: id=%s", element->id);
+			SSL_LOG(TRACE, "sequence: decoding element: tlv: tag={class=%d,number=%d,constructed=%d}", element_tlv.tag.class, element_tlv.tag.number, element_tlv.tag.constructed);
+			// If element TLV does not match element type metadata, check if element is optional or has default value.
+			if (SSL_OK == __der_v2_decode_value(element_tlv, element->type, &element_value)) {
+				SSL_LOG(TRACE, "sequence: decoded value for element: id=%s", element->id);
+				ft_list_append_content(&element_values, element_value);
+				break;
+			}
+			else if (NULL != element->default_value) {
+				SSL_LOG(TRACE, "sequence: using default value for element: id=%s", element->id);
+				element_value = __der_v2_value_create();
+				__der_v2_value_copy(element->default_value, element_value);
+				ft_list_append_content(&element_values, element_value);
+			}
+			else if (element->optional) {
+				SSL_LOG(TRACE, "sequence: skipping optional element: id=%s", element->id);
+			}
+			else {
 				SSL_LOG(ERROR, "sequence: bad decode element");
 				goto label_error;
 			}
 		}
-		assert(element_value != NULL);
-		ft_list_append_content(&element_values, element_value);
-		// Get next TLV.
-		if (!__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
-			break;
+		if (element_value == NULL) {
+			SSL_LOG(ERROR, "sequence: bad decode");
+			goto label_error;
 		}
+	}
+	// If we haven't reach the end of element metadata list we must check if remaining
+	// element metadatas are optional or have default values. If not, we must fail SEQUENCE decode.
+	while (ft_list_next_content(&der_type->as.composite.elements, &next, &content)) {
+		t_der_v2_value *element_value = NULL;
+		t_der_v2_component *element = content;
+		if (NULL != element->default_value) {
+			SSL_LOG(TRACE, "sequence: using default value for element: id=%s", element->id);
+			element_value = __der_v2_value_create();
+			__der_v2_value_copy(element->default_value, element_value);
+			ft_list_append_content(&element_values, element_value);
+		}
+		else if (!element->optional) {
+			SSL_LOG(ERROR, "sequence: bad decode element");
+			goto label_error;
+		}
+		SSL_LOG(TRACE, "sequence: skipping optional element: id=%s", element->id);
 	}
 	// Compile the list of values.
 	t_der_v2_value *dvalue = __der_v2_value_create();
@@ -4005,6 +4065,136 @@ static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_t
 label_error:
 	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
 	return (SSL_ERR);
+}
+
+static int	__der_v2_decode_set(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "set: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_der_v2_tlv element_tlv = {0};
+	t_list element_values = {0};
+	t_list_next next = {0};
+	void *content = NULL;
+
+	// Create a temporary ref list for element type metadata.
+	t_list elements = {0};
+	while (ft_list_next_content(&der_type->as.composite.elements, &next, &content)) {
+		ft_list_append_ref(&elements, content);
+	}
+	// Decode the element value gracefully handling optional elements and elements with default values.
+	// SET element TLV order may NOT match the element metadata order.
+	while (__der_v2_next_tlv(tlv.value, tlv.length, &element_tlv)) {
+		t_der_v2_value *element_value = NULL;
+		// Take a snapshot of the list size since it may change in the loop.
+		size_t list_size = elements.size;
+		for (size_t i = 0; i < list_size; i++) {
+			// Borrow element metadata from the list.
+			t_der_v2_component *element = ft_list_pop_ref(&elements);
+			SSL_LOG(TRACE, "set: element: id=%s", element->id);
+			SSL_LOG(TRACE, "set: decoding element: tlv: tag={class=%d,number=%d,constructed=%d}", element_tlv.tag.class, element_tlv.tag.number, element_tlv.tag.constructed);
+			// Element TLV must match one of element type metadatas.
+			if (SSL_OK == __der_v2_decode_value(element_tlv, element->type, &element_value)) {
+				// Do NOT return element metadata to the list since it did match element TLV.
+				SSL_LOG(TRACE, "set: decoded value for element: id=%s", element->id);
+				if (element->id) element_value->as.choice.id = ft_strdup(element->id);
+				break;
+			}
+			else {
+				// Return element metadata to the list since it did NOT match element TLV.
+				ft_list_append_ref(&elements, element);
+			}
+		}
+		if (element_value == NULL) {
+			SSL_LOG(ERROR, "set: bad decode");
+			goto label_error;
+		}
+		ft_list_append_content(&element_values, element_value);
+	}
+	// If temporary element metadata is not empty we must check if remaining
+	// element metadatas are optional or have default values. If not, we must fail SET decode.
+	next = (t_list_next){0};
+	while (ft_list_next_ref(&elements, &next, &content)) {
+		t_der_v2_value *element_value = NULL;
+		t_der_v2_component *element = content;
+		if (NULL != element->default_value) {
+			SSL_LOG(TRACE, "set: using default value for element: id=%s", element->id);
+			element_value = __der_v2_value_create();
+			__der_v2_value_copy(element->default_value, element_value);
+			ft_list_append_content(&element_values, element_value);
+		}
+		else if (!element->optional) {
+			SSL_LOG(ERROR, "set: bad decode element");
+			goto label_error;
+		}
+		SSL_LOG(TRACE, "set: skipping optional element: id=%s", element->id);
+	}
+	// Compile the list of values.
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_SEQUENCE;
+	SSL_ALLOC(dvalue->as.composite.items, element_values.size * sizeof(t_der_v2_value));
+	dvalue->as.composite.count = element_values.size;
+	next = (t_list_next){0};
+	size_t idx = 0;
+	while (ft_list_next_content(&element_values, &next, &content)) {
+		__der_v2_value_copy(content, dvalue->as.composite.items + idx);
+		idx++;
+	}
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+
+	SSL_LOG(TRACE, "set: done");
+	*der_value = dvalue;
+	return (SSL_OK);
+
+label_error:
+	ft_list_clear_all_ref(&elements);
+	ft_list_clear_all_content(&element_values, __der_v2_value_delete_adapter);
+	return (SSL_ERR);
+}
+
+static int	__der_v2_decode_ia5_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "ia5 string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	for (size_t i = 0; i < tlv.length; i++) {
+		if (!ft_isascii((int)tlv.value[i])) {
+			SSL_LOG(ERROR, "ia5 string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_IA5_STRING;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_printable_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "printable string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	for (size_t i = 0; i < tlv.length; i++) {
+		if (!ft_isprint((int)tlv.value[i])) {
+			SSL_LOG(ERROR, "printable string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_PRINTABLE_STRING;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
 }
 
 static int	__der_v2_decode_octet_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
@@ -4040,6 +4230,28 @@ static int	__der_v2_decode_bit_string(t_der_v2_tlv tlv, const t_der_v2_type *der
 	dvalue->kind = ASN_V2_TYPE_KIND_OCTET_STRING;
 	ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
 	ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_decode_utf8_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "utf8s string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	UNUSED(der_type);
+	if (!utf8_is_valid(tlv.value, tlv.length)) {
+		SSL_LOG(ERROR, "utf8 string: bad value");
+		return (SSL_ERR);
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_UTF8_STRING;
+	if (tlv.length > 0) {
+		ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
+		ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
+	} else {
+		ft_ostr_init(&dvalue->as.ostring);
+	}
 
 	*der_value = dvalue;
 	return (SSL_OK);
