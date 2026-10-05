@@ -2,9 +2,9 @@
 #include <logger.h>
 #include "test.h"
 
-int	test_assert(int bool, const char *expr)
+int	test_assert(bool condition, const char *expr)
 {
-	if (bool) {
+	if (condition) {
 #ifdef TEST_ENABLE_ASSERT_PASS_LOG
 		TEST_LOG(INFO, TXT_GREEN("ASSERT PASS") " (%s)", expr);
 #endif

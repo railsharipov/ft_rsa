@@ -43,7 +43,7 @@ typedef int	(*t_func_test)(void);
 t_logger	*test_get_logger(void);
 
 int		test_info(int module_id, int verbose);
-int		test_assert(int boolean, const char *expr);
+int		test_assert(bool condition, const char *expr);
 int		test_result(int res, int verbose);
 int		test_summary(int *result_arr, size_t arr_size, int verbose);
 

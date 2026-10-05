@@ -4,11 +4,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-typedef _Bool bool;
-
-#define true  1
-#define false 0
-
 /****************************************************************************/
 
 #define container_of(ptr, type, member)	((type *)((char *)(ptr) - offsetof(type, member)))

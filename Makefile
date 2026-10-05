@@ -15,18 +15,18 @@ TEST_OBJS := $(TEST_SRCS:%.c=$(TEST_OBJ_DIR)/%.o)
 TEST_DEPS := $(TEST_SRCS:%.c=$(TEST_DEP_DIR)/%.d)
 
 CC := gcc
-CFLAGS := -O3 -std=c11 -I./include
+CFLAGS := -O3 -std=c23 -I./include
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 
 .PHONY: all debug sanitize test sanitize_test test_bin clean fclean re
 
-all: CFLAGS := -O3 -std=c11 -Wall -Wfatal-errors -I./include -I./libs
+all: CFLAGS := -O3 -std=c23 -Wall -Wfatal-errors -I./include -I./libs
 all: $(NAME)
 
-debug: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wno-unused-function -I./include -I./libs
+debug: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wno-unused-function -I./include -I./libs
 debug: $(NAME)
 
-sanitize: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -fsanitize=address -Wno-unused-function -fno-omit-frame-pointer -I./include -I./libs
+sanitize: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -fsanitize=address -Wno-unused-function -fno-omit-frame-pointer -I./include -I./libs
 sanitize: LDFLAGS := -fsanitize=address
 sanitize: $(NAME)
 
@@ -50,11 +50,11 @@ $(TEST_OBJ_DIR)/%.o: %.c | $(TEST_DEP_DIR)/%.d
 $(DEPS):
 $(TEST_DEPS):
 
-sanitize_test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
+sanitize_test: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
 sanitize_test: LDFLAGS := -fsanitize=address
 sanitize_test: test_bin
 
-test: CFLAGS := -Og -g -std=c11 -Wall -Wfatal-errors -I./include -I./libs
+test: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -I./include -I./libs
 test: test_bin
 
 test_bin: $(TEST_OBJS)
