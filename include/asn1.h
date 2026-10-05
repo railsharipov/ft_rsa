@@ -109,6 +109,7 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_NULL = 0,
 	ASN_V2_TYPE_KIND_BOOLEAN,
 	ASN_V2_TYPE_KIND_INTEGER,
+	ASN_V2_TYPE_KIND_ENUMERATED,
 	ASN_V2_TYPE_KIND_BIT_STRING,
 	ASN_V2_TYPE_KIND_OCTET_STRING,
 	ASN_V2_TYPE_KIND_IA5_STRING,
@@ -179,18 +180,23 @@ typedef enum e_asn_v2_oid_arc_kind {
 	ASN_V2_OID_ARC_KIND_NAMED,
 } t_asn_v2_oid_arc_kind;
 
-typedef struct s_asn1_v2_oid_arc {
+typedef struct s_asn_v2_oid_arc {
 	t_asn_v2_oid_arc_kind kind;
 	union {
 		char *name;
 		size_t number;
 	} as;
-} t_asn1_v2_oid_arc;
+} t_asn_v2_oid_arc;
 
-typedef struct s_asn1_v2_oid {
+typedef struct s_asn_v2_oid {
 	size_t arc_nums[ASN_V2_OID_MAX_NARCS];
 	size_t narcs;
-} t_asn1_v2_oid;
+} t_asn_v2_oid;
+
+typedef struct s_asn_v2_enum {
+	char *name;
+	t_num number;
+} t_asn_v2_enum;
 
 typedef struct s_asn_v2_value {
 	t_asn_v2_type_kind	kind;
@@ -199,10 +205,11 @@ typedef struct s_asn_v2_value {
 		t_num		number;
 		bool		boolean;
 		char		*cstring;
-		struct { t_list	elements; } composite;
+		t_asn_v2_enum enumerated;
 		struct { t_list arcs; } object_id;
 		struct { char *id; struct s_asn_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
+		struct { t_list	elements; } composite;
 	} as;
 } t_asn_v2_value;
 
@@ -232,6 +239,7 @@ typedef struct s_asn_v2_type {
 	union {
 		struct { t_list elements; } composite;
 		struct { struct s_asn_v2_type *element_type; } collection;
+		struct { t_list items; } enumeration;
 		struct { char *defined_by_id; } any;
 	} as;
 } t_asn_v2_type;
@@ -264,9 +272,9 @@ int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled
 int		asn1_v2_oid_tree_create(const char *filename, t_node_v2 **tree);
 void	asn1_v2_oid_tree_delete(t_node_v2 *tree);
 
-const char	*asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn1_v2_oid *oid);
-int	asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn1_v2_oid *oid);
-char *asn1_v2_oid_dumps(const t_asn1_v2_oid *oid);
+const char	*asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn_v2_oid *oid);
+int	asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn_v2_oid *oid);
+char *asn1_v2_oid_dumps(const t_asn_v2_oid *oid);
 
 typedef struct s_der_v2_tag {
 	t_asn_v2_tag_class	class;
@@ -281,7 +289,8 @@ typedef struct s_der_v2_value {
 		char		*cstring;
 		t_num		number;
 		bool		boolean;
-		t_asn1_v2_oid object_id;
+		t_asn_v2_oid object_id;
+		t_asn_v2_enum enumerated;
 		struct { struct s_der_v2_value *items; size_t count; } composite;
 		struct { char *id; struct s_der_v2_value *value; } choice;
 		struct { char *defined_by_id; t_ostring octets; } any;
@@ -295,6 +304,7 @@ typedef struct s_der_v2_type {
 	union {
 		struct { t_list elements; } composite;
 		struct { struct s_der_v2_type *element_type; } collection;
+		struct { t_list items; } enumeration;
 	} as;
 } t_der_v2_type;
 
