@@ -648,6 +648,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 				return (SSL_ERR);
 			}
 		}
+		break;
 	}
 	case ASN_V2_TYPE_KIND_BIT_STRING:
 	case ASN_V2_TYPE_KIND_INTEGER:
@@ -1071,6 +1072,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 		if (NULL != asn1_type->as.any.defined_by_id) {
 			ft_ostr_appendf(&ostring, ",\"defined_by_id\":\"%s\"", asn1_type->as.any.defined_by_id);
 		}
+		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		t_list_next next = {0};
@@ -1156,6 +1158,7 @@ char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module)
 	void *value = NULL;
 	size_t commas = 0;
 	while (ft_htbl_v2_next(&asn1_module->types, &next, &key, &value)) {
+		// SSL_LOG(TRACE, "dumping asn1 type: %s", key);
 		if (commas++) ft_ostr_append_cstr(&ostring, ",");
 		char *dumps = __asn1_v2_type_dumps(value);
 		ft_ostr_appendf(&ostring, "\"%s\":%s", key, dumps);
@@ -1480,6 +1483,7 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		__asn1_v2_enum_copy(&src->as.enumerated, &dst->as.enumerated);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
@@ -1608,6 +1612,7 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		ft_list_clear_all_content(&asn1_type->as.enumeration.items, __asn1_v2_enum_delete_adapter);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
@@ -1674,6 +1679,7 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		ft_list_copy_all_content(&src->as.enumeration.items, &dst->as.enumeration.items, __asn1_v2_enum_copy_adapter);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER:
 	case ASN_V2_TYPE_KIND_BIT_STRING:
@@ -2647,6 +2653,7 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		if (NULL != src->as.cstring) dst->as.cstring = ft_strdup(src->as.cstring);
+		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		for (size_t i = 0; i < src->as.object_id.narcs; i++) {
@@ -2715,6 +2722,7 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		if (NULL != der_value->as.cstring) SSL_FREE(der_value->as.cstring);
 		der_value->as.cstring = NULL;
+		return;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		der_value->as.object_id.narcs = 0;
