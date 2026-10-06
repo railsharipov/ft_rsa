@@ -4,11 +4,20 @@
     "PrivateKeyInfo": {
       "kind": "SEQUENCE",
       "components": [
-        { "id": "version", "type": { "kind": "Version" }, "default": 0 },
-        { "id": "organization", "type": { "kind": "UTF8 STRING" }, "default": "䰾䲁䲘䴉" },
-        { "id": "authors", "type": { "kind": "SET OF", "componentType": { "kind": "Author" } } },
-        { "id": "algorithm", "type": { "kind": "OCTET STRING", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}] } },
-        { "id": "data", "type": { "kind": "BIT STRING" } }
+        {"id": "version", "type": {"kind": "Version"}, "default": 0},
+        {"id": "organization", "type": {"kind": "UTF8 STRING"}, "default": "䰾䲁䲘䴉"},
+        {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}},
+        {"id": "algorithm", "type": {"kind": "OCTET STRING", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}},
+        {"id": "data", "type": {"kind": "BIT STRING"}},
+        {
+          "id": "status",
+          "type": {
+            "kind": "ENUMERATED",
+            "enumeration": [["alpha"], ["beta", 5], ["gamma"]],
+            "extEnumeration": [["delta"], ["epsilon", 102], ["zeta"]]
+          },
+          "default": "beta"
+        }
       ]
     },
     "Version": {
@@ -17,21 +26,12 @@
     "Author": {
       "kind": "CHOICE",
       "components": [
-        {
-          "id": "fullname",
-          "type": { "kind": "IA5 STRING", "tags": [{"mode": "IMPLICIT", "class": "CONTEXT-SPECIFIC", "number": 0}] }
-        },
-        {
-          "id": "email",
-          "type": { "kind": "IA5 STRING", "tags": [{"mode": "IMPLICIT", "class": "CONTEXT-SPECIFIC", "number": 1}] }
-        },
-        {
-          "id": "id",
-          "type": { "kind": "INTEGER", "tags": [{"mode": "IMPLICIT", "class": "APPLICATION", "number": 0}] }
-        }
+        {"id": "fullname", "type": {"kind": "IA5 STRING", "tags": [{"mode": "IMPLICIT", "class": "CONTEXT-SPECIFIC", "number": 0}]}},
+        {"id": "email", "type": {"kind": "IA5 STRING", "tags": [{"mode": "IMPLICIT", "class": "CONTEXT-SPECIFIC", "number": 1}]}},
+        {"id": "id", "type": {"kind": "INTEGER", "tags": [{"mode": "IMPLICIT", "class": "APPLICATION", "number": 0}]}}
       ]
     },
-    "records": {
+    "Records": {
       "kind": "SET",
       "components": [
         {"id": "001", "type": {"kind": "INTEGER"}, "optional": true},
