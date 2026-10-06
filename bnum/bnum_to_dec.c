@@ -13,8 +13,8 @@ void 	__f_del_content(void *content);
 
 char	*bnum_to_dec(const t_num *num)
 {
-	t_node		*list;
-	char		*s;
+	t_node	*list;
+	char	*s;
 
 	if (NULL == num) {
 		return (NULL);

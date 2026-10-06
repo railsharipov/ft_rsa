@@ -39,7 +39,7 @@
 
 # define BNUM_MAX(A,B)	((A)>(B)?(A):(B))
 # define BNUM_MIN(A,B)	((A)<(B)?(A):(B))
-# define BNUM_ZERO(X)	(((X)->len == 1u) && ((X)->val[0] == 0u))
+# define BNUM_ZERO(X)	(((X)->len == 0u) || (((X)->len == 1u) && ((X)->val[0] == 0u)))
 # define BNUM_ONE(X)	(((X)->len == 1u) && ((X)->val[0] == 1u))
 # define BNUM_EVEN(X)	(((X)->val[0] & 1u) == 0u)
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
