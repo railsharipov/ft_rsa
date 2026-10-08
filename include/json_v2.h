@@ -49,6 +49,10 @@ int	json_v2_query_nonnull(const char *s, const t_json_v2 *json, const t_json_v2 
 
 const char	*json_v2_get_type_name(t_json_v2_kind kind);
 
+void	json_v2_get_escape_chars(const char **charset, size_t *charset_size);
+char	*json_v2_escape_string(const char *s, size_t slen);
+char	*json_v2_unescape_string(const char *s, size_t slen);
+
 char	*json_v2_dumps(const t_json_v2 *json);
 char	*json_v2_dumps_with_f_dumper(const t_json_v2 *json, t_func_json_v2_dump f_dumper, void *vctx);
 char	*json_v2_dumpb(const t_json_v2 *json, char *buf, size_t size);
