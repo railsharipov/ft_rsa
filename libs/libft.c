@@ -1451,6 +1451,61 @@ int	ft_strneq(const char *a, const char *b, size_t n)
 	return (ft_strncmp(a, b, n) == 0 ? 1 : 0);
 }
 
+char *ft_str_escape(const char *s, const char *escape_prefix, const char *escape_charset, size_t charset_size)
+{
+	if (NULL == s) return (NULL);
+	if (NULL == escape_prefix || NULL == escape_charset) return (ft_strdup(s));
+
+	size_t prefix_len = ft_strlen(escape_prefix);
+
+	if (charset_size == 0 || prefix_len == 0) return (ft_strdup(s));
+
+	size_t slen = ft_strlen(s);
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, slen);
+
+	for (size_t i = 0; i < slen; i++) {
+		if (s[i] == escape_prefix[0]) ft_ostr_append_cstr(&ostring, escape_prefix);
+		if (ft_ischar(s[i], escape_charset, charset_size)) ft_ostr_append_cstr(&ostring, escape_prefix);
+		ft_ostr_append(&ostring, s + i, 1);
+	}
+	char *escaped = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+
+	return (escaped);
+}
+
+char *ft_str_unescape(const char *s, const char *escape_prefix, const char *escape_charset, size_t charset_size)
+{
+	if (NULL == s) return (NULL);
+	if (NULL == escape_prefix || NULL == escape_charset) return (ft_strdup(s));
+
+	size_t prefix_len = ft_strlen(escape_prefix);
+
+	if (charset_size == 0 || prefix_len == 0) return (ft_strdup(s));
+
+	size_t slen = ft_strlen(s);
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, slen);
+
+	for (size_t i = 0; i < slen; i++) {
+		if (s[i] == escape_prefix[0]) {
+			if (i + prefix_len+1 < slen && ft_strneq(escape_prefix, s + i, prefix_len)) {
+				if (ft_ischar(s[i + prefix_len], escape_charset, charset_size)) {
+					i += prefix_len;
+					ft_ostr_append(&ostring, s + i, 1);
+				}
+			} else {
+				ft_ostr_append(&ostring, s + i, 1);
+			}
+		}
+	}
+	char *unescaped = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+
+	return (unescaped);
+}
+
 int	ft_tolower(int c)
 {
 	if (c >= 65 && c <= 90) {
@@ -1556,6 +1611,21 @@ int	ft_isalnum(int c)
 		return (1);
 	}
 
+	return (0);
+}
+
+int ft_ischar(int c, const char *charset, size_t charset_size)
+{
+	if (NULL == charset || charset_size == 0) {
+		return (0);
+	}
+	size_t i = 0;
+	while (i < charset_size) {
+		if (charset[i] == (char)c) {
+			return (1);
+		}
+		i++;
+	}
 	return (0);
 }
 
@@ -2801,7 +2871,7 @@ void	ft_bzero(void *s, size_t n)
 	ft_memset(s, 0, n);
 }
 
-void	*ft_memdup(void *src, size_t srcsize)
+void	*ft_memdup(const void *src, size_t srcsize)
 {
 	void	*dst;
 
@@ -2852,8 +2922,7 @@ void	*ft_memcpy(void *dst, const void *src, size_t srcsize)
 	return (dst);
 }
 
-// Copy destsize bytes from src to dest.
-// If destsize is bigger than srcsize set extra bytes (destsize - srcsize) to zero
+// Copy dstsize bytes from src to dst. If dstsize is bigger than srcsize set extra bytes to zero.
 void	*ft_memzcpy(void *dst, const void *src, size_t dstsize, size_t srcsize)
 {
 	if (dstsize > srcsize) {
@@ -3375,6 +3444,19 @@ void	ft_ostr_init_from_cstr(t_ostring *ostring, const char *cstr)
 	ostring->size = slen;
 }
 
+void	ft_ostr_init_from(t_ostring *ostring, const void *content, size_t size)
+{
+	if (NULL == ostring) {
+		return;
+	}
+	ft_ostr_init(ostring);
+	if (content) {
+		ostring->content = ft_memdup(content, size);
+		ostring->size = size;
+		ostring->capacity = size;
+	}
+}
+
 void	ft_ostr_borrow_content(t_ostring *ostring, void *content, size_t size)
 {
 	if (NULL == ostring) {
@@ -3385,6 +3467,18 @@ void	ft_ostr_borrow_content(t_ostring *ostring, void *content, size_t size)
 		ostring->content = content;
 		ostring->size = size;
 		ostring->capacity = size;
+	}
+}
+
+void	ft_ostr_unwrap_content(t_ostring *ostring, void **content, size_t *size)
+{
+	if (NULL == ostring) {
+		return;
+	}
+	if (NULL != content) {
+		*content = ostring->content;
+		if (NULL != size) *size = ostring->size;
+		ft_ostr_init(ostring);
 	}
 }
 

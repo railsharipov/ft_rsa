@@ -405,7 +405,7 @@ void	*ft_memcpy(void *dst, const void *src, size_t n);
 void	*ft_memzcpy(void *dst, const void *src, size_t dstsize, size_t srcsize);
 void	*ft_memmove(void *dst, const void *src, size_t len);
 int		ft_memcmp(const void *s1, const void *s2, size_t n);
-void	*ft_memdup(void *src, size_t srcsize);
+void	*ft_memdup(const void *src, size_t srcsize);
 
 /****************************************************************************/
 
@@ -434,8 +434,10 @@ t_ostring	*ft_ostr_new_with_capacity(size_t capacity);
 t_ostring	*ft_ostr_create_from_cstr(const char *cstr);
 void 		ft_ostr_init(t_ostring *ostring);
 void 		ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity);
+void		ft_ostr_init_from(t_ostring *ostring, const void *content, size_t size);
 void		ft_ostr_init_from_cstr(t_ostring *ostring, const char *cstr);
 void		ft_ostr_borrow_content(t_ostring *ostring, void *content, size_t size);
+void		ft_ostr_unwrap_content(t_ostring *ostring, void **content, size_t *size);
 void		ft_ostr_clear(t_ostring *ostring);
 void		ft_ostr_del(t_ostring *ostring);
 void		ft_ostr_copy(const t_ostring *src, t_ostring *dst);
@@ -464,6 +466,8 @@ int		ft_strcmp(const char *s1, const char *s2);
 int		ft_strncmp(const char *s1, const char *s2, size_t n);
 int		ft_streq(const char *a, const char *b);
 int		ft_strneq(const char *a, const char *b, size_t n);
+char	*ft_str_escape(const char *s, const char *escape_prefix, const char *escape_charset, size_t charset_size);
+char	*ft_str_unescape(const char *s, const char *escape_prefix, const char *escape_charset, size_t charset_size);
 char	*ft_strsub(char const *s, unsigned int start, size_t len);
 char	*ft_strjoin(char const *s1, char const *s2);
 char	*ft_strjoin_multi(int n, ...);
@@ -481,6 +485,7 @@ int		ft_str_ishex(const char *s);
 
 /****************************************************************************/
 
+int		ft_ischar(int c, const char *charset, size_t charset_size);
 int		ft_isalpha(int c);
 int		ft_isdigit(int c);
 int		ft_isalnum(int c);
