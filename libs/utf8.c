@@ -49,3 +49,87 @@ bool utf8_is_valid(const uint8_t *bytes, size_t size)
 	if (next != size) return false; // incomplete sequence
 	return true;
 }
+
+bool utf8_find(const uint8_t *bytes, size_t size, const uint8_t *pattern, size_t pattern_size, const uint8_t **res_ptr)
+{
+	if (NULL == bytes || NULL == pattern) return false;
+	if (size == 0) return false;
+
+	if (NULL != res_ptr) *res_ptr = NULL;
+	if (pattern_size == 0) {
+		if (NULL != res_ptr) *res_ptr = bytes;
+		return true;
+	}
+
+	size_t next = 0;
+	for (size_t cur = 0; utf8_next(bytes, size, &next); cur = next) {
+		size_t char_size = next - cur;
+		if (bytes[cur] == pattern[0]) {
+			size_t i = 0;
+			for (; i < char_size; i++) {
+				if (bytes[cur+i] != pattern[i]) break;
+			}
+			if (i == char_size) {
+				if (NULL != res_ptr) *res_ptr = bytes + cur+i;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+bool utf8_escape(const uint8_t *bytes, size_t size, uint8_t **escaped, size_t *escaped_size,
+		const uint8_t *escape_prefix, size_t prefix_size, const uint8_t *escape_charset, size_t charset_size)
+{
+	if (NULL == bytes || NULL == escaped || NULL == escape_prefix || NULL == escape_charset) return false;
+	if (size == 0 || prefix_size == 0 || charset_size == 0) {
+		*escaped = ft_memdup(bytes, size);
+		*escaped_size = size;
+		return true;
+	}
+
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, size);
+
+	size_t next = 0;
+	for (size_t cur = 0; utf8_next(bytes, size, &next); cur = next) {
+		if (utf8_find(escape_charset, charset_size, bytes+cur, next-cur, NULL)) {
+			ft_ostr_append(&ostring, escape_prefix, prefix_size);
+		}
+		ft_ostr_append(&ostring, bytes+cur, next-cur);
+	}
+	void *content = NULL;
+	size_t content_size = 0;
+	ft_ostr_unwrap_content(&ostring, &content, &content_size);
+	*escaped = content;
+	*escaped_size = content_size;
+	return true;
+}
+
+// Expects null-terminated escape prefix, produces null-terminated escape result.
+bool utf8_escape_nt(const uint8_t *bytes, size_t size, char **escaped, const char *escape_prefix,
+		const uint8_t *escape_charset, size_t charset_size)
+{
+	if (NULL == bytes || NULL == escaped || NULL == escape_prefix || NULL == escape_charset) return false;
+
+	size_t prefix_size = ft_strlen(escape_prefix);
+	if (size == 0 || prefix_size == 0 || charset_size == 0) {
+		LIBFT_ALLOC(*escaped, size+1);
+		ft_memzcpy(*escaped, bytes, size+1, size);
+		return true;
+	}
+
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, size);
+
+	size_t next = 0;
+	for (size_t cur = 0; utf8_next(bytes, size, &next); cur = next) {
+		if (utf8_find(escape_charset, charset_size, bytes+cur, next-cur, NULL)) {
+			ft_ostr_append(&ostring, escape_prefix, prefix_size);
+		}
+		ft_ostr_append(&ostring, bytes+cur, next-cur);
+	}
+	*escaped = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	return true;
+}

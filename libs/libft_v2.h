@@ -113,5 +113,9 @@ void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
 
 bool	utf8_next(const uint8_t *bytes, size_t size, size_t *next);
 bool	utf8_is_valid(const uint8_t *bytes, size_t size);
+bool	utf8_escape(const uint8_t *bytes, size_t size, uint8_t **escaped, size_t *escaped_size,
+				const uint8_t *escape_prefix, size_t prefix_size, const uint8_t *escape_charset, size_t charset_size);
+bool	utf8_escape_nt(const uint8_t *bytes, size_t size, char **escaped, const char *escape_prefix,
+				const uint8_t *escape_charset, size_t charset_size);
 
 #endif //LIBFT_V2_H
