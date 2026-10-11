@@ -32,6 +32,7 @@
 #define ASN_V2_TYPE_NAME_VISIBLE_STRING  	"VISIBLE STRING"
 #define ASN_V2_TYPE_NAME_OBJECT_ID          "OBJECT IDENTIFIER"
 #define ASN_V2_TYPE_NAME_OBJECT_DESCR       "OBJECT DESCRIPTOR"
+#define ASN_V2_TYPE_NAME_RELATIVE_OBJECT_ID "RELATIVE OBJECT IDENTIFIER"
 #define ASN_V2_TYPE_NAME_SEQUENCE           "SEQUENCE"
 #define ASN_V2_TYPE_NAME_SEQUENCE_OF        "SEQUENCE OF"
 #define ASN_V2_TYPE_NAME_SET                "SET"
@@ -53,25 +54,26 @@
 #define __SCHEMA_TAG_MODE_NAME_IMPLICIT     ASN_V2_TAG_MODE_NAME_IMPLICIT
 #define __SCHEMA_TAG_MODE_NAME_AUTOMATIC    ASN_V2_TAG_MODE_NAME_AUTOMATIC
 
-#define __SCHEMA_TYPE_NAME_NULL             ASN_V2_TYPE_NAME_NULL
-#define __SCHEMA_TYPE_NAME_BOOLEAN          ASN_V2_TYPE_NAME_BOOLEAN
-#define __SCHEMA_TYPE_NAME_INTEGER          ASN_V2_TYPE_NAME_INTEGER
-#define __SCHEMA_TYPE_NAME_ENUMERATED       ASN_V2_TYPE_NAME_ENUMERATED
-#define __SCHEMA_TYPE_NAME_BIT_STRING       ASN_V2_TYPE_NAME_BIT_STRING
-#define __SCHEMA_TYPE_NAME_OCTET_STRING     ASN_V2_TYPE_NAME_OCTET_STRING
-#define __SCHEMA_TYPE_NAME_IA5_STRING       ASN_V2_TYPE_NAME_IA5_STRING
-#define __SCHEMA_TYPE_NAME_UTF8_STRING      ASN_V2_TYPE_NAME_UTF8_STRING
-#define __SCHEMA_TYPE_NAME_PRINTABLE_STRING ASN_V2_TYPE_NAME_PRINTABLE_STRING
-#define __SCHEMA_TYPE_NAME_NUMERIC_STRING	ASN_V2_TYPE_NAME_NUMERIC_STRING
-#define __SCHEMA_TYPE_NAME_VISIBLE_STRING	ASN_V2_TYPE_NAME_VISIBLE_STRING
-#define __SCHEMA_TYPE_NAME_OBJECT_ID        ASN_V2_TYPE_NAME_OBJECT_ID
-#define __SCHEMA_TYPE_NAME_OBJECT_DESCR     ASN_V2_TYPE_NAME_OBJECT_DESCR
-#define __SCHEMA_TYPE_NAME_SEQUENCE         ASN_V2_TYPE_NAME_SEQUENCE
-#define __SCHEMA_TYPE_NAME_SEQUENCE_OF      ASN_V2_TYPE_NAME_SEQUENCE_OF
-#define __SCHEMA_TYPE_NAME_SET              ASN_V2_TYPE_NAME_SET
-#define __SCHEMA_TYPE_NAME_SET_OF           ASN_V2_TYPE_NAME_SET_OF
-#define __SCHEMA_TYPE_NAME_CHOICE           ASN_V2_TYPE_NAME_CHOICE
-#define __SCHEMA_TYPE_NAME_ANY              ASN_V2_TYPE_NAME_ANY
+#define __SCHEMA_TYPE_NAME_NULL             	ASN_V2_TYPE_NAME_NULL
+#define __SCHEMA_TYPE_NAME_BOOLEAN          	ASN_V2_TYPE_NAME_BOOLEAN
+#define __SCHEMA_TYPE_NAME_INTEGER          	ASN_V2_TYPE_NAME_INTEGER
+#define __SCHEMA_TYPE_NAME_ENUMERATED       	ASN_V2_TYPE_NAME_ENUMERATED
+#define __SCHEMA_TYPE_NAME_BIT_STRING       	ASN_V2_TYPE_NAME_BIT_STRING
+#define __SCHEMA_TYPE_NAME_OCTET_STRING     	ASN_V2_TYPE_NAME_OCTET_STRING
+#define __SCHEMA_TYPE_NAME_IA5_STRING       	ASN_V2_TYPE_NAME_IA5_STRING
+#define __SCHEMA_TYPE_NAME_UTF8_STRING      	ASN_V2_TYPE_NAME_UTF8_STRING
+#define __SCHEMA_TYPE_NAME_PRINTABLE_STRING 	ASN_V2_TYPE_NAME_PRINTABLE_STRING
+#define __SCHEMA_TYPE_NAME_NUMERIC_STRING		ASN_V2_TYPE_NAME_NUMERIC_STRING
+#define __SCHEMA_TYPE_NAME_VISIBLE_STRING		ASN_V2_TYPE_NAME_VISIBLE_STRING
+#define __SCHEMA_TYPE_NAME_OBJECT_ID        	ASN_V2_TYPE_NAME_OBJECT_ID
+#define __SCHEMA_TYPE_NAME_OBJECT_DESCR     	ASN_V2_TYPE_NAME_OBJECT_DESCR
+#define __SCHEMA_TYPE_NAME_RELATIVE_OBJECT_ID	ASN_V2_TYPE_NAME_RELATIVE_OBJECT_ID
+#define __SCHEMA_TYPE_NAME_SEQUENCE         	ASN_V2_TYPE_NAME_SEQUENCE
+#define __SCHEMA_TYPE_NAME_SEQUENCE_OF      	ASN_V2_TYPE_NAME_SEQUENCE_OF
+#define __SCHEMA_TYPE_NAME_SET              	ASN_V2_TYPE_NAME_SET
+#define __SCHEMA_TYPE_NAME_SET_OF           	ASN_V2_TYPE_NAME_SET_OF
+#define __SCHEMA_TYPE_NAME_CHOICE           	ASN_V2_TYPE_NAME_CHOICE
+#define __SCHEMA_TYPE_NAME_ANY              	ASN_V2_TYPE_NAME_ANY
 
 #define __SCHEMA_CONSTRAINT_NAME_RANGE		ASN_V2_CONSTRAINT_NAME_RANGE
 #define __SCHEMA_CONSTRAINT_NAME_SIZE		ASN_V2_CONSTRAINT_NAME_SIZE
@@ -104,26 +106,27 @@
 const char *asn1_v2_get_type_name(t_asn_v2_type_kind type)
 {
 	switch (type) {
-	case ASN_V2_TYPE_KIND_INTEGER:          return ASN_V2_TYPE_NAME_INTEGER;
-	case ASN_V2_TYPE_KIND_ENUMERATED:       return ASN_V2_TYPE_NAME_ENUMERATED;
-	case ASN_V2_TYPE_KIND_BOOLEAN:          return ASN_V2_TYPE_NAME_BOOLEAN;
-	case ASN_V2_TYPE_KIND_BIT_STRING:       return ASN_V2_TYPE_NAME_BIT_STRING;
-	case ASN_V2_TYPE_KIND_OCTET_STRING:     return ASN_V2_TYPE_NAME_OCTET_STRING;
-	case ASN_V2_TYPE_KIND_IA5_STRING:       return ASN_V2_TYPE_NAME_IA5_STRING;
-	case ASN_V2_TYPE_KIND_UTF8_STRING:      return ASN_V2_TYPE_NAME_UTF8_STRING;
-	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: return ASN_V2_TYPE_NAME_PRINTABLE_STRING;
-	case ASN_V2_TYPE_KIND_NUMERIC_STRING: 	return ASN_V2_TYPE_NAME_NUMERIC_STRING;
-	case ASN_V2_TYPE_KIND_VISIBLE_STRING: 	return ASN_V2_TYPE_NAME_VISIBLE_STRING;
-	case ASN_V2_TYPE_KIND_NULL:             return ASN_V2_TYPE_NAME_NULL;
-	case ASN_V2_TYPE_KIND_OBJECT_ID:        return ASN_V2_TYPE_NAME_OBJECT_ID;
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR:     return ASN_V2_TYPE_NAME_OBJECT_DESCR;
-	case ASN_V2_TYPE_KIND_SEQUENCE:         return ASN_V2_TYPE_NAME_SEQUENCE;
-	case ASN_V2_TYPE_KIND_SEQUENCE_OF:      return ASN_V2_TYPE_NAME_SEQUENCE_OF;
-	case ASN_V2_TYPE_KIND_SET:              return ASN_V2_TYPE_NAME_SET;
-	case ASN_V2_TYPE_KIND_SET_OF:           return ASN_V2_TYPE_NAME_SET_OF;
-	case ASN_V2_TYPE_KIND_CHOICE:           return ASN_V2_TYPE_NAME_CHOICE;
-	case ASN_V2_TYPE_KIND_ANY:              return ASN_V2_TYPE_NAME_ANY;
-	default:                                return "unknown";
+	case ASN_V2_TYPE_KIND_INTEGER:          	return ASN_V2_TYPE_NAME_INTEGER;
+	case ASN_V2_TYPE_KIND_ENUMERATED:       	return ASN_V2_TYPE_NAME_ENUMERATED;
+	case ASN_V2_TYPE_KIND_BOOLEAN:          	return ASN_V2_TYPE_NAME_BOOLEAN;
+	case ASN_V2_TYPE_KIND_BIT_STRING:       	return ASN_V2_TYPE_NAME_BIT_STRING;
+	case ASN_V2_TYPE_KIND_OCTET_STRING:     	return ASN_V2_TYPE_NAME_OCTET_STRING;
+	case ASN_V2_TYPE_KIND_IA5_STRING:       	return ASN_V2_TYPE_NAME_IA5_STRING;
+	case ASN_V2_TYPE_KIND_UTF8_STRING:      	return ASN_V2_TYPE_NAME_UTF8_STRING;
+	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: 	return ASN_V2_TYPE_NAME_PRINTABLE_STRING;
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING: 		return ASN_V2_TYPE_NAME_NUMERIC_STRING;
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING: 		return ASN_V2_TYPE_NAME_VISIBLE_STRING;
+	case ASN_V2_TYPE_KIND_NULL:             	return ASN_V2_TYPE_NAME_NULL;
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:	return ASN_V2_TYPE_NAME_RELATIVE_OBJECT_ID;
+	case ASN_V2_TYPE_KIND_OBJECT_ID:        	return ASN_V2_TYPE_NAME_OBJECT_ID;
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR:     	return ASN_V2_TYPE_NAME_OBJECT_DESCR;
+	case ASN_V2_TYPE_KIND_SEQUENCE:         	return ASN_V2_TYPE_NAME_SEQUENCE;
+	case ASN_V2_TYPE_KIND_SEQUENCE_OF:      	return ASN_V2_TYPE_NAME_SEQUENCE_OF;
+	case ASN_V2_TYPE_KIND_SET:              	return ASN_V2_TYPE_NAME_SET;
+	case ASN_V2_TYPE_KIND_SET_OF:           	return ASN_V2_TYPE_NAME_SET_OF;
+	case ASN_V2_TYPE_KIND_CHOICE:           	return ASN_V2_TYPE_NAME_CHOICE;
+	case ASN_V2_TYPE_KIND_ANY:              	return ASN_V2_TYPE_NAME_ANY;
+	default:                                	return "unknown";
 	}
 }
 
@@ -737,6 +740,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -995,9 +999,15 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
-		ft_ostr_appendf(&ostring, "\"%s\"", asn1_value->as.cstring);
+		t_ostring tmp = {0};
+		ft_ostr_appendf(&tmp, "\"%s\"", asn1_value->as.cstring);
+		char *escaped = json_v2_escape_string((const char *)tmp.content, tmp.size);
+		ft_ostr_clear(&tmp);
+		ft_ostr_appendf(&ostring, "\"%s\"", escaped);
+		SSL_FREE(escaped);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		ft_ostr_append_cstr(&ostring, "[");
 		t_list_next next = {0};
@@ -1023,7 +1033,14 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 		break;
 	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING: {
-		char *dumps = ft_ostr_to_cstr(&asn1_value->as.ostring, 0, asn1_value->as.ostring.size);
+		char *dumps = NULL;
+		t_ostring tmp = {0};
+		ft_ostr_init_with_capacity(&tmp, asn1_value->as.ostring.size+2);
+		ft_ostr_append_cstr(&tmp, "\"");
+		ft_ostr_append(&tmp, asn1_value->as.ostring.content, asn1_value->as.ostring.size);
+		ft_ostr_append_cstr(&tmp, "\"");
+		dumps = json_v2_escape_string((const char *)tmp.content, tmp.size);
+		ft_ostr_clear(&tmp);
 		ft_ostr_appendf(&ostring, "\"%s\"", dumps);
 		SSL_FREE(dumps);
 		break;
@@ -1180,6 +1197,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -1260,6 +1278,7 @@ char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, int depth,
 		SSL_FREE(dumps);
 		return (json_v2_pretty_dumps(json, depth, width, colored));
 	} else {
+		SSL_LOG(ERROR, "failed to pretty format dump string");
 		return (dumps);
 	}
 }
@@ -1504,6 +1523,7 @@ static void __asn1_v2_value_clear(t_asn_v2_value *asn1_value)
 		asn1_value->as.cstring = NULL;
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		ft_list_clear_all_content(&asn1_value->as.object_id.arcs, __asn1_v2_oid_arc_delete_adapter);
 		break;
@@ -1573,6 +1593,7 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 		dst->as.cstring = ft_strdup(src->as.cstring);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		ft_list_copy_all_content(&src->as.object_id.arcs, &dst->as.object_id.arcs, __asn1_v2_oid_arc_copy_adapter);
 		break;
@@ -1705,6 +1726,7 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -1772,6 +1794,7 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -1875,31 +1898,46 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 	}
 	// TODO: implement a proper parsing for different kinds of strings.
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
-		expected_fmt = "ACII STRING";
+		expected_fmt = "DOUBLE-QUOTED STRING";
 		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
-		if (!ft_str_isascii(jvalue->as.cstring)) goto label_error;
-		avalue->as.cstring = ft_strdup(jvalue->as.cstring);
+		const char *s = jvalue->as.cstring;
+		size_t slen = ft_strlen(s);
+		if (slen < 2) goto label_error;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		for (size_t i = 1; i < slen-1; i++) {
+			if (!ft_isascii(s[i])) goto label_error;
+		}
+		avalue->as.cstring = ft_strndup(s+1, slen-2);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING: {
-		expected_fmt = "NUMERIC STRING";
+		expected_fmt = "DOUBLE-QUOTED STRING";
 		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
-		size_t len = ft_strlen(jvalue->as.cstring);
 		const char *s = jvalue->as.cstring;
-		for (size_t i = 0; i < len; i++) {
+		size_t slen = ft_strlen(s);
+		if (slen < 2) goto label_error;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		for (size_t i = 1; i < slen-1; i++) {
 			if (!ft_isdigit(s[i]) && s[i] != ' ') goto label_error;
 		}
-		avalue->as.cstring = ft_strdup(jvalue->as.cstring);
+		avalue->as.cstring = ft_strndup(s+1, slen-2);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: {
-		expected_fmt = "PRINTABLE STRING";
+		expected_fmt = "DOUBLE-QUOTED STRING";
 		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
-		if (!ft_str_isprint(jvalue->as.cstring)) goto label_error;
-		avalue->as.cstring = ft_strdup(jvalue->as.cstring);
+		const char *s = jvalue->as.cstring;
+		size_t slen = ft_strlen(s);
+		if (slen < 2) goto label_error;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		for (size_t i = 1; i < slen-1; i++) {
+			if (!ft_isprint(s[i])) goto label_error;
+		}
+		avalue->as.cstring = ft_strndup(s+1, slen-2);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		expected_fmt = "[ ARC_1, ARC_2, ..., ARC_N ] where ARC is STRING or NUMBER";
 		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_error;
@@ -1928,7 +1966,6 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
-		expected_fmt = "ISO-2022 STRING";
 		NOT_IMPLEMENTED("ASN_V2_TYPE_KIND_OBJECT_DESCR");
 		break;
 	}
@@ -2048,10 +2085,14 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 		break;
 	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING: {
-		expected_fmt = "UTF8 STRING";
+		expected_fmt = "DOUBLE-QUOTED STRING";
 		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
-		if (!utf8_is_valid((uint8_t *)jvalue->as.cstring, ft_strlen(jvalue->as.cstring))) goto label_error;
-		ft_ostr_init_from_cstr(&avalue->as.ostring, jvalue->as.cstring);
+		const char *s = jvalue->as.cstring;
+		size_t slen = ft_strlen(s);
+		if (slen < 2) goto label_error;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		if (!utf8_is_valid((uint8_t *)(s+1), slen-2)) goto label_error;
+		ft_ostr_init_from(&avalue->as.ostring, s+1, slen-2);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_SEQUENCE: {
@@ -2177,7 +2218,7 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 
 label_error:
 	if (NULL != expected_fmt) SSL_LOG(ERROR, "value does not match expected format: %s", expected_fmt);
-	SSL_LOG(ERROR, "provided value is not a valid %s: %s", asn1_v2_get_type_name(asn1_type->kind), json_v2_dumpb(jvalue, cbuf, sizeof(cbuf)));
+	SSL_LOG(ERROR, "provided json value is not a valid %s: %s", asn1_v2_get_type_name(asn1_type->kind), json_v2_dumpb(jvalue, cbuf, sizeof(cbuf)));
 	__asn1_v2_value_delete(avalue);
 	return (SSL_ERR);
 }
@@ -2436,6 +2477,7 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 		break;
 	default:
@@ -2661,6 +2703,7 @@ static int	__asn1_v2_type_compile_automatic_tags(const t_asn_v2_module *asn1_mod
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		return (SSL_OK);
 	}
@@ -2785,6 +2828,7 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 		if (NULL != src->as.cstring) dst->as.cstring = ft_strdup(src->as.cstring);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		for (size_t i = 0; i < src->as.object_id.narcs; i++) {
 			dst->as.object_id.arc_nums[i] = src->as.object_id.arc_nums[i];
@@ -2854,6 +2898,7 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 		der_value->as.cstring = NULL;
 		return;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		der_value->as.object_id.narcs = 0;
 		return;
@@ -2959,6 +3004,7 @@ static void __der_v2_type_delete(t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -2996,6 +3042,8 @@ static t_der_v2_tag __der_v2_get_tag_universal(t_asn_v2_type_kind type)
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_NULL, };
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_OBJECT_ID, };
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
+		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID, };
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR:
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_OBJECT_DESCR, };
 	case ASN_V2_TYPE_KIND_SEQUENCE:
@@ -3048,6 +3096,7 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 		if (NULL != asn1_value->as.cstring) compiled->as.cstring = ft_strdup(asn1_value->as.cstring);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		t_list_next next = {0};
 		void *content = NULL;
@@ -3246,6 +3295,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -3379,9 +3429,15 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
-		ft_ostr_appendf(&ostring, "\"%s\"", der_value->as.cstring);
+		t_ostring tmp = {0};
+		ft_ostr_appendf(&tmp, "\"%s\"", der_value->as.cstring);
+		char *escaped = json_v2_escape_string((const char *)tmp.content, tmp.size);
+		ft_ostr_clear(&tmp);
+		ft_ostr_appendf(&ostring, "\"%s\"", escaped);
+		SSL_FREE(escaped);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		char *dumps = asn1_v2_oid_dumps(&der_value->as.object_id);
 		ft_ostr_append_cstr(&ostring, dumps);
@@ -3389,9 +3445,15 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 		break;
 	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING: {
-		char *dumps = ft_ostr_to_cstr(&der_value->as.ostring, 0, der_value->as.ostring.size);
-		ft_ostr_appendf(&ostring, "\"%s\"", dumps);
-		SSL_FREE(dumps);
+		t_ostring tmp = {0};
+		ft_ostr_init_with_capacity(&tmp, der_value->as.ostring.size+2);
+		ft_ostr_append_cstr(&tmp, "\"");
+		ft_ostr_append(&tmp, der_value->as.ostring.content, der_value->as.ostring.size);
+		ft_ostr_append_cstr(&tmp, "\"");
+		char *escaped = json_v2_escape_string((const char *)tmp.content, tmp.size);
+		ft_ostr_clear(&tmp);
+		ft_ostr_appendf(&ostring, "\"%s\"", escaped);
+		SSL_FREE(escaped);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_OCTET_STRING:
@@ -3573,6 +3635,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
 		break;
 	}
@@ -3595,6 +3658,7 @@ char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, int depth, size_t 
 		SSL_FREE(dumps);
 		return (json_v2_pretty_dumps(json, depth, width, colored));
 	} else {
+		SSL_LOG(ERROR, "failed to pretty format dump string");
 		return (dumps);
 	}
 }
@@ -3608,6 +3672,7 @@ char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, int depth, size
 		SSL_FREE(dumps);
 		return (json_v2_pretty_dumps(json, depth, width, colored));
 	} else {
+		SSL_LOG(ERROR, "failed to pretty format dump string");
 		return (dumps);
 	}
 }
@@ -3666,6 +3731,7 @@ static int	__der_v2_generic_decode_null(t_der_v2_tlv tlv, t_der_v2_value **der_v
 static int	__der_v2_generic_decode_integer(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_enumerated(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_relative_object_id(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 
 static bool __der_v2_next_tlv(const uint8_t *enc, size_t encsize, t_der_v2_tlv *tlv)
 {
@@ -3763,7 +3829,7 @@ static struct s_der_v2_generic_decode {
 	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ __der_v2_generic_decode_enumerated, "ENUMERATED" },
 	/* ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11 */	{ NULL, "EMBEDDED_PDV" },
 	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ __der_v2_generic_decode_utf8_string, "UTF8_STRING" },
-	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ NULL, "RELATIVE_OBJECT_ID" },
+	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ __der_v2_generic_decode_relative_object_id, "RELATIVE_OBJECT_ID" },
 	/* ASN_V2_TAG_NUMBER_TIME               = 14 */	{ NULL, "TIME" },
 	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
 	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_generic_decode_sequence, "SEQUENCE" },
@@ -4212,6 +4278,54 @@ static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **
 
 	// Get the rest of ids, except the last one
 	for (size_t i = 1; i < num_sub_ids; i++) {
+		oid->arc_nums[oid->narcs++] = sub_ids[i];
+	}
+
+	*der_value = dvalue;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_decode_relative_object_id(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	if (tlv.length == 0) {
+		SSL_LOG(ERROR, "bad length");
+		return (SSL_ERR);
+	}
+	const uint8_t *enc = tlv.value;
+	size_t encsize = tlv.length;
+
+	uint32_t sub_ids[encsize + 1];
+	int num_sub_ids = 0;
+
+	for (size_t i = 0; i < encsize; ) {
+		sub_ids[num_sub_ids] = 0;
+		// Get 7-bit blocks, up to the last one.
+		while (i < encsize && enc[i] & 0x80) {
+			sub_ids[num_sub_ids] <<= 7;
+			sub_ids[num_sub_ids] |= enc[i] & 0x7F;
+			i++;
+		}
+		// If we've reached the end of the encoded content, then we've got an invalid der encoding.
+		if (i >= encsize) {
+			SSL_LOG(ERROR, "bad value");
+			return (SSL_ERR);
+		}
+		// Get the last block.
+		sub_ids[num_sub_ids] <<= 7;
+		sub_ids[num_sub_ids] |= enc[i] & 0x7F;
+		i++;
+		num_sub_ids++;
+	}
+	if (num_sub_ids < 1 || num_sub_ids > ASN_V2_OID_MAX_NARCS) {
+		SSL_LOG(ERROR, "bad value");
+		return (SSL_ERR);
+	}
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID;
+	t_asn_v2_oid *oid = &dvalue->as.object_id;
+
+	for (size_t i = 0; i < num_sub_ids; i++) {
 		oid->arc_nums[oid->narcs++] = sub_ids[i];
 	}
 
