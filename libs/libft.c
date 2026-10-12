@@ -1273,6 +1273,34 @@ int	ft_str_isalpha(const char *s)
 	return (1);
 }
 
+int	ft_str_isalpha_upper(const char *s)
+{
+	if (s == NULL) {
+		return (0);
+	}
+
+	while (*s != 0)
+		if (!ft_isalpha_upper(*s++)) {
+			return (0);
+		}
+
+	return (1);
+}
+
+int	ft_str_isalpha_lower(const char *s)
+{
+	if (s == NULL) {
+		return (0);
+	}
+
+	while (*s != 0)
+		if (!ft_isalpha_lower(*s++)) {
+			return (0);
+		}
+
+	return (1);
+}
+
 int	ft_str_isalnum(const char *s)
 {
 	if (s == NULL) {
@@ -1281,6 +1309,20 @@ int	ft_str_isalnum(const char *s)
 
 	while (*s != 0)
 		if (!ft_isalnum(*s++)) {
+			return (0);
+		}
+
+	return (1);
+}
+
+int	ft_str_isalnum_or_hyphen(const char *s)
+{
+	if (s == NULL) {
+		return (0);
+	}
+
+	while (*s != 0)
+		if (!ft_isalnum_or_hyphen(*s++)) {
 			return (0);
 		}
 
@@ -1605,9 +1647,36 @@ int	ft_isalpha(int c)
 	return (0);
 }
 
+int	ft_isalpha_upper(int c)
+{
+	if (c >= 65 && c <= 90) {
+		return (1);
+	}
+
+	return (0);
+}
+
+int	ft_isalpha_lower(int c)
+{
+	if (c >= 97 && c <= 122) {
+		return (1);
+	}
+
+	return (0);
+}
+
 int	ft_isalnum(int c)
 {
 	if (ft_isalpha(c) || ft_isdigit(c)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+int	ft_isalnum_or_hyphen(int c)
+{
+	if (ft_isalpha(c) || ft_isdigit(c) || c == '-') {
 		return (1);
 	}
 
