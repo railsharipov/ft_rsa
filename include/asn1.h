@@ -256,6 +256,7 @@ typedef struct s_asn_v2_component {
 typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode	tag_mode;
 	t_htbl_v2			types;
+	t_htbl_v2			constants;
 } t_asn_v2_module;
 
 int	asn1_v2_schema_validate(const t_json_v2 *jschema);

@@ -8,7 +8,8 @@
         {"id": "organization", "type": {"kind": "UTF8 STRING"}, "default": "\"䰾䲁䲘䴉\""},
         {"id": "country", "type": {"kind": "PRINTABLE STRING"}, "default": "\"Belarus\""},
         {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}},
-        {"id": "algorithm", "type": {"kind": "OCTET STRING", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}},
+        {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER"}, "default": "myOrg"},
+        {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}},
         {"id": "data", "type": {"kind": "BIT STRING"}},
         {
           "id": "status",
@@ -39,6 +40,12 @@
         {"id": "002", "type": {"kind": "INTEGER"}, "optional": true},
         {"id": "003", "type": {"kind": "INTEGER"}, "optional": true}
       ]
+    }
+  },
+  "constants": {
+    "myOrg": {
+      "type": {"kind": "OBJECT IDENTIFIER"},
+      "value": [1, 2, 3, 5, 45, 345324, 23]
     }
   }
 }
