@@ -179,6 +179,7 @@ typedef enum t_asn_v2_universal_tag_number {
 typedef enum e_asn_v2_oid_arc_kind {
 	ASN_V2_OID_ARC_KIND_NUMERIC = 0,
 	ASN_V2_OID_ARC_KIND_NAMED,
+	ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC,
 } t_asn_v2_oid_arc_kind;
 
 typedef struct s_asn_v2_oid_arc {
@@ -274,8 +275,9 @@ int		asn1_v2_oid_tree_create(const char *filename, t_node_v2 **tree);
 void	asn1_v2_oid_tree_delete(t_node_v2 *tree);
 
 const char	*asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn_v2_oid *oid);
-int	asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn_v2_oid *oid);
-char *asn1_v2_oid_dumps(const t_asn_v2_oid *oid);
+int		asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn_v2_oid *oid);
+int 	asn1_v2_get_arc_number_by_name(t_node_v2 *tree, const char *name, size_t *number);
+char	*asn1_v2_oid_dumps(const t_asn_v2_oid *oid);
 
 typedef struct s_der_v2_tag {
 	t_asn_v2_tag_class	class;

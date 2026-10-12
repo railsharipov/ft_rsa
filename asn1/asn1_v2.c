@@ -187,6 +187,7 @@ static t_asn_v2_type_kind __asn1_v2_schema_get_type_by_name(const char *name)
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_NUMERIC_STRING))		return (ASN_V2_TYPE_KIND_NUMERIC_STRING);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_VISIBLE_STRING))		return (ASN_V2_TYPE_KIND_VISIBLE_STRING);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_NULL))				return (ASN_V2_TYPE_KIND_NULL);
+	if (ft_streq(name, __SCHEMA_TYPE_NAME_RELATIVE_OBJECT_ID))	return (ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_OBJECT_ID))			return (ASN_V2_TYPE_KIND_OBJECT_ID);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_OBJECT_DESCR))		return (ASN_V2_TYPE_KIND_OBJECT_DESCR);
 	if (ft_streq(name, __SCHEMA_TYPE_NAME_SEQUENCE))			return (ASN_V2_TYPE_KIND_SEQUENCE);
@@ -243,6 +244,11 @@ static void __asn1_v2_oid_arc_clear(t_asn_v2_oid_arc *arc)
 		arc->as.name = NULL;
 		break;
 	}
+	case ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC: {
+		if (NULL != arc->as.name) SSL_FREE(arc->as.name);
+		arc->as.name = NULL;
+		break;
+	}
 	default: {
 		SSL_LOG(ERROR, "unknown asn1 oid arc type: %d", arc->kind);
 	}}
@@ -256,6 +262,7 @@ static void __asn1_v2_oid_arc_delete(t_asn_v2_oid_arc *arc)
 
 static void __asn1_v2_oid_arc_copy(const t_asn_v2_oid_arc *src, t_asn_v2_oid_arc *dst)
 {
+	dst->kind = src->kind;
 	switch (src->kind) {
 	case ASN_V2_OID_ARC_KIND_NUMERIC: {
 		dst->as.number = src->as.number;
@@ -263,6 +270,12 @@ static void __asn1_v2_oid_arc_copy(const t_asn_v2_oid_arc *src, t_asn_v2_oid_arc
 	}
 	case ASN_V2_OID_ARC_KIND_NAMED: {
 		assert(NULL != src->as.name);
+		dst->as.name = ft_strdup(src->as.name);
+		break;
+	}
+	case ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC: {
+		assert(NULL != src->as.name);
+		dst->as.number = src->as.number;
 		dst->as.name = ft_strdup(src->as.name);
 		break;
 	}
@@ -337,7 +350,7 @@ static t_asn_v2_oid_node *__asn1_v2_oid_tree_parse(const t_json_v2 *joid_tree, c
 			oid_node->oid.narcs++;
 		}
 		oid_node->oid.arc_nums[oid_node->oid.narcs++] = oid_node->number;
-		// SSL_LOG(TRACE, "%s: %s", oid_node->arc.name, asn1_v2_oid_dumps(&oid_node->oid));
+		// SSL_LOG(WARN, "%s: %s", oid_node->name, asn1_v2_oid_dumps(&oid_node->oid));
 	}
 
 	const t_json_v2 *jarcs = NULL;
@@ -438,6 +451,21 @@ int asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn_v2_oid *oid
 			oid->arc_nums[i] = oid_node->oid.arc_nums[i];
 			oid->narcs++;
 		}
+		return (SSL_OK);
+	}
+	return (SSL_ERR);
+}
+
+int asn1_v2_get_arc_number_by_name(t_node_v2 *tree, const char *name, size_t *number)
+{
+	if (NULL == tree || NULL == name || NULL == number) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	t_node_v2 *node = ft_ntree_v2_dfs(tree, __asn1_v2_oid_node_find_by_name, name);
+	if (NULL != node) {
+		const t_asn_v2_oid_node *oid_node = container_of(node, const t_asn_v2_oid_node, base);
+		*number = oid_node->number;
 		return (SSL_OK);
 	}
 	return (SSL_ERR);
@@ -1023,9 +1051,12 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 				break;
 			}
 			case ASN_V2_OID_ARC_KIND_NUMERIC: {
-				char *arcs = ft_itoa_zu(arc->as.number);
-				ft_ostr_append_cstr(&ostring, arcs);
-				SSL_FREE(arcs);
+				ft_ostr_appendf(&ostring, "%zu", arc->as.number);
+				break;
+			}
+			case ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC: {
+				assert(NULL != arc->as.name);
+				ft_ostr_appendf(&ostring, "\"%s(%zu)\"", arc->as.name, arc->as.number);
 				break;
 			}}
 		}
@@ -1949,9 +1980,32 @@ static int	__asn1_v2_schema_parse_value(const t_asn_v2_type *asn1_type, t_asn_v2
 			t_asn_v2_oid_arc *arc = NULL;
 			if (jarc->kind == JSON_V2_TYPE_STRING) {
 				if (NULL == jarc->as.cstring) goto label_error;
-				arc = __asn1_v2_oid_arc_create();
-				arc->kind = ASN_V2_OID_ARC_KIND_NAMED;
-				arc->as.name = ft_strdup(jarc->as.cstring);
+				const char *s = jarc->as.cstring;
+				size_t slen = ft_strlen(s);
+				size_t i = 0;
+				for (; i < slen && s[i] != '('; i++) {
+					if (!ft_isalpha(s[i])) goto label_error;
+				}
+				if (s[i] == '(') {
+					size_t name_end = i;
+					size_t num_start = ++i;
+					for (; i < slen && s[i] != ')'; i++) {
+						if (!ft_isdigit(s[i])) goto label_error;
+					}
+					if (i == num_start || s[i] != ')') goto label_error;
+					arc = __asn1_v2_oid_arc_create();
+					arc->kind = ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC;
+					arc->as.name = ft_strsub(jarc->as.cstring, 0, name_end);
+					arc->as.number = ft_atoi_zu(s + num_start);
+				}
+				else if (s[i] == '\0') {
+					arc = __asn1_v2_oid_arc_create();
+					arc->kind = ASN_V2_OID_ARC_KIND_NAMED;
+					arc->as.name = ft_strdup(jarc->as.cstring);
+				}
+				else {
+					goto label_error;
+				}
 			}
 			else if (jarc->kind == JSON_V2_TYPE_NUMBER) {
 				arc = __asn1_v2_oid_arc_create();
@@ -2631,6 +2685,25 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 		}
 	}
 
+	const t_json_v2 *jvalues = NULL;
+	int ret = json_v2_query_nonnull(__JQ_SCHEMA_VALUES, jschema, &jvalues);
+	assert(JSON_V2_OK == ret && jvalues->kind == JSON_V2_TYPE_OBJECT);
+
+	key = NULL;
+	value = NULL;
+	next = (t_htbl_v2_next){0};
+	while (ft_htbl_v2_next(&jvalues->as.htable, &next, &key, &value)) {
+		t_asn_v2_type *avalue = NULL;
+		if (SSL_OK != __asn1_v2_schema_parse_value(amodule, &avalue, jschema, value)) {
+			SSL_LOG(ERROR, "failed to parse type: `%s`", key);
+			goto label_error;
+		}
+		if (!ft_htbl_v2_set(&amodule->types, key, avalue)) {
+			SSL_LOG(ERROR, "failed to set type name: `%s`, duplicate type name?", key);
+			goto label_error;
+		}
+	}
+
 	if (ASN_V2_TAG_MODE_AUTOMATIC == amodule->tag_mode) {
 		if (SSL_OK != asn1_v2_module_compile_automatic_tags(asn1_module, amodule)) {
 			SSL_LOG(ERROR, "failed to compile automatic tags in the parsed module");
@@ -3098,33 +3171,34 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 	}
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
+		t_node_v2 *oid_tree = NULL;
+		if (SSL_OK != asn1_v2_oid_tree_create(ASN_V2_OID_TREE_FILE_PATH, &oid_tree)) {
+			SSL_LOG(ERROR, "failed to init asn1 oid tree");
+			goto label_error;
+		}
 		t_list_next next = {0};
 		void *content = NULL;
 		t_asn_v2_oid *compiled_oid = &compiled->as.object_id;
 		while (ft_list_next_content(&asn1_value->as.object_id.arcs, &next, &content)) {
 			t_asn_v2_oid_arc *arc = content;
+			if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) {
+				ft_ntree_v2_del(oid_tree, __asn1_v2_oid_node_delete_adapter);
+				goto label_error;
+			}
 			switch (arc->kind) {
-			case ASN_V2_OID_ARC_KIND_NUMERIC: {
-				if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) goto label_error;
+			case ASN_V2_OID_ARC_KIND_NUMERIC:
+			case ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC: {
 				compiled_oid->arc_nums[compiled_oid->narcs++] = arc->as.number;
 				break;
 			}
 			case ASN_V2_OID_ARC_KIND_NAMED: {
 				assert(NULL != arc->as.name);
-				// TODO: Initializing oid tree every time it is required is not very effective but it is very small so this is ok for now.
-				t_node_v2 *oid_tree = NULL;
-				if (SSL_OK != asn1_v2_oid_tree_create(ASN_V2_OID_TREE_FILE_PATH, &oid_tree)) {
-					SSL_LOG(ERROR, "failed to init asn1 oid tree");
+				size_t arc_number = 0;
+				if (SSL_OK != asn1_v2_get_arc_number_by_name(oid_tree, arc->as.name, &arc_number)) {
+					ft_ntree_v2_del(oid_tree, __asn1_v2_oid_node_delete_adapter);
 					goto label_error;
 				}
-				t_asn_v2_oid named_arc_oid = {0};
-				int ret = asn1_v2_get_oid_by_name(oid_tree, arc->as.name, &named_arc_oid);
-				ft_ntree_v2_del(oid_tree, __asn1_v2_oid_node_delete_adapter);
-				if (SSL_OK != ret) goto label_error;
-				for (size_t i = 0; i < named_arc_oid.narcs; i++) {
-					if (compiled_oid->narcs >= ASN_V2_OID_MAX_NARCS) goto label_error;
-					compiled_oid->arc_nums[compiled_oid->narcs++] = named_arc_oid.arc_nums[i];
-				}
+				compiled_oid->arc_nums[compiled_oid->narcs++] = arc_number;
 				break;
 			}}
 		}
@@ -4271,6 +4345,7 @@ static int	__der_v2_generic_decode_object_id(t_der_v2_tlv tlv, t_der_v2_value **
 	t_der_v2_value *dvalue = __der_v2_value_create();
 	dvalue->kind = ASN_V2_TYPE_KIND_OBJECT_ID;
 	t_asn_v2_oid *oid = &dvalue->as.object_id;
+	oid->narcs = 0;
 	//	First two ids are concatenated into one single id using following formula:
 	//	CONCAT_ID = 40 * ID_0 + ID_1
 	oid->arc_nums[oid->narcs++] = sub_ids[0] / 40;
@@ -4324,7 +4399,7 @@ static int	__der_v2_generic_decode_relative_object_id(t_der_v2_tlv tlv, t_der_v2
 	t_der_v2_value *dvalue = __der_v2_value_create();
 	dvalue->kind = ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID;
 	t_asn_v2_oid *oid = &dvalue->as.object_id;
-
+	oid->narcs = 0;
 	for (size_t i = 0; i < num_sub_ids; i++) {
 		oid->arc_nums[oid->narcs++] = sub_ids[i];
 	}
