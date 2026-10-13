@@ -257,7 +257,30 @@ typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode	tag_mode;
 	t_htbl_v2			types;
 	t_htbl_v2			constants;
+	t_htbl_v2			symbol_table;
 } t_asn_v2_module;
+
+typedef enum e_asn_v2_symbol_state {
+    ASN_V2_SYMBOL_STATE_UNRESOLVED = 0,
+    ASN_V2_SYMBOL_STATE_RESOLVING,
+    ASN_V2_SYMBOL_STATE_RESOLVED,
+    ASN_V2_SYMBOL_STATE_ERROR
+} t_asn_v2_symbol_state;
+
+typedef enum e_asn_v2_symbol_kind {
+	ASN_V2_SYMBOL_KIND_TYPE = 0,
+	ASN_V2_SYMBOL_KIND_VALUE,
+} t_asn_v2_symbol_kind;
+
+typedef struct s_asn_v2_symbol {
+	t_asn_v2_symbol_kind kind;
+	t_asn_v2_symbol_state state;
+	const t_json_v2 *source;
+	union {
+		t_asn_v2_type *type;
+		t_asn_v2_value *value;
+	} resolved;
+} t_asn_v2_symbol;
 
 int	asn1_v2_schema_validate(const t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema);

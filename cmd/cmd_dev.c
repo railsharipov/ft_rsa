@@ -82,18 +82,18 @@ int	cmd_dev(const t_cmd *cmd)
 	char *atype_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
 	ft_printf("%s\n", atype_dumps);
 
-	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, asn1_type_name);
-	assert(NULL != asn1_type);
-
-	t_der_v2_type *der_type = NULL;
-	if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
-		SSL_LOG(ERROR, "asn1 type compile failed");
-		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "asn1 type compile success");
-	}
-	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
-	ft_printf("%s\n", dtype_dumps);
+// 	t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->types, asn1_type_name);
+// 	assert(NULL != asn1_type);
+//
+// 	t_der_v2_type *der_type = NULL;
+// 	if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
+// 		SSL_LOG(ERROR, "asn1 type compile failed");
+// 		return (SSL_ERR);
+// 	} else {
+// 		SSL_LOG(INFO, "asn1 type compile success");
+// 	}
+// 	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
+// 	ft_printf("%s\n", dtype_dumps);
 
 // 	t_ostring encoded = {0};
 // 	if (SSL_OK != file_read_all(der_filename, &encoded)) {

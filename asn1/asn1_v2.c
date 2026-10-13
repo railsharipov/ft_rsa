@@ -1399,6 +1399,11 @@ char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t
 
 /****************************************************************************/
 
+static t_asn_v2_symbol	*__asn1_v2_symbol_create(void);
+static void __asn1_v2_symbol_clear(t_asn_v2_symbol *asn1_symbol);
+static void __asn1_v2_symbol_delete(t_asn_v2_symbol *asn1_symbol);
+static void	__asn1_v2_symbol_copy(const t_asn_v2_symbol *src, t_asn_v2_symbol *dst);
+
 static t_asn_v2_tag	*__asn1_v2_tag_create(void);
 static void __asn1_v2_tag_clear(t_asn_v2_tag *asn1_tag);
 static void __asn1_v2_tag_delete(t_asn_v2_tag *asn1_tag);
@@ -1435,14 +1440,21 @@ static void __asn1_v2_enum_clear(t_asn_v2_enum *asn1_type);
 static void __asn1_v2_enum_delete(t_asn_v2_enum *asn1_type);
 static void __asn1_v2_enum_copy(const t_asn_v2_enum *src, t_asn_v2_enum *dst);
 
+static inline void __asn1_v2_symbol_delete_adapter(void *p)		{__asn1_v2_symbol_delete((t_asn_v2_symbol *)p);}
 static inline void __asn1_v2_tag_delete_adapter(void *p)		{__asn1_v2_tag_delete((t_asn_v2_tag *)p);}
 static inline void __asn1_v2_value_delete_adapter(void *p)		{__asn1_v2_value_delete((t_asn_v2_value *)p);}
 static inline void __asn1_v2_constraint_delete_adapter(void *p)	{__asn1_v2_constraint_delete((t_asn_v2_constraint *)p);}
-static inline void __asn1_v2_enum_delete_adapter(void *p)	{__asn1_v2_enum_delete((t_asn_v2_enum *)p);}
+static inline void __asn1_v2_enum_delete_adapter(void *p)		{__asn1_v2_enum_delete((t_asn_v2_enum *)p);}
 static inline void __asn1_v2_type_delete_adapter(void *p)	 	{__asn1_v2_type_delete((t_asn_v2_type *)p);}
 static inline void __asn1_v2_component_delete_adapter(void *p)	{__asn1_v2_component_delete((t_asn_v2_component *)p);}
 static inline void __asn1_v2_module_delete_adapter(void *p)		{__asn1_v2_module_delete((t_asn_v2_module *)p);}
 
+static inline void *__asn1_v2_symbol_copy_adapter(const void *p)
+{
+	t_asn_v2_symbol *dst = __asn1_v2_symbol_create();
+	__asn1_v2_symbol_copy((t_asn_v2_symbol *)p, dst);
+	return (dst);
+}
 static inline void *__asn1_v2_tag_copy_adapter(const void *p)
 {
 	t_asn_v2_tag *dst = __asn1_v2_tag_create();
@@ -1484,6 +1496,52 @@ static inline void *__asn1_v2_module_copy_adapter(const void *p)
 	t_asn_v2_module *dst = __asn1_v2_module_create();
 	__asn1_v2_module_copy((const t_asn_v2_module *)p, dst);
 	return (dst);
+}
+
+static t_asn_v2_symbol *__asn1_v2_symbol_create(void)
+{
+	t_asn_v2_symbol *symbol = NULL;
+	SSL_ALLOC(symbol, sizeof(t_asn_v2_symbol));
+	*symbol = (t_asn_v2_symbol){0};
+	return (symbol);
+}
+
+static void __asn1_v2_symbol_clear(t_asn_v2_symbol *asn1_symbol)
+{
+	switch (asn1_symbol->kind) {
+	case ASN_V2_SYMBOL_KIND_TYPE: {
+		if (NULL != asn1_symbol->resolved.type) __asn1_v2_type_clear(asn1_symbol->resolved.type);
+		break;
+	}
+	case ASN_V2_SYMBOL_KIND_VALUE: {
+		if (NULL != asn1_symbol->resolved.value) __asn1_v2_value_clear(asn1_symbol->resolved.value);
+		break;
+	}}
+	*asn1_symbol = (t_asn_v2_symbol){0};
+}
+
+static void __asn1_v2_symbol_delete(t_asn_v2_symbol *asn1_symbol)
+{
+	__asn1_v2_symbol_clear(asn1_symbol);
+	SSL_FREE(asn1_symbol);
+}
+
+static void __asn1_v2_symbol_copy(const t_asn_v2_symbol *src, t_asn_v2_symbol *dst)
+{
+	*dst = (t_asn_v2_symbol){0};
+	dst->kind = src->kind;
+	dst->state = src->state;
+	dst->source = src->source;
+
+	switch (src->kind) {
+	case ASN_V2_SYMBOL_KIND_TYPE: {
+		if (NULL != src->resolved.type) __asn1_v2_type_copy(src->resolved.type, dst->resolved.type);
+		break;
+	}
+	case ASN_V2_SYMBOL_KIND_VALUE: {
+		if (NULL != src->resolved.value) __asn1_v2_value_copy(src->resolved.value, dst->resolved.value);
+		break;
+	}}
 }
 
 static t_asn_v2_tag	*__asn1_v2_tag_create(void)
@@ -1946,6 +2004,7 @@ static t_asn_v2_module *__asn1_v2_module_create(void)
 	*asn1_module = (t_asn_v2_module){0};
 	ft_htbl_v2_init(&asn1_module->types, 256);
 	ft_htbl_v2_init(&asn1_module->constants, 256);
+	ft_htbl_v2_init(&asn1_module->symbol_table, 512);
 	return (asn1_module);
 }
 
@@ -1959,6 +2018,7 @@ static void __asn1_v2_module_clear(t_asn_v2_module *asn1_module)
 {
 	ft_htbl_v2_clear(&asn1_module->types, __asn1_v2_type_delete_adapter);
 	ft_htbl_v2_clear(&asn1_module->constants, __asn1_v2_value_delete_adapter);
+	ft_htbl_v2_clear(&asn1_module->symbol_table, __asn1_v2_symbol_delete_adapter);
 }
 
 static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *dst)
@@ -1970,9 +2030,8 @@ static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *d
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
 		while (ft_htbl_v2_next(&src->types, &next, &key, &value)) {
-			t_asn_v2_type *copy_type = __asn1_v2_type_create();
-			__asn1_v2_type_copy(value, copy_type);
-			int ok = ft_htbl_v2_set(&dst->types, key, copy_type);
+			t_asn_v2_type *copy_type = __asn1_v2_type_copy_adapter(value);
+			bool ok = ft_htbl_v2_set(&dst->types, key, copy_type);
 			assert(ok);
 		}
 	}
@@ -1981,9 +2040,18 @@ static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *d
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
 		while (ft_htbl_v2_next(&src->constants, &next, &key, &value)) {
-			t_asn_v2_type *copy_type = __asn1_v2_type_create();
-			__asn1_v2_type_copy(value, copy_type);
-			int ok = ft_htbl_v2_set(&dst->constants, key, copy_type);
+			t_asn_v2_value *copy_value = __asn1_v2_value_copy_adapter(value);
+			bool ok = ft_htbl_v2_set(&dst->constants, key, copy_value);
+			assert(ok);
+		}
+	}
+	{
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		while (ft_htbl_v2_next(&src->symbol_table, &next, &key, &value)) {
+			t_asn_v2_symbol *copy_symbol = __asn1_v2_value_copy_adapter(value);
+			bool ok = ft_htbl_v2_set(&dst->symbol_table, key, copy_symbol);
 			assert(ok);
 		}
 	}
@@ -2564,6 +2632,10 @@ static int	__asn1_v2_schema_parse_type(const t_asn_v2_module *asn1_module, t_asn
 
 	// Check if this is a type reference.
 	if (__asn1_v2_symbol_is_type_name(type_name)) {
+		// const t_asn_v2_symbol *symbol = NULL;
+		// if (SSL_OK == __asn1_v2_schema_resolve_symbol(asn1_module, type_name, &symbol)) {
+		//
+		// }
 		const t_json_v2 *jtypes = NULL;
 		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes)) {
 			assert(jtypes->kind == JSON_V2_TYPE_OBJECT);
@@ -2835,6 +2907,72 @@ label_error:
 	return (SSL_ERR);
 }
 
+static int	__asn1_v2_schema_resolve_symbol(t_asn_v2_module *asn1_module, const char *symbol_name, const t_asn_v2_symbol **asn1_symbol)
+{
+	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&asn1_module->symbol_table, symbol_name);
+	if (NULL == symbol) {
+		SSL_LOG(TRACE, "no such symbol in the table: %s", symbol_name);
+		return (SSL_ERR);
+	}
+
+	switch (symbol->state) {
+	case ASN_V2_SYMBOL_STATE_UNRESOLVED: {
+		SSL_LOG(TRACE, "resolving symbol: %s", symbol_name);
+		symbol->state = ASN_V2_SYMBOL_STATE_RESOLVING;
+		switch (symbol->kind) {
+		case ASN_V2_SYMBOL_KIND_TYPE: {
+			// if (SSL_OK != __asn1_v2_schema_parse_type()) {
+			// 	SSL_LOG(ERROR, "resolve type error: %s", symbol_name);
+			// 	goto label_error;
+			// }
+			break;
+		}
+		case ASN_V2_SYMBOL_KIND_VALUE: {
+			// if (SSL_OK != __asn1_v2_schema_parse_value()) {
+			// 	SSL_LOG(ERROR, "resolve value error: %s", symbol_name);
+			// 	goto label_error;
+			// }
+			break;
+		}}
+		break;
+	}
+	case ASN_V2_SYMBOL_STATE_RESOLVING: {
+		SSL_LOG(ERROR, "resolve cycle: %s", symbol_name);
+		goto label_error;
+	}
+	case ASN_V2_SYMBOL_STATE_RESOLVED: {
+		SSL_LOG(TRACE, "symbol is already resolved: %s", symbol_name);
+		switch (symbol->kind) {
+		case ASN_V2_SYMBOL_KIND_TYPE: {
+			if (NULL == symbol->resolved.type) {
+				SSL_LOG(ERROR, "resolved type is not defined");
+				goto label_error;
+			}
+			break;
+		}
+		case ASN_V2_SYMBOL_KIND_VALUE: {
+			if (NULL == symbol->resolved.value) {
+				SSL_LOG(ERROR, "resolved value is not defined");
+				goto label_error;
+			}
+			break;
+		}}
+		break;
+	}
+	case ASN_V2_SYMBOL_STATE_ERROR: {
+		SSL_LOG(ERROR, "resolve error: %s", symbol_name);
+		goto label_error;
+	}}
+
+	*asn1_symbol = symbol;
+	return (SSL_OK);
+
+label_error:
+	*asn1_symbol = NULL;
+	symbol->state = ASN_V2_SYMBOL_STATE_ERROR;
+	return (SSL_ERR);
+}
+
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema)
 {
 	if (NULL == asn1_module) {
@@ -2854,24 +2992,88 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 		amodule->tag_mode = __asn1_v2_schema_get_tag_mode_by_name(jtagmode->as.cstring);
 	}
 
-	const t_json_v2 *jtypes = NULL;
-	int ret = json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes);
-	assert(JSON_V2_OK == ret && jtypes->kind == JSON_V2_TYPE_OBJECT);
-
-	const char *key = NULL;
-	void *value = NULL;
-	t_htbl_v2_next next = {0};
-	while (ft_htbl_v2_next(&jtypes->as.htable, &next, &key, &value)) {
-		t_asn_v2_type *atype = NULL;
-		if (SSL_OK != __asn1_v2_schema_parse_type(amodule, &atype, jschema, value)) {
-			SSL_LOG(ERROR, "failed to parse type: `%s`", key);
+	const t_json_v2 *jconstants = NULL;
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_CONSTANTS, jschema, &jconstants)) {
+		if (jconstants->kind != JSON_V2_TYPE_OBJECT) {
+			SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_CONSTANTS, json_v2_get_type_name(jconstants->kind));
 			goto label_error;
 		}
-		if (!ft_htbl_v2_set(&amodule->types, key, atype)) {
-			SSL_LOG(ERROR, "failed to set type name: `%s`, duplicate type name?", key);
-			goto label_error;
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		while (ft_htbl_v2_next(&jconstants->as.htable, &next, &key, &value)) {
+			t_asn_v2_symbol *symbol = __asn1_v2_symbol_create();
+			symbol->kind = ASN_V2_SYMBOL_KIND_VALUE;
+			symbol->source = value;
+			if (!ft_htbl_v2_set(&amodule->symbol_table, key, symbol)) {
+				SSL_LOG(ERROR, "failed to register symbol: `%s`, duplicate symbol name?", key);
+				goto label_error;
+			}
 		}
 	}
+	const t_json_v2 *jtypes = NULL;
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes)) {
+		if (jtypes->kind != JSON_V2_TYPE_OBJECT) {
+			SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPES, json_v2_get_type_name(jconstants->kind));
+			goto label_error;
+		}
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		while (ft_htbl_v2_next(&jtypes->as.htable, &next, &key, &value)) {
+			t_asn_v2_symbol *symbol = __asn1_v2_symbol_create();
+			symbol->kind = ASN_V2_SYMBOL_KIND_TYPE;
+			symbol->source = value;
+			if (!ft_htbl_v2_set(&amodule->symbol_table, key, symbol)) {
+				SSL_LOG(ERROR, "failed to register symbol: `%s`, duplicate symbol name?", key);
+				goto label_error;
+			}
+		}
+	}
+
+
+	// const t_json_v2 *jconstants = NULL;
+	// if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jconstants)) {
+	// 	if (jconstants->kind != JSON_V2_TYPE_OBJECT) {
+	// 		SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPES, json_v2_get_type_name(jconstants->kind));
+	// 		goto label_error;
+	// 	}
+	// 	const char *key = NULL;
+	// 	void *value = NULL;
+	// 	t_htbl_v2_next next = {0};
+	// 	while (ft_htbl_v2_next(&jconstants->as.htable, &next, &key, &value)) {
+	// 		t_asn_v2_type *atype = NULL;
+	// 		if (SSL_OK != __asn1_v2_schema_parse_type(amodule, &atype, jschema, value)) {
+	// 			SSL_LOG(ERROR, "failed to parse type: `%s`", key);
+	// 			goto label_error;
+	// 		}
+	// 		if (!ft_htbl_v2_set(&amodule->types, key, atype)) {
+	// 			SSL_LOG(ERROR, "failed to set type name: `%s`, duplicate type name?", key);
+	// 			goto label_error;
+	// 		}
+	// 	}
+	// }
+	// const t_json_v2 *jtypes = NULL;
+	// if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtypes)) {
+	// 	if (jtypes->kind != JSON_V2_TYPE_OBJECT) {
+	// 		SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPES, json_v2_get_type_name(jconstants->kind));
+	// 		goto label_error;
+	// 	}
+	// 	const char *key = NULL;
+	// 	void *value = NULL;
+	// 	t_htbl_v2_next next = {0};
+	// 	while (ft_htbl_v2_next(&jtypes->as.htable, &next, &key, &value)) {
+	// 		t_asn_v2_type *atype = NULL;
+	// 		if (SSL_OK != __asn1_v2_schema_parse_type(amodule, &atype, jschema, value)) {
+	// 			SSL_LOG(ERROR, "failed to parse type: `%s`", key);
+	// 			goto label_error;
+	// 		}
+	// 		if (!ft_htbl_v2_set(&amodule->types, key, atype)) {
+	// 			SSL_LOG(ERROR, "failed to set type name: `%s`, duplicate type name?", key);
+	// 			goto label_error;
+	// 		}
+	// 	}
+	// }
 
 	if (ASN_V2_TAG_MODE_AUTOMATIC == amodule->tag_mode) {
 		if (SSL_OK != asn1_v2_module_compile_automatic_tags(asn1_module, amodule)) {
