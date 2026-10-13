@@ -4,12 +4,12 @@
     "PrivateKeyInfo": {
       "kind": "SEQUENCE",
       "components": [
-        {"id": "version", "type": {"kind": "Version"}, "default": 0},
+        {"id": "version", "type": {"kind": "Version"}, "default": "myVersion"},
         {"id": "organization", "type": {"kind": "UTF8 STRING"}, "default": "\"䰾䲁䲘䴉\""},
         {"id": "country", "type": {"kind": "PRINTABLE STRING"}, "default": "\"Belarus\""},
-        {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}},
+        {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}, "default": ["myAuthor"]},
         {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER"}, "default": "myOrg"},
-        {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}},
+        {"id": "specific-algorithm", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}, "default": [1, 2, "myAlgorithm"]},
         {"id": "data", "type": {"kind": "BIT STRING"}},
         {
           "id": "status",
@@ -19,6 +19,19 @@
             "extEnumeration": [["delta"], ["epsilon", 102], ["zeta"]]
           },
           "default": "beta"
+        },
+        {
+          "id": "nested-private-key",
+          "type": {"kind": "NestedPrivateKey"},
+          "default": [
+            ["version", 3],
+            ["organization", "\"䰾䲁䲘䴉\""],
+            ["country", "\"Belarus\""],
+            ["authors", [{"fullname": "\"Mike\""}]],
+            ["algorithm", [1, 2, 3, 4]],
+            ["specific-algorithm", [1, 2, "myAlgorithm"]],
+            ["data", "'1010101'B"]
+          ]
         }
       ]
     },
@@ -40,12 +53,45 @@
         {"id": "002", "type": {"kind": "INTEGER"}, "optional": true},
         {"id": "003", "type": {"kind": "INTEGER"}, "optional": true}
       ]
+    },
+    "NestedPrivateKey": {
+      "kind": "SEQUENCE",
+      "components": [
+        {"id": "version", "type": {"kind": "Version"}, "default": "myVersion"},
+        {"id": "organization", "type": {"kind": "UTF8 STRING"}, "default": "\"䰾䲁䲘䴉\""},
+        {"id": "country", "type": {"kind": "PRINTABLE STRING"}, "default": "\"Belarus\""},
+        {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}, "default": ["myAuthor"]},
+        {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER"}, "default": "myOrg"},
+        {"id": "specific-algorithm", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}, "default": [1, 2, "myAlgorithm"]},
+        {"id": "data", "type": {"kind": "BIT STRING"}},
+        {
+          "id": "status",
+          "type": {
+            "kind": "ENUMERATED",
+            "enumeration": [["alpha"], ["beta", 5], ["gamma"]],
+            "extEnumeration": [["delta"], ["epsilon", 102], ["zeta"]]
+          },
+          "default": "beta"
+        }
+      ]
     }
   },
   "constants": {
     "myOrg": {
-      "type": {"kind": "OBJECT IDENTIFIER"},
+      "kind": "OBJECT IDENTIFIER",
       "value": [1, 2, 3, 5, 45, 345324, 23]
+    },
+    "myAlgorithm": {
+      "kind": "RELATIVE OBJECT IDENTIFIER",
+      "value": [99122, 1232]
+    },
+    "myAuthor": {
+      "kind": "Author",
+      "value": {"fullname": "\"Bob Mop\""}
+    },
+    "myVersion": {
+      "kind": "Version",
+      "value": 7
     }
   }
 }
