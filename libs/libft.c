@@ -86,52 +86,65 @@ char	*ft_2darray_strjoin(char **str_arr, size_t str_arr_len, const char *delim)
 
 /****************************************************************************/
 
-static int	__is_blank(char c)
+ssize_t	ft_batoi_zd(const char *buf, size_t buflen)
 {
-	if ((c >= 9 && c <= 13) || c == 32) {
-		return (1);
+	ssize_t	sign = 1;
+	size_t i = 0;
+	while (i < buflen && ft_iseolws(buf[i])) {
+		i++;
 	}
-	return (0);
+	if (i < buflen && (buf[i] == '-' || buf[i] == '+')) {
+		sign = (buf[i] == '-') ? -1 : 1;
+		i++;
+	}
+	ssize_t	nb = 0;
+	while (i < buflen && buf[i] >= '0' && buf[i] <= '9') {
+		nb = nb * 10 + buf[i++] - 48;
+	}
+	return (sign * nb);
+}
+
+size_t	ft_batoi_zu(const char *buf, size_t buflen)
+{
+	size_t i = 0;
+	while (i < buflen && ft_iseolws(buf[i])) {
+		i++;
+	}
+	size_t nb = 0;
+	while (i < buflen && buf[i] >= '0' && buf[i] <= '9') {
+		nb = nb * 10 + buf[i++] - 48;
+	}
+	return (nb);
 }
 
 ssize_t	ft_atoi_zd(const char *str)
 {
-	int		i;
-	ssize_t	nb;
-	ssize_t	neg;
-
-	nb = 0;
-
-	i = 0;
-	while (__is_blank(str[i])) {
+	ssize_t	sign = 1;
+	size_t i = 0;
+	while (ft_iseolws(str[i])) {
 		i++;
 	}
-	neg = (str[i] == '-') ? -1 : 1;
-
 	if (str[i] == '-' || str[i] == '+') {
+		sign = (str[i] == '-') ? -1 : 1;
 		i++;
 	}
+	ssize_t	nb = 0;
 	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0) {
 		nb = nb * 10 + str[i++] - 48;
 	}
-	return (neg * nb);
+	return (sign * nb);
 }
 
 size_t	ft_atoi_zu(const char *str)
 {
-	int		i;
-	size_t	nb;
-
-	nb = 0;
-
-	i = 0;
-	while (__is_blank(str[i])) {
+	size_t i = 0;
+	while (ft_iseolws(str[i])) {
 		i++;
 	}
+	size_t nb = 0;
 	while (str[i] >= '0' && str[i] <= '9' && str[i] != 0) {
 		nb = nb * 10 + str[i++] - 48;
 	}
-
 	return (nb);
 }
 
@@ -2707,10 +2720,10 @@ static const char *__lvl_prefixes[] = {
 static const size_t __lvl_prefixes_size = sizeof(__lvl_prefixes) / sizeof(__lvl_prefixes[0]);
 
 static const char *__colored_lvl_prefixes[] = {
-	[LIBFT_LOG_LEVEL_ALWAYS] = TXT_B_WHITE(FT_LOG_ALL_LOG_PREFIX),
+	[LIBFT_LOG_LEVEL_ALWAYS] = TXT_WHITE(FT_LOG_ALL_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_CRIT] = TXT_MAGEN(FT_LOG_CRIT_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_ERROR] = TXT_B_RED(FT_LOG_ERROR_LOG_PREFIX),
-	[LIBFT_LOG_LEVEL_WARN] = TXT_YELL(FT_LOG_WARN_LOG_PREFIX),
+	[LIBFT_LOG_LEVEL_WARN] = TXT_B_YELL(FT_LOG_WARN_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_INFO] = TXT_BLUE(FT_LOG_INFO_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_DEBUG] = TXT_CYAN(FT_LOG_DEBUG_LOG_PREFIX),
 	[LIBFT_LOG_LEVEL_TRACE] = TXT_GRAY(FT_LOG_TRACE_LOG_PREFIX),
@@ -2776,33 +2789,28 @@ t_logger *ft_log_get_default_logger(void)
 
 static int	__log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg)
 {
-	const char	*lvl_prefix;
-	char	*full_mes;
-	char	*debug_mes;
-	char	*mes;
-	int		ret;
-
-	lvl_prefix = __LVL_PREFIX(level, logger->is_ansi_colored);
-	debug_mes = NULL;
-	mes = NULL;
-
-	if (level <= logger->debug_info_thres) {
-		if (NULL != file_name) {
-			ft_sprintf(&debug_mes, __DEBUG_MSG(" (%s:%d)", logger->is_ansi_colored), file_name, line_number);
-		} else {
-			debug_mes = ft_strdup("");
-		}
-	}
+	char *mes = NULL;
 	ft_vsprintf(&mes, fmt, va_arg);
 
-	if (NULL != func_name) {
-		full_mes = ft_strjoin_multi(5, lvl_prefix, func_name, ": ", mes, debug_mes);
-	} else {
-		full_mes = ft_strjoin_multi(4, lvl_prefix, mes, debug_mes);
-	}
-	ret = logger->log_writer(full_mes);
+	const char *lvl_prefix = __LVL_PREFIX(level, logger->is_ansi_colored);
 
-	LIBFT_FREE(debug_mes);
+	char *full_mes = NULL;
+	if (level <= logger->debug_info_thres) {
+		if (NULL != file_name && NULL != func_name) {
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d]") TXT_GRAY(" [%s]") " %s" : "%s[%s:%d] [%s] %s";
+			ft_sprintf(&full_mes, debug_fmt, lvl_prefix, file_name, line_number, func_name, mes);
+		} else if (NULL != file_name) {
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d]") " %s" : "%s[%s:%d] %s";
+			ft_sprintf(&full_mes, debug_fmt, lvl_prefix, file_name, line_number, mes);
+		} else if (NULL != func_name) {
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s]") " %s" : "%s[%s:%d] %s";
+			ft_sprintf(&full_mes, debug_fmt, lvl_prefix, func_name, mes);
+		}
+	} else {
+		ft_sprintf(&full_mes, "%s[%s] %s", lvl_prefix, mes);
+	}
+	int ret = logger->log_writer(full_mes);
+
 	LIBFT_FREE(full_mes);
 	LIBFT_FREE(mes);
 

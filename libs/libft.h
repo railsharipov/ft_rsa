@@ -11,29 +11,33 @@
 #include <stdio.h>
 
 #define COLOR_RED       	    "\x1b[31m"
+#define COLOR_RED_BOLD		    "\033[1m\033[31m"
 #define COLOR_GREEN			    "\x1b[32m"
 #define COLOR_GREEN_BOLD	    "\033[1m\033[32m"
 #define COLOR_YELLOW		    "\x1b[33m"
+#define COLOR_YELLOW_BOLD		"\033[1m\033[33m"
 #define COLOR_BLUE			    "\x1b[34m"
 #define COLOR_BLUE_BOLD 	    "\033[1m\033[34m"
 #define COLOR_MAGENTA		    "\x1b[35m"
+#define COLOR_MAGENTA_BOLD		"\033[1m\033[35m"
 #define COLOR_CYAN			    "\x1b[36m"
 #define COLOR_CYAN_BOLD		    "\033[1m\033[36m"
-#define COLOR_RED_BOLD		    "\033[1m\033[31m"
-#define COLOR_RESET			    "\x1b[0m"
 #define COLOR_WHITE			    "\x1b[37m"
 #define COLOR_WHITE_BOLD	    "\033[1m\033[37m"
 #define COLOR_GRAY			    "\x1b[90m"
 #define COLOR_GRAY_BOLD		    "\033[1m\033[90m"
+#define COLOR_RESET			    "\x1b[0m"
 
 #define TXT_RED(STR_LIT)		COLOR_RED STR_LIT COLOR_RESET
 #define TXT_B_RED(STR_LIT)		COLOR_RED_BOLD STR_LIT COLOR_RESET
 #define TXT_GREEN(STR_LIT)		COLOR_GREEN STR_LIT COLOR_RESET
 #define TXT_B_GREEN(STR_LIT)	COLOR_GREEN_BOLD STR_LIT COLOR_RESET
 #define TXT_YELL(STR_LIT)		COLOR_YELLOW STR_LIT COLOR_RESET
+#define TXT_B_YELL(STR_LIT)		COLOR_YELLOW_BOLD STR_LIT COLOR_RESET
 #define TXT_BLUE(STR_LIT)		COLOR_BLUE STR_LIT COLOR_RESET
 #define TXT_B_BLUE(STR_LIT)		COLOR_BLUE_BOLD STR_LIT COLOR_RESET
 #define TXT_MAGEN(STR_LIT)		COLOR_MAGENTA STR_LIT COLOR_RESET
+#define TXT_B_MAGEN(STR_LIT)	COLOR_MAGENTA_BOLD STR_LIT COLOR_RESET
 #define TXT_CYAN(STR_LIT)		COLOR_CYAN STR_LIT COLOR_RESET
 #define TXT_B_CYAN(STR_LIT)		COLOR_CYAN_BOLD STR_LIT COLOR_RESET
 #define TXT_WHITE(STR_LIT)		COLOR_WHITE STR_LIT COLOR_RESET
@@ -68,9 +72,9 @@
 
 # define FLAG(FLAG, FLAGS)	((int)(((FLAGS)&(FLAG))==(FLAG)))
 
-#define NOT_IMPLEMENTED(MES)	do { ft_printf("%@" TXT_YELL("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
-#define UNREACHABLE(MES)		do { ft_printf("%@" TXT_YELL("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
-#define TODO(MES)				do { ft_printf("%@" TXT_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define NOT_IMPLEMENTED(MES)	do { ft_printf("%@" TXT_B_RED("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define UNREACHABLE(MES)		do { ft_printf("%@" TXT_B_RED("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define TODO(MES)				do { ft_printf("%@" TXT_B_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
 
 typedef enum e_libft_status {
 	LIBFT_OK = 0,
@@ -411,6 +415,8 @@ void	*ft_memdup(const void *src, size_t srcsize);
 
 ssize_t	    ft_atoi_zd(const char *str);
 size_t		ft_atoi_zu(const char *str);
+ssize_t		ft_batoi_zd(const char *buf, size_t buflen);
+size_t		ft_batoi_zu(const char *buf, size_t buflen);
 char		*ft_itoa_zu(size_t n);
 char		*ft_itoa_jd(intmax_t n);
 char		*ft_itoa_jd_base(intmax_t value, int base);
