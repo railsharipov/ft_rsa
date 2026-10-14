@@ -35,7 +35,7 @@ static void	__gen_prime(t_num *prime, int keysize)
 		for (; idx < prime->size; idx++)
 			prime->val[idx] = 0;
 
-	} while (!bnum_prime_test(prime, keysize, RM_TRIALS, SSL_TRUE));
+	} while (!bnum_prime_test(prime, keysize, RM_TRIALS, true));
 }
 
 static void	__get_primes(int modsize, uint64_t seed)

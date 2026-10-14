@@ -148,7 +148,7 @@ static int	__check_prime(t_num *prime)
 
 	bnum_init_multi(&gcd, &p1, NULL);
 
-	if (!bnum_prime_test(prime, bnum_lmbit(prime), RM_TRIALS, SSL_FALSE)) {
+	if (!bnum_prime_test(prime, bnum_lmbit(prime), RM_TRIALS, false)) {
 		res = SSL_ERR;
 	}
 
