@@ -5,6 +5,7 @@
       "kind": "SEQUENCE",
       "components": [
         {"id": "version", "type": {"kind": "Version"}, "default": "myVersion"},
+        {"id": "date", "type": {"kind": "UTC TIME"}, "default": "970922143547Z"},
         {"id": "organization", "type": {"kind": "UTF8 STRING"}, "default": "\"䰾䲁䲘䴉\""},
         {"id": "country", "type": {"kind": "PRINTABLE STRING"}, "default": "\"Belarus\""},
         {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}, "default": ["myAuthor"]},
