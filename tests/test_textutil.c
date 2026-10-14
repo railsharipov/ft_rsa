@@ -462,7 +462,7 @@ static int	__test_textutil_scanf(void)
 	char	str6[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
 	char	*s6;
 	int		i6;
-	matches = textutil_sscanf(str6, ft_strlen(str6), "%[^:]: %d %[[a-z-]", NULL, &i6, &s6);
+	matches = textutil_sscanf(str6, ft_strlen(str6), "%*[^:]: %d %[[a-z-]", &i6, &s6);
 	TEST_ASSERT(matches == 3);
 	TEST_ASSERT(s6 != NULL);
 	TEST_ASSERT(ft_streq(s6, "abcdefghijklmno"));
@@ -471,7 +471,7 @@ static int	__test_textutil_scanf(void)
 	char	str7[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
 	char	*s7;
 	int		i7;
-	matches = textutil_sscanf(str7, ft_strlen(str7), "%[^:]: %d %[[a-z0-9A-Z-]", NULL, &i7, &s7);
+	matches = textutil_sscanf(str7, ft_strlen(str7), "%*[^:]: %d %[[a-z0-9A-Z-]", &i7, &s7);
 	TEST_ASSERT(matches == 3);
 	TEST_ASSERT(s7 != NULL);
 	TEST_ASSERT(ft_streq(s7, "abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz"));
@@ -480,7 +480,7 @@ static int	__test_textutil_scanf(void)
 	char	str8[] = "Test-string-214-#R@#$R(&): 10 abcdefghijklmno0034045-HEDRGD[pqrstuvwxyz";
 	char	*s8, *s8_2, *s8_3;
 	int		i8;
-	matches = textutil_sscanf(str8, ft_strlen(str8), "%[^:]: %d %[a-z-]%[-0-9A-Z]%[[a-z]", NULL, &i8, &s8, &s8_2, &s8_3);
+	matches = textutil_sscanf(str8, ft_strlen(str8), "%*[^:]: %d %[a-z-]%[-0-9A-Z]%[[a-z]", &i8, &s8, &s8_2, &s8_3);
 	TEST_ASSERT(matches == 5);
 	TEST_ASSERT(s8 != NULL);
 	TEST_ASSERT(ft_streq(s8, "abcdefghijklmno"));
@@ -515,6 +515,46 @@ static int	__test_textutil_scanf(void)
 	TEST_ASSERT(c10 == 'T');
 	TEST_ASSERT(zd10 == 10);
 	TEST_ASSERT(zu10 == 10);
+
+	char			str11[] = "Test environment 10 T 10 10";
+	char			*s11;
+	char			*s11_2;
+	unsigned int	u11;
+	char			c11;
+	ssize_t			zd11;
+	size_t			zu11;
+	size_t			zn11;
+	size_t			zn11_2;
+
+	matches = textutil_sscanf(str11, ft_strlen(str11), "%4s %s %u%zn %c %zd %zu%zn", &s11, &s11_2, &u11, &zn11, &c11, &zd11, &zu11, &zn11_2);
+	TEST_ASSERT(matches == 6);
+	TEST_ASSERT(s11 != NULL);
+	TEST_ASSERT(ft_streq(s11, "Test"));
+	TEST_ASSERT(ft_streq(s11_2, "environment"));
+	TEST_ASSERT(u11 == 10);
+	TEST_ASSERT(zn11 == 19);
+	TEST_ASSERT(c11 == 'T');
+	TEST_ASSERT(zd11 == 10);
+	TEST_ASSERT(zu11 == 10);
+	TEST_ASSERT(zn11_2 == ft_strlen(str11));
+
+	char	str12[] = "0102banana0510";
+	char	*s12;
+	int		d12;
+	char	*s12_2;
+	char	*s12_3;
+	int		d12_2;
+
+	matches = textutil_sscanf(str12, ft_strlen(str12), "%2[0-9] %2d %6s %2[0-9] %d", &s12, &d12, &s12_2, &s12_3, &d12_2);
+	TEST_ASSERT(matches == 5);
+	TEST_ASSERT(s12 != NULL);
+	TEST_ASSERT(ft_streq(s12, "01"));
+	TEST_ASSERT(s12_2 != NULL);
+	TEST_ASSERT(ft_streq(s12_2, "banana"));
+	TEST_ASSERT(s12_3 != NULL);
+	TEST_ASSERT(ft_streq(s12_3, "05"));
+	TEST_ASSERT(d12 == 2);
+	TEST_ASSERT(d12_2 == 10);
 
 	TEST_PASS();
 }
