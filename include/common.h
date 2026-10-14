@@ -28,16 +28,9 @@
 
 # define NONE	0
 
-enum e_ssl_boolean {
-	SSL_FALSE 	= 0,
-	SSL_TRUE 	= 1,
-};
-
-enum	e_ssl_status
-{
-	SSL_OK		= 0,
-	SSL_ERR		= 1,
-	SSL_STATUS_COUNT
+enum e_ssl_status {
+	SSL_OK = 0,
+	SSL_ERR = 1,
 };
 
 typedef uint32_t	t_bool;
