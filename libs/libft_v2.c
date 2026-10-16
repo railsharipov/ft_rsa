@@ -418,6 +418,7 @@ typedef struct s_htbl_v2_entry {
 	uint32_t	hash;
 	char		*key;
 	void		*content;
+	bool		active;
 } t_htbl_v2_entry;
 
 static inline uint32_t	__ft_htbl_v2_calc_hash(const char *key)
@@ -430,7 +431,7 @@ static inline uint32_t	__ft_htbl_v2_calc_array_idx(const t_htbl_v2 *htbl, uint32
 	return (hash % htbl->size);
 }
 
-static void __ft_htbl_v2_delete_node(t_node_v2 *node, t_func_content_del f_del_content)
+static void __ft_htbl_v2_delete_entry_node(t_node_v2 *node, t_func_content_del f_del_content)
 {
 	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
 	if (NULL != entry->key) {
@@ -442,7 +443,7 @@ static void __ft_htbl_v2_delete_node(t_node_v2 *node, t_func_content_del f_del_c
 	LIBFT_FREE(entry);
 }
 
-static t_node_v2 *__ft_htbl_v2_create_node(const char *key, void *vctx)
+static t_node_v2 *__ft_htbl_v2_create_entry_node(const char *key, void *vctx)
 {
 	void *content = vctx;
 	t_htbl_v2_entry *entry = NULL;
@@ -451,56 +452,25 @@ static t_node_v2 *__ft_htbl_v2_create_node(const char *key, void *vctx)
 	entry->hash = __ft_htbl_v2_calc_hash(key);
 	entry->key = ft_strdup(key);
 	entry->content = content;
+	entry->active = true;
 	return (&entry->base);
 }
 
-static bool __ft_htbl_v2_match_node(t_node_v2 *node, const char *key)
+static bool __ft_htbl_v2_match_entry(t_htbl_v2_entry *entry, const char *key)
 {
-	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
+	assert(entry->active);
 	return (ft_streq(entry->key, key));
 }
 
-static int __ft_htbl_v2_next_entry(const t_htbl_v2 *htbl, t_htbl_v2_next *next, t_htbl_v2_entry **ret_entry)
+static void __ft_htbl_v2_deactivate_entry(t_htbl_v2_entry *entry, t_func_content_del f_del_content)
 {
-	assert(NULL != htbl && NULL != htbl->arr);
-	assert(NULL != next);
-
-	if (next->idx >= htbl->size) {
-		return (0);
+	entry->hash = 0;
+	LIBFT_FREE(entry->key);
+	if (NULL != f_del_content) {
+		if (NULL != entry->content) f_del_content(entry->content);
 	}
-	for (uint32_t idx = next->idx; idx < htbl->size; idx++) {
-		t_list *list = htbl->arr + idx;
-		if (list->size == 1) {
-			t_node_v2 *node = list->first;
-			if (NULL != ret_entry) {
-				*ret_entry = container_of(node, t_htbl_v2_entry, base);
-			}
-			next->idx = idx + 1;
-			next->nidx = 0;
-			return (1);
-		}
-		else if (list->size > 1) {
-			size_t nidx = 0;
-			t_node_v2 *node = list->first;
-			for (; NULL != node; node = node->next) {
-				if (nidx == next->nidx) break;
-				nidx++;
-			}
-			if (NULL != node) {
-				if (NULL != ret_entry) {
-					*ret_entry = container_of(node, t_htbl_v2_entry, base);
-				}
-				next->idx = idx;
-				next->nidx += 1;
-				return (1);
-			}
-			else {
-				next->idx = idx + 1;
-				next->nidx = 0;
-			}
-		}
-	}
-	return (0);
+	entry->content = NULL;
+	entry->active = false;
 }
 
 t_htbl_v2 *ft_htbl_v2_create(uint32_t size)
@@ -536,14 +506,19 @@ bool ft_htbl_v2_set(t_htbl_v2 *htbl, const char *key, void *content)
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
 	while (NULL != node) {
-		if (__ft_htbl_v2_match_node(node, key)) break;
-	}
-	if (NULL != node) {
-		// The key has already been set.
-		return (false);
+		t_ref_node *ref = container_of(node, t_ref_node, base);
+		t_htbl_v2_entry *entry = ref->ptr;
+		if (__ft_htbl_v2_match_entry(entry, key)) {
+			// Check if key has already been set.
+			if (entry->active) return false;
+		}
+		node = node->next;
 	}
 	if (list->size > 0) htbl->colls += 1;
-	ft_list_append(list, __ft_htbl_v2_create_node(key, content));
+	node = __ft_htbl_v2_create_entry_node(key, content);
+	ft_list_append(&htbl->values, node);
+	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
+	ft_list_append_ref(list, entry);
 	return (true);
 }
 
@@ -559,20 +534,22 @@ bool ft_htbl_v2_reset(t_htbl_v2 *htbl, const char *key, void *content, t_func_co
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
 	while (NULL != node) {
-		if (__ft_htbl_v2_match_node(node, key)) break;
-	}
-	if (NULL != node) {
-		// The key has already been set: replace the value for the key.
-		t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
-		if (NULL != entry->content) {
-			f_del_content(entry->content);
+		t_ref_node *ref = container_of(node, t_ref_node, base);
+		t_htbl_v2_entry *entry = ref->ptr;
+		if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
+			// The key has already been set: replace the value for the key.
+			if (NULL != entry->content) f_del_content(entry->content);
+			entry->content = content;
+			return true;
 		}
-		entry->content = content;
-	} else {
-		// The key has not been set yet: set new value.
-		if (list->size > 0) htbl->colls += 1;
-		ft_list_append(list, __ft_htbl_v2_create_node(key, content));
+		node = node->next;
 	}
+	// The key has not been set yet: set new value.
+	if (list->size > 0) htbl->colls += 1;
+	node = __ft_htbl_v2_create_entry_node(key, content);
+	ft_list_append(&htbl->values, node);
+	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
+	ft_list_append_ref(list, entry);
 	return (true);
 }
 
@@ -586,10 +563,13 @@ bool ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
 	while (NULL != node) {
-		if (__ft_htbl_v2_match_node(node, key)) break;
-	}
-	if (NULL != node) {
-		__ft_htbl_v2_delete_node(node, f_del_content);
+		t_ref_node *ref = container_of(node, t_ref_node, base);
+		t_htbl_v2_entry *entry = ref->ptr;
+		if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
+			__ft_htbl_v2_deactivate_entry(entry, f_del_content);
+			__ft_ref_delete_node(ft_list_remove(list, node));
+		}
+		node = node->next;
 	}
 	return (true);
 }
@@ -604,7 +584,10 @@ bool ft_htbl_v2_has(const t_htbl_v2 *htbl, const char *key)
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
 	while (NULL != node) {
-		if (__ft_htbl_v2_match_node(node, key)) return (true);
+		t_ref_node *ref = container_of(node, t_ref_node, base);
+		t_htbl_v2_entry *entry = ref->ptr;
+		if (__ft_htbl_v2_match_entry(entry, key)) return (true);
+		node = node->next;
 	}
 	return (false);
 }
@@ -619,11 +602,12 @@ void *ft_htbl_v2_get(const t_htbl_v2 *htbl, const char *key)
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
 	while (NULL != node) {
-		if (__ft_htbl_v2_match_node(node, key)) break;
-	}
-	if (NULL != node) {
-		t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
-		return (entry->content);
+		t_ref_node *ref = container_of(node, t_ref_node, base);
+		t_htbl_v2_entry *entry = ref->ptr;
+		if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
+			return (entry->content);
+		}
+		node = node->next;
 	}
 	return (NULL);
 }
@@ -632,17 +616,19 @@ void ft_htbl_v2_clear(t_htbl_v2 *htbl, t_func_content_del f_del_content)
 {
 	assert(NULL != htbl);
 	if (NULL == htbl->arr) return;
-
+	// Delete htable with references to values.
 	for (uint32_t idx = 0; idx < htbl->size; idx++) {
 		t_list *list = htbl->arr + idx;
-		t_node_v2 *node = ft_list_pop(list);
-		while (NULL != node) {
-			__ft_htbl_v2_delete_node(node, f_del_content);
-			node = ft_list_pop(list);
-		}
+		ft_list_clear_all_ref(list);
 	}
 	LIBFT_FREE(htbl->arr);
 	htbl->size = 0;
+	// Delete values.
+	t_node_v2 *node = ft_list_pop(&htbl->values);
+	while (NULL != node) {
+		__ft_htbl_v2_delete_entry_node(node, f_del_content);
+		node = ft_list_pop(&htbl->values);
+	}
 }
 
 void ft_htbl_v2_del(t_htbl_v2 *htbl, t_func_content_del f_del_content)
@@ -654,11 +640,25 @@ void ft_htbl_v2_del(t_htbl_v2 *htbl, t_func_content_del f_del_content)
 
 bool ft_htbl_v2_next(const t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content)
 {
-	t_htbl_v2_entry *entry = NULL;
-	bool exists = __ft_htbl_v2_next_entry(htbl, next, &entry);
-	if (NULL != key) { *key = (exists) ? entry->key : NULL; }
-	if (NULL != content) { *content = (exists) ? entry->content : NULL; }
-	return (exists);
+	if (NULL != key) *key = NULL;
+	if (NULL != content) *content = NULL;
+
+	if (!next->init) {
+		next->node = htbl->values.first;
+		next->init = true;
+	}
+	t_node_v2 *node = next->node;
+	while (node) {
+		t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
+		if (entry->active) {
+			if (NULL != key) *key = entry->key;
+			if (NULL != content) *content = entry->content;
+			next->node = node->next;
+			return true;
+		}
+		node = node->next;
+	}
+	return false;
 }
 
 void ft_htbl_v2_resize(t_htbl_v2 *htbl, uint32_t size)
@@ -669,13 +669,15 @@ void ft_htbl_v2_resize(t_htbl_v2 *htbl, uint32_t size)
 	// Temporary new htable.
 	t_htbl_v2 *tmp_htbl = ft_htbl_v2_create(size);
 	t_htbl_v2_next next = {0};
-	t_htbl_v2_entry *entry = NULL;
-	while (__ft_htbl_v2_next_entry(htbl, &next, &entry)) {
+	const char *key = NULL;
+	void *value = NULL;
+	while (ft_htbl_v2_next(htbl, &next, &key, &value)) {
 		// Shallow copy the content.
-		ft_htbl_v2_set(tmp_htbl, entry->key, entry->content);
+		ft_htbl_v2_set(tmp_htbl, key, value);
 	}
-	// Cleanup current htable and then shallow copy the temporary htable to the current htable.
+	// Cleanup current htable without deleting content.
 	ft_htbl_v2_clear(htbl, NULL);
+	// Shallow copy the temporary htable array to the current htable.
 	htbl->arr = tmp_htbl->arr;
 	htbl->size = tmp_htbl->size;
 	LIBFT_FREE(tmp_htbl);
@@ -703,7 +705,8 @@ char *ft_htbl_v2_dumps(t_htbl_v2 *htbl)
 					if (commas++) {
 						ft_ostr_append_cstr(&ostring, ",");
 					}
-					t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
+					t_ref_node *ref = container_of(node, t_ref_node, base);
+					t_htbl_v2_entry *entry = ref->ptr;
 					ft_ostr_appendf(&ostring, "{\"idx\":%lu,\"key\":\"%s\",\"hash\":\"%#lx\",\"content\":\"%p\"}",
 						idx, entry->key, entry->hash, entry->content);
 				}

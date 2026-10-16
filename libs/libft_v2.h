@@ -43,6 +43,10 @@ t_node_v2	*ft_list_remove(t_list *list, t_node_v2 *node);
 t_node_v2 	*ft_list_at(t_list *list, size_t idx);
 void		ft_list_reverse(t_list *list);
 char 		*ft_list_dumps(t_list *list);
+void		ft_list_copy(const t_list *src, t_list *dst, t_func_node_copy f_copy);
+void		ft_list_move(t_list *src, t_list *dst);
+void		ft_list_clear(t_list *list, t_func_node_del f_del);
+void		ft_list_del(t_list *list, t_func_node_del f_del);
 
 /****************************************************************************/
 
@@ -52,10 +56,6 @@ void	*ft_list_pop_ref(t_list *list);
 bool	ft_list_next_ref(const t_list *list, t_list_next *next, void **ref);
 void	ft_list_clear_all_ref(t_list *list);
 void	ft_list_del_all_ref(t_list *list);
-void	ft_list_copy(const t_list *src, t_list *dst, t_func_node_copy f_copy);
-void	ft_list_move(t_list *src, t_list *dst);
-void	ft_list_clear(t_list *list, t_func_node_del f_del);
-void	ft_list_del(t_list *list, t_func_node_del f_del);
 
 /****************************************************************************/
 
@@ -80,11 +80,12 @@ typedef struct s_htbl_v2 {
 	t_list 		*arr;
 	uint32_t	size;
 	size_t		colls;
+	t_list		values;
 } t_htbl_v2;
 
 typedef struct s_htbl_v2_next {
-	uint32_t	idx;
-	size_t		nidx;
+	t_node_v2	*node;
+	bool		init;
 } t_htbl_v2_next;
 
 t_htbl_v2	*ft_htbl_v2_create(uint32_t size);
