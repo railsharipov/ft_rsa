@@ -106,27 +106,27 @@ typedef enum e_asn_v2_tag_class {
 } t_asn_v2_tag_class;
 
 typedef enum e_asn_v2_type_kind {
-	ASN_V2_TYPE_KIND_NULL = 0,
-	ASN_V2_TYPE_KIND_BOOLEAN,
-	ASN_V2_TYPE_KIND_INTEGER,
-	ASN_V2_TYPE_KIND_ENUMERATED,
-	ASN_V2_TYPE_KIND_BIT_STRING,
-	ASN_V2_TYPE_KIND_OCTET_STRING,
-	ASN_V2_TYPE_KIND_IA5_STRING,
-	ASN_V2_TYPE_KIND_UTF8_STRING,
-	ASN_V2_TYPE_KIND_NUMERIC_STRING,
-	ASN_V2_TYPE_KIND_PRINTABLE_STRING,
-	ASN_V2_TYPE_KIND_VISIBLE_STRING,
-	ASN_V2_TYPE_KIND_UTC_TIME,
-	ASN_V2_TYPE_KIND_OBJECT_ID,
-	ASN_V2_TYPE_KIND_OBJECT_DESCR,
-	ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID,
-	ASN_V2_TYPE_KIND_SEQUENCE,
-	ASN_V2_TYPE_KIND_SEQUENCE_OF,
-	ASN_V2_TYPE_KIND_SET,
-	ASN_V2_TYPE_KIND_SET_OF,
-	ASN_V2_TYPE_KIND_ANY,
-	ASN_V2_TYPE_KIND_CHOICE,
+	ASN_V2_TYPE_KIND_NULL				 = 0,
+	ASN_V2_TYPE_KIND_BOOLEAN			 = 1,
+	ASN_V2_TYPE_KIND_INTEGER			 = 2,
+	ASN_V2_TYPE_KIND_ENUMERATED			 = 3,
+	ASN_V2_TYPE_KIND_BIT_STRING			 = 4,
+	ASN_V2_TYPE_KIND_OCTET_STRING		 = 5,
+	ASN_V2_TYPE_KIND_IA5_STRING			 = 6,
+	ASN_V2_TYPE_KIND_UTF8_STRING		 = 7,
+	ASN_V2_TYPE_KIND_NUMERIC_STRING		 = 8,
+	ASN_V2_TYPE_KIND_PRINTABLE_STRING	 = 9,
+	ASN_V2_TYPE_KIND_VISIBLE_STRING		 = 10,
+	ASN_V2_TYPE_KIND_UTC_TIME			 = 11,
+	ASN_V2_TYPE_KIND_OBJECT_ID			 = 12,
+	ASN_V2_TYPE_KIND_OBJECT_DESCR		 = 13,
+	ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID	 = 14,
+	ASN_V2_TYPE_KIND_SEQUENCE			 = 15,
+	ASN_V2_TYPE_KIND_SEQUENCE_OF		 = 16,
+	ASN_V2_TYPE_KIND_SET				 = 17,
+	ASN_V2_TYPE_KIND_SET_OF				 = 18,
+	ASN_V2_TYPE_KIND_ANY				 = 19,
+	ASN_V2_TYPE_KIND_CHOICE				 = 20,
 } t_asn_v2_type_kind;
 
 typedef enum t_asn_v2_universal_tag_number {
@@ -313,6 +313,8 @@ typedef struct s_der_v2_tag {
 
 typedef struct s_der_v2_value {
 	t_asn_v2_type_kind	kind;
+	struct { t_der_v2_tag *items; size_t count; } explicit_tags;
+	struct { t_der_v2_tag *items; size_t count; } implicit_tags;
 	union {
 		t_ostring	ostring;
 		char		*cstring;
@@ -355,5 +357,7 @@ char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, int depth, size
 
 int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value **der_value);
+
+int der_v2_generic_encode(uint8_t **encoded, size_t *encsize, const t_der_v2_value *der_value);
 
 #endif

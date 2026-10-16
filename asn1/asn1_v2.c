@@ -2275,7 +2275,6 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_module *asn1_module, const t_as
 		size_t scanned = 0;
 		int matches = textutil_sscanf(s, slen, "%2d%2d%2d%2d%2d%2d%c%zn", t, t+1, t+2, t+3, t+4, t+5, &z, &scanned);
 		if (matches != 7 || scanned != slen) goto label_error;
-		SSL_LOG(WARN, "t[1]=%d", t[1]);
 		if (t[1] < 1 || t[1] > 12) goto label_error;
 		if (t[2] < 1 || t[2] > 31) goto label_error;
 		if (t[3] < 0 || t[3] > 23) goto label_error;
@@ -3190,6 +3189,7 @@ int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled
 
 static t_der_v2_tag *__der_v2_tag_create(void);
 static void __der_v2_tag_delete(t_der_v2_tag *der_tag);
+static inline void __der_v2_tag_copy(const t_der_v2_tag *src, t_der_v2_tag *dst);
 
 static t_der_v2_value *__der_v2_value_create(void);
 static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst);
@@ -3218,6 +3218,11 @@ static t_der_v2_tag *__der_v2_tag_create(void)
 static inline void __der_v2_tag_delete(t_der_v2_tag *der_tag)
 {
 	SSL_FREE(der_tag);
+}
+
+static inline void __der_v2_tag_copy(const t_der_v2_tag *src, t_der_v2_tag *dst)
+{
+	*dst = *src;
 }
 
 static inline bool __der_v2_tag_eq(const t_der_v2_tag *a, const t_der_v2_tag *b)
@@ -3303,6 +3308,20 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 		SSL_LOG(ERROR, "unknown der value type: %d", src->kind);
 	}}
 	dst->kind = src->kind;
+	if (src->explicit_tags.count > 0) {
+		SSL_ALLOC(dst->explicit_tags.items, src->explicit_tags.count * sizeof(t_der_v2_tag));
+		dst->explicit_tags.count = src->explicit_tags.count;
+		for (size_t i = 0; i < src->explicit_tags.count; i++) {
+			__der_v2_tag_copy(src->explicit_tags.items + i, dst->explicit_tags.items + i);
+		}
+	}
+	if (src->implicit_tags.count > 0) {
+		SSL_ALLOC(dst->implicit_tags.items, src->implicit_tags.count * sizeof(t_der_v2_tag));
+		dst->implicit_tags.count = src->implicit_tags.count;
+		for (size_t i = 0; i < src->implicit_tags.count; i++) {
+			__der_v2_tag_copy(src->implicit_tags.items + i, dst->implicit_tags.items + i);
+		}
+	}
 }
 
 static void __der_v2_value_clear(t_der_v2_value *der_value)
@@ -3371,6 +3390,8 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 	default: {
 		SSL_LOG(ERROR, "unknown der value type: %d", der_value->kind);
 	}}
+	SSL_FREE(der_value->explicit_tags.items);
+	SSL_FREE(der_value->implicit_tags.items);
 }
 
 static void __der_v2_value_delete(t_der_v2_value *der_value)
@@ -3949,6 +3970,28 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 		ft_ostr_append_cstr(&ostring, "\"???\"");
 		break;
 	}}
+	if (der_value->explicit_tags.count > 0) {
+		ft_ostr_append_cstr(&ostring, ",\"explicit_tags\":[");
+		size_t commas = 0;
+		for (size_t i = 0; i < der_value->explicit_tags.count; i++) {
+			if (commas++) ft_ostr_append_cstr(&ostring, ",");
+			char *dumps = __der_v2_tag_dumps(der_value->explicit_tags.items + i);
+			ft_ostr_append_cstr(&ostring, dumps);
+			SSL_FREE(dumps);
+		}
+		ft_ostr_append_cstr(&ostring, "]");
+	}
+	if (der_value->implicit_tags.count > 0) {
+		ft_ostr_append_cstr(&ostring, ",\"implicit_tags\":[");
+		size_t commas = 0;
+		for (size_t i = 0; i < der_value->implicit_tags.count; i++) {
+			if (commas++) ft_ostr_append_cstr(&ostring, ",");
+			char *dumps = __der_v2_tag_dumps(der_value->implicit_tags.items + i);
+			ft_ostr_append_cstr(&ostring, dumps);
+			SSL_FREE(dumps);
+		}
+		ft_ostr_append_cstr(&ostring, "]");
+	}
 	ft_ostr_append_cstr(&ostring, "}");
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
@@ -4323,6 +4366,8 @@ int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value
 
 static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_value)
 {
+	t_list explicit_tags = {0};
+	t_list implicit_tags = {0};
 	bool done = false;
 	while (!done) {
 		SSL_LOG(TRACE, "tlv: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv.tag.class, tlv.tag.number, tlv.tag.constructed, tlv.length, tlv.value);
@@ -4352,9 +4397,12 @@ static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_
 			goto label_error;
 		}
 		case ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC: {
+			t_der_v2_tag *tag = __der_v2_tag_create();
+			__der_v2_tag_copy(&tlv.tag, tag);
 			if (tlv.tag.constructed) {
-				// This is in external tag with nested TLV. Unwrap nested TLV.
 				SSL_LOG(TRACE, "context-specific: nested tlv");
+				ft_list_append_content(&explicit_tags, tag);
+				// This is in external tag with nested TLV. Unwrap nested TLV.
 				t_der_v2_tlv nested_tlv = {0};
 				if (!__der_v2_next_tlv(tlv.value, tlv.length, &nested_tlv)) {
 					SSL_LOG(ERROR, "context-specific: bad nested tlv read");
@@ -4367,6 +4415,7 @@ static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_
 			}
 			else {
 				SSL_LOG(TRACE, "context-specific: implicit tag");
+				ft_list_append_content(&implicit_tags, tag);
 				// We don't know how to decode the value and we have no type metadata.
 				{
 					t_der_v2_value *dvalue = __der_v2_value_create();
@@ -4387,9 +4436,26 @@ static int __der_v2_generic_decode_value(t_der_v2_tlv tlv, t_der_v2_value **der_
 			goto label_error;
 		}}
 	}
+	t_der_v2_value *dvalue = *der_value;
+	dvalue->explicit_tags.count = explicit_tags.size;
+	SSL_ALLOC(dvalue->explicit_tags.items, explicit_tags.size * sizeof(t_asn_v2_tag));
+	for (size_t i = 0; i < explicit_tags.size; i++) {
+		t_der_v2_tag *tag = ft_list_pop_content(&explicit_tags);
+		dvalue->explicit_tags.items[i] = *tag;
+		__der_v2_tag_delete(tag);
+	}
+	dvalue->implicit_tags.count = implicit_tags.size;
+	SSL_ALLOC(dvalue->implicit_tags.items, implicit_tags.size * sizeof(t_asn_v2_tag));
+	for (size_t i = 0; i < implicit_tags.size; i++) {
+		t_der_v2_tag *tag = ft_list_pop_content(&implicit_tags);
+		dvalue->implicit_tags.items[i] = *tag;
+		__der_v2_tag_delete(tag);
+	}
 	return (SSL_OK);
 
 label_error:
+	ft_list_clear_all_content(&explicit_tags, __asn1_v2_tag_delete_adapter);
+	ft_list_clear_all_content(&implicit_tags, __asn1_v2_tag_delete_adapter);
 	return (SSL_ERR);
 }
 
@@ -4628,7 +4694,7 @@ static int	__der_v2_generic_decode_bit_string(t_der_v2_tlv tlv, t_der_v2_value *
 	SSL_LOG(TRACE, "bit string: unused bits: %u", tlv.value[0]);
 	// TODO: check last value octet: unused octet bits must be unset.
 	t_der_v2_value *dvalue = __der_v2_value_create();
-	dvalue->kind = ASN_V2_TYPE_KIND_OCTET_STRING;
+	dvalue->kind = ASN_V2_TYPE_KIND_BIT_STRING;
 	ft_ostr_init_with_capacity(&dvalue->as.ostring, tlv.length);
 	ft_ostr_append(&dvalue->as.ostring, tlv.value, tlv.length);
 
@@ -4837,12 +4903,14 @@ static int	__der_v2_decode_visible_string(t_der_v2_tlv tlv, const t_der_v2_type 
 static int	__der_v2_decode_octet_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_bit_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_utf8_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_utc_time(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_set(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_null(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_relative_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 
 static struct s_der_v2_decode {
 	t_func_der_v2_decode f_decode;
@@ -4861,7 +4929,7 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ NULL, "ENUMERATED" },
 	/* ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11 */	{ NULL, "EMBEDDED_PDV" },
 	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ __der_v2_decode_utf8_string, "UTF8_STRING" },
-	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ NULL, "RELATIVE_OBJECT_ID" },
+	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ __der_v2_decode_relative_object_id, "RELATIVE_OBJECT_ID" },
 	/* ASN_V2_TAG_NUMBER_TIME               = 14 */	{ NULL, "TIME" },
 	/* ASN_V2_TAG_NUMBER_RESERVED_15        = 15 */	{ NULL, "RESERVED_15" },
 	/* ASN_V2_TAG_NUMBER_SEQUENCE(_OF)      = 16 */	{ __der_v2_decode_sequence, "SEQUENCE" },
@@ -4871,7 +4939,7 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_TELETEX_STRING     = 20 */	{ NULL, "TELETEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ __der_v2_decode_ia5_string, "IA5_STRING" },
-	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ NULL, "UTC_TIME" },
+	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ __der_v2_decode_utc_time, "UTC_TIME" },
 	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
 	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ __der_v2_decode_visible_string, "VISIBLE_STRING" },
@@ -5289,4 +5357,578 @@ static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_
 {
 	UNUSED(der_type);
 	return (__der_v2_generic_decode_object_id(tlv, der_value));
+}
+
+static int	__der_v2_decode_relative_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	UNUSED(der_type);
+	return (__der_v2_generic_decode_relative_object_id(tlv, der_value));
+}
+
+static int	__der_v2_decode_utc_time(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	UNUSED(der_type);
+	return (__der_v2_generic_decode_utc_time(tlv, der_value));
+}
+
+/****************************************************************************/
+/****************************************************************************/
+/****************************************************************************/
+
+typedef int (*t_func_der_v2_generic_encode)(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+
+static int	__der_v2_generic_encode_value(t_ostring *ostring, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_choice(t_ostring *ostring, const t_der_v2_value *der_value);
+
+static int	__der_v2_generic_encode_sequence(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_set(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_ia5_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_printable_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_numeric_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_visible_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_utc_time(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_octet_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_bit_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_utf8_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_boolean(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_null(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_integer(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_enumerated(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_object_id(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_relative_object_id(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+
+static int __der_v2_write_tlv(t_ostring *ostring, t_der_v2_tlv tlv)
+{
+	SSL_LOG(TRACE, "writing tlv: tag={class=%d,number=%d,constructed=%d}, length:%zu, content=%p", tlv.tag.class, tlv.tag.number, tlv.tag.constructed, tlv.length, tlv.value);
+
+	// {
+	// 	// For debugging.
+	// 	const char *type_name = "unknown";
+	// 	if (tlv.tag.number < DER_V2_GENERIC_DECODE_TYPE_COUNT) {
+	// 		type_name = DER_V2_GENERIC_DECODE_TYPE_MAP[tlv.tag.number].name;
+	// 	}
+	// 	char *dumps = ft_bytes_dumps_hex(tlv.value, tlv.length);
+	// 	SSL_LOG(WARN, "writing %s content octets: %s", type_name, dumps);
+	// }
+
+	ssize_t wbytes = 0;
+	uint8_t octet = 0;
+
+	// Set tag class bits.
+	octet |= (tlv.tag.class & 0x3)<<6;
+	// Set constructedness bit.
+	octet |= ((uint8_t)tlv.tag.constructed)<<5;
+
+	// Set length bits.
+	if (tlv.tag.number <= 30) {
+		// Simple tag: tag number fit into last 5 bits of the first octet.
+		octet |= (uint8_t)tlv.tag.number;
+		ft_ostr_append(ostring, &octet, 1);
+		wbytes++;
+	}
+	else {
+		// Complex tag: set all of the last 5 bits of the first octet.
+		// The tag number octets must then be written in consecutive octets.
+		octet |= 0x1F;
+		ft_ostr_append(ostring, &octet, 1);
+		wbytes++;
+		// Get number of octets required to store tag number bits.
+		int nbits = ft_uint_lmbit(tlv.tag.number, 8*sizeof(tlv.tag.number));
+		int nbytes = CEIL_DIV(nbits, 7);
+		// Assuming this machine uses little-ENDian and since tag number must be big-ENDian, write tag number octets backwards.
+		// Every consecutive octet except the last must have most significant bit set.
+		uint8_t buf[nbytes];
+		uint8_t msbit = 0x0;
+		uint32_t tagnum = tlv.tag.number;
+		for (int i = nbytes-1; i >= 0; i++) {
+			buf[i--] = (0x7F & tagnum) | msbit;
+			tagnum >>= 7;
+			msbit = 0x80;
+		}
+		ft_ostr_append(ostring, buf, nbytes);
+		wbytes += nbytes;
+	}
+
+	// Write length octets.
+	if (tlv.length < 128) {
+		// Short length form.
+		octet = (uint8_t)tlv.length;
+		ft_ostr_append(ostring, &octet, 1);
+		wbytes++;
+	}
+	else {
+		// SSL_LOG(WARN, "writing long form length: %zu", tlv.length);
+		// Long length form.
+        // First octet must store number of length octets and its most significant bit must be set.
+		int nbits = ft_uint_lmbit(tlv.length, 8 * sizeof(tlv.length));
+        int nbytes = CEIL_DIV(nbits, 8);
+  		octet = (uint8_t)nbytes | 0x80;
+		ft_ostr_append(ostring, &octet, 1);
+		wbytes++;
+		// Assuming this machine uses little-ENDian and since length must be big-ENDian, write tag number octets backwards.
+		uint8_t buf[nbytes];
+		size_t len = tlv.length;
+		for (int i = nbytes-1; i >= 0; i--) {
+			buf[i] = 0xFF & len;
+			len >>= 8;
+		}
+		// {
+		// 	char *dumps = ft_bytes_dumps_hex(buf, nbytes);
+		// 	SSL_LOG(CRIT, "writing long form length octets: %s", dumps);
+		// }
+		ft_ostr_append(ostring, buf, nbytes);
+		wbytes += nbytes;
+	}
+
+	// Write content contents.
+	ft_ostr_append(ostring, tlv.value, tlv.length);
+	wbytes += tlv.length;
+	SSL_LOG(TRACE, "wrote %zu tlv bytes", wbytes);
+
+	// {
+	// 	// For debugging.
+	// 	const char *type_name = "unknown";
+	// 	if (tlv.tag.number < DER_V2_GENERIC_DECODE_TYPE_COUNT) {
+	// 		type_name = DER_V2_GENERIC_DECODE_TYPE_MAP[tlv.tag.number].name;
+	// 	}
+	// 	char *dumps = ft_bytes_dumps_hex((ostring->content+ostring->size)-wbytes, wbytes);
+	// 	SSL_LOG(WARN, "wrote %s tlv octets: %s", type_name, dumps);
+	// }
+
+	return (SSL_OK);
+}
+
+int der_v2_generic_encode(uint8_t **encoded, size_t *encsize, const t_der_v2_value *der_value)
+{
+	if (NULL == encoded || NULL == encsize || NULL == der_value) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
+	}
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 1024);
+	if (SSL_OK != __der_v2_generic_encode_value(&ostring, der_value)) {
+		SSL_LOG(ERROR, "bad encode");
+		return (SSL_ERR);
+	}
+	ft_ostr_unwrap_content(&ostring, encoded, encsize);
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_value(t_ostring *ostring, const t_der_v2_value *der_value)
+{
+	t_func_der_v2_generic_encode f_encode = NULL;
+
+	switch (der_value->kind) {
+	case ASN_V2_TYPE_KIND_NULL: {
+		f_encode = __der_v2_generic_encode_null;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_BOOLEAN: {
+		f_encode = __der_v2_generic_encode_boolean;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_INTEGER: {
+		f_encode = __der_v2_generic_encode_integer;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_ENUMERATED: {
+		f_encode = __der_v2_generic_encode_enumerated;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_BIT_STRING: {
+		f_encode = __der_v2_generic_encode_bit_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_OCTET_STRING: {
+		f_encode = __der_v2_generic_encode_octet_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_IA5_STRING: {
+		f_encode = __der_v2_generic_encode_ia5_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_UTF8_STRING: {
+		f_encode = __der_v2_generic_encode_utf8_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING: {
+		f_encode = __der_v2_generic_encode_numeric_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: {
+		f_encode = __der_v2_generic_encode_printable_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING: {
+		f_encode = __der_v2_generic_encode_visible_string;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_UTC_TIME: {
+		f_encode = __der_v2_generic_encode_utc_time;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_OBJECT_ID: {
+		f_encode = __der_v2_generic_encode_object_id;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
+		NOT_IMPLEMENTED("ASN_V2_TYPE_KIND_OBJECT_DESCR");
+	}
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID: {
+		f_encode = __der_v2_generic_encode_relative_object_id;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_SEQUENCE: {
+		f_encode = __der_v2_generic_encode_sequence;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_SEQUENCE_OF: {
+		f_encode = __der_v2_generic_encode_sequence;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_SET: {
+		f_encode = __der_v2_generic_encode_set;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_SET_OF: {
+		f_encode = __der_v2_generic_encode_set;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_ANY: {
+		SSL_LOG(ERROR, "encoding ANY is not supported");
+		return (SSL_ERR);
+	}
+	case ASN_V2_TYPE_KIND_CHOICE: {
+		return (__der_v2_generic_encode_choice(ostring, der_value));
+	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 type: %d", der_value->kind);
+		return (SSL_ERR);
+	}}
+
+	uint8_t *encoded = NULL;
+	size_t size = 0;
+	if (SSL_OK != f_encode(&encoded, &size, der_value)) {
+		SSL_LOG(ERROR, "der generic encode error");
+		return (SSL_ERR);
+	}
+
+	t_ostring tmp = {0};
+	t_der_v2_tlv tlv = {0};
+	if (der_value->implicit_tags.count > 0) {
+		tlv.tag = der_value->implicit_tags.items[0];
+	} else {
+		tlv.tag = __der_v2_get_tag_universal(der_value->kind);
+	}
+	tlv.length = size;
+	tlv.value = encoded;
+
+	if (SSL_OK != __der_v2_write_tlv(&tmp, tlv)) {
+		SSL_LOG(ERROR, "der generic encode write error");
+		goto label_error;
+	}
+	ft_ostr_unwrap_content(&tmp, &encoded, &size);
+
+	if (der_value->explicit_tags.count > 0) {
+		for (size_t i = 0; i < der_value->explicit_tags.count; i++) {
+			// Reverse order: we want the most inner tag first.
+			t_der_v2_tag tag = der_value->explicit_tags.items[der_value->explicit_tags.count-1-i];
+			tlv = (t_der_v2_tlv){.tag = tag, .length = size, .value = encoded};
+			if (SSL_OK != __der_v2_write_tlv(&tmp, tlv)) {
+				SSL_LOG(ERROR, "der generic encode write error");
+				ft_ostr_clear(&tmp);
+				goto label_error;
+			}
+			SSL_FREE(encoded);
+			ft_ostr_unwrap_content(&tmp, &encoded, &size);
+		}
+	}
+
+	ft_ostr_append(ostring, encoded, size);
+	SSL_FREE(encoded);
+	return (SSL_OK);
+
+label_error:
+	SSL_FREE(encoded);
+	return (SSL_ERR);
+}
+
+static int	__der_v2_generic_encode_choice(t_ostring *ostring, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "choice: encoding");
+	if (SSL_OK != __der_v2_generic_encode_value(ostring, der_value->as.choice.value)) {
+		SSL_LOG(ERROR, "choice: alternative encode error");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_sequence(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "sequence: encoding");
+	t_ostring ostring = {0};
+	for (size_t i = 0; i < der_value->as.composite.count; i++) {
+		if (SSL_OK != __der_v2_generic_encode_value(&ostring, der_value->as.composite.items + i)) {
+			SSL_LOG(ERROR, "sequence: element encode error");
+			return (SSL_ERR);
+		}
+	}
+	ft_ostr_unwrap_content(&ostring, encoded, size);
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_set(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "set: encoding");
+	t_ostring ostring = {0};
+	for (size_t i = 0; i < der_value->as.composite.count; i++) {
+		if (SSL_OK != __der_v2_generic_encode_value(&ostring, der_value->as.composite.items + i)) {
+			SSL_LOG(ERROR, "set: element encode error");
+			return (SSL_ERR);
+		}
+	}
+	ft_ostr_unwrap_content(&ostring, encoded, size);
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_ia5_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "ia5 string: encoding");
+	const char *s = der_value->as.cstring;
+	size_t slen = ft_strlen(s);
+	for (size_t i = 0; i < slen; i++) {
+		if (!ft_isascii((int)s[i])) {
+			SSL_LOG(ERROR, "ia5 string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	*encoded = (uint8_t *)ft_strdup(s);
+	*size = slen;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_printable_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "printable string: encoding");
+	const char *s = der_value->as.cstring;
+	size_t slen = ft_strlen(s);
+	for (size_t i = 0; i < slen; i++) {
+		if (!ft_isprint((int)s[i])) {
+			SSL_LOG(ERROR, "printable string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	*encoded = (uint8_t *)ft_strdup(s);
+	*size = slen;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_numeric_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "numeric string: encoding");
+	const char *s = der_value->as.cstring;
+	size_t slen = ft_strlen(s);
+	for (size_t i = 0; i < slen; i++) {
+		if (!ft_isdigit((int)s[i]) && s[i] != ' ') {
+			SSL_LOG(ERROR, "numeric string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	*encoded = (uint8_t *)ft_strdup(s);
+	*size = slen;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_visible_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "visible string: encoding");
+	const char *s = der_value->as.cstring;
+	size_t slen = ft_strlen(s);
+	for (size_t i = 0; i < slen; i++) {
+		if (!ft_isprint((int)s[i])) {
+			SSL_LOG(ERROR, "visible string: bad value");
+			return (SSL_ERR);
+		}
+	}
+	*encoded = (uint8_t *)ft_strdup(s);
+	*size = slen;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_utc_time(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	const char *expected_fmt = "YYMMDDhhmmssZ";
+	size_t expected_len = ft_strlen(expected_fmt);
+
+	SSL_LOG(TRACE, "utc time: encoding");
+
+	const char *s = der_value->as.cstring;
+	size_t slen = ft_strlen(s);
+
+	if (slen != expected_len || s[slen-1] != 'Z') goto label_error;
+
+	for (size_t i = 0; i < slen-1; i++) {
+		if (!ft_isdigit((int)s[i])) goto label_error;
+	}
+
+	int t[6] = {0};
+	char z = 0;
+	size_t scanned = 0;
+	int matches = textutil_sscanf(s, slen, "%2d%2d%2d%2d%2d%2d%c%zn", t, t+1, t+2, t+3, t+4, t+5, &z, &scanned);
+	if (matches != 7 || scanned != slen) goto label_error;
+	if (t[1] < 1 || t[1] > 12) goto label_error;
+	if (t[2] < 1 || t[2] > 31) goto label_error;
+	if (t[3] < 0 || t[3] > 23) goto label_error;
+	if (t[4] < 0 || t[4] > 59) goto label_error;
+	if (t[5] < 0 || t[5] > 59) goto label_error;
+	if (z != 'Z') goto label_error;
+
+	*encoded = (uint8_t *)ft_strdup(s);
+	*size = slen;
+	return (SSL_OK);
+
+label_error:
+	SSL_LOG(ERROR, "utc time: bad value");
+	return (SSL_ERR);
+}
+
+static int	__der_v2_generic_encode_octet_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "octet string: encoding");
+	*encoded = ft_memdup(der_value->as.ostring.content, der_value->as.ostring.size);
+	*size = der_value->as.ostring.size;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_bit_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "bit string: encoding");
+	if (der_value->as.ostring.size < 1) {
+		SSL_LOG(ERROR, "bit string: bad length");
+		return (SSL_ERR);
+	}
+	SSL_LOG(TRACE, "bit string: unused bits: %u", der_value->as.ostring.content[0]);
+	*encoded = ft_memdup(der_value->as.ostring.content, der_value->as.ostring.size);
+	*size = der_value->as.ostring.size;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_utf8_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "utf8s string: encoding");
+
+	if (!utf8_is_valid(der_value->as.ostring.content, der_value->as.ostring.size)) {
+		SSL_LOG(ERROR, "utf8 string: bad value");
+		return (SSL_ERR);
+	}
+	*encoded = ft_memdup(der_value->as.ostring.content, der_value->as.ostring.size);
+	*size = der_value->as.ostring.size;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_boolean(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "boolean: encoding");
+
+	uint8_t octet = 0x0;
+	if (der_value->as.boolean == true) {
+		octet = 0xFF;
+	}
+	*encoded = ft_memdup(&octet, 1);
+	*size = 1;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_null(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "null: encoding");
+	*encoded = NULL;
+	*size = 0;
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_integer(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "integer: encoding");
+	bnum_to_bytes(&der_value->as.number, encoded, size);
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_enumerated(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "enumerated: encoding");
+	bnum_to_bytes(&der_value->as.enumerated.number, encoded, size);
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_object_id(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "object id: encoding");
+	const t_asn_v2_oid *oid = &der_value->as.object_id;
+	if (oid->narcs < 2) {
+		SSL_LOG(ERROR, "object id: bad value");
+		return (SSL_ERR);
+	}
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, oid->narcs * sizeof(*oid->arc_nums));
+
+	size_t num_count = oid->narcs-1;
+	size_t nums[num_count];
+	nums[0] = 40 * oid->arc_nums[0] + oid->arc_nums[1];
+
+	for (size_t i = 1; i < num_count; i++) {
+		nums[i] = oid->arc_nums[i+1];
+	}
+
+	for (int i = 0; i < num_count; i++) {
+		uint32_t num = nums[i];
+		int nbits = ft_uint_lmbit(num, 8 * sizeof(num));
+		int nbytes = NBITS_TO_NWORDS(nbits, 7);
+
+		uint8_t num_enc[nbytes];
+		ssize_t idx = nbytes;
+
+		num_enc[--idx] = 0x7F & num;
+		num >>= 7;
+		while (num != 0) {
+			num_enc[--idx] = (0x7F & num) | 0x80;
+			num >>= 7;
+		}
+		ft_ostr_append(&ostring, num_enc, nbytes);
+	}
+	ft_ostr_unwrap_content(&ostring, encoded, size);
+	return (SSL_OK);
+}
+
+static int	__der_v2_generic_encode_relative_object_id(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	SSL_LOG(TRACE, "relative object id: encoding");
+	const t_asn_v2_oid *oid = &der_value->as.object_id;
+	if (oid->narcs < 1) {
+		SSL_LOG(ERROR, "relatobject id: bad value");
+		return (SSL_ERR);
+	}
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, oid->narcs * sizeof(*oid->arc_nums));
+
+	size_t num_count = oid->narcs;
+	const size_t *nums = oid->arc_nums;
+	for (int i = 0; i < num_count; i++) {
+		uint32_t num = nums[i];
+		int nbits = ft_uint_lmbit(num, 8 * sizeof(num));
+		int nbytes = NBITS_TO_NWORDS(nbits, 7);
+
+		uint8_t num_enc[nbytes];
+		ssize_t idx = nbytes;
+
+		num_enc[--idx] = 0x7F & num;
+		num >>= 7;
+		while (num != 0) {
+			num_enc[--idx] = (0x7F & num) | 0x80;
+			num >>= 7;
+		}
+		ft_ostr_append(&ostring, num_enc, nbytes);
+	}
+	ft_ostr_unwrap_content(&ostring, encoded, size);
+	return (SSL_OK);
 }
