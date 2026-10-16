@@ -15,13 +15,17 @@ void	bnum_init_from_bytes(t_num *num, const uint8_t *buf, int bufsize)
 	if (is_neg) {
 		// Find msbit position in msbyte, counting from 1.
 		int nbits = bnum_lmbit(num);
+		int old_len = num->len;
 		if (nbits % BNUM_DIGIT_BIT > 0) {
 			// We must ensure all bits higer than current msbit are set.
-			num->val[num->len-1] |= ~(((uint64_t)1u << nbits)-1u);
+			num->val[num->len-1] |= (~(((uint64_t)1u << nbits)-1u)) & BNUM_MAX_VAL;
 		}
 		// 2's complement = (~n)+1
 		bnum_inv_bits(num, num);
 		bnum_add_dig_u(num, 1, num);
+		// We must ensure all bits higer than old msbit are unset.
+		num->len = old_len;
+		num->val[num->len-1] &= (((uint64_t)1u << nbits)-1u) & BNUM_MAX_VAL;
 		num->sign = BNUM_NEG;
 	}
 }
