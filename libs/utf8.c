@@ -99,11 +99,7 @@ bool utf8_escape(const uint8_t *bytes, size_t size, uint8_t **escaped, size_t *e
 		}
 		ft_ostr_append(&ostring, bytes+cur, next-cur);
 	}
-	void *content = NULL;
-	size_t content_size = 0;
-	ft_ostr_unwrap_content(&ostring, &content, &content_size);
-	*escaped = content;
-	*escaped_size = content_size;
+	ft_ostr_unwrap_content(&ostring, escaped, escaped_size);
 	return true;
 }
 

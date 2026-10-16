@@ -12,7 +12,7 @@ int rsa_os2i(t_num *num, unsigned char *octets, size_t osize)
 
 int rsa_i2os(t_num *num, unsigned char **octets, size_t osize)
 {
-	char	*nstr;
+	uint8_t	*nstr;
 	size_t	nsize;
 
 	SSL_ALLOC(*octets, osize);

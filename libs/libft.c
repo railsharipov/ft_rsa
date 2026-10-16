@@ -3547,7 +3547,7 @@ void	ft_ostr_borrow_content(t_ostring *ostring, void *content, size_t size)
 	}
 }
 
-void	ft_ostr_unwrap_content(t_ostring *ostring, void **content, size_t *size)
+void	ft_ostr_unwrap_content(t_ostring *ostring, uint8_t **content, size_t *size)
 {
 	if (NULL == ostring) {
 		return;

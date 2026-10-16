@@ -430,7 +430,7 @@ int	get_next_line(int fd, char **line);
 #define OSTRING_INIT_CAPACITY 16
 
 typedef	struct s_ostring {
-	unsigned char	*content;
+	uint8_t	*content;
 	size_t	size;
 	size_t	capacity;
 } t_ostring;
@@ -443,7 +443,7 @@ void 		ft_ostr_init_with_capacity(t_ostring *ostring, size_t capacity);
 void		ft_ostr_init_from(t_ostring *ostring, const void *content, size_t size);
 void		ft_ostr_init_from_cstr(t_ostring *ostring, const char *cstr);
 void		ft_ostr_borrow_content(t_ostring *ostring, void *content, size_t size);
-void		ft_ostr_unwrap_content(t_ostring *ostring, void **content, size_t *size);
+void		ft_ostr_unwrap_content(t_ostring *ostring, uint8_t **content, size_t *size);
 void		ft_ostr_clear(t_ostring *ostring);
 void		ft_ostr_del(t_ostring *ostring);
 void		ft_ostr_copy(const t_ostring *src, t_ostring *dst);

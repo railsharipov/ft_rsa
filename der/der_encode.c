@@ -411,15 +411,15 @@ static int	__encode_int(uint8_t tag, t_ostring *encoded, t_ostring *data)
 		SSL_LOG(ERROR, "invalid integer type: negative integer encoding is not implemented");
 		return (SSL_ERR);
 	}
-	char *buf = NULL;
+	uint8_t *buf = NULL;
 	size_t size = 0;
 	bnum_to_bytes_u(num, &buf, &size);
 	// If a positive integer's most significant bit of its first byte is 1, it must be prefixed with a 0x00 byte
-	if (size > 0 && (((uint8_t *)buf)[0] & 0x80)) {
+	if (size > 0 && (buf[0] & 0x80)) {
 		uint8_t	byte = 0x00;
-		ft_ostr_append(encoded, (char *)&byte, sizeof(byte));
+		ft_ostr_append(encoded, &byte, sizeof(byte));
 	}
-	ft_ostr_append(encoded, (char *)buf, size);
+	ft_ostr_append(encoded, buf, size);
 	SSL_FREE(buf);
 
 	SSL_LOG(TRACE, "integer encoded successfully");
