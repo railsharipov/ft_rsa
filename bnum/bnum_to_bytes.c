@@ -9,7 +9,7 @@ void	bnum_to_bytes(const t_num *num, uint8_t **bin, size_t *binsize)
 	}
 	if (BNUM_ZERO(num)) {
 		BNUM_ALLOC(*bin, 1);
-		*bin = 0;
+		**bin = 0;
 		*binsize = 1;
 		return;
 	}
