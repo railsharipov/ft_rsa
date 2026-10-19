@@ -295,8 +295,6 @@ const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
 const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
 
-int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module);
-
 int		asn1_v2_oid_tree_create(const char *filename, t_node_v2 **tree);
 void	asn1_v2_oid_tree_delete(t_node_v2 *tree);
 

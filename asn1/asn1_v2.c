@@ -2048,6 +2048,10 @@ static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *d
 static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_type **asn1_type, const t_json_v2 *jtype);
 static int	__asn1_v2_schema_parse_value(t_asn_v2_module *asn1_module, const t_asn_v2_type *asn1_type, t_asn_v2_value **asn1_value, const t_json_v2 *jvalue);
 
+static int	__asn1_v2_type_resolve_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_type *asn1_type);
+static int	__asn1_v2_component_resolve_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_component *asn1_component);
+static int	__asn1_v2_module_resolve_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module);
+
 static bool __asn1_v2_is_symbol_name(const char *s)
 {
 	if (NULL == s) return false;
@@ -2177,6 +2181,69 @@ label_error:
 	*asn1_symbol = NULL;
 	symbol->state = ASN_V2_SYMBOL_STATE_ERROR;
 	return (SSL_ERR);
+}
+
+/****************************************************************************/
+
+static int	__asn1_v2_type_resolve_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_type *asn1_type)
+{
+	switch (asn1_type->kind) {
+	case ASN_V2_TYPE_KIND_SEQUENCE:
+	case ASN_V2_TYPE_KIND_CHOICE:
+	case ASN_V2_TYPE_KIND_SET: {
+		bool has_tagged_component = false;
+		void *content = NULL;
+		t_list_next next = {0};
+		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
+			t_asn_v2_component *component = content;
+			assert(NULL != component->type);
+			if (component->type->tags.size > 0) has_tagged_component = true;
+			if (SSL_OK != __asn1_v2_type_resolve_automatic_tags(asn1_module, component->type)) {
+				return (SSL_ERR);
+			}
+		}
+		if (ASN_V2_TAG_MODE_AUTOMATIC == asn1_module->tag_mode && !has_tagged_component) {
+			// We must tag types for all components: implicit for SEQUENCE/SET or explicit for CHOICE.
+			uint32_t tag_number = 0;
+			next = (t_list_next){0};
+			while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
+				t_asn_v2_component *component = content;
+				t_asn_v2_tag *tag = __asn1_v2_tag_create();
+				tag->mode = (asn1_type->kind == ASN_V2_TYPE_KIND_CHOICE) ? ASN_V2_TAG_MODE_IMPLICIT : ASN_V2_TAG_MODE_EXPLICIT;
+				tag->class = ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC;
+				tag->number = tag_number;
+				ft_list_append_content(&component->type->tags, tag);
+				tag_number++;
+			}
+		}
+		return (SSL_OK);
+	}
+	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
+	case ASN_V2_TYPE_KIND_SET_OF: {
+		return (__asn1_v2_type_resolve_automatic_tags(asn1_module, asn1_type->as.collection.element_type));
+	}
+	case ASN_V2_TYPE_KIND_ANY:
+	case ASN_V2_TYPE_KIND_BIT_STRING:
+	case ASN_V2_TYPE_KIND_INTEGER:
+	case ASN_V2_TYPE_KIND_ENUMERATED:
+	case ASN_V2_TYPE_KIND_BOOLEAN:
+	case ASN_V2_TYPE_KIND_OCTET_STRING:
+	case ASN_V2_TYPE_KIND_IA5_STRING:
+	case ASN_V2_TYPE_KIND_UTF8_STRING:
+	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
+	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
+	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_NULL:
+	case ASN_V2_TYPE_KIND_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
+	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
+		return (SSL_OK);
+	}
+	default: {
+		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
+		return (SSL_ERR);
+	}}
 }
 
 /****************************************************************************/
@@ -3063,119 +3130,24 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 	}
 
 	if (ASN_V2_TAG_MODE_AUTOMATIC == amodule->tag_mode) {
-		if (SSL_OK != asn1_v2_module_compile_automatic_tags(asn1_module, amodule)) {
-			SSL_LOG(ERROR, "failed to compile automatic tags in the parsed module");
-			goto label_error;
+		const char *key = NULL;
+		void *value = NULL;
+		t_htbl_v2_next next = {0};
+		while (ft_htbl_v2_next(&amodule->type_refs, &next, &key, &value)) {
+			SSL_LOG(TRACE, "compiling automatic tags for asn1 type: %s", key);
+			if (SSL_OK != __asn1_v2_type_resolve_automatic_tags(amodule, value)) {
+				SSL_LOG(ERROR, "failed to resolve automatic tags for asn1 type: `%s`", key);
+				goto label_error;
+			}
 		}
 	}
-	else {
-		*asn1_module = amodule;
-	}
+
+	*asn1_module = amodule;
 	return (SSL_OK);
 
 label_error:
 	__asn1_v2_module_delete(amodule);
 	return (SSL_ERR);
-}
-
-/****************************************************************************/
-
-static int	__asn1_v2_type_compile_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_type *asn1_type);
-static int	__asn1_v2_component_compile_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_component *asn1_component);
-
-static int	__asn1_v2_type_compile_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_type *asn1_type)
-{
-	switch (asn1_type->kind) {
-	case ASN_V2_TYPE_KIND_SEQUENCE:
-	case ASN_V2_TYPE_KIND_CHOICE:
-	case ASN_V2_TYPE_KIND_SET: {
-		bool has_tagged_component = false;
-		void *content = NULL;
-		t_list_next next = {0};
-		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
-			t_asn_v2_component *component = content;
-			assert(NULL != component->type);
-			if (component->type->tags.size > 0) has_tagged_component = true;
-			if (SSL_OK != __asn1_v2_component_compile_automatic_tags(asn1_module, component)) {
-				return (SSL_ERR);
-			}
-		}
-		if (ASN_V2_TAG_MODE_AUTOMATIC == asn1_module->tag_mode && !has_tagged_component) {
-			// We must tag types for all components: implicit for SEQUENCE/SET or explicit for CHOICE.
-			uint32_t tag_number = 0;
-			next = (t_list_next){0};
-			while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
-				t_asn_v2_component *component = content;
-				t_asn_v2_tag *tag = __asn1_v2_tag_create();
-				tag->mode = (asn1_type->kind == ASN_V2_TYPE_KIND_CHOICE) ? ASN_V2_TAG_MODE_IMPLICIT : ASN_V2_TAG_MODE_EXPLICIT;
-				tag->class = ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC;
-				tag->number = tag_number;
-				ft_list_append_content(&component->type->tags, tag);
-				tag_number++;
-			}
-		}
-		return (SSL_OK);
-	}
-	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
-	case ASN_V2_TYPE_KIND_SET_OF: {
-		return (__asn1_v2_type_compile_automatic_tags(asn1_module, asn1_type->as.collection.element_type));
-	}
-	case ASN_V2_TYPE_KIND_ANY:
-	case ASN_V2_TYPE_KIND_BIT_STRING:
-	case ASN_V2_TYPE_KIND_INTEGER:
-	case ASN_V2_TYPE_KIND_ENUMERATED:
-	case ASN_V2_TYPE_KIND_BOOLEAN:
-	case ASN_V2_TYPE_KIND_OCTET_STRING:
-	case ASN_V2_TYPE_KIND_IA5_STRING:
-	case ASN_V2_TYPE_KIND_UTF8_STRING:
-	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
-	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
-	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
-	case ASN_V2_TYPE_KIND_UTC_TIME:
-	case ASN_V2_TYPE_KIND_NULL:
-	case ASN_V2_TYPE_KIND_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
-	case ASN_V2_TYPE_KIND_OBJECT_DESCR: {
-		return (SSL_OK);
-	}
-	default: {
-		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
-		return (SSL_ERR);
-	}}
-}
-
-static int	__asn1_v2_component_compile_automatic_tags(t_asn_v2_module *asn1_module, t_asn_v2_component *asn1_component)
-{
-	return (__asn1_v2_type_compile_automatic_tags(asn1_module, asn1_component->type));
-}
-
-int	asn1_v2_module_compile_automatic_tags(t_asn_v2_module **asn1_module_compiled, const t_asn_v2_module *asn1_module)
-{
-	if (NULL == asn1_module_compiled || NULL == asn1_module) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (SSL_ERR);
-	}
-
-	*asn1_module_compiled = NULL;
-
-	SSL_LOG(TRACE, "compiling automatic tags for asn1 module");
-
-	t_asn_v2_module *amodule = __asn1_v2_module_create();
-	__asn1_v2_module_copy(asn1_module, amodule);
-
-	const char *key = NULL;
-	void *value = NULL;
-	t_htbl_v2_next next = {0};
-	while (ft_htbl_v2_next(&amodule->type_refs, &next, &key, &value)) {
-		SSL_LOG(TRACE, "compiling automatic tags for asn1 type: %s", key);
-		if (SSL_OK != __asn1_v2_type_compile_automatic_tags(amodule, value)) {
-			SSL_LOG(ERROR, "failed to compile automatic tags for asn1 type: `%s`", key);
-			__asn1_v2_module_delete(amodule);
-			return (SSL_ERR);
-		}
-	}
-	*asn1_module_compiled = amodule;
-	return (SSL_OK);
 }
 
 /****************************************************************************/
