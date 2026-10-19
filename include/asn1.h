@@ -359,5 +359,6 @@ int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *d
 int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value **der_value);
 
 int der_v2_generic_encode(uint8_t **encoded, size_t *encsize, const t_der_v2_value *der_value);
+int der_v2_encode(uint8_t **encoded, size_t *encsize, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
 
 #endif
