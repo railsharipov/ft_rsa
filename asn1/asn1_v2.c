@@ -89,6 +89,8 @@
 #define __JQ_CONSTRAINT_MIN			"min"
 #define __JQ_CONSTRAINT_MAX			"max"
 
+#define __JQ_TOKEN_ELLIPSIS			"..."
+
 const char *asn1_v2_get_type_name(t_asn_v2_type_kind type)
 {
 	switch (type) {
@@ -688,7 +690,11 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 		bnum_set_dig_u(&last, 0u);
 		while (ft_list_next_content(&jenumeration->as.list, &next, &content)) {
 			const t_json_v2 *jelement = content;
-			if (jelement->kind != JSON_V2_TYPE_ARRAY) {
+			if (jelement->kind == JSON_V2_TYPE_STRING && ft_streq(__JQ_TOKEN_ELLIPSIS, jelement->as.cstring)) {
+				// Special ellipsis token: not an enumeration item but indicates that every enumeration after this point is an extension.
+				continue;
+			}
+			else if (jelement->kind != JSON_V2_TYPE_ARRAY) {
 				SSL_LOG(ERROR, "expected `%s` element to be a json array but got json %s: %s", __JQ_TYPE_ENUMERATION, json_v2_get_type_name(jelement->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 				goto label_error;
 			}
@@ -1195,7 +1201,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 		t_list_next next = {0};
 		void *content = NULL;
 		size_t commas = 0;
-		ft_ostr_append_cstr(&ostring, ",\"enumeration\":[");
+		ft_ostr_append_cstr(&ostring, ",\"enumeration\":{\"items\":[");
 		while (ft_list_next_content(&asn1_type->as.enumeration.items, &next, &content)) {
 			t_asn_v2_enum *item = content;
 			if (commas++) ft_ostr_append_cstr(&ostring, ",");
@@ -1203,7 +1209,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 			ft_ostr_appendf(&ostring, "[\"%s\",%s]", item->name, dumps);
 			SSL_FREE(dumps);
 		}
-		ft_ostr_append_cstr(&ostring, "]");
+		ft_ostr_appendf(&ostring, "],\"extendable\":%s}", asn1_type->as.enumeration.extendable ? "true" : "false");
 		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER:
@@ -1887,6 +1893,7 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		ft_list_copy_all_content(&src->as.enumeration.items, &dst->as.enumeration.items, __asn1_v2_enum_copy_adapter);
+		dst->as.enumeration.extendable = src->as.enumeration.extendable;
 		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER:
@@ -2902,6 +2909,11 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 		while (ft_list_next_content(&jenumeration->as.list, &next, &content)) {
 			t_asn_v2_enum *item = NULL;
 			const t_json_v2 *jelement = content;
+			if (jelement->kind == JSON_V2_TYPE_STRING && ft_streq(__JQ_TOKEN_ELLIPSIS, jelement->as.cstring)) {
+				// Special ellipsis token: not an enumeration item but indicates that every enumeration after this point is an extension.
+				atype->as.enumeration.extendable = true;
+				continue;
+			}
 			assert(jelement->kind == JSON_V2_TYPE_ARRAY);
 			assert(jelement->as.list.size == 1 || jelement->as.list.size == 2);
 			const t_json_v2 *jname = NULL;
@@ -2929,43 +2941,6 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 				bnum_add_dig(&last, 1, &last);
 			}
 			ft_list_append_content(&atype->as.enumeration.items, item);
-		}
-		const t_json_v2 *jext_enumeration = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_EXT_ENUMERATION, jtype, &jext_enumeration)) {
-			assert(jext_enumeration->kind == JSON_V2_TYPE_ARRAY);
-			t_list_next next = {0};
-			void *content = NULL;
-			while (ft_list_next_content(&jext_enumeration->as.list, &next, &content)) {
-				t_asn_v2_enum *item = NULL;
-				const t_json_v2 *jelement = content;
-				assert(jelement->kind == JSON_V2_TYPE_ARRAY);
-				assert(jelement->as.list.size == 1 || jelement->as.list.size == 2);
-				const t_json_v2 *jname = NULL;
-				const t_json_v2 *jnumber = NULL;
-				assert(JSON_V2_OK == json_v2_query_nonnull("[0]", jelement, &jname));
-				assert(jname->kind == JSON_V2_TYPE_STRING);
-				if (JSON_V2_OK == json_v2_query_nonnull("[1]", jelement, &jnumber)) {
-					assert(jnumber->kind == JSON_V2_TYPE_NUMBER);
-				}
-				item = __asn1_v2_enum_create();
-				item->name = ft_strdup(jname->as.cstring);
-				if (NULL != jnumber) {
-					bnum_copy(&jnumber->as.number, &item->number);
-					bnum_add_dig(&jnumber->as.number, 1, &last);
-					char *dumps = bnum_to_dec(&jnumber->as.number);
-					bool ok = ft_htbl_v2_set(htable, dumps, NULL);
-					SSL_FREE(dumps);
-					if (!ok) {
-						ft_htbl_v2_del(htable, NULL);
-						SSL_LOG(ERROR, "invalid asn1 type: expected `%s` element to be a unique enumeration: %s", __JQ_TYPE_ENUMERATION, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
-						goto label_error;
-					}
-				} else {
-					bnum_copy(&last, &item->number);
-					bnum_add_dig(&last, 1, &last);
-				}
-				ft_list_append_content(&atype->as.enumeration.items, item);
-			}
 		}
 		ft_htbl_v2_del(htable, NULL);
 		break;
@@ -3791,6 +3766,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		ft_list_copy_all_content(&asn1_type->as.enumeration.items, &compiled->as.enumeration.items, __asn1_v2_enum_copy_adapter);
+		compiled->as.enumeration.extendable = asn1_type->as.enumeration.extendable;
 		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER:
@@ -4151,7 +4127,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 		t_list_next next = {0};
 		void *content = NULL;
 		size_t commas = 0;
-		ft_ostr_append_cstr(&ostring, ",\"enumeration\":[");
+		ft_ostr_append_cstr(&ostring, ",\"enumeration\":{\"items\":[");
 		while (ft_list_next_content(&der_type->as.enumeration.items, &next, &content)) {
 			t_asn_v2_enum *item = content;
 			if (commas++) ft_ostr_append_cstr(&ostring, ",");
@@ -4159,7 +4135,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 			ft_ostr_appendf(&ostring, "[\"%s\",%s]", item->name, dumps);
 			SSL_FREE(dumps);
 		}
-		ft_ostr_append_cstr(&ostring, "]");
+		ft_ostr_appendf(&ostring, "],\"extendable\":%s}", der_type->as.enumeration.extendable ? "true" : "false");
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY:
@@ -5023,6 +4999,7 @@ static int	__der_v2_decode_set(t_der_v2_tlv tlv, const t_der_v2_type *der_type, 
 static int	__der_v2_decode_null(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_enumerated(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_relative_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 
 static struct s_der_v2_decode {
@@ -5039,7 +5016,7 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_OBJECT_DESCR       = 7 */	{ NULL, "OBJECT_DESCR" },
 	/* ASN_V2_TAG_NUMBER_EXTERNAL           = 8 */	{ NULL, "EXTERNAL" },
 	/* ASN_V2_TAG_NUMBER_REAL               = 9 */	{ NULL, "REAL" },
-	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ NULL, "ENUMERATED" },
+	/* ASN_V2_TAG_NUMBER_ENUMERATED         = 10 */	{ __der_v2_decode_enumerated, "ENUMERATED" },
 	/* ASN_V2_TAG_NUMBER_EMBEDDED_PDV       = 11 */	{ NULL, "EMBEDDED_PDV" },
 	/* ASN_V2_TAG_NUMBER_UTF8_STRING        = 12 */	{ __der_v2_decode_utf8_string, "UTF8_STRING" },
 	/* ASN_V2_TAG_NUMBER_RELATIVE_OBJECT_ID = 13 */	{ __der_v2_decode_relative_object_id, "RELATIVE_OBJECT_ID" },
@@ -5464,6 +5441,38 @@ static int	__der_v2_decode_integer(t_der_v2_tlv tlv, const t_der_v2_type *der_ty
 {
 	UNUSED(der_type);
 	return (__der_v2_generic_decode_integer(tlv, der_value));
+}
+
+static int	__der_v2_decode_enumerated(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	SSL_LOG(TRACE, "enumerated: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	t_num num = {0};
+	bnum_init_from_bytes(&num, tlv.value, tlv.length);
+
+	const char *name = NULL;
+	t_list_next next = {0};
+	void *content = NULL;
+	while (ft_list_next_content(&der_type->as.enumeration.items, &next, &content)) {
+		t_asn_v2_enum *enumerated = content;
+		if (bnum_cmp(&enumerated->number, &num) == 0) {
+			SSL_LOG(TRACE, "enumerated: name: %s", enumerated->name);
+			name = enumerated->name;
+			break;
+		}
+	}
+	if (name == NULL && !der_type->as.enumeration.extendable) {
+		SSL_LOG(ERROR, "enumerated: bad value");
+		bnum_clear(&num);
+		return (SSL_ERR);
+	}
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_ENUMERATED;
+	dvalue->as.enumerated.name = ft_strdup(name);
+	bnum_copy(&num, &dvalue->as.enumerated.number);
+	bnum_clear(&num);
+	*der_value = dvalue;
+	return (SSL_OK);
 }
 
 static int	__der_v2_decode_object_id(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)

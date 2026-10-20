@@ -17,7 +17,7 @@
         {"id": "payload", "type": {"kind": "ANY"}, "definedBy": "version"},
         {
           "id": "status",
-          "type": {"kind": "ENUMERATED", "enumeration": [["alpha"], ["beta", 5], ["gamma"]], "extEnumeration": [["delta"], ["epsilon", 102], ["zeta"]]},
+          "type": {"kind": "ENUMERATED", "enumeration": [["alpha"], ["beta", 5], ["gamma"], "...", ["delta"], ["epsilon", 102], ["zeta"]]},
           "default": "beta"
         },
         {

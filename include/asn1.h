@@ -223,6 +223,27 @@ typedef struct s_asn_v2_tag {
 	uint32_t 	number;
 } t_asn_v2_tag;
 
+// TODO: better support for constraints.
+// typedef enum e_asn_v2_constraint_kind {
+// 	ASN_V2_CONSTRAINT_KIND_VALUE = 0,
+// 	ASN_V2_CONSTRAINT_KIND_RANGE,
+// 	ASN_V2_CONSTRAINT_KIND_SIZE,
+// 	ASN_V2_CONSTRAINT_KIND_UNION,
+// 	ASN_V2_CONSTRAINT_KIND_INTERSECTION,
+// 	ASN_V2_CONSTRAINT_KIND_EXCEPT,
+// 	ASN_V2_CONSTRAINT_KIND_ALL_EXCEPT,
+// 	ASN_V2_CONSTRAINT_KIND_FROM,
+// 	ASN_V2_CONSTRAINT_KIND_WITH_COMPONENT,
+// 	ASN_V2_CONSTRAINT_KIND_WITH_COMPONENTS,
+// 	ASN_V2_CONSTRAINT_KIND_ABSENT,
+// 	ASN_V2_CONSTRAINT_KIND_PRESENT,
+// 	ASN_V2_CONSTRAINT_KIND_OPTIONAL,
+// 	ASN_V2_CONSTRAINT_KIND_CONTAINING,
+// 	ASN_V2_CONSTRAINT_KIND_ENCODED_BY,
+// 	ASN_V2_CONSTRAINT_KIND_CONTAINING_AND_ENCODED_BY,
+// 	ASN_V2_CONSTRAINT_KIND_CONSTRAINED_BY,
+// } t_asn_v2_constraint_kind;
+
 typedef enum e_asn_v2_constraint_kind {
 	ASN_V2_CONSTRAINT_KIND_RANGE = 0,
 	ASN_V2_CONSTRAINT_KIND_SIZE,
@@ -243,7 +264,7 @@ typedef struct s_asn_v2_type {
 	union {
 		struct { t_list elements; } composite;
 		struct { struct s_asn_v2_type *element_type; } collection;
-		struct { t_list items; } enumeration;
+		struct { t_list items; bool extendable; } enumeration;
 	} as;
 } t_asn_v2_type;
 
@@ -331,7 +352,7 @@ typedef struct s_der_v2_type {
 	union {
 		struct { t_list elements; } composite;
 		struct { struct s_der_v2_type *element_type; } collection;
-		struct { t_list items; } enumeration;
+		struct { t_list items; bool extendable; } enumeration;
 	} as;
 } t_der_v2_type;
 
