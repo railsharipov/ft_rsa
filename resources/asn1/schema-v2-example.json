@@ -12,6 +12,7 @@
         {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER"}, "default": "myOrg"},
         {"id": "specific-algorithm", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}, "default": [1, 2, "myAlgorithm"]},
         {"id": "data", "type": {"kind": "BIT STRING"}},
+        {"id": "payload", "type": {"kind": "ANY"}, "definedBy": "version"},
         {
           "id": "status",
           "type": {

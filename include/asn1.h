@@ -243,7 +243,6 @@ typedef struct s_asn_v2_type {
 		struct { t_list elements; } composite;
 		struct { struct s_asn_v2_type *element_type; } collection;
 		struct { t_list items; } enumeration;
-		struct { char *defined_by; } any;
 	} as;
 } t_asn_v2_type;
 
@@ -251,6 +250,7 @@ typedef struct s_asn_v2_component {
 	char			*id;
 	t_asn_v2_type	*type;
 	t_asn_v2_value	*default_value;
+	char			*defined_by;
 	bool 			optional;
 } t_asn_v2_component;
 
@@ -331,7 +331,6 @@ typedef struct s_der_v2_type {
 		struct { t_list elements; } composite;
 		struct { struct s_der_v2_type *element_type; } collection;
 		struct { t_list items; } enumeration;
-		struct { struct s_der_v2_component *defined_by; } any;
 	} as;
 } t_der_v2_type;
 
@@ -339,6 +338,7 @@ typedef struct s_der_v2_component {
     char *id;
 	t_der_v2_type *type;
 	t_der_v2_value *default_value;
+	const struct s_der_v2_component *defined_by;
 	bool optional;
 } t_der_v2_component;
 

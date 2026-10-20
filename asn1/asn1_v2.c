@@ -69,7 +69,7 @@
 #define __JQ_TYPE_REF_KIND				"kind"
 #define __JQ_TYPE_REF_TAGS	    		"tags"
 #define __JQ_TYPE_REF_CONSTRAINTS	    "constraints"
-#define __JQ_TYPE_REF_DEFINED_BY_ID		"definedById"
+#define __JQ_TYPE_REF_DEFINED_BY		"definedBy"
 #define __JQ_TYPE_REF_ENUMERATION		"enumeration"
 #define __JQ_TYPE_REF_EXT_ENUMERATION	"extEnumeration"
 #define __JQ_TYPE_REF_COMPONENT_TYPE	"componentType"
@@ -661,9 +661,9 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
 		const t_json_v2 *jdefined_by_id = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_DEFINED_BY, jtype, &jdefined_by_id)) {
 			if (jdefined_by_id->kind != JSON_V2_TYPE_STRING) {
-				SSL_LOG(ERROR, "expected `%s` to be a json string but got json %s", __JQ_TYPE_REF_DEFINED_BY_ID, json_v2_get_type_name(jdefined_by_id->kind));
+				SSL_LOG(ERROR, "expected `%s` to be a json string but got json %s", __JQ_TYPE_REF_DEFINED_BY, json_v2_get_type_name(jdefined_by_id->kind));
 				goto label_error;
 			}
 		}
@@ -1184,9 +1184,6 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		if (NULL != asn1_type->as.any.defined_by) {
-			ft_ostr_appendf(&ostring, ",\"defined_by\":\"%s\"", asn1_type->as.any.defined_by);
-		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
@@ -1245,6 +1242,10 @@ static char *__asn1_v2_component_dumps(const t_asn_v2_component *asn1_component)
 	char *dumps = __asn1_v2_type_dumps(asn1_component->type);
 	ft_ostr_appendf(&ostring, ",\"type\":%s", dumps);
 	SSL_FREE(dumps);
+
+	if (NULL != asn1_component->defined_by) {
+		ft_ostr_appendf(&ostring, ",\"defined_by\":\"%s\"", asn1_component->defined_by);
+	}
 
 	if (NULL != asn1_component->default_value) {
 		dumps = __asn1_v2_value_dumps(asn1_component->default_value);
@@ -1805,7 +1806,6 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		SSL_FREE(asn1_type->as.any.defined_by);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
@@ -1874,7 +1874,6 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		if (NULL != src->as.any.defined_by) dst->as.any.defined_by = ft_strdup(src->as.any.defined_by);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
@@ -1992,6 +1991,21 @@ static void	__asn1_v2_component_copy(const t_asn_v2_component *src, t_asn_v2_com
 		__asn1_v2_value_copy(src->default_value, dst->default_value);
 	}
 	dst->optional = src->optional;
+}
+
+static t_asn_v2_component *__asn1_v2_component_find_by_id(t_list components, const char *name)
+{
+	assert(NULL != name);
+
+	void *content = NULL;
+	t_list_next next = {0};
+	while (ft_list_next_content(&components, &next, &content)) {
+		t_asn_v2_component *component = content;
+		if (ft_streq(component->id, name)) {
+			return (component);
+		}
+	}
+	return (NULL);
 }
 
 static t_asn_v2_module *__asn1_v2_module_create(void)
@@ -2230,23 +2244,6 @@ static int	__asn1_v2_type_resolve_automatic_tags(t_asn_v2_module *asn1_module, t
 		SSL_LOG(ERROR, "unknown asn1 type: %d", asn1_type->kind);
 		return (SSL_ERR);
 	}}
-}
-
-/****************************************************************************/
-
-static t_asn_v2_component *__asn1_v2_component_find_by_id(const t_asn_v2_type *asn1_type, const char *name)
-{
-	assert(NULL != name);
-
-	void *content = NULL;
-	t_list_next next = {0};
-	while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
-		t_asn_v2_component *component = content;
-		if (ft_streq(component->id, name)) {
-			return (component);
-		}
-	}
-	return (NULL);
 }
 
 /****************************************************************************/
@@ -2836,14 +2833,6 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		const t_json_v2 *jdefined_by_id = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_DEFINED_BY_ID, jtype, &jdefined_by_id)) {
-			assert(jdefined_by_id->kind == JSON_V2_TYPE_STRING);
-			SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_REF_DEFINED_BY_ID, json_v2_dumpb(jdefined_by_id, cbuf, sizeof(cbuf)));
-			atype->as.any.defined_by = ft_strdup(jdefined_by_id->as.cstring);
-		} else {
-			atype->as.any.defined_by = NULL;
-		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
@@ -3023,6 +3012,15 @@ static int	__asn1_v2_schema_parse_component(t_asn_v2_module *asn1_module, t_asn_
 		acomponent->optional = joptional->as.boolean;
 	}
 
+	const t_json_v2 *jdefined_by = NULL;
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_DEFINED_BY, jcomponent, &jdefined_by)) {
+		assert(jdefined_by->kind == JSON_V2_TYPE_STRING);
+		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_TYPE_REF_DEFINED_BY, json_v2_dumpb(jdefined_by, cbuf, sizeof(cbuf)));
+		acomponent->defined_by = ft_strdup(jdefined_by->as.cstring);
+	} else {
+		acomponent->defined_by = NULL;
+	}
+
 	const t_json_v2 *jdefault = NULL;
 	if (JSON_V2_OK == json_v2_query(__JQ_COMPONENT_DEFAULT, jcomponent, &jdefault)) {
 		if (acomponent->optional) {
@@ -3133,8 +3131,6 @@ label_error:
 	__asn1_v2_module_delete(amodule);
 	return (SSL_ERR);
 }
-
-/****************************************************************************/
 
 t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name)
 {
@@ -3372,6 +3368,21 @@ static void __der_v2_component_delete(t_der_v2_component *der_component)
 	if (NULL != der_component->id) SSL_FREE(der_component->id);
 	if (NULL != der_component->default_value) __der_v2_value_delete(der_component->default_value);
 	SSL_FREE(der_component);
+}
+
+static t_der_v2_component *__der_v2_component_find_by_id(t_list components, const char *name)
+{
+	assert(NULL != name);
+
+	void *content = NULL;
+	t_list_next next = {0};
+	while (ft_list_next_content(&components, &next, &content)) {
+		t_der_v2_component *component = content;
+		if (ft_streq(component->id, name)) {
+			return (component);
+		}
+	}
+	return (NULL);
 }
 
 static t_der_v2_type *__der_v2_type_create(void)
@@ -3624,9 +3635,11 @@ static int __asn1_v2_component_compile(t_der_v2_component **der_component, const
 			return (SSL_ERR);
 		}
 	}
+
 	if (NULL != asn1_component->id) {
 		dcomponent->id = ft_strdup(asn1_component->id);
 	}
+
 	dcomponent->optional = asn1_component->optional;
 	dcomponent->type = compiled;
 
@@ -3652,15 +3665,39 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	switch (asn1_type->kind) {
 	case ASN_V2_TYPE_KIND_SEQUENCE:
 	case ASN_V2_TYPE_KIND_SET: {
-		t_list_next next = {0};
-		void *content = NULL;
-		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
-			t_der_v2_component *compiled_element = NULL;
-			if (SSL_OK != __asn1_v2_component_compile(&compiled_element, content)) {
-				SSL_LOG(ERROR, "failed to compile asn1 %s collection element", asn1_v2_get_type_name(asn1_type->kind));
-				goto label_error;
+		// Compile type components.
+		{
+			t_list_next next = {0};
+			void *content = NULL;
+			while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
+				t_asn_v2_component *element = content;
+				t_der_v2_component *compiled_element = NULL;
+				if (SSL_OK != __asn1_v2_component_compile(&compiled_element, element)) {
+					SSL_LOG(ERROR, "failed to compile asn1 %s component", asn1_v2_get_type_name(asn1_type->kind));
+					goto label_error;
+				}
+				ft_list_append_content(&compiled->as.composite.elements, compiled_element);
 			}
-			ft_list_append_content(&compiled->as.composite.elements, compiled_element);
+		}
+		// Run through a list a second time to resolve component references, if any.
+		{
+			t_list_next next = {0};
+			t_list_next next_compiled = {0};
+			void *content = NULL;
+			while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
+				t_asn_v2_component *element = content;
+				bool ok = ft_list_next_content(&compiled->as.composite.elements, &next_compiled, &content);
+				assert(ok);
+				t_der_v2_component *compiled_element = content;
+				if (NULL != element->defined_by) {
+					const t_der_v2_component *defined_by_compiled_element = __der_v2_component_find_by_id(compiled->as.composite.elements, element->defined_by);
+					if (NULL == defined_by_compiled_element) {
+						SSL_LOG(ERROR, "invalid asn1 %s component reference: defined by: %s", element->defined_by);
+						goto label_error;
+					}
+					compiled_element->defined_by = defined_by_compiled_element;
+				}
+			}
 		}
 		break;
 	}
@@ -3694,14 +3731,6 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
-		if (NULL != asn1_type->as.any.defined_by) {
-			const t_asn_v2_component *acomponent = __asn1_v2_component_find_by_id(asn1_type->as.any.defined_by);
-			if (NULL == acomponent) {
-				SSL_LOG(ERROR, "invalid asn1 %s component id reference: %s", asn1_v2_get_type_name(asn1_type->kind), asn1_type->as.any.defined_by);
-				goto label_error;
-			}
-
-		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
@@ -3974,6 +4003,10 @@ static char *__der_v2_component_dumps(const t_der_v2_component *der_component)
 	char *dumps = der_v2_type_dumps(der_component->type);
 	ft_ostr_appendf(&ostring, ",\"type\":%s", dumps);
 	SSL_FREE(dumps);
+
+	if (NULL != der_component->defined_by && NULL != der_component->defined_by->id) {
+		ft_ostr_appendf(&ostring, ",\"defined_by\":\"%s\"", der_component->defined_by->id);
+	}
 
 	if (NULL != der_component->default_value) {
 		dumps = __der_v2_value_dumps(der_component->default_value);
