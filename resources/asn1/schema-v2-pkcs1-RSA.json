@@ -1,6 +1,6 @@
 {
   "tagMode": "EXPLICIT",
-  "typeRefs": {
+  "types": {
     "RSAPublicKey": {
       "kind": "SEQUENCE",
       "components": [

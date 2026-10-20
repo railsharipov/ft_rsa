@@ -61,20 +61,20 @@
 #define __SCHEMA_CONSTRAINT_NAME_SIZE		ASN_V2_CONSTRAINT_NAME_SIZE
 
 #define __JQ_SCHEMA_TAG_MODE		"tagMode"
-#define __JQ_SCHEMA_TYPE_REFS		"typeRefs"
-#define __JQ_SCHEMA_VALUE_REFS		"valueRefs"
+#define __JQ_SCHEMA_TYPES			"types"
+#define __JQ_SCHEMA_VALUES			"values"
 
-#define __JQ_VALUE_REF_KIND			"kind"
-#define __JQ_VALUE_REF_VALUE		"value"
+#define __JQ_VALUE_KIND				"kind"
+#define __JQ_VALUE_VALUE			"value"
 
-#define __JQ_TYPE_REF_KIND				"kind"
-#define __JQ_TYPE_REF_TAGS	    		"tags"
-#define __JQ_TYPE_REF_CONSTRAINTS	    "constraints"
-#define __JQ_TYPE_REF_DEFINED_BY		"definedBy"
-#define __JQ_TYPE_REF_ENUMERATION		"enumeration"
-#define __JQ_TYPE_REF_EXT_ENUMERATION	"extEnumeration"
-#define __JQ_TYPE_REF_COMPONENT_TYPE	"componentType"
-#define __JQ_TYPE_REF_COMPONENTS		"components"
+#define __JQ_TYPE_KIND				"kind"
+#define __JQ_TYPE_TAGS	    		"tags"
+#define __JQ_TYPE_CONSTRAINTS	    "constraints"
+#define __JQ_TYPE_DEFINED_BY		"definedBy"
+#define __JQ_TYPE_ENUMERATION		"enumeration"
+#define __JQ_TYPE_EXT_ENUMERATION	"extEnumeration"
+#define __JQ_TYPE_COMPONENT_TYPE	"componentType"
+#define __JQ_TYPE_COMPONENTS		"components"
 
 #define __JQ_COMPONENT_ID 		    "id"
 #define __JQ_COMPONENT_TYPE 	    "type"
@@ -615,12 +615,12 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	}
 
 	const t_json_v2 *jkind = NULL;
-	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_REF_KIND, jtype, &jkind)) {
-		SSL_LOG(ERROR, "expected `%s` key", __JQ_TYPE_REF_KIND);
+	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind)) {
+		SSL_LOG(ERROR, "expected `%s` key", __JQ_TYPE_KIND);
 		goto label_error;
 	}
 	if (jkind->kind != JSON_V2_TYPE_STRING) {
-		SSL_LOG(ERROR, "expected `%s` to be a json string but got json %s", __JQ_TYPE_REF_KIND, json_v2_get_type_name(jkind->kind));
+		SSL_LOG(ERROR, "expected `%s` to be a json string but got json %s", __JQ_TYPE_KIND, json_v2_get_type_name(jkind->kind));
 		goto label_error;
 	}
 
@@ -631,8 +631,8 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_SET: {
 		const t_json_v2 *jcomponents = NULL;
-		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_REF_COMPONENTS, jtype, &jcomponents)) {
-			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_REF_COMPONENTS);
+		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
+			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_COMPONENTS);
 			goto label_error;
 		}
 		else {
@@ -640,7 +640,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 			t_list_next next = {0};
 			while (ft_list_next_content(&jcomponents->as.list, &next, &content)) {
 				if (SSL_OK != __asn1_v2_schema_validate_component(jschema, content)) {
-					SSL_LOG(ERROR, "`%s` contains invalid component", __JQ_TYPE_REF_COMPONENTS);
+					SSL_LOG(ERROR, "`%s` contains invalid component", __JQ_TYPE_COMPONENTS);
 					goto label_error;
 				}
 			}
@@ -650,13 +650,13 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF: {
 		const t_json_v2 *jelement_type = NULL;
-		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_REF_COMPONENT_TYPE, jtype, &jelement_type)) {
-			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_REF_COMPONENT_TYPE);
+		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_COMPONENT_TYPE, jtype, &jelement_type)) {
+			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_COMPONENT_TYPE);
 			goto label_error;
 		}
 		else {
 			if (SSL_OK != __asn1_v2_schema_validate_type(jschema, jelement_type)) {
-				SSL_LOG(ERROR, "invalid `%s`", __JQ_TYPE_REF_COMPONENT_TYPE);
+				SSL_LOG(ERROR, "invalid `%s`", __JQ_TYPE_COMPONENT_TYPE);
 				goto label_error;
 			}
 		}
@@ -664,9 +664,9 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	}
 	case ASN_V2_TYPE_KIND_ANY: {
 		const t_json_v2 *jdefined_by_id = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_DEFINED_BY, jtype, &jdefined_by_id)) {
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY, jtype, &jdefined_by_id)) {
 			if (jdefined_by_id->kind != JSON_V2_TYPE_STRING) {
-				SSL_LOG(ERROR, "expected `%s` to be a json string but got json %s", __JQ_TYPE_REF_DEFINED_BY, json_v2_get_type_name(jdefined_by_id->kind));
+				SSL_LOG(ERROR, "expected `%s` to be a json string but got json %s", __JQ_TYPE_DEFINED_BY, json_v2_get_type_name(jdefined_by_id->kind));
 				goto label_error;
 			}
 		}
@@ -674,12 +674,12 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		const t_json_v2 *jenumeration = NULL;
-		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_REF_ENUMERATION, jtype, &jenumeration)) {
-			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_REF_ENUMERATION);
+		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_ENUMERATION, jtype, &jenumeration)) {
+			SSL_LOG(ERROR, "asn1 type: no `%s` key specified", __JQ_TYPE_ENUMERATION);
 			goto label_error;
 		}
 		if (jenumeration->kind != JSON_V2_TYPE_ARRAY) {
-			SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_REF_ENUMERATION, json_v2_get_type_name(jenumeration->kind));
+			SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_ENUMERATION, json_v2_get_type_name(jenumeration->kind));
 			goto label_error;
 		}
 		t_list_next next = {0};
@@ -689,31 +689,31 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 		while (ft_list_next_content(&jenumeration->as.list, &next, &content)) {
 			const t_json_v2 *jelement = content;
 			if (jelement->kind != JSON_V2_TYPE_ARRAY) {
-				SSL_LOG(ERROR, "expected `%s` element to be a json array but got json %s: %s", __JQ_TYPE_REF_ENUMERATION, json_v2_get_type_name(jelement->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+				SSL_LOG(ERROR, "expected `%s` element to be a json array but got json %s: %s", __JQ_TYPE_ENUMERATION, json_v2_get_type_name(jelement->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 				goto label_error;
 			}
 			if (jelement->as.list.size != 1 && jelement->as.list.size != 2) {
-				SSL_LOG(ERROR, "expected `%s` element to be a json array of size 1 or 2 but got %zu: %s", __JQ_TYPE_REF_ENUMERATION, jelement->as.list.size, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+				SSL_LOG(ERROR, "expected `%s` element to be a json array of size 1 or 2 but got %zu: %s", __JQ_TYPE_ENUMERATION, jelement->as.list.size, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 				goto label_error;
 			}
 			const t_json_v2 *jname = NULL;
 			const t_json_v2 *jnumber = NULL;
 			assert(JSON_V2_OK == json_v2_query_nonnull("[0]", jelement, &jname));
 			if (jname->kind != JSON_V2_TYPE_STRING) {
-				SSL_LOG(ERROR, "expected `%s` 1st element to be a json string but got json %s: %s", __JQ_TYPE_REF_ENUMERATION, json_v2_get_type_name(jname->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+				SSL_LOG(ERROR, "expected `%s` 1st element to be a json string but got json %s: %s", __JQ_TYPE_ENUMERATION, json_v2_get_type_name(jname->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 				goto label_error;
 			}
 			if (JSON_V2_OK == json_v2_query_nonnull("[1]", jelement, &jnumber)) {
 				if (jnumber->kind != JSON_V2_TYPE_NUMBER) {
-					SSL_LOG(ERROR, "expected `%s` 2nd element to be a json number but got json %s: %s", __JQ_TYPE_REF_ENUMERATION, json_v2_get_type_name(jnumber->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+					SSL_LOG(ERROR, "expected `%s` 2nd element to be a json number but got json %s: %s", __JQ_TYPE_ENUMERATION, json_v2_get_type_name(jnumber->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 					goto label_error;
 				}
 			}
 		}
 		const t_json_v2 *jext_enumeration = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_EXT_ENUMERATION, jtype, &jext_enumeration)) {
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_EXT_ENUMERATION, jtype, &jext_enumeration)) {
 			if (jext_enumeration->kind != JSON_V2_TYPE_ARRAY) {
-				SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_REF_EXT_ENUMERATION, json_v2_get_type_name(jext_enumeration->kind));
+				SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_EXT_ENUMERATION, json_v2_get_type_name(jext_enumeration->kind));
 				goto label_error;
 			}
 			t_list_next next = {0};
@@ -723,23 +723,23 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 			while (ft_list_next_content(&jext_enumeration->as.list, &next, &content)) {
 				const t_json_v2 *jelement = content;
 				if (jelement->kind != JSON_V2_TYPE_ARRAY) {
-					SSL_LOG(ERROR, "expected `%s` element to be a json array but got json %s: %s", __JQ_TYPE_REF_EXT_ENUMERATION, json_v2_get_type_name(jelement->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+					SSL_LOG(ERROR, "expected `%s` element to be a json array but got json %s: %s", __JQ_TYPE_EXT_ENUMERATION, json_v2_get_type_name(jelement->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 					goto label_error;
 				}
 				if (jelement->as.list.size != 1 && jelement->as.list.size != 2) {
-					SSL_LOG(ERROR, "expected `%s` element to be a json array of size 1 or 2 but got %zu: %s", __JQ_TYPE_REF_EXT_ENUMERATION, jelement->as.list.size, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+					SSL_LOG(ERROR, "expected `%s` element to be a json array of size 1 or 2 but got %zu: %s", __JQ_TYPE_EXT_ENUMERATION, jelement->as.list.size, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 					goto label_error;
 				}
 				const t_json_v2 *jname = NULL;
 				const t_json_v2 *jnumber = NULL;
 				assert(JSON_V2_OK == json_v2_query_nonnull("[0]", jelement, &jname));
 				if (jname->kind != JSON_V2_TYPE_STRING) {
-					SSL_LOG(ERROR, "expected `%s` 1st element to be a json string but got json %s: %s", __JQ_TYPE_REF_EXT_ENUMERATION, json_v2_get_type_name(jname->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+					SSL_LOG(ERROR, "expected `%s` 1st element to be a json string but got json %s: %s", __JQ_TYPE_EXT_ENUMERATION, json_v2_get_type_name(jname->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 					goto label_error;
 				}
 				if (JSON_V2_OK == json_v2_query_nonnull("[1]", jelement, &jnumber)) {
 					if (jnumber->kind != JSON_V2_TYPE_NUMBER) {
-						SSL_LOG(ERROR, "expected `%s` 2nd element to be a json number but got json %s: %s", __JQ_TYPE_REF_EXT_ENUMERATION, json_v2_get_type_name(jnumber->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+						SSL_LOG(ERROR, "expected `%s` 2nd element to be a json number but got json %s: %s", __JQ_TYPE_EXT_ENUMERATION, json_v2_get_type_name(jnumber->kind), json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 						goto label_error;
 					}
 				}
@@ -767,7 +767,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	default: {
 		// Check if the type name refers to a type within a module.
 		const t_json_v2 *jref_type = NULL;
-		char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPE_REFS, ".", jkind->as.cstring);
+		char *query = ft_strjoin_multi(3, __JQ_SCHEMA_TYPES, ".", jkind->as.cstring);
 		int ret = json_v2_query_nonnull(query, jschema, &jref_type);
 		SSL_FREE(query);
 		if (JSON_V2_OK != ret || jref_type->kind != JSON_V2_TYPE_OBJECT) {
@@ -777,32 +777,32 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	}}
 
 	const t_json_v2 *jtags = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_TAGS, jtype, &jtags)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_TAGS, jtype, &jtags)) {
 		if (jtags->kind != JSON_V2_TYPE_ARRAY) {
-			SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_REF_TAGS, json_v2_get_type_name(jtags->kind));
+			SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_TAGS, json_v2_get_type_name(jtags->kind));
 			goto label_error;
 		}
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&jtags->as.list, &next, &content)) {
 			if (SSL_OK != __asn1_v2_schema_validate_tag(jschema, content)) {
-				SSL_LOG(ERROR, "`%s` contains invalid tag", __JQ_TYPE_REF_TAGS);
+				SSL_LOG(ERROR, "`%s` contains invalid tag", __JQ_TYPE_TAGS);
 				goto label_error;
 			}
 		}
 	}
 
 	const t_json_v2 *jconstraints = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_CONSTRAINTS, jtype, &jconstraints)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_CONSTRAINTS, jtype, &jconstraints)) {
 		if (jtags->kind != JSON_V2_TYPE_ARRAY) {
-			SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_REF_CONSTRAINTS, json_v2_get_type_name(jconstraints->kind));
+			SSL_LOG(ERROR, "expected `%s` to be a json array but got json %s", __JQ_TYPE_CONSTRAINTS, json_v2_get_type_name(jconstraints->kind));
 			goto label_error;
 		}
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&jconstraints->as.list, &next, &content)) {
 			if (SSL_OK != __asn1_v2_schema_validate_constraint(jschema, content)) {
-				SSL_LOG(ERROR, "`%s` contains invalid constraint", __JQ_TYPE_REF_CONSTRAINTS);
+				SSL_LOG(ERROR, "`%s` contains invalid constraint", __JQ_TYPE_CONSTRAINTS);
 				goto label_error;
 			}
 		}
@@ -893,12 +893,12 @@ int	asn1_v2_schema_validate(const t_json_v2 *jschema)
 	}
 
 	const t_json_v2 *jtype_refs = NULL;
-	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_SCHEMA_TYPE_REFS, jschema, &jtype_refs)) {
-		SSL_LOG(ERROR, "invalid json schema: expected `%s` key", __JQ_SCHEMA_TYPE_REFS);
+	if (JSON_V2_OK != json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtype_refs)) {
+		SSL_LOG(ERROR, "invalid json schema: expected `%s` key", __JQ_SCHEMA_TYPES);
 		return (SSL_ERR);
 	}
 	if (jtype_refs->kind != JSON_V2_TYPE_OBJECT) {
-		SSL_LOG(ERROR, "invalid json schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPE_REFS, json_v2_get_type_name(jtype_refs->kind));
+		SSL_LOG(ERROR, "invalid json schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPES, json_v2_get_type_name(jtype_refs->kind));
 		return (SSL_ERR);
 	}
 
@@ -2123,9 +2123,9 @@ static int	__asn1_v2_symbol_resolve(t_asn_v2_module *asn1_module, const char *sy
 			const t_json_v2 *jvalue_ref = symbol->source;
 			const t_json_v2 *jvalue_kind = NULL;
 			const t_json_v2 *jvalue = NULL;
-			int ret = json_v2_query(__JQ_VALUE_REF_KIND, jvalue_ref, &jvalue_kind);
+			int ret = json_v2_query(__JQ_VALUE_KIND, jvalue_ref, &jvalue_kind);
 			assert(ret == JSON_V2_OK && jvalue_kind->kind == JSON_V2_TYPE_STRING);
-			ret = json_v2_query(__JQ_VALUE_REF_VALUE, jvalue_ref, &jvalue);
+			ret = json_v2_query(__JQ_VALUE_VALUE, jvalue_ref, &jvalue);
 			assert(ret == JSON_V2_OK);
 			t_asn_v2_type_kind kind = __asn1_v2_schema_get_type_by_name(jvalue_kind->as.cstring);
 			if (kind == -1) {
@@ -2813,9 +2813,9 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	char cbuf[1024] = {0};
 
 	const t_json_v2 *jkind = NULL;
-	int ret = json_v2_query_nonnull(__JQ_TYPE_REF_KIND, jtype, &jkind);
+	int ret = json_v2_query_nonnull(__JQ_TYPE_KIND, jtype, &jkind);
 	assert(JSON_V2_OK == ret && jkind->kind == JSON_V2_TYPE_STRING);
-	SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_REF_KIND, json_v2_dumpb(jkind, cbuf, sizeof(cbuf)));
+	SSL_LOG(TRACE, "asn1 type: `%s`: %s", __JQ_TYPE_KIND, json_v2_dumpb(jkind, cbuf, sizeof(cbuf)));
 
 	const char *type_name = jkind->as.cstring;
 
@@ -2840,7 +2840,7 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	case ASN_V2_TYPE_KIND_CHOICE:
 	case ASN_V2_TYPE_KIND_SET: {
 		const t_json_v2 *jcomponents = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_COMPONENTS, jtype, &jcomponents)) {
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
 			assert(jcomponents->kind == JSON_V2_TYPE_ARRAY);
 			void *content = NULL;
 			t_list_next next = {0};
@@ -2866,14 +2866,14 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF: {
 		const t_json_v2 *jcomponents = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_COMPONENTS, jtype, &jcomponents)) {
-			SSL_LOG(ERROR, "`%s` is not allowed in %s type", __JQ_TYPE_REF_COMPONENTS, asn1_v2_get_type_name(atype->kind));
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_COMPONENTS, jtype, &jcomponents)) {
+			SSL_LOG(ERROR, "`%s` is not allowed in %s type", __JQ_TYPE_COMPONENTS, asn1_v2_get_type_name(atype->kind));
 			goto label_error;
 		}
 		const t_json_v2 *jelement_type = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_COMPONENT_TYPE, jtype, &jelement_type)) {
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_COMPONENT_TYPE, jtype, &jelement_type)) {
 			assert(jelement_type->kind == JSON_V2_TYPE_OBJECT);
-			SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_TYPE_REF_COMPONENT_TYPE, json_v2_dumpb(jelement_type, cbuf, sizeof(cbuf)));
+			SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_TYPE_COMPONENT_TYPE, json_v2_dumpb(jelement_type, cbuf, sizeof(cbuf)));
 			if (SSL_OK != __asn1_v2_schema_parse_type(asn1_module, &atype->as.collection.element_type, jelement_type)) {
 				SSL_LOG(ERROR, "failed to parse %s field type", asn1_v2_get_type_name(atype->kind));
 				goto label_error;
@@ -2886,12 +2886,12 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		const t_json_v2 *jenumeration = NULL;
-		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_REF_ENUMERATION, jtype, &jenumeration)) {
-			SSL_LOG(ERROR, "`%s` is missing in %s type", __JQ_TYPE_REF_ENUMERATION, asn1_v2_get_type_name(atype->kind));
+		if (JSON_V2_OK != json_v2_query_nonnull(__JQ_TYPE_ENUMERATION, jtype, &jenumeration)) {
+			SSL_LOG(ERROR, "`%s` is missing in %s type", __JQ_TYPE_ENUMERATION, asn1_v2_get_type_name(atype->kind));
 			goto label_error;
 		}
 		if (jenumeration->kind != JSON_V2_TYPE_ARRAY) {
-			SSL_LOG(ERROR, "invalid asn1 type: expected `%s` to be json array but got json %s", __JQ_TYPE_REF_ENUMERATION, json_v2_get_type_name(jenumeration->kind));
+			SSL_LOG(ERROR, "invalid asn1 type: expected `%s` to be json array but got json %s", __JQ_TYPE_ENUMERATION, json_v2_get_type_name(jenumeration->kind));
 			goto label_error;
 		}
 		t_htbl_v2 *htable = ft_htbl_v2_create(1024);
@@ -2921,7 +2921,7 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 				SSL_FREE(dumps);
 				if (!ok) {
 					ft_htbl_v2_del(htable, NULL);
-					SSL_LOG(ERROR, "invalid asn1 type: expected `%s` element to be a unique enumeration: %s", __JQ_TYPE_REF_ENUMERATION, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+					SSL_LOG(ERROR, "invalid asn1 type: expected `%s` element to be a unique enumeration: %s", __JQ_TYPE_ENUMERATION, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 					goto label_error;
 				}
 			} else {
@@ -2931,7 +2931,7 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 			ft_list_append_content(&atype->as.enumeration.items, item);
 		}
 		const t_json_v2 *jext_enumeration = NULL;
-		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_EXT_ENUMERATION, jtype, &jext_enumeration)) {
+		if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_EXT_ENUMERATION, jtype, &jext_enumeration)) {
 			assert(jext_enumeration->kind == JSON_V2_TYPE_ARRAY);
 			t_list_next next = {0};
 			void *content = NULL;
@@ -2957,7 +2957,7 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 					SSL_FREE(dumps);
 					if (!ok) {
 						ft_htbl_v2_del(htable, NULL);
-						SSL_LOG(ERROR, "invalid asn1 type: expected `%s` element to be a unique enumeration: %s", __JQ_TYPE_REF_ENUMERATION, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
+						SSL_LOG(ERROR, "invalid asn1 type: expected `%s` element to be a unique enumeration: %s", __JQ_TYPE_ENUMERATION, json_v2_dumpb(jelement, cbuf, sizeof(cbuf)));
 						goto label_error;
 					}
 				} else {
@@ -2992,14 +2992,14 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	}
 
 	const t_json_v2 *jtags = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_TAGS, jtype, &jtags)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_TAGS, jtype, &jtags)) {
 		assert(jtags->kind == JSON_V2_TYPE_ARRAY);
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&jtags->as.list, &next, &content)) {
 			t_asn_v2_tag *atag = NULL;
 			if (SSL_OK != __asn1_v2_schema_parse_tag(asn1_module, &atag, content)) {
-				SSL_LOG(ERROR, "failed to parse `%s` in asn1 type", __JQ_TYPE_REF_TAGS);
+				SSL_LOG(ERROR, "failed to parse `%s` in asn1 type", __JQ_TYPE_TAGS);
 				goto label_error;
 			}
 			ft_list_append_content(&atype->tags, atag);
@@ -3007,14 +3007,14 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	}
 
 	const t_json_v2 *jconstraints = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_CONSTRAINTS, jtype, &jconstraints)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_CONSTRAINTS, jtype, &jconstraints)) {
 		assert(jconstraints->kind == JSON_V2_TYPE_ARRAY);
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&jconstraints->as.list, &next, &content)) {
 			t_asn_v2_constraint *aconstraint = NULL;
 			if (SSL_OK != __asn1_v2_schema_parse_constraint(asn1_module, &aconstraint, content)) {
-				SSL_LOG(ERROR, "failed to parse `%s` in asn1 type", __JQ_TYPE_REF_CONSTRAINTS);
+				SSL_LOG(ERROR, "failed to parse `%s` in asn1 type", __JQ_TYPE_CONSTRAINTS);
 				goto label_error;
 			}
 			ft_list_append_content(&atype->constraints, aconstraint);
@@ -3063,9 +3063,9 @@ static int	__asn1_v2_schema_parse_component(t_asn_v2_module *asn1_module, t_asn_
 	}
 
 	const t_json_v2 *jdefined_by = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_REF_DEFINED_BY, jcomponent, &jdefined_by)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_TYPE_DEFINED_BY, jcomponent, &jdefined_by)) {
 		assert(jdefined_by->kind == JSON_V2_TYPE_STRING);
-		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_TYPE_REF_DEFINED_BY, json_v2_dumpb(jdefined_by, cbuf, sizeof(cbuf)));
+		SSL_LOG(TRACE, "asn1 component: `%s`: %s", __JQ_TYPE_DEFINED_BY, json_v2_dumpb(jdefined_by, cbuf, sizeof(cbuf)));
 		acomponent->defined_by = ft_strdup(jdefined_by->as.cstring);
 	} else {
 		acomponent->defined_by = NULL;
@@ -3116,9 +3116,9 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 	}
 
 	const t_json_v2 *jvalue_refs = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_VALUE_REFS, jschema, &jvalue_refs)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_VALUES, jschema, &jvalue_refs)) {
 		if (jvalue_refs->kind != JSON_V2_TYPE_OBJECT) {
-			SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_VALUE_REFS, json_v2_get_type_name(jvalue_refs->kind));
+			SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_VALUES, json_v2_get_type_name(jvalue_refs->kind));
 			goto label_error;
 		}
 		const char *key = NULL;
@@ -3135,9 +3135,9 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 		}
 	}
 	const t_json_v2 *jtype_refs = NULL;
-	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TYPE_REFS, jschema, &jtype_refs)) {
+	if (JSON_V2_OK == json_v2_query_nonnull(__JQ_SCHEMA_TYPES, jschema, &jtype_refs)) {
 		if (jtype_refs->kind != JSON_V2_TYPE_OBJECT) {
-			SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPE_REFS, json_v2_get_type_name(jvalue_refs->kind));
+			SSL_LOG(ERROR, "invalid schema: expected `%s` to be a json object but got json %s", __JQ_SCHEMA_TYPES, json_v2_get_type_name(jvalue_refs->kind));
 			goto label_error;
 		}
 		const char *key = NULL;

@@ -1,6 +1,6 @@
 {
   "tagMode": "AUTOMATIC",
-  "typeRefs": {
+  "types": {
     "PrivateKeyInfo": {
       "kind": "SEQUENCE",
       "components": [
@@ -17,20 +17,13 @@
         {"id": "payload", "type": {"kind": "ANY"}, "definedBy": "version"},
         {
           "id": "status",
-          "type": {
-            "kind": "ENUMERATED",
-            "enumeration": [["alpha"], ["beta", 5], ["gamma"]],
-            "extEnumeration": [["delta"], ["epsilon", 102], ["zeta"]]
-          },
+          "type": {"kind": "ENUMERATED", "enumeration": [["alpha"], ["beta", 5], ["gamma"]], "extEnumeration": [["delta"], ["epsilon", 102], ["zeta"]]},
           "default": "beta"
         },
         {
           "id": "nested-private-key",
           "type": {"kind": "NestedPrivateKey"},
-          "default": [
-            ["version", 3],
-            ["country", "\"تهران\""]
-          ]
+          "default": [["version", 3], ["country", "\"تهران\""]]
         }
       ]
     },
@@ -61,7 +54,7 @@
       ]
     }
   },
-  "valueRefs": {
+  "values": {
     "myOrg": {"kind": "OBJECT IDENTIFIER", "value": [1, 2, 3, 5, 45, 345324, 23]},
     "myAlgorithm": {"kind": "RELATIVE OBJECT IDENTIFIER", "value": [99122, 1232]},
     "myAuthor": {"kind": "Author", "value": {"fullname": "\"Bob Mop\""}},

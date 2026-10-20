@@ -1,6 +1,6 @@
 {
   "tagMode": "string|null",
-  "typeRefs": {
+  "types": {
     "<type-name>": {
       "kind": "string",
       "tags": [
@@ -29,7 +29,7 @@
       ]
     }
   },
-  "valueRefs": {
+  "values": {
     "<value-name>": {
       "kind": "string",
       "value": "any"

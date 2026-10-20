@@ -1,6 +1,6 @@
 {
   "tagMode": "EXPLICIT",
-  "typeRefs": {
+  "types": {
     "AlgorithmIdentifier": {
       "kind": "SEQUENCE",
       "components": [
