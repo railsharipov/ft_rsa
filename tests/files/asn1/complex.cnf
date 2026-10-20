@@ -10,6 +10,8 @@ extensions     = EXPLICIT:3,SEQUENCE:extensions_sequence
 embedded_der   = OCTWRAP,SEQUENCE:embedded_sequence
 choice_integer = EXPLICIT:4,INTEGER:12345
 choice_string  = EXPLICIT:5,IA5STRING:chosen-string
+dateApproved   = EXPLICIT:9,GENERALIZEDTIME:19920605123443.354Z
+dateSubmitted  = UTCTIME:970922143547Z
 
 [algorithm_id]
 oid            = OID:1.2.840.113549.1.1.11

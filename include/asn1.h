@@ -127,6 +127,7 @@ typedef enum e_asn_v2_type_kind {
 	ASN_V2_TYPE_KIND_SET_OF				 = 18,
 	ASN_V2_TYPE_KIND_ANY				 = 19,
 	ASN_V2_TYPE_KIND_CHOICE				 = 20,
+	ASN_V2_TYPE_KIND_GENERALIZED_TIME	 = 21,
 } t_asn_v2_type_kind;
 
 typedef enum t_asn_v2_universal_tag_number {

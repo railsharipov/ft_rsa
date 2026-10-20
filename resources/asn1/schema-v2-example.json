@@ -6,11 +6,13 @@
       "components": [
         {"id": "version", "type": {"kind": "Version"}, "default": "myVersion"},
         {"id": "date", "type": {"kind": "UTC TIME"}, "default": "970922143547Z"},
+        {"id": "approvedAt", "type": {"kind": "GENERALIZED TIME"}, "default": "19920401093000Z"},
+        {"id": "submittedAt", "type": {"kind": "GENERALIZED TIME"}, "default": "dateSubmitted"},
         {"id": "organization", "type": {"kind": "UTF8 STRING"}, "default": "\"䰾䲁䲘䴉\""},
         {"id": "country", "type": {"kind": "PRINTABLE STRING"}, "default": "\"Belarus\""},
         {"id": "authors", "type": {"kind": "SET OF", "componentType": {"kind": "Author"}}, "default": ["myAuthor"]},
         {"id": "algorithm", "type": {"kind": "OBJECT IDENTIFIER"}, "default": "myOrg"},
-        {"id": "specific-algorithm", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}, "default": [1, 2, "myAlgorithm"]},
+        {"id": "algorithmExtension", "type": {"kind": "OBJECT IDENTIFIER", "tags": [{"class": "CONTEXT-SPECIFIC", "number": 0}]}, "default": [1, 2, "myAlgorithm"]},
         {"id": "data", "type": {"kind": "BIT STRING"}},
         {"id": "payload", "type": {"kind": "ANY"}, "definedBy": "version"},
         {
@@ -60,21 +62,10 @@
     }
   },
   "valueRefs": {
-    "myOrg": {
-      "kind": "OBJECT IDENTIFIER",
-      "value": [1, 2, 3, 5, 45, 345324, 23]
-    },
-    "myAlgorithm": {
-      "kind": "RELATIVE OBJECT IDENTIFIER",
-      "value": [99122, 1232]
-    },
-    "myAuthor": {
-      "kind": "Author",
-      "value": {"fullname": "\"Bob Mop\""}
-    },
-    "myVersion": {
-      "kind": "Version",
-      "value": 7
-    }
+    "myOrg": {"kind": "OBJECT IDENTIFIER", "value": [1, 2, 3, 5, 45, 345324, 23]},
+    "myAlgorithm": {"kind": "RELATIVE OBJECT IDENTIFIER", "value": [99122, 1232]},
+    "myAuthor": {"kind": "Author", "value": {"fullname": "\"Bob Mop\""}},
+    "myVersion": {"kind": "Version", "value": 7},
+    "dateSubmitted": {"kind": "GENERALIZED TIME", "value": "19920605123443.354Z"}
   }
 }

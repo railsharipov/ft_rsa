@@ -41,6 +41,7 @@
 #define ASN_V2_TYPE_NAME_SET_OF             "SET OF"
 #define ASN_V2_TYPE_NAME_CHOICE             "CHOICE"
 #define ASN_V2_TYPE_NAME_ANY                "ANY"
+#define ASN_V2_TYPE_NAME_GENERALIZED_TIME   "GENERALIZED TIME"
 
 #define ASN_V2_CONSTRAINT_NAME_RANGE		"RANGE"
 #define ASN_V2_CONSTRAINT_NAME_SIZE 		"SIZE"
@@ -112,6 +113,7 @@ const char *asn1_v2_get_type_name(t_asn_v2_type_kind type)
 	case ASN_V2_TYPE_KIND_SET_OF:           	return ASN_V2_TYPE_NAME_SET_OF;
 	case ASN_V2_TYPE_KIND_CHOICE:           	return ASN_V2_TYPE_NAME_CHOICE;
 	case ASN_V2_TYPE_KIND_ANY:              	return ASN_V2_TYPE_NAME_ANY;
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:  	return ASN_V2_TYPE_NAME_GENERALIZED_TIME;
 	default:                                	return "unknown";
 	}
 }
@@ -173,6 +175,7 @@ static t_asn_v2_type_kind __asn1_v2_schema_get_type_by_name(const char *name)
 	if (ft_streq(name, ASN_V2_TYPE_NAME_NUMERIC_STRING))		return (ASN_V2_TYPE_KIND_NUMERIC_STRING);
 	if (ft_streq(name, ASN_V2_TYPE_NAME_VISIBLE_STRING))		return (ASN_V2_TYPE_KIND_VISIBLE_STRING);
 	if (ft_streq(name, ASN_V2_TYPE_NAME_UTC_TIME))				return (ASN_V2_TYPE_KIND_UTC_TIME);
+	if (ft_streq(name, ASN_V2_TYPE_NAME_GENERALIZED_TIME))		return (ASN_V2_TYPE_KIND_GENERALIZED_TIME);
 	if (ft_streq(name, ASN_V2_TYPE_NAME_NULL))					return (ASN_V2_TYPE_KIND_NULL);
 	if (ft_streq(name, ASN_V2_TYPE_NAME_RELATIVE_OBJECT_ID))	return (ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID);
 	if (ft_streq(name, ASN_V2_TYPE_NAME_OBJECT_ID))				return (ASN_V2_TYPE_KIND_OBJECT_ID);
@@ -754,6 +757,7 @@ static int __asn1_v2_schema_validate_type(const t_json_v2 *jschema, const t_json
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -1022,6 +1026,7 @@ static char *__asn1_v2_value_dumps(const t_asn_v2_value *asn1_value)
 		SSL_FREE(escaped);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME: {
 		ft_ostr_appendf(&ostring, "\"%s\"", asn1_value->as.cstring);
 		break;
@@ -1211,6 +1216,7 @@ static char *__asn1_v2_type_dumps(const t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -1619,6 +1625,7 @@ static void __asn1_v2_value_clear(t_asn_v2_value *asn1_value)
 	case ASN_V2_TYPE_KIND_IA5_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING: {
 		SSL_FREE(asn1_value->as.cstring);
 		asn1_value->as.cstring = NULL;
@@ -1689,6 +1696,7 @@ static void	__asn1_v2_value_copy(const t_asn_v2_value *src, t_asn_v2_value *dst)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		dst->as.cstring = ft_strdup(src->as.cstring);
 		break;
@@ -1822,6 +1830,7 @@ static void __asn1_v2_type_clear(t_asn_v2_type *asn1_type)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -1890,6 +1899,7 @@ static void	__asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -1947,6 +1957,7 @@ static bool	__asn1_v2_type_eq(const t_asn_v2_type *a, const t_asn_v2_type *b)
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -2234,6 +2245,7 @@ static int	__asn1_v2_type_resolve_automatic_tags(t_asn_v2_module *asn1_module, t
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -2333,7 +2345,8 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_module *asn1_module, const t_as
 		break;
 	}
 	case ASN_V2_TYPE_KIND_UTC_TIME: {
-		expected_fmt = "UTC TIME STRING: YYMMDDhhmmssZ";
+		// TODO: Handle leap years, etc.
+		expected_fmt = "YYMMDDhhmmssZ";
 		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
@@ -2347,6 +2360,42 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_module *asn1_module, const t_as
 		if (t[3] < 0 || t[3] > 23) goto label_error;
 		if (t[4] < 0 || t[4] > 59) goto label_error;
 		if (t[5] < 0 || t[5] > 59) goto label_error;
+		if (z != 'Z') goto label_error;
+		avalue->as.cstring = ft_strdup(s);
+		break;
+	}
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME: {
+		// TODO: Handle leap years, etc.
+		expected_fmt = "YYYYMMDDhhmmss[.fraction]Z";
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		const char *s = jvalue->as.cstring;
+		size_t slen = ft_strlen(s);
+		int t[6] = {0};
+		char z = 0;
+		bool has_fraction = false;
+		int fraction = 0;
+		size_t scanned = 0;
+		int matches = textutil_sscanf(s, slen, "%4d%2d%2d%2d%2d%2d%zn", t, t+1, t+2, t+3, t+4, t+5, &scanned);
+		if (matches != 6 || scanned != 14) goto label_error;
+		if (t[1] < 1 || t[1] > 12) goto label_error;
+		if (t[2] < 1 || t[2] > 31) goto label_error;
+		if (t[3] < 0 || t[3] > 23) goto label_error;
+		if (t[4] < 0 || t[4] > 59) goto label_error;
+		if (t[5] < 0 || t[5] > 59) goto label_error;
+
+		if (scanned < slen && s[scanned] == '.') {
+			has_fraction = true;
+			size_t scanned_suffix = 0;
+			matches = textutil_sscanf(s+scanned, slen-scanned, ".%d%c%zn", &fraction, &z, &scanned_suffix);
+			if (matches != 2 || scanned + scanned_suffix != slen) goto label_error;
+		}
+		else {
+			if (scanned+1 != slen) goto label_error;
+			z = s[scanned];
+		}
+
+		// Zero fraction must be omitted.
+		if (has_fraction && fraction == 0) goto label_error;
 		if (z != 'Z') goto label_error;
 		avalue->as.cstring = ft_strdup(s);
 		break;
@@ -2931,6 +2980,7 @@ static int	__asn1_v2_schema_parse_type(t_asn_v2_module *asn1_module, t_asn_v2_ty
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
@@ -3217,6 +3267,7 @@ static void	__der_v2_value_copy(t_der_v2_value *src, t_der_v2_value *dst)
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		if (NULL != src->as.cstring) dst->as.cstring = ft_strdup(src->as.cstring);
@@ -3300,6 +3351,7 @@ static void __der_v2_value_clear(t_der_v2_value *der_value)
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		if (NULL != der_value->as.cstring) SSL_FREE(der_value->as.cstring);
@@ -3425,6 +3477,7 @@ static void __der_v2_type_delete(t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
@@ -3464,6 +3517,8 @@ static t_der_v2_tag __der_v2_get_tag_universal(t_asn_v2_type_kind type)
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_VISIBLE_STRING, };
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_UTC_TIME, };
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
+		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_GENERALIZED_TIME, };
 	case ASN_V2_TYPE_KIND_NULL:
 		return (t_der_v2_tag){ .class = uclass, .constructed = false, .number = ASN_V2_TAG_NUMBER_NULL, };
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
@@ -3518,6 +3573,7 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		if (NULL != asn1_value->as.cstring) compiled->as.cstring = ft_strdup(asn1_value->as.cstring);
@@ -3746,6 +3802,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
@@ -3892,6 +3949,7 @@ static char *__der_v2_value_dumps(const t_der_v2_value *der_value)
 		SSL_FREE(escaped);
 		break;
 	}
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME: {
 		ft_ostr_appendf(&ostring, "\"%s\"", der_value->as.cstring);
 		break;
@@ -4114,6 +4172,7 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING:
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING:
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME:
 	case ASN_V2_TYPE_KIND_UTC_TIME:
 	case ASN_V2_TYPE_KIND_NULL:
 	case ASN_V2_TYPE_KIND_OBJECT_ID:
@@ -4204,6 +4263,7 @@ static int	__der_v2_generic_decode_printable_string(t_der_v2_tlv tlv, t_der_v2_v
 static int	__der_v2_generic_decode_numeric_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_visible_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_utc_time(t_der_v2_tlv tlv, t_der_v2_value **der_value);
+static int	__der_v2_generic_decode_generalized_time(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_octet_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_bit_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
 static int	__der_v2_generic_decode_utf8_string(t_der_v2_tlv tlv, t_der_v2_value **der_value);
@@ -4323,7 +4383,7 @@ static struct s_der_v2_generic_decode {
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ __der_v2_generic_decode_ia5_string, "IA5_STRING" },
 	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ __der_v2_generic_decode_utc_time, "UTC_TIME" },
-	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
+	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ __der_v2_generic_decode_generalized_time, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
 	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ __der_v2_generic_decode_visible_string, "VISIBLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27 */	{ NULL, "GENERAL_STRING" },
@@ -4638,6 +4698,64 @@ label_error:
 	return (SSL_ERR);
 }
 
+static int	__der_v2_generic_decode_generalized_time(t_der_v2_tlv tlv, t_der_v2_value **der_value)
+{
+	const char *expected_fmt = "YYYYMMDDhhmmss[.fraction]Z";
+	const size_t min_expected_len = 15;
+	UNUSED(expected_fmt);
+
+	const char *expected_prefix_fmt = "YYYYMMDDhhmmss";
+	const size_t expected_prefix_len = ft_strlen(expected_prefix_fmt);
+
+	SSL_LOG(TRACE, "generalized time: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
+
+	if (tlv.length < min_expected_len || tlv.value[tlv.length-1] != 'Z') goto label_error;
+
+	int t[6] = {0};
+	char z = 0;
+	bool has_fraction = false;
+	int fraction = 0;
+	size_t scanned = 0;
+	int matches = textutil_sscanf((const char *)tlv.value, tlv.length, "%4d%2d%2d%2d%2d%2d%zn", t, t+1, t+2, t+3, t+4, t+5, &scanned);
+	if (matches != 6 || scanned != expected_prefix_len) goto label_error;
+	if (t[1] < 1 || t[1] > 12) goto label_error;
+	if (t[2] < 1 || t[2] > 31) goto label_error;
+	if (t[3] < 0 || t[3] > 23) goto label_error;
+	if (t[4] < 0 || t[4] > 59) goto label_error;
+	if (t[5] < 0 || t[5] > 59) goto label_error;
+
+	if (scanned < tlv.length && tlv.value[scanned] == '.') {
+		has_fraction = true;
+		if (scanned+3 > tlv.length) goto label_error;
+		size_t scanned_suffix = 0;
+		matches = textutil_sscanf((const char *)tlv.value+scanned, tlv.length-scanned, ".%d%c%zn", &fraction, &z, &scanned_suffix);
+		if (matches != 2 || scanned + scanned_suffix != tlv.length) goto label_error;
+	}
+	else {
+		if (scanned+1 != tlv.length) goto label_error;
+		z = tlv.value[scanned];
+	}
+
+	// Zero fraction must be omitted.
+	if (has_fraction && fraction == 0) goto label_error;
+	if (z != 'Z') goto label_error;
+
+	t_der_v2_value *dvalue = __der_v2_value_create();
+	dvalue->kind = ASN_V2_TYPE_KIND_GENERALIZED_TIME;
+	char *cstr = NULL;
+	SSL_ALLOC(cstr, tlv.length+1);
+	ft_memcpy(cstr, tlv.value, tlv.length);
+	cstr[tlv.length] = 0;
+	dvalue->as.cstring = cstr;
+
+	*der_value = dvalue;
+	return (SSL_OK);
+
+label_error:
+	SSL_LOG(ERROR, "generalized time: bad value");
+	return (SSL_ERR);
+}
+
 static int	__der_v2_generic_decode_numeric_string(t_der_v2_tlv tlv, t_der_v2_value **der_value)
 {
 	SSL_LOG(TRACE, "numeric string: tlv tag={class=%d,number=%d,constructed=%d}", tlv.tag.class, tlv.tag.number, tlv.tag.constructed);
@@ -4898,6 +5016,7 @@ static int	__der_v2_decode_octet_string(t_der_v2_tlv tlv, const t_der_v2_type *d
 static int	__der_v2_decode_bit_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_utf8_string(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_utc_time(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
+static int	__der_v2_decode_generalized_time(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_boolean(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_sequence(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 static int	__der_v2_decode_set(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value);
@@ -4934,7 +5053,7 @@ static struct s_der_v2_decode {
 	/* ASN_V2_TAG_NUMBER_VIDEOTEX_STRING    = 21 */	{ NULL, "VIDEOTEX_STRING" },
 	/* ASN_V2_TAG_NUMBER_IA5_STRING         = 22 */	{ __der_v2_decode_ia5_string, "IA5_STRING" },
 	/* ASN_V2_TAG_NUMBER_UTC_TIME           = 23 */	{ __der_v2_decode_utc_time, "UTC_TIME" },
-	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ NULL, "GENERALIZED_TIME" },
+	/* ASN_V2_TAG_NUMBER_GENERALIZED_TIME   = 24 */	{ __der_v2_decode_generalized_time, "GENERALIZED_TIME" },
 	/* ASN_V2_TAG_NUMBER_GRAPHIC_STRING     = 25 */	{ NULL, "GRAPHIC_STRING" },
 	/* ASN_V2_TAG_NUMBER_VISIBLE_STRING     = 26 */	{ __der_v2_decode_visible_string, "VISIBLE_STRING" },
 	/* ASN_V2_TAG_NUMBER_GENERAL_STRING     = 27 */	{ NULL, "GENERAL_STRING" },
@@ -5365,6 +5484,12 @@ static int	__der_v2_decode_utc_time(t_der_v2_tlv tlv, const t_der_v2_type *der_t
 	return (__der_v2_generic_decode_utc_time(tlv, der_value));
 }
 
+static int	__der_v2_decode_generalized_time(t_der_v2_tlv tlv, const t_der_v2_type *der_type, t_der_v2_value **der_value)
+{
+	UNUSED(der_type);
+	return (__der_v2_generic_decode_generalized_time(tlv, der_value));
+}
+
 /****************************************************************************/
 /****************************************************************************/
 /****************************************************************************/
@@ -5381,6 +5506,7 @@ static int	__der_v2_generic_encode_printable_string(uint8_t **encoded, size_t *s
 static int	__der_v2_generic_encode_numeric_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
 static int	__der_v2_generic_encode_visible_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
 static int	__der_v2_generic_encode_utc_time(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
+static int	__der_v2_generic_encode_generalized_time(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
 static int	__der_v2_generic_encode_octet_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
 static int	__der_v2_generic_encode_bit_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
 static int	__der_v2_generic_encode_utf8_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value);
@@ -5559,6 +5685,10 @@ static int	__der_v2_generic_encode_value(t_ostring *ostring, const t_der_v2_valu
 	}
 	case ASN_V2_TYPE_KIND_UTC_TIME: {
 		f_encode = __der_v2_generic_encode_utc_time;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME: {
+		f_encode = __der_v2_generic_encode_generalized_time;
 		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
@@ -5786,6 +5916,60 @@ label_error:
 	return (SSL_ERR);
 }
 
+static int	__der_v2_generic_encode_generalized_time(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
+{
+	const char *expected_fmt = "YYYYMMDDhhmmss[.fraction]Z";
+	const size_t min_expected_len = 15;
+	UNUSED(expected_fmt);
+
+	const char *expected_prefix_fmt = "YYYYMMDDhhmmss";
+	const size_t expected_prefix_len = ft_strlen(expected_prefix_fmt);
+
+	SSL_LOG(TRACE, "generalized time: encoding");
+
+	const char *s = der_value->as.cstring;
+	size_t slen = ft_strlen(s);
+
+	if (slen < min_expected_len || s[slen-1] != 'Z') goto label_error;
+
+	int t[6] = {0};
+	char z = 0;
+	bool has_fraction = false;
+	int fraction = 0;
+	size_t scanned = 0;
+	int matches = textutil_sscanf(s, slen, "%4d%2d%2d%2d%2d%2d%zn", t, t+1, t+2, t+3, t+4, t+5, &scanned);
+	if (matches != 6 || scanned != expected_prefix_len) goto label_error;
+	if (t[1] < 1 || t[1] > 12) goto label_error;
+	if (t[2] < 1 || t[2] > 31) goto label_error;
+	if (t[3] < 0 || t[3] > 23) goto label_error;
+	if (t[4] < 0 || t[4] > 59) goto label_error;
+	if (t[5] < 0 || t[5] > 59) goto label_error;
+
+	if (scanned < slen && s[scanned] == '.') {
+		has_fraction = true;
+		if (scanned+3 > slen) goto label_error;
+		size_t scanned_suffix = 0;
+		matches = textutil_sscanf(s+scanned, slen-scanned, ".%d%c%zn", &fraction, &z, &scanned_suffix);
+		if (matches != 2 || scanned + scanned_suffix != slen) goto label_error;
+	}
+	else {
+		if (scanned+1 != slen) goto label_error;
+		z = s[scanned];
+	}
+
+	// Zero fraction must be omitted.
+	if (has_fraction && fraction == 0) goto label_error;
+	if (z != 'Z') goto label_error;
+
+	*encoded = (uint8_t *)ft_strdup(s);
+	*size = slen;
+	return (SSL_OK);
+
+label_error:
+	SSL_LOG(ERROR, "generalized time: bad value");
+	return (SSL_ERR);
+}
+
 static int	__der_v2_generic_encode_octet_string(uint8_t **encoded, size_t *size, const t_der_v2_value *der_value)
 {
 	SSL_LOG(TRACE, "octet string: encoding");
@@ -5941,6 +6125,7 @@ static int	__der_v2_encode_printable_string(uint8_t **encoded, size_t *size, con
 static int	__der_v2_encode_numeric_string(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
 static int	__der_v2_encode_visible_string(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
 static int	__der_v2_encode_utc_time(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
+static int	__der_v2_encode_generalized_time(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
 static int	__der_v2_encode_octet_string(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
 static int	__der_v2_encode_bit_string(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
 static int	__der_v2_encode_utf8_string(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value);
@@ -6061,6 +6246,10 @@ static int	__der_v2_encode_value(t_ostring *ostring, const t_der_v2_type *der_ty
 	}
 	case ASN_V2_TYPE_KIND_UTC_TIME: {
 		f_encode = __der_v2_encode_utc_time;
+		break;
+	}
+	case ASN_V2_TYPE_KIND_GENERALIZED_TIME: {
+		f_encode = __der_v2_encode_generalized_time;
 		break;
 	}
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
@@ -6368,6 +6557,12 @@ static int	__der_v2_encode_utc_time(uint8_t **encoded, size_t *size, const t_der
 {
 	UNUSED(der_type);
 	return (__der_v2_generic_encode_utc_time(encoded, size, der_value));
+}
+
+static int	__der_v2_encode_generalized_time(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value)
+{
+	UNUSED(der_type);
+	return (__der_v2_generic_encode_generalized_time(encoded, size, der_value));
 }
 
 static int	__der_v2_encode_octet_string(uint8_t **encoded, size_t *size, const t_der_v2_type *der_type, const t_der_v2_value *der_value)
