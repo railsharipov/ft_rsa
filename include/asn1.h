@@ -211,7 +211,7 @@ typedef struct s_asn_v2_value {
 		t_asn_v2_enum enumerated;
 		struct { t_list arcs; } object_id;
 		struct { char *id; struct s_asn_v2_value *value; } choice;
-		struct { char *defined_by_id; t_ostring octets; } any;
+		struct { t_ostring octets; } any;
 		struct { t_list	elements; } composite;
 	} as;
 } t_asn_v2_value;
@@ -243,7 +243,7 @@ typedef struct s_asn_v2_type {
 		struct { t_list elements; } composite;
 		struct { struct s_asn_v2_type *element_type; } collection;
 		struct { t_list items; } enumeration;
-		struct { char *defined_by_id; } any;
+		struct { char *defined_by; } any;
 	} as;
 } t_asn_v2_type;
 
@@ -256,9 +256,6 @@ typedef struct s_asn_v2_component {
 
 typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode tag_mode;
-	t_htbl_v2 type_refs;
-	t_htbl_v2 value_refs;
-
 	t_htbl_v2 symbol_table;
 } t_asn_v2_module;
 
@@ -278,9 +275,9 @@ typedef struct s_asn_v2_symbol {
 	t_asn_v2_symbol_kind kind;
 	t_asn_v2_symbol_state state;
 	const t_json_v2 *source;
-	struct {
-		t_asn_v2_type *type;
-		t_asn_v2_value *value;
+	union {
+		struct { t_asn_v2_type *type; } type_ref;
+		struct { t_asn_v2_type *type; t_asn_v2_value *value; } value_ref;
 	} resolved;
 } t_asn_v2_symbol;
 
@@ -322,7 +319,7 @@ typedef struct s_der_v2_value {
 		t_asn_v2_enum enumerated;
 		struct { struct s_der_v2_value *items; size_t count; } composite;
 		struct { char *id; struct s_der_v2_value *value; } choice;
-		struct { char *defined_by_id; t_ostring octets; } any;
+		struct { t_ostring octets; } any;
 	} as;
 } t_der_v2_value;
 
@@ -334,6 +331,7 @@ typedef struct s_der_v2_type {
 		struct { t_list elements; } composite;
 		struct { struct s_der_v2_type *element_type; } collection;
 		struct { t_list items; } enumeration;
+		struct { struct s_der_v2_component *defined_by; } any;
 	} as;
 } t_der_v2_type;
 
@@ -343,6 +341,8 @@ typedef struct s_der_v2_component {
 	t_der_v2_value *default_value;
 	bool optional;
 } t_der_v2_component;
+
+t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name);
 
 int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type);
 

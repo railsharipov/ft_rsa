@@ -46,13 +46,13 @@ int	cmd_dev(const t_cmd *cmd)
 // 	const char *jschema_filename = "resources/asn1/schema-v2-pkcs1-RSA.json";
 // 	const char *asn1_type_name = "RSAPrivateKey";
 // 	const char *der_filename = "tests/files/keys/pkcs1-rsaPrivateKey.der";
-
-	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
-	const char *asn1_type_name = "PrivateKeyInfo";
-	const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
 //
-// 	const char *jschema_filename = "resources/asn1/schema-v2-example.json";
+// 	const char *jschema_filename = "resources/asn1/schema-v2-pkcs8-KeyContainers.json";
 // 	const char *asn1_type_name = "PrivateKeyInfo";
+// 	const char *der_filename = "tests/files/keys/pkcs8-privateKeyInfo.der";
+
+	const char *jschema_filename = "resources/asn1/schema-v2-example.json";
+	const char *asn1_type_name = "PrivateKeyInfo";
 
 	const t_json_v2 *jschema = NULL;
 	if (JSON_OK != json_v2_parse_file(jschema_filename, &jschema)) {
@@ -82,7 +82,7 @@ int	cmd_dev(const t_cmd *cmd)
 	char *amodule_dumps = asn1_v2_module_pretty_dumps(asn1_module, 1, 320, true);
 	ft_printf("%s\n", amodule_dumps);
 
-	const t_asn_v2_type *asn1_type = ft_htbl_v2_get(&asn1_module->type_refs, asn1_type_name);
+	const t_asn_v2_type *asn1_type = asn1_v2_module_get_type(asn1_module, asn1_type_name);
 	assert(NULL != asn1_type);
 
 	t_der_v2_type *der_type = NULL;
@@ -94,54 +94,54 @@ int	cmd_dev(const t_cmd *cmd)
 	}
 	char *dtype_dumps = der_v2_type_pretty_dumps(der_type, 0, 320, true);
 	ft_printf("%s\n", dtype_dumps);
-
-	t_ostring encoded = {0};
-	if (SSL_OK != file_read_all(der_filename, &encoded)) {
-		SSL_LOG(ERROR, "file read error: %s", der_filename);
-		return (SSL_ERR);
-	}
-
-	t_der_v2_value *der_value = NULL;
-	if (SSL_OK != der_v2_decode(encoded.content, encoded.size, der_type, &der_value)) {
-		SSL_LOG(ERROR, "der decode failed");
-		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "der decode success");
-	}
-	char *dvalue_dumps = der_v2_value_pretty_dumps(der_value, 0, 320, true);
-	ft_printf("%s\n", dvalue_dumps);
-
-	t_ostring re_encoded = {0};
-	if (SSL_OK != der_v2_encode(&re_encoded.content, &re_encoded.size, der_type, der_value)) {
-		SSL_LOG(ERROR, "der encode failed");
-		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "der encode success");
-	}
-	char *encoded_dumps = ft_bytes_dumps_hex(encoded.content, encoded.size);
-	ft_printf("***ENCODED***\n");
-	ft_printf("%s\n", encoded_dumps);
-	ft_printf("***RE-ENCODED***\n");
-	char *re_encoded_dumps = ft_bytes_dumps_hex(re_encoded.content, re_encoded.size);
-	ft_printf("%s\n", re_encoded_dumps);
-
-// 	const char *complex_der_filename = "tests/files/asn1/complex.der";
-// 	t_ostring generic_encoded = {0};
-// 	if (SSL_OK != file_read_all(complex_der_filename, &generic_encoded)) {
-// 		SSL_LOG(ERROR, "file read error: %s", complex_der_filename);
+//
+// 	t_ostring encoded = {0};
+// 	if (SSL_OK != file_read_all(der_filename, &encoded)) {
+// 		SSL_LOG(ERROR, "file read error: %s", der_filename);
 // 		return (SSL_ERR);
 // 	}
 //
-// 	t_der_v2_value *generic_der_value = NULL;
-// 	if (SSL_OK != der_v2_generic_decode(generic_encoded.content, generic_encoded.size, &generic_der_value)) {
-// 		SSL_LOG(ERROR, "der generic decode failed");
+// 	t_der_v2_value *der_value = NULL;
+// 	if (SSL_OK != der_v2_decode(encoded.content, encoded.size, der_type, &der_value)) {
+// 		SSL_LOG(ERROR, "der decode failed");
 // 		return (SSL_ERR);
 // 	} else {
-// 		SSL_LOG(INFO, "der generic decode success");
+// 		SSL_LOG(INFO, "der decode success");
 // 	}
-// 	char *generic_dvalue_dumps = der_v2_value_pretty_dumps(generic_der_value, 0, 320, true);
-// 	ft_printf("%s\n", generic_dvalue_dumps);
+// 	char *dvalue_dumps = der_v2_value_pretty_dumps(der_value, 0, 320, true);
+// 	ft_printf("%s\n", dvalue_dumps);
 //
+// 	t_ostring re_encoded = {0};
+// 	if (SSL_OK != der_v2_encode(&re_encoded.content, &re_encoded.size, der_type, der_value)) {
+// 		SSL_LOG(ERROR, "der encode failed");
+// 		return (SSL_ERR);
+// 	} else {
+// 		SSL_LOG(INFO, "der encode success");
+// 	}
+// 	char *encoded_dumps = ft_bytes_dumps_hex(encoded.content, encoded.size);
+// 	ft_printf("***ENCODED***\n");
+// 	ft_printf("%s\n", encoded_dumps);
+// 	ft_printf("***RE-ENCODED***\n");
+// 	char *re_encoded_dumps = ft_bytes_dumps_hex(re_encoded.content, re_encoded.size);
+// 	ft_printf("%s\n", re_encoded_dumps);
+
+	const char *complex_der_filename = "tests/files/asn1/complex.der";
+	t_ostring generic_encoded = {0};
+	if (SSL_OK != file_read_all(complex_der_filename, &generic_encoded)) {
+		SSL_LOG(ERROR, "file read error: %s", complex_der_filename);
+		return (SSL_ERR);
+	}
+
+	t_der_v2_value *generic_der_value = NULL;
+	if (SSL_OK != der_v2_generic_decode(generic_encoded.content, generic_encoded.size, &generic_der_value)) {
+		SSL_LOG(ERROR, "der generic decode failed");
+		return (SSL_ERR);
+	} else {
+		SSL_LOG(INFO, "der generic decode success");
+	}
+	char *generic_dvalue_dumps = der_v2_value_pretty_dumps(generic_der_value, 0, 320, true);
+	ft_printf("%s\n", generic_dvalue_dumps);
+
 // 	t_ostring generic_re_encoded = {0};
 // 	if (SSL_OK != der_v2_generic_encode(&generic_re_encoded.content, &generic_re_encoded.size, generic_der_value)) {
 // 		SSL_LOG(ERROR, "der generic encode failed");
