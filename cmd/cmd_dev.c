@@ -63,12 +63,6 @@ int	cmd_dev(const t_cmd *cmd)
 		SSL_LOG(ERROR, "invalid json");
 		return (SSL_ERR);
 	}
-	if (SSL_OK != asn1_v2_schema_validate(jschema)) {
-		SSL_LOG(ERROR, "invalid asn1 schema");
-		return (SSL_ERR);
-	} else {
-		SSL_LOG(INFO, "asn1 schema is valid");
-	}
 	// char *json_dumps = json_v2_pretty_dumps(jschema, 2, 240, true);
 	// ft_printf("%s\n", json_dumps);
 
