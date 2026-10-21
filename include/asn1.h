@@ -93,7 +93,8 @@ char	*asn1_oid_get_oid(const char *name);
 //////////////
 
 typedef enum e_asn_v2_tag_mode {
-	ASN_V2_TAG_MODE_EXPLICIT = 0,
+	ASN_V2_TAG_MODE_DEFAULT = 0,
+	ASN_V2_TAG_MODE_EXPLICIT,
 	ASN_V2_TAG_MODE_IMPLICIT,
 	ASN_V2_TAG_MODE_AUTOMATIC,
 } t_asn_v2_tag_mode;
