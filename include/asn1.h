@@ -258,6 +258,31 @@ typedef struct s_asn_v2_constraint {
 	} as;
 } t_asn_v2_constraint;
 
+// typedef enum e_asn_v2_type_kind {
+// 	ASN_V2_TYPE_KIND_BUILTIN = 0,
+// 	ASN_V2_TYPE_KIND_NAMED,
+// 	ASN_V2_TYPE_KIND_REFERENCED,
+// 	ASN_V2_TYPE_KIND_COMPONENTS_OF,
+// } t_asn_v2_type_kind;
+//
+// typedef struct s_asn_v2_type {
+// 	t_asn_v2_type_kind kind;
+// 	char *id;
+// 	t_list tags;
+// 	t_list constraints;
+// 	t_asn_v2_value *default_value;
+// 	char *defined_by;
+// 	bool optional;
+// 	union {
+// 		struct { t_asn_v2_builtin_type_kind kind } builtin;
+// 		struct { char *module; char *name } referenced;
+// 		struct { struct s_asn_v2_type *type } components_of;
+// 		struct { t_list elements; } composite;
+// 		struct { struct s_asn_v2_type *element_type; } collection;
+// 		struct { t_list items; bool extendable; } enumeration;
+// 	} as;
+// } t_asn_v2_type;
+
 typedef struct s_asn_v2_type {
 	t_asn_v2_type_kind kind;
 	t_list tags;
@@ -276,11 +301,6 @@ typedef struct s_asn_v2_component {
 	char			*defined_by;
 	bool 			optional;
 } t_asn_v2_component;
-
-typedef struct s_asn_v2_module {
-	t_asn_v2_tag_mode tag_mode;
-	t_htbl_v2 symbol_table;
-} t_asn_v2_module;
 
 typedef enum e_asn_v2_symbol_state {
     ASN_V2_SYMBOL_STATE_UNRESOLVED = 0,
@@ -303,6 +323,17 @@ typedef struct s_asn_v2_symbol {
 		struct { t_asn_v2_type *type; t_asn_v2_value *value; } value_ref;
 	} resolved;
 } t_asn_v2_symbol;
+
+typedef struct s_asn_v2_symbol_table {
+	struct s_asn_v2_symbol_table *parent;
+	t_htbl_v2 symbols;
+} t_asn_v2_symbol_table;
+
+typedef struct s_asn_v2_module {
+	t_asn_v2_tag_mode tag_mode;
+	t_asn_v2_symbol_table symbol_table;
+	char *name;
+} t_asn_v2_module;
 
 int	asn1_v2_schema_validate(const t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema);

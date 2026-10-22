@@ -849,7 +849,7 @@ char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module)
 	const char *key = NULL;
 	void *value = NULL;
 	size_t commas = 0;
-	while (ft_htbl_v2_next(&asn1_module->symbol_table, &next, &key, &value)) {
+	while (ft_htbl_v2_next(&asn1_module->symbol_table.symbols, &next, &key, &value)) {
 		// SSL_LOG(TRACE, "dumping asn1 type: %s", key);
 		t_asn_v2_symbol *symbol = value;
 		if (symbol->kind == ASN_V2_SYMBOL_KIND_TYPE_REF) {
@@ -862,7 +862,7 @@ char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module)
 	ft_ostr_append_cstr(&ostring, "},\"values\":{");
 	next = (t_htbl_v2_next){0};
 	commas = 0;
-	while (ft_htbl_v2_next(&asn1_module->symbol_table, &next, &key, &value)) {
+	while (ft_htbl_v2_next(&asn1_module->symbol_table.symbols, &next, &key, &value)) {
 		// SSL_LOG(TRACE, "dumping asn1 value: %s", key);
 		t_asn_v2_symbol *symbol = value;
 		if (symbol->kind == ASN_V2_SYMBOL_KIND_VALUE_REF) {
@@ -1593,7 +1593,7 @@ static t_asn_v2_module *__asn1_v2_module_create(void)
 	t_asn_v2_module *asn1_module = NULL;
 	SSL_ALLOC(asn1_module, sizeof(t_asn_v2_module));
 	*asn1_module = (t_asn_v2_module){0};
-	ft_htbl_v2_init(&asn1_module->symbol_table, 512);
+	ft_htbl_v2_init(&asn1_module->symbol_table.symbols, 512);
 	return (asn1_module);
 }
 
@@ -1605,7 +1605,7 @@ static void __asn1_v2_module_delete(t_asn_v2_module *asn1_module)
 
 static void __asn1_v2_module_clear(t_asn_v2_module *asn1_module)
 {
-	ft_htbl_v2_clear(&asn1_module->symbol_table, __asn1_v2_symbol_delete_adapter);
+	ft_htbl_v2_clear(&asn1_module->symbol_table.symbols, __asn1_v2_symbol_delete_adapter);
 }
 
 static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *dst)
@@ -1615,9 +1615,9 @@ static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *d
 		const char *key = NULL;
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
-		while (ft_htbl_v2_next(&src->symbol_table, &next, &key, &value)) {
+		while (ft_htbl_v2_next(&src->symbol_table.symbols, &next, &key, &value)) {
 			t_asn_v2_symbol *copy_symbol = __asn1_v2_symbol_copy_adapter(value);
-			bool ok = ft_htbl_v2_set(&dst->symbol_table, key, copy_symbol);
+			bool ok = ft_htbl_v2_set(&dst->symbol_table.symbols, key, copy_symbol);
 			assert(ok);
 		}
 	}
@@ -1625,9 +1625,9 @@ static void __asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *d
 
 /****************************************************************************/
 
-static int	__asn1_v2_schema_parse_component(t_htbl_v2 *symbol_table, t_asn_v2_component **asn1_component, const t_json_v2 *jcomponent);
-static int	__asn1_v2_schema_parse_type(t_htbl_v2 *symbol_table, t_asn_v2_type **asn1_type, const t_json_v2 *jtype);
-static int	__asn1_v2_schema_parse_value(t_htbl_v2 *symbol_table, const t_asn_v2_type *asn1_type, t_asn_v2_value **asn1_value, const t_json_v2 *jvalue);
+static int	__asn1_v2_schema_parse_component(t_asn_v2_symbol_table *symbol_table, t_asn_v2_component **asn1_component, const t_json_v2 *jcomponent);
+static int	__asn1_v2_schema_parse_type(t_asn_v2_symbol_table *symbol_table, t_asn_v2_type **asn1_type, const t_json_v2 *jtype);
+static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, const t_asn_v2_type *asn1_type, t_asn_v2_value **asn1_value, const t_json_v2 *jvalue);
 
 static bool __asn1_v2_is_symbol_name(const char *s)
 {
@@ -1647,27 +1647,54 @@ static bool __asn1_v2_is_symbol_name(const char *s)
 	return true;
 }
 
-static bool __asn1_v2_symbol_is_type_ref(const t_htbl_v2 *symbol_table, const char *s)
+static bool __asn1_v2_symbol_is_type_ref(const t_asn_v2_symbol_table *symbol_table, const char *symbol_name)
 {
-	if (!__asn1_v2_is_symbol_name(s)) return false;
-	if (!ft_isalpha_upper(s[0])) return false;
-	const t_asn_v2_symbol *symbol = ft_htbl_v2_get(symbol_table, s);
+	if (!__asn1_v2_is_symbol_name(symbol_name)) return false;
+	if (!ft_isalpha_upper(symbol_name[0])) return false;
+	const t_asn_v2_symbol *symbol = ft_htbl_v2_get(&symbol_table->symbols, symbol_name);
 	if (NULL == symbol) return false;
 	return (symbol->kind == ASN_V2_SYMBOL_KIND_TYPE_REF);
 }
 
-static bool __asn1_v2_symbol_is_value_ref(const t_htbl_v2 *symbol_table, const char *s)
+static bool __asn1_v2_symbol_is_value_ref(const t_asn_v2_symbol_table *symbol_table, const char *symbol_name)
 {
-	if (!__asn1_v2_is_symbol_name(s)) return false;
-	if (!ft_isalpha_lower(s[0])) return false;
-	const t_asn_v2_symbol *symbol = ft_htbl_v2_get(symbol_table, s);
+	if (!__asn1_v2_is_symbol_name(symbol_name)) return false;
+	if (!ft_isalpha_lower(symbol_name[0])) return false;
+	const t_asn_v2_symbol *symbol = ft_htbl_v2_get(&symbol_table->symbols, symbol_name);
 	if (NULL == symbol) return false;
 	return (symbol->kind == ASN_V2_SYMBOL_KIND_VALUE_REF);
 }
 
-static int	__asn1_v2_symbol_resolve(t_htbl_v2 *symbol_table, const char *symbol_name, const t_asn_v2_symbol **asn1_symbol)
+static int	__asn1_v2_symbol_register_type(t_asn_v2_symbol_table *symbol_table, const char *symbol_name, const t_json_v2 *source)
 {
-	t_asn_v2_symbol *symbol = ft_htbl_v2_get(symbol_table, symbol_name);
+	t_asn_v2_symbol *symbol = __asn1_v2_symbol_create();
+	symbol->kind = ASN_V2_SYMBOL_KIND_TYPE_REF;
+	symbol->source = source;
+	if (!ft_htbl_v2_set(&symbol_table->symbols, symbol_name, symbol)) {
+		SSL_LOG(ERROR, "redefintion of the symbol: %s", symbol_name);
+		__asn1_v2_symbol_delete(symbol);
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}
+
+static int	__asn1_v2_symbol_register_value(t_asn_v2_symbol_table *symbol_table, const char *symbol_name, const t_json_v2 *source)
+{
+	t_asn_v2_symbol *symbol = __asn1_v2_symbol_create();
+	symbol->kind = ASN_V2_SYMBOL_KIND_VALUE_REF;
+	symbol->source = source;
+	if (!ft_htbl_v2_set(&symbol_table->symbols, symbol_name, symbol)) {
+		SSL_LOG(ERROR, "redefintion of the symbol: %s", symbol_name);
+		__asn1_v2_symbol_delete(symbol);
+		return (SSL_ERR);
+	}
+
+	return (SSL_OK);
+}
+
+static int	__asn1_v2_symbol_resolve(t_asn_v2_symbol_table *symbol_table, const char *symbol_name, const t_asn_v2_symbol **asn1_symbol)
+{
+	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&symbol_table->symbols, symbol_name);
 	if (NULL == symbol) {
 		SSL_LOG(ERROR, "no such symbol in the table: %s", symbol_name);
 		return (SSL_ERR);
@@ -1760,7 +1787,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_value(t_htbl_v2 *symbol_table, const t_asn_v2_type *asn1_type, t_asn_v2_value **asn1_value, const t_json_v2 *jvalue)
+static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, const t_asn_v2_type *asn1_type, t_asn_v2_value **asn1_value, const t_json_v2 *jvalue)
 {
 	char cbuf[1024] = {0};
 
@@ -2220,7 +2247,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_tag(t_htbl_v2 *symbol_table, t_asn_v2_tag **asn1_tag, const t_json_v2 *jtag)
+static int	__asn1_v2_schema_parse_tag(t_asn_v2_symbol_table *symbol_table, t_asn_v2_tag **asn1_tag, const t_json_v2 *jtag)
 {
 	if (jtag->kind != JSON_V2_TYPE_OBJECT) {
 		SSL_LOG(ERROR, "invalid asn1 tag: expected json object but got json %s: %s", json_v2_get_type_name(jtag->kind));
@@ -2284,7 +2311,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_constraint(t_htbl_v2 *symbol_table, t_asn_v2_constraint **asn1_constraint, const t_json_v2 *jconstraint)
+static int	__asn1_v2_schema_parse_constraint(t_asn_v2_symbol_table *symbol_table, t_asn_v2_constraint **asn1_constraint, const t_json_v2 *jconstraint)
 {
 	assert(jconstraint->kind == JSON_V2_TYPE_OBJECT);
 	*asn1_constraint = NULL;
@@ -2349,7 +2376,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_type(t_htbl_v2 *symbol_table, t_asn_v2_type **asn1_type, const t_json_v2 *jtype)
+static int	__asn1_v2_schema_parse_type(t_asn_v2_symbol_table *symbol_table, t_asn_v2_type **asn1_type, const t_json_v2 *jtype)
 {
 	if (jtype->kind != JSON_V2_TYPE_OBJECT) {
 		SSL_LOG(ERROR, "expected json object but got json %s", json_v2_get_type_name(jtype->kind));
@@ -2574,7 +2601,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int	__asn1_v2_schema_parse_component(t_htbl_v2 *symbol_table, t_asn_v2_component **asn1_component, const t_json_v2 *jcomponent)
+static int	__asn1_v2_schema_parse_component(t_asn_v2_symbol_table *symbol_table, t_asn_v2_component **asn1_component, const t_json_v2 *jcomponent)
 {
 	if (jcomponent->kind != JSON_V2_TYPE_OBJECT) {
 		SSL_LOG(ERROR, "invalid asn1 component: expected a json object but got json %s", json_v2_get_type_name(jcomponent->kind));
@@ -2770,11 +2797,8 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
 		while (ft_htbl_v2_next(&jvalues->as.htable, &next, &key, &value)) {
-			t_asn_v2_symbol *symbol = __asn1_v2_symbol_create();
-			symbol->kind = ASN_V2_SYMBOL_KIND_VALUE_REF;
-			symbol->source = value;
-			if (!ft_htbl_v2_set(&amodule->symbol_table, key, symbol)) {
-				SSL_LOG(ERROR, "failed to register symbol: `%s`, duplicate symbol name?", key);
+			if (SSL_OK != __asn1_v2_symbol_register_value(&amodule->symbol_table, key, value)) {
+				SSL_LOG(ERROR, "failed to register symbol: %s", key);
 				goto label_error;
 			}
 		}
@@ -2789,11 +2813,8 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 		void *value = NULL;
 		t_htbl_v2_next next = {0};
 		while (ft_htbl_v2_next(&jtypes->as.htable, &next, &key, &value)) {
-			t_asn_v2_symbol *symbol = __asn1_v2_symbol_create();
-			symbol->kind = ASN_V2_SYMBOL_KIND_TYPE_REF;
-			symbol->source = value;
-			if (!ft_htbl_v2_set(&amodule->symbol_table, key, symbol)) {
-				SSL_LOG(ERROR, "failed to register symbol: `%s`, duplicate symbol name?", key);
+			if (SSL_OK != __asn1_v2_symbol_register_type(&amodule->symbol_table, key, value)) {
+				SSL_LOG(ERROR, "failed to register symbol: %s", key);
 				goto label_error;
 			}
 		}
@@ -2802,7 +2823,7 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 	const char *key = NULL;
 	void *value = NULL;
 	t_htbl_v2_next next = {0};
-	while (ft_htbl_v2_next(&amodule->symbol_table, &next, &key, &value)) {
+	while (ft_htbl_v2_next(&amodule->symbol_table.symbols, &next, &key, &value)) {
 		const t_asn_v2_symbol *symbol = NULL;
 		if (SSL_OK != __asn1_v2_symbol_resolve(&amodule->symbol_table, key, &symbol)) {
 			SSL_LOG(ERROR, "failed to resolve symbol: `%s`", key);
@@ -2827,7 +2848,7 @@ label_error:
 
 t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name)
 {
-	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&asn1_module->symbol_table, name);
+	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&asn1_module->symbol_table.symbols, name);
 	if (NULL != symbol && symbol->kind == ASN_V2_SYMBOL_KIND_TYPE_REF) {
 		return (symbol->resolved.type_ref.type);
 	}
