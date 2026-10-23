@@ -92,45 +92,6 @@ char	*asn1_oid_get_oid(const char *name);
 // ASN.1 v2 //
 //////////////
 
-typedef enum e_asn_v2_tag_mode {
-	ASN_V2_TAG_MODE_DEFAULT = 0,
-	ASN_V2_TAG_MODE_EXPLICIT,
-	ASN_V2_TAG_MODE_IMPLICIT,
-	ASN_V2_TAG_MODE_AUTOMATIC,
-} t_asn_v2_tag_mode;
-
-typedef enum e_asn_v2_tag_class {
-	ASN_V2_TAG_CLASS_UNIVERSAL = 0,
-	ASN_V2_TAG_CLASS_APPLICATION,
-	ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC,
-	ASN_V2_TAG_CLASS_PRIVATE,
-} t_asn_v2_tag_class;
-
-typedef enum e_asn_v2_type_kind {
-	ASN_V2_TYPE_KIND_NULL				 = 0,
-	ASN_V2_TYPE_KIND_BOOLEAN			 = 1,
-	ASN_V2_TYPE_KIND_INTEGER			 = 2,
-	ASN_V2_TYPE_KIND_ENUMERATED			 = 3,
-	ASN_V2_TYPE_KIND_BIT_STRING			 = 4,
-	ASN_V2_TYPE_KIND_OCTET_STRING		 = 5,
-	ASN_V2_TYPE_KIND_IA5_STRING			 = 6,
-	ASN_V2_TYPE_KIND_UTF8_STRING		 = 7,
-	ASN_V2_TYPE_KIND_NUMERIC_STRING		 = 8,
-	ASN_V2_TYPE_KIND_PRINTABLE_STRING	 = 9,
-	ASN_V2_TYPE_KIND_VISIBLE_STRING		 = 10,
-	ASN_V2_TYPE_KIND_UTC_TIME			 = 11,
-	ASN_V2_TYPE_KIND_OBJECT_ID			 = 12,
-	ASN_V2_TYPE_KIND_OBJECT_DESCR		 = 13,
-	ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID	 = 14,
-	ASN_V2_TYPE_KIND_SEQUENCE			 = 15,
-	ASN_V2_TYPE_KIND_SEQUENCE_OF		 = 16,
-	ASN_V2_TYPE_KIND_SET				 = 17,
-	ASN_V2_TYPE_KIND_SET_OF				 = 18,
-	ASN_V2_TYPE_KIND_ANY				 = 19,
-	ASN_V2_TYPE_KIND_CHOICE				 = 20,
-	ASN_V2_TYPE_KIND_GENERALIZED_TIME	 = 21,
-} t_asn_v2_type_kind;
-
 typedef enum t_asn_v2_universal_tag_number {
     ASN_V2_TAG_NUMBER_EOC                = 0,
     ASN_V2_TAG_NUMBER_BOOLEAN            = 1,
@@ -203,20 +164,19 @@ typedef struct s_asn_v2_enum {
 	t_num number;
 } t_asn_v2_enum;
 
-typedef struct s_asn_v2_value {
-	t_asn_v2_type_kind	kind;
-	union {
-		t_ostring	ostring;
-		t_num		number;
-		bool		boolean;
-		char		*cstring;
-		t_asn_v2_enum enumerated;
-		struct { t_list arcs; } object_id;
-		struct { char *id; struct s_asn_v2_value *value; } choice;
-		struct { t_ostring octets; } any;
-		struct { t_list	elements; } composite;
-	} as;
-} t_asn_v2_value;
+typedef enum e_asn_v2_tag_mode {
+	ASN_V2_TAG_MODE_DEFAULT = 0,
+	ASN_V2_TAG_MODE_EXPLICIT,
+	ASN_V2_TAG_MODE_IMPLICIT,
+	ASN_V2_TAG_MODE_AUTOMATIC,
+} t_asn_v2_tag_mode;
+
+typedef enum e_asn_v2_tag_class {
+	ASN_V2_TAG_CLASS_UNIVERSAL = 0,
+	ASN_V2_TAG_CLASS_APPLICATION,
+	ASN_V2_TAG_CLASS_CONTEXT_SPECIFIC,
+	ASN_V2_TAG_CLASS_PRIVATE,
+} t_asn_v2_tag_class;
 
 typedef struct s_asn_v2_tag {
 	t_asn_v2_tag_mode 	mode;
@@ -258,49 +218,94 @@ typedef struct s_asn_v2_constraint {
 	} as;
 } t_asn_v2_constraint;
 
-// typedef enum e_asn_v2_type_kind {
-// 	ASN_V2_TYPE_KIND_BUILTIN = 0,
-// 	ASN_V2_TYPE_KIND_NAMED,
-// 	ASN_V2_TYPE_KIND_REFERENCED,
-// 	ASN_V2_TYPE_KIND_COMPONENTS_OF,
-// } t_asn_v2_type_kind;
-//
-// typedef struct s_asn_v2_type {
-// 	t_asn_v2_type_kind kind;
-// 	char *id;
-// 	t_list tags;
-// 	t_list constraints;
-// 	t_asn_v2_value *default_value;
-// 	char *defined_by;
-// 	bool optional;
-// 	union {
-// 		struct { t_asn_v2_builtin_type_kind kind } builtin;
-// 		struct { char *module; char *name } referenced;
-// 		struct { struct s_asn_v2_type *type } components_of;
-// 		struct { t_list elements; } composite;
-// 		struct { struct s_asn_v2_type *element_type; } collection;
-// 		struct { t_list items; bool extendable; } enumeration;
-// 	} as;
-// } t_asn_v2_type;
+typedef struct s_asn_v2_builtin_type {
+	enum {
+		ASN_V2_TYPE_KIND_NULL				 = 0,
+		ASN_V2_TYPE_KIND_BOOLEAN			 = 1,
+		ASN_V2_TYPE_KIND_INTEGER			 = 2,
+		ASN_V2_TYPE_KIND_ENUMERATED			 = 3,
+		ASN_V2_TYPE_KIND_BIT_STRING			 = 4,
+		ASN_V2_TYPE_KIND_OCTET_STRING		 = 5,
+		ASN_V2_TYPE_KIND_IA5_STRING			 = 6,
+		ASN_V2_TYPE_KIND_UTF8_STRING		 = 7,
+		ASN_V2_TYPE_KIND_NUMERIC_STRING		 = 8,
+		ASN_V2_TYPE_KIND_PRINTABLE_STRING	 = 9,
+		ASN_V2_TYPE_KIND_VISIBLE_STRING		 = 10,
+		ASN_V2_TYPE_KIND_UTC_TIME			 = 11,
+		ASN_V2_TYPE_KIND_OBJECT_ID			 = 12,
+		ASN_V2_TYPE_KIND_OBJECT_DESCR		 = 13,
+		ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID	 = 14,
+		ASN_V2_TYPE_KIND_SEQUENCE			 = 15,
+		ASN_V2_TYPE_KIND_SEQUENCE_OF		 = 16,
+		ASN_V2_TYPE_KIND_SET				 = 17,
+		ASN_V2_TYPE_KIND_SET_OF				 = 18,
+		ASN_V2_TYPE_KIND_ANY				 = 19,
+		ASN_V2_TYPE_KIND_CHOICE				 = 20,
+		ASN_V2_TYPE_KIND_GENERALIZED_TIME	 = 21,
+	} kind;
+} t_asn_v2_builtin_type;
+
+typedef enum e_asn_v2_value_kind {
+	ASN_V2_VALUE_KIND_INLINED = 0,
+	ASN_V2_VALUE_KIND_REFERENCED,
+} t_asn_v2_value_kind;
+
+typedef struct s_asn_v2_value {
+	t_asn_v2_value_kind	kind;
+	union {
+		struct { char *module; char *name } referenced;
+		struct {
+			t_asn_v2_builtin_type type;
+			union {
+				t_ostring ostring;
+				t_num number;
+				bool boolean;
+				char *cstring;
+				t_asn_v2_enum enumerated;
+				struct { t_list arcs; } object_id;
+				struct { char *id; struct s_asn_v2_value *value; } choice;
+				struct { t_ostring octets; } any;
+				struct { t_list	elements; } composite;
+			} data;
+		} inlined;
+	} as;
+} t_asn_v2_value;
+
+typedef enum e_asn_v2_type_kind {
+	ASN_V2_TYPE_KIND_BUILTIN = 0,
+	ASN_V2_TYPE_KIND_NAMED,
+	ASN_V2_TYPE_KIND_REFERENCED,
+} t_asn_v2_type_kind;
 
 typedef struct s_asn_v2_type {
 	t_asn_v2_type_kind kind;
+	char *id;
 	t_list tags;
 	t_list constraints;
+	t_asn_v2_value *default_value;
+	char *defined_by;
+	bool optional;
 	union {
-		struct { t_list elements; } composite;
-		struct { struct s_asn_v2_type *element_type; } collection;
-		struct { t_list items; bool extendable; } enumeration;
+		struct { char *module; char *name } reference;
+		struct { struct s_asn_v2_type *type; } components_of;
+		struct {
+			t_asn_v2_builtin_type type;
+			union {
+				struct { t_list elements; } composite;
+				struct { struct s_asn_v2_type *element_type; } collection;
+				struct { t_list items; bool extendable; } enumeration;
+			} data;
+		} builtin;
 	} as;
 } t_asn_v2_type;
 
-typedef struct s_asn_v2_component {
-	char			*id;
-	t_asn_v2_type	*type;
-	t_asn_v2_value	*default_value;
-	char			*defined_by;
-	bool 			optional;
-} t_asn_v2_component;
+// typedef struct s_asn_v2_component {
+// 	char			*id;
+// 	t_asn_v2_type	*type;
+// 	t_asn_v2_value	*default_value;
+// 	char			*defined_by;
+// 	bool 			optional;
+// } t_asn_v2_component;
 
 typedef enum e_asn_v2_symbol_state {
     ASN_V2_SYMBOL_STATE_UNRESOLVED = 0,
@@ -361,7 +366,7 @@ typedef struct s_der_v2_tag {
 } t_der_v2_tag;
 
 typedef struct s_der_v2_value {
-	t_asn_v2_type_kind	kind;
+	t_asn_v2_type_builtin type;
 	struct { t_der_v2_tag *items; size_t count; } explicit_tags;
 	struct { t_der_v2_tag *items; size_t count; } implicit_tags;
 	union {
@@ -378,23 +383,27 @@ typedef struct s_der_v2_value {
 } t_der_v2_value;
 
 typedef struct s_der_v2_type {
-	t_asn_v2_type_kind kind;
+	t_asn_v2_builtin_type_kind kind;
+	char *id;
 	t_list tags;
 	t_list constraints;
+	t_der_v2_value *default_value;
+	bool optional;
 	union {
 		struct { t_list elements; } composite;
 		struct { struct s_der_v2_type *element_type; } collection;
 		struct { t_list items; bool extendable; } enumeration;
+		struct { const struct s_der_v2_type *defined_by; } any;
 	} as;
 } t_der_v2_type;
 
-typedef struct s_der_v2_component {
-    char *id;
-	t_der_v2_type *type;
-	t_der_v2_value *default_value;
-	const struct s_der_v2_component *defined_by;
-	bool optional;
-} t_der_v2_component;
+// typedef struct s_der_v2_component {
+//     char *id;
+// 	t_der_v2_type *type;
+// 	t_der_v2_value *default_value;
+// 	const struct s_der_v2_component *defined_by;
+// 	bool optional;
+// } t_der_v2_component;
 
 t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name);
 
