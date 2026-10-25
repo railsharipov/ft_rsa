@@ -1689,7 +1689,7 @@ int	ft_isalnum(int c)
 
 int	ft_isalnum_or_hyphen(int c)
 {
-	if (ft_isalpha(c) || ft_isdigit(c) || c == '-') {
+	if (ft_isalnum(c) || c == '-') {
 		return (1);
 	}
 
