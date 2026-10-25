@@ -1,235 +1,279 @@
-// #include <common.h>
-// #include <logger.h>
-// #include <asn1.h>
-// #include <libft.h>
-// #include <textutil.h>
-//
-// typedef struct s_asn_v2_parse_ctx {
-// 	const char *s;
-// 	size_t slen;
-// 	size pos;
-// } t_asn_v2_parse_ctx;
-//
-// static bool (t_func_parse *)(t_asn_v2_parse_ctx *ctx);
-//
-// static bool __asn1_v2_parse_and(t_asn_v2_parse_ctx *ctx, ...)
-// {
-// 	size_t old_pos = ctx->pos;
-// 	va_list ap;
-// 	va_start(ap);
-// 	t_func_parse f = va_arg(ap, t_func_parse);
-// 	while (NULL != f) {
-// 		if (!f(ctx)) {
-// 			ctx->pos = old_pos;
-// 			return false;
-// 		}
-// 		f = va_arg(ap, t_func_parse);
-// 	}
-// 	return true;
-// }
-//
-// static bool __asn1_v2_parse_or(t_asn_v2_parse_ctx *ctx, ...)
-// {
-// 	size_t old_pos = ctx->pos;
-// 	va_list ap;
-// 	va_start(ap);
-// 	t_func_parse f = va_arg(ap, t_func_parse);
-// 	while (NULL != f) {
-// 		if (f(ctx)) return true;
-// 		f = va_arg(ap, t_func_parse);
-// 	}
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// static bool __asn1_v2_parse_ws(t_asn_v2_parse_ctx *ctx)
-// {
-// 	size_t old_pos = ctx->pos;
-// 	while (ctx->pos < slen && ft_iseolws(s[ctx->pos])) ctx->pos++;
-// 	if (ctx->pos == old_pos) return false;
-// 	return true;
-// }
-//
-// static bool __asn1_v2_parse_token(t_asn_v2_parse_ctx *ctx, const char *token)
-// {
-// 	SSL_LOG(TRACE, "parsing token: %s, at pos: %zu, input: %.20s", token, ctx->pos, s");
-// 	size_t old_pos = ctx->pos;
-// 	token_len = ft_strlen(token);
-// 	if (ctx->pos + token_len >= slen || !ft_strneq(s + ctx->pos, token, token_len)) goto label_error;
-// 	ctx->pos += token_len;
-// 	return true;
-// label_error:
-// 	SSL_LOG(TRACE, "no match at pos: %zu, input: %.20s", ctx->pos, s);
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// static bool __asn1_v2_parse_encoding_ref(t_asn_v2_parse_ctx *ctx)
-// {
-// 	SSL_LOG(TRACE, "parsing at pos: %zu, input: %.20s", token, ctx->pos, s");
-// 	size_t old_pos = ctx->pos;
-// 	while (ft_isalpha_upper(s[ctx->pos])) ctx->pos++;
-// 	if (ctx->pos == old_pos) goto label_error;
-// 	return true;
-// label_error:
-// 	SSL_LOG(TRACE, "no match at pos: %zu, input: %.20s", ctx->pos, s);
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// #define __ASN1_V2_TOKEN_EXPLICIT_TAGS	"EXPLICIT TAGS"
-// #define __ASN1_V2_TOKEN_IMPLICIT_TAGS	"IMPLICIT TAGS"
-// #define __ASN1_V2_TOKEN_AUTOMATIC_TAGS	"AUTOMATIC TAGS"
-//
-// static bool __asn1_v2_parse_module_tagging_mode(t_asn_v2_parse_ctx *ctx)
-// {
-// 	SSL_LOG(TRACE, "parsing at pos: %zu, input: %.20s", token, ctx->pos, s");
-// 	size_t old_pos = ctx->pos;
-// 	if (ft_streq(s + ctx->pos, __ASN1_V2_TOKEN_EXPLICIT_TAGS)) {
-// 		ctx->pos += ft_strlen(__ASN1_V2_TOKEN_EXPLICIT_TAGS);
-// 		return true;
-// 	}
-// 	if (ft_streq(s + ctx->pos, __ASN1_V2_TOKEN_IMPLICIT_TAGS)) {
-// 		ctx->pos += ft_strlen(__ASN1_V2_TOKEN_IMPLICIT_TAGS);
-// 		return true;
-// 	}
-// 	if (ft_streq(s + ctx->pos, __ASN1_V2_TOKEN_AUTOMATIC_TAGS)) {
-// 		ctx->pos += ft_strlen(__ASN1_V2_TOKEN_AUTOMATIC_TAGS);
-// 		return true;
-// 	}
-// 	SSL_LOG(TRACE, "no match at pos: %zu, input: %.20s", ctx->pos, s);
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// #define __ASN1_V2_TOKEN_EXTENSIBILITY_IMPLIED	"EXTENSIBILITY IMPLIED"
-//
-// static bool __asn1_v2_parse_module_extensibility(t_asn_v2_parse_ctx *ctx)
-// {
-// 	SSL_LOG(TRACE, "parsing at pos: %zu, input: %.20s", token, ctx->pos, s");
-// 	size_t old_pos = ctx->pos;
-// 	if (ft_streq(s + ctx->pos, __ASN1_V2_TOKEN_EXTENSIBILITY_IMPLIED)) {
-// 		ctx->pos += ft_strlen(__ASN1_V2_TOKEN_EXTENSIBILITY_IMPLIED);
-// 		return true;
-// 	}
-// 	SSL_LOG(TRACE, "no match at pos: %zu, input: %.20s", ctx->pos, s);
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// static bool __asn1_v2_parse_module_defaults(t_asn_v2_parse_ctx *ctx)
-// {
-// 	if (__asn1_v2_parse_module_extensibility(ctx)) {
-// 		return true;
-// 	}
-// 	else if (
-// 		__asn1_v2_parse_and(ctx,
-// 			__asn1_v2_parse_module_tagging_mode,
-// 			__asn1_v2_parse_ws,
-// 			__asn1_v2_parse_module_extensibility
-// 		)
-// 	) {
-// 		return true;
-// 	}
-// 	else if (
-// 		__asn1_v2_parse_and(ctx,
-// 			__asn1_v2_parse_encoding_ref,
-// 			__asn1_v2_parse_ws,
-// 			__asn1_v2_parse_module_tagging_mode,
-// 			__asn1_v2_parse_ws,
-// 			__asn1_v2_parse_module_extensibility,
-// 		)
-// 	) {
-// 		return true;
-// 	}
-// 	return true;
-// }
-//
-// static bool __asn1_v2_parse_definitive_id(t_asn_v2_parse_ctx *ctx)
-// {
-// 	size_t old_pos = ctx->pos;
-//
-// 	if (ctx->pos == ctx->slen) goto label_error;
-// 	if (!ft_isalpha_upper(ctx->s[0])) goto label_error;
-//
-// 	bool is_prev_hyphen = false;
-// 	for (; ctx->pos < ctx->slen; ctx->pos++) {
-// 		if (ft_iseolws(ctx->s[ctx->pos])) break;
-// 		if (!ft_isalnum_or_hyphen(ctx->s[ctx->pos])) goto label_error;
-// 		if (ctx->s[ctx->pos] == '-' && is_prev_hyphen) goto label_error;
-// 		is_prev_hyphen = (s[ctx->pos] == '-');
-// 	}
-// 	if (ctx->s[ctx->pos-1] == '-') goto label_error;
-// 	return true;
-// label_error:
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// static bool __asn1_v2_parse_module_reference(t_asn_v2_parse_ctx *ctx)
-// {
-// 	size_t old_pos = ctx->pos;
-//
-// 	if (ctx->pos == ctx->slen) goto label_error;
-// 	if (!ft_isalpha_upper(ctx->s[0])) goto label_error;
-//
-// 	bool is_prev_hyphen = false;
-// 	for (; ctx->pos < ctx->slen; ctx->pos++) {
-// 		if (ft_iseolws(ctx->s[ctx->pos])) break;
-// 		if (!ft_isalnum_or_hyphen(ctx->s[ctx->pos])) goto label_error;
-// 		if (ctx->s[ctx->pos] == '-' && is_prev_hyphen) goto label_error;
-// 		is_prev_hyphen = (s[ctx->pos] == '-');
-// 	}
-// 	if (ctx->s[ctx->pos-1] == '-') goto label_error;
-// 	return true;
-// label_error:
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// #define __ASN1_V2_TOKEN_DEFINITIONS	"DEFINITIONS"
-// #define __ASN1_V2_TOKEN_ASSIGNMENT	"::="
-// #define __ASN1_V2_TOKEN_BEGIN		"BEGIN"
-// #define __ASN1_V2_TOKEN_END			"END"
-//
-// static bool __asn1_v2_parse_module(t_asn_v2_parse_ctx *ctx)
-// {
-// 	SSL_LOG(TRACE, "parsing module at pos: %zu, input: %.20s", ctx->pos, s");
-// 	size_t old_pos = ctx->pos;
-//
-// 	__asn1_v2_parse_ws(ctx);
-// 	if (!__asn1_v2_parse_module_reference(ctx)) goto label_error;
-//
-// 	if (!__asn1_v2_parse_ws(ctx)) goto label_error;
-// 	if (!__asn1_v2_parse_token(ctx, __ASN1_V2_TOKEN_DEFINITIONS)) goto label_error;
-//
-// 	__asn1_v2_parse_and(ctx,
-// 		__asn1_v2_parse_ws,
-// 		__asn1_v2_parse_module_defaults
-// 	);
-//
-// 	if (!__asn1_v2_parse_ws(ctx)) goto label_error;
-// 	if (!__asn1_v2_parse_token(ctx, __ASN1_V2_TOKEN_ASSIGNMENT)) goto label_error;
-//
-// 	if (!__asn1_v2_parse_ws(ctx)) goto label_error;
-// 	if (!__asn1_v2_parse_token(ctx, __ASN1_V2_TOKEN_BEGIN)) goto label_error;
-//
-// 	if (!__asn1_v2_parse_ws(ctx)) goto label_error;
-// 	if (!__asn1_v2_parse_token(ctx, __ASN1_V2_TOKEN_END)) goto label_error;
-//
-// label_error:
-// 	SSL_LOG(TRACE, "no match at pos: %zu, input: %.20s", ctx->pos, s);
-// 	ctx->pos = old_pos;
-// 	return false;
-// }
-//
-// int asn1_v2_parse(const char *input, size_t inlen)
-// {
-// 	if (NULL == input) return (SSL_ERR);
-// 	size_t pos = 0;
-//
-// 	if (!__asn1_v2_parse_module(s, inlen, &pos)) {
-// 		return (SSL_ERR);
-// 	}
-// 	return (SSL_OK);
-// }
+#include <common.h>
+#include <logger.h>
+#include <asn1.h>
+#include <libft.h>
+#include <textutil.h>
+
+typedef enum e_asn_v2_token_kind {
+	ASN_V2_TOKEN_KIND_NONE = 0,
+	ASN_V2_TOKEN_KIND_COMMENT,
+	ASN_V2_TOKEN_KIND_BSTRING,
+	ASN_V2_TOKEN_KIND_HSTRING,
+	ASN_V2_TOKEN_KIND_CSTRING,
+	ASN_V2_TOKEN_KIND_NUMBER,
+	ASN_V2_TOKEN_KIND_REAL_NUMBER,
+	ASN_V2_TOKEN_KIND_ASSIGNMENT,
+	ASN_V2_TOKEN_KIND_RANGE,
+	ASN_V2_TOKEN_KIND_ELLIPSIS,
+	ASN_V2_TOKEN_KIND_VER_BRACKET,
+	ASN_V2_TOKEN_KIND_KEYWORD,
+	ASN_V2_TOKEN_KIND_SINGLE_CHAR,
+	ASN_V2_TOKEN_KIND_NAME,
+} t_asn_v2_token_kind;
+
+static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
+{
+	switch (kind) {
+	case ASN_V2_TOKEN_KIND_NONE: 			return "NONE";
+	case ASN_V2_TOKEN_KIND_COMMENT: 		return "COMMENT";
+	case ASN_V2_TOKEN_KIND_BSTRING: 		return "BSTRING";
+	case ASN_V2_TOKEN_KIND_HSTRING: 		return "HSTRING";
+	case ASN_V2_TOKEN_KIND_CSTRING: 		return "CSTRING";
+	case ASN_V2_TOKEN_KIND_NUMBER: 			return "NUMBER";
+	case ASN_V2_TOKEN_KIND_REAL_NUMBER:		return "REAL_NUMBER";
+	case ASN_V2_TOKEN_KIND_ASSIGNMENT: 		return "ASSIGNMENT";
+	case ASN_V2_TOKEN_KIND_RANGE: 			return "RANGE";
+	case ASN_V2_TOKEN_KIND_ELLIPSIS: 		return "ELLIPSIS";
+	case ASN_V2_TOKEN_KIND_VER_BRACKET:		return "VER_BRACKET";
+	case ASN_V2_TOKEN_KIND_KEYWORD: 		return "KEYWORD";
+	case ASN_V2_TOKEN_KIND_SINGLE_CHAR:		return "SINGLE_CHAR";
+	case ASN_V2_TOKEN_KIND_NAME: 			return "NAME";
+	default:								return "unknown";
+	}
+}
+
+typedef struct s_asn_v2_token {
+	t_asn_v2_token_kind kind;
+	const char *s;
+	size_t slen;
+	size_t start;
+	size_t end;
+	bool done;
+} t_asn_v2_token;
+
+typedef struct s_asn_v2_parse_ctx {
+	void *p;
+} t_asn_v2_parse_ctx;
+
+const char *RESERVED_KEYWORDS[] = {
+	"ABSENT", "ENCODED", "INTERSECTION", "SEQUENCE", "ABSTRACT-SYNTAX", "ENCODING-CONTROL", "ISO646String",
+	"SET", "ALL", "END", "MAX", "SETTINGS", "APPLICATION", "ENUMERATED", "MIN", "SIZE",
+	"AUTOMATIC", "EXCEPT", "MINUS-INFINITY", "STRING", "BEGIN", "EXPLICIT", "NOT-A-NUMBER", "SYNTAX",
+	"BIT", "EXPORTS", "NULL", "T61String", "BMPString", "EXTENSIBILITY", "NumericString", "TAGS",
+	"BOOLEAN", "EXTERNAL", "OBJECT", "TeletexString", "BY", "FALSE", "ObjectDescriptor", "TIME",
+	"CHARACTER", "FROM", "OCTET", "TIME-OF-DAY", "CHOICE", "GeneralizedTime", "OF", "TRUE",
+	"CLASS", "GeneralString", "OID-IRI", "TYPE-IDENTIFIER", "COMPONENT", "GraphicString", "OPTIONAL", "UNION",
+	"COMPONENTS", "IA5String", "PATTERN", "UNIQUE", "CONSTRAINED", "IDENTIFIER", "PDV", "UNIVERSAL",
+	"CONTAINING", "IMPLICIT", "PLUS-INFINITY", "UniversalString", "DATE", "IMPLIED", "PRESENT", "UTCTime",
+	"DATE-TIME", "IMPORTS", "PrintableString", "UTF8String", "DEFAULT", "INCLUDES", "PRIVATE", "VideotexString",
+	"DEFINITIONS", "INSTANCE", "REAL", "VisibleString", "DURATION", "INSTRUCTIONS", "RELATIVE-OID", "WITH",
+	"EMBEDDED", "INTEGER", "RELATIVE-OID-IRI",
+};
+const size_t RESERVED_KEYWORD_COUNT = sizeof(RESERVED_KEYWORDS)/sizeof(*RESERVED_KEYWORDS);
+
+#define ASN_V2_LEX_ELLIPSIS		"..."
+#define ASN_V2_LEX_ASSIGNMENT	"::="
+#define ASN_V2_LEX_RANGE		".."
+#define ASN_V2_LEX_LVER_BRACKET	"[["
+#define ASN_V2_LEX_RVER_BRACKET	"]]"
+
+const char SINGLE_CHAR_LEXES[] = {
+	'{', '}', '<', '>', ',', '.', '/', '(', ')', '[', ']', '-', ':', '=', '"', '\'', ';', '@', '|', '!', '^'
+};
+const size_t SINGLE_CHAR_LEX_COUNT = sizeof(SINGLE_CHAR_LEXES)/sizeof(*SINGLE_CHAR_LEXES);
+
+bool __asn1_v2_is_bound(char c)
+{
+	if (c == '\0') return true;
+	if (ft_iseolws(c)) return true;
+	for (size_t i = 0; i < SINGLE_CHAR_LEX_COUNT; i++) {
+		if (c == SINGLE_CHAR_LEXES[i]) return true;
+	}
+	return false;
+}
+
+bool __asn1_v2_token_next(t_asn_v2_token *token)
+{
+	assert(NULL != token);
+	if (token->end >= token->slen) return false;
+
+	t_asn_v2_token t = { .s = token->s, .slen = token->slen, .start = token->end, };
+
+	while (t.start < t.slen && ft_iseolws(t.s[t.start])) t.start++;
+	if (t.start == t.slen) {
+		token->kind = ASN_V2_TOKEN_KIND_NONE;
+		token->done = true;
+		return false;
+	}
+
+	const char *s = t.s + t.start;
+	size_t slen = t.slen - t.start;
+
+	if (s[0] == '-' && s[1] == '-') {
+		for (size_t i = 2; i+1 < slen; i++) {
+			if (ft_iseol(s[i])) {
+				t.kind = ASN_V2_TOKEN_KIND_COMMENT;
+				t.end = t.start + i;
+				goto label_ok;
+			}
+			if (s[i] == '-' && i < slen && s[i+1] == '-') {
+				t.kind = ASN_V2_TOKEN_KIND_COMMENT;
+				t.end = t.start + i+2;
+				goto label_ok;
+			}
+		}
+	}
+	if (s[0] == '/' && s[1] == '*') {
+		for (size_t i = 2; i < slen; i++) {
+			if (s[i] == '*' && i+1 < slen && s[i+1] == '/') {
+				t.kind = ASN_V2_TOKEN_KIND_COMMENT;
+				t.end = t.start + i+2;
+				goto label_ok;
+			}
+		}
+	}
+
+	if (s[0] == '"') {
+		for (size_t i = 1; i < slen; i++) {
+			if (s[i] == '"' && i+1 < slen && s[i+1] != '"') {
+				t.kind = ASN_V2_TOKEN_KIND_CSTRING;
+				t.end = t.start + i;
+				goto label_ok;
+			}
+		}
+	}
+	if (s[0] == '\'') {
+		for (size_t i = 1; i < slen; i++) {
+			if (s[i] == '\'' && i+1 < slen) {
+				if (s[i+1] == 'B') {
+					t.kind = ASN_V2_TOKEN_KIND_BSTRING;
+					t.end = t.start + i;
+					goto label_ok;
+				}
+				else if (s[i+1] == 'H') {
+					t.kind = ASN_V2_TOKEN_KIND_HSTRING;
+					t.end = t.start + i;
+					goto label_ok;
+				}
+			}
+		}
+	}
+
+	if (ft_isdigit(s[0])) {
+		t.kind = ASN_V2_TOKEN_KIND_NUMBER;
+		for (size_t i = 1; i < slen; i++) {
+			if (!ft_isdigit(s[i])) {
+				if (s[i] == '.') {
+					t.kind = ASN_V2_TOKEN_KIND_REAL_NUMBER;
+					i++;
+					while (i < slen && ft_isdigit(s[i])) i++;
+				}
+				if (i < slen && (s[i] == 'e' || s[i] == 'E')) {
+					t.kind = ASN_V2_TOKEN_KIND_REAL_NUMBER;
+					if (i+2 < slen && s[i+1] == '-' && ft_isdigit(s[i+2])) {
+						i += 2;
+						while (i < slen && ft_isdigit(s[i])) i++;
+					}
+					else if (i+1 < slen && ft_isdigit(s[i+1])) {
+						i++;
+						while (i < slen && ft_isdigit(s[i])) i++;
+					}
+				}
+				if (__asn1_v2_is_bound(s[i])) {
+					t.end = t.start + i;
+					goto label_ok;
+				}
+				break;
+			}
+		}
+	}
+
+	const char *lex = ASN_V2_LEX_ELLIPSIS;
+	if (ft_strneq(s, lex, ft_strlen(lex))) {
+		t.kind = ASN_V2_TOKEN_KIND_ELLIPSIS;
+		t.end = t.start + ft_strlen(lex);
+		goto label_ok;
+	}
+	lex = ASN_V2_LEX_ASSIGNMENT;
+	if (ft_strneq(s, lex, ft_strlen(lex))) {
+		t.kind = ASN_V2_TOKEN_KIND_ASSIGNMENT;
+		t.end = t.start + ft_strlen(lex);
+		goto label_ok;
+	}
+	lex = ASN_V2_LEX_RANGE;
+	if (ft_strneq(s, lex, ft_strlen(lex))) {
+		t.kind = ASN_V2_TOKEN_KIND_RANGE;
+		t.end = t.start + ft_strlen(lex);
+		goto label_ok;
+	}
+	lex = ASN_V2_LEX_LVER_BRACKET;
+	if (ft_strneq(s, lex, ft_strlen(lex))) {
+		t.kind = ASN_V2_TOKEN_KIND_VER_BRACKET;
+		t.end = t.start + ft_strlen(lex);
+		goto label_ok;
+	}
+	lex = ASN_V2_LEX_RVER_BRACKET;
+	if (ft_strneq(s, lex, ft_strlen(lex))) {
+		t.kind = ASN_V2_TOKEN_KIND_VER_BRACKET;
+		t.end = t.start + ft_strlen(lex);
+		goto label_ok;
+	}
+
+	for (size_t i = 0; i < RESERVED_KEYWORD_COUNT; i++) {
+		size_t kwlen = ft_strlen(RESERVED_KEYWORDS[i]);
+		if (ft_strneq(s, RESERVED_KEYWORDS[i], kwlen)) {
+			t.kind = ASN_V2_TOKEN_KIND_KEYWORD;
+			t.end = t.start + kwlen;
+			goto label_ok;
+		}
+	}
+
+	for (size_t i = 0; i < SINGLE_CHAR_LEX_COUNT; i++) {
+		if (*s == SINGLE_CHAR_LEXES[i]) {
+			t.kind = ASN_V2_TOKEN_KIND_SINGLE_CHAR;
+			t.end = t.start + 1;
+			goto label_ok;
+		}
+	}
+
+	if (ft_isalpha(s[0])) {
+		for (size_t i = 1; i < slen; i++) {
+			if (!ft_isalnum_or_hyphen(s[i])) {
+				if (__asn1_v2_is_bound(s[i])) {
+					t.kind = ASN_V2_TOKEN_KIND_NAME;
+					t.end = t.start + i;
+					goto label_ok;
+				}
+				break;
+			}
+		}
+	}
+
+	SSL_LOG(TRACE, "no match at pos: %zu", token->end);
+	return false;
+
+label_ok:
+	char cbuf[512];
+	size_t len = MIN(sizeof(cbuf), t.end-t.start+1);
+	ft_strncpy(cbuf, t.s + t.start, len);
+	cbuf[len-1] = 0;
+	SSL_LOG(TRACE, "match at pos: % 5zu: %-12s: %s", t.start, __asn1_v2_get_token_kind_name(t.kind), cbuf);
+	*token = t;
+	if (token->kind == ASN_V2_TOKEN_KIND_COMMENT) {
+		return (__asn1_v2_token_next(token));
+	}
+	return true;
+}
+
+int asn1_v2_parse(const char *s, size_t slen)
+{
+	if (NULL == s) return (SSL_ERR);
+	t_asn_v2_token token = { .s = s, .slen = slen };
+
+	while (__asn1_v2_token_next(&token)) {}
+	if (!token.done) {
+		SSL_LOG(ERROR, "parsing is not complete");
+		return (SSL_ERR);
+	}
+	return (SSL_OK);
+}

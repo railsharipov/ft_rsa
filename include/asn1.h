@@ -335,6 +335,8 @@ typedef struct s_asn_v2_module {
 	char *name;
 } t_asn_v2_module;
 
+int asn1_v2_parse(const char *s, size_t slen);
+
 int	asn1_v2_schema_validate(const t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema);
 
