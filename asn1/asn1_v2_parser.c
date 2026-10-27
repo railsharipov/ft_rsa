@@ -53,42 +53,115 @@ typedef struct s_asn_v2_token {
 	bool done;
 } t_asn_v2_token;
 
-// typedef bool (*t_func_parse)(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token);
-//
-// typedef enum s_asn_v2_parser_op {
-// 	PARSER_OP_AND,
-// 	PARSER_OP_OR,
-// } t_asn_v2_parser_op;
-//
-// typedef struct s_asn_v2_parser_node {
-// 	t_node_v2 base;
-// 	t_asn_v2_parser_op op;
-// 	t_list funcs;
-// 	union {
-// 		char *cstring;
-// 		char chr;
-// 	} data;
-// } t_asn_v2_parser_node;
-
 typedef struct s_asn_v2_parser_ctx {
 	t_asn_v2_token *tokens;
 	size_t token_idx;
-	t_list parsers;
+	t_list ops;
 } t_asn_v2_parser_ctx;
 
-const char *RESERVED_KEYWORDS[] = {
-	"ABSENT", "ENCODED", "INTERSECTION", "SEQUENCE", "ABSTRACT-SYNTAX", "ENCODING-CONTROL", "ISO646String",
-	"SET", "ALL", "END", "MAX", "SETTINGS", "APPLICATION", "ENUMERATED", "MIN", "SIZE",
-	"AUTOMATIC", "EXCEPT", "MINUS-INFINITY", "STRING", "BEGIN", "EXPLICIT", "NOT-A-NUMBER", "SYNTAX",
-	"BIT", "EXPORTS", "NULL", "T61String", "BMPString", "EXTENSIBILITY", "NumericString", "TAGS",
-	"BOOLEAN", "EXTERNAL", "OBJECT", "TeletexString", "BY", "FALSE", "ObjectDescriptor", "TIME",
-	"CHARACTER", "FROM", "OCTET", "TIME-OF-DAY", "CHOICE", "GeneralizedTime", "OF", "TRUE",
-	"CLASS", "GeneralString", "OID-IRI", "TYPE-IDENTIFIER", "COMPONENT", "GraphicString", "OPTIONAL", "UNION",
-	"COMPONENTS", "IA5String", "PATTERN", "UNIQUE", "CONSTRAINED", "IDENTIFIER", "PDV", "UNIVERSAL",
-	"CONTAINING", "IMPLICIT", "PLUS-INFINITY", "UniversalString", "DATE", "IMPLIED", "PRESENT", "UTCTime",
-	"DATE-TIME", "IMPORTS", "PrintableString", "UTF8String", "DEFAULT", "INCLUDES", "PRIVATE", "VideotexString",
-	"DEFINITIONS", "INSTANCE", "REAL", "VisibleString", "DURATION", "INSTRUCTIONS", "RELATIVE-OID", "WITH",
-	"EMBEDDED", "INTEGER", "RELATIVE-OID-IRI",
+typedef bool (*t_func_asn_v2_parse)(t_asn_v2_parser_ctx *ctx);
+
+typedef struct s_asn_v2_parser_op {
+	t_func_asn_v2_parse *f;
+	t_asn_v2_token *token;
+	size_t choice;
+} t_asn_v2_parser_op;
+
+const struct {
+	const char *name;
+	const char *lex;
+} RESERVED_KEYWORDS[] = {
+	{"ABSENT", "ABSENT"},
+	{"ENCODED", "ENCODED"},
+	{"INTERSECTION", "INTERSECTION"},
+	{"SEQUENCE", "SEQUENCE"},
+	{"ABSTRACT_SYNTAX", "ABSTRACT-SYNTAX"},
+	{"ENCODING_CONTROL", "ENCODING-CONTROL"},
+	{"ISO646String", "ISO646String"},
+	{"SET", "SET"},
+	{"ALL", "ALL"},
+	{"END", "END"},
+	{"MAX", "MAX"},
+	{"SETTINGS", "SETTINGS"},
+	{"APPLICATION", "APPLICATION"},
+	{"ENUMERATED", "ENUMERATED"},
+	{"MIN", "MIN"},
+	{"SIZE", "SIZE"},
+	{"AUTOMATIC", "AUTOMATIC"},
+	{"EXCEPT", "EXCEPT"},
+	{"MINUS_INFINITY", "MINUS-INFINITY"},
+	{"STRING", "STRING"},
+	{"BEGIN", "BEGIN"},
+	{"EXPLICIT", "EXPLICIT"},
+	{"NOT_A_NUMBER", "NOT-A-NUMBER"},
+	{"SYNTAX", "SYNTAX"},
+	{"BIT", "BIT"},
+	{"EXPORTS", "EXPORTS"},
+	{"NULL", "NULL"},
+	{"T61String", "T61String"},
+	{"BMPString", "BMPString"},
+	{"EXTENSIBILITY", "EXTENSIBILITY"},
+	{"NumericString", "NumericString"},
+	{"TAGS", "TAGS"},
+	{"BOOLEAN", "BOOLEAN"},
+	{"EXTERNAL", "EXTERNAL"},
+	{"OBJECT", "OBJECT"},
+	{"TeletexString", "TeletexString"},
+	{"BY", "BY"},
+	{"FALSE", "FALSE"},
+	{"ObjectDescriptor", "ObjectDescriptor"},
+	{"TIME", "TIME"},
+	{"CHARACTER", "CHARACTER"},
+	{"FROM", "FROM"},
+	{"OCTET", "OCTET"},
+	{"TIME_OF_DAY", "TIME-OF-DAY"},
+	{"CHOICE", "CHOICE"},
+	{"GeneralizedTime", "GeneralizedTime"},
+	{"OF", "OF"},
+	{"TRUE", "TRUE"},
+	{"CLASS", "CLASS"},
+	{"GeneralString", "GeneralString"},
+	{"OID_IRI", "OID-IRI"},
+	{"TYPE_IDENTIFIER", "TYPE-IDENTIFIER"},
+	{"COMPONENT", "COMPONENT"},
+	{"GraphicString", "GraphicString"},
+	{"OPTIONAL", "OPTIONAL"},
+	{"UNION", "UNION"},
+	{"COMPONENTS", "COMPONENTS"},
+	{"IA5String", "IA5String"},
+	{"PATTERN", "PATTERN"},
+	{"UNIQUE", "UNIQUE"},
+	{"CONSTRAINED", "CONSTRAINED"},
+	{"IDENTIFIER", "IDENTIFIER"},
+	{"PDV", "PDV"},
+	{"UNIVERSAL", "UNIVERSAL"},
+	{"CONTAINING", "CONTAINING"},
+	{"IMPLICIT", "IMPLICIT"},
+	{"PLUS_INFINITY", "PLUS-INFINITY"},
+	{"UniversalString", "UniversalString"},
+	{"DATE", "DATE"},
+	{"IMPLIED", "IMPLIED"},
+	{"PRESENT", "PRESENT"},
+	{"UTCTime", "UTCTime"},
+	{"DATE_TIME", "DATE-TIME"},
+	{"IMPORTS", "IMPORTS"},
+	{"PrintableString", "PrintableString"},
+	{"UTF8String", "UTF8String"},
+	{"DEFAULT", "DEFAULT"},
+	{"INCLUDES", "INCLUDES"},
+	{"PRIVATE", "PRIVATE"},
+	{"VideotexString", "VideotexString"},
+	{"DEFINITIONS", "DEFINITIONS"},
+	{"INSTANCE", "INSTANCE"},
+	{"REAL", "REAL"},
+	{"VisibleString", "VisibleString"},
+	{"DURATION", "DURATION"},
+	{"INSTRUCTIONS", "INSTRUCTIONS"},
+	{"RELATIVE_OID", "RELATIVE-OID"},
+	{"WITH", "WITH"},
+	{"EMBEDDED", "EMBEDDED"},
+	{"INTEGER", "INTEGER"},
+	{"RELATIVE_OID_IRI", "RELATIVE-OID-IRI"},
 };
 const size_t RESERVED_KEYWORD_COUNT = sizeof(RESERVED_KEYWORDS)/sizeof(*RESERVED_KEYWORDS);
 
@@ -98,8 +171,31 @@ const size_t RESERVED_KEYWORD_COUNT = sizeof(RESERVED_KEYWORDS)/sizeof(*RESERVED
 #define ASN_V2_LEX_LVER_BRACKET	"[["
 #define ASN_V2_LEX_RVER_BRACKET	"]]"
 
-const char SINGLE_CHAR_LEXES[] = {
-	'{', '}', '<', '>', ',', '.', '/', '(', ')', '[', ']', '-', ':', '=', '"', '\'', ';', '@', '|', '!', '^'
+const struct {
+	const char *name;
+	const char cht;
+} SINGLE_CHAR_LEXES[] = {
+	{"L_CURLY_BRKT", '{'},
+	{"R_CURLY_BRKT", '}'},
+	{"L_ANGLE_BRKT", '<'},
+	{"R_ANGLE_BRKT", '>'},
+	{"COMMA", ','},
+	{"DOT", '.'},
+	{"SLASH", '/'},
+	{"L_BRKT", '('},
+	{"R_BRKT", ')'},
+	{"L_SQUARE_BRKT", '['},
+	{"R_SQUARE_BRKT", ']'},
+	{"HYPHEN", '-'},
+	{"COLON", ':'},
+	{"EQUAL", '='},
+	{"DOUBLE_QUOTE", '"'},
+	{"QUOTE", '\''},
+	{"SEMICOLON", ';'},
+	{"AT", '@'},
+	{"PIPE", '|'},
+	{"BANG", '!'},
+	{"CARET", '^'},
 };
 const size_t SINGLE_CHAR_LEX_COUNT = sizeof(SINGLE_CHAR_LEXES)/sizeof(*SINGLE_CHAR_LEXES);
 
@@ -179,6 +275,25 @@ static bool __asn1_v2_parse_assignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 static bool __asn1_v2_parse_assignment_list(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token);
 static bool __asn1_v2_token_parse_module_body(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token);
 static bool __asn1_v2_parse_module(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token);
+static bool __asn1_v2_parse_item_spec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token);
+
+static t_asn_v2_token *__asn1_v2_token_create(void)
+{
+	t_asn_v2_token *token = NULL;
+	SSL_ALLOC(token, sizeof(t_asn_v2_token));
+	*token = (t_asn_v2_token){0};
+	return (token);
+}
+
+static void __asn1_v2_token_delete(t_asn_v2_token *token)
+{
+	*token = (t_asn_v2_token){0};
+	SSL_FREE(token);
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 
 bool __asn1_v2_is_bound(char c)
 {
@@ -537,6 +652,98 @@ static bool __asn1_v2_token_expect_char(t_asn_v2_token *token, char c)
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
+
+static bool __asn1_v2_parse_ABSENT(t_asn_v2_toke *token) { return (__asn1_v2_token_expect_keyword(token, "ABSENT"));}
+static bool __asn1_v2_parse_ENCODED(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ENCODED"));}
+static bool __asn1_v2_parse_INTERSECTION(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "INTERSECTION"));}
+static bool __asn1_v2_parse_SEQUENCE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "SEQUENCE"));}
+static bool __asn1_v2_parse_ABSTRACT_SYNTAX(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ABSTRACT-SYNTAX"));}
+static bool __asn1_v2_parse_ENCODING_CONTROL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ENCODING-CONTROL"));}
+static bool __asn1_v2_parse_ISO646String(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ISO646String"));}
+static bool __asn1_v2_parse_SET(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "SET"));}
+static bool __asn1_v2_parse_ALL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ALL"));}
+static bool __asn1_v2_parse_END(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "END"));}
+static bool __asn1_v2_parse_MAX(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "MAX"));}
+static bool __asn1_v2_parse_SETTINGS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "SETTINGS"));}
+static bool __asn1_v2_parse_APPLICATION(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "APPLICATION"));}
+static bool __asn1_v2_parse_ENUMERATED(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ENUMERATED"));}
+static bool __asn1_v2_parse_MIN(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "MIN"));}
+static bool __asn1_v2_parse_SIZE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "SIZE"));}
+static bool __asn1_v2_parse_AUTOMATIC(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "AUTOMATIC"));}
+static bool __asn1_v2_parse_EXCEPT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "EXCEPT"));}
+static bool __asn1_v2_parse_MINUS_INFINITY(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "MINUS-INFINITY"));}
+static bool __asn1_v2_parse_STRING(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "STRING"));}
+static bool __asn1_v2_parse_BEGIN(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "BEGIN"));}
+static bool __asn1_v2_parse_EXPLICIT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "EXPLICIT"));}
+static bool __asn1_v2_parse_NOT_A_NUMBER(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "NOT-A-NUMBER"));}
+static bool __asn1_v2_parse_SYNTAX(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "SYNTAX"));}
+static bool __asn1_v2_parse_BIT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "BIT"));}
+static bool __asn1_v2_parse_EXPORTS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "EXPORTS"));}
+static bool __asn1_v2_parse_NULL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "NULL"));}
+static bool __asn1_v2_parse_T61String(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "T61String"));}
+static bool __asn1_v2_parse_BMPString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "BMPString"));}
+static bool __asn1_v2_parse_EXTENSIBILITY(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "EXTENSIBILITY"));}
+static bool __asn1_v2_parse_NumericString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "NumericString"));}
+static bool __asn1_v2_parse_TAGS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "TAGS"));}
+static bool __asn1_v2_parse_BOOLEAN(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "BOOLEAN"));}
+static bool __asn1_v2_parse_EXTERNAL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "EXTERNAL"));}
+static bool __asn1_v2_parse_OBJECT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "OBJECT"));}
+static bool __asn1_v2_parse_TeletexString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "TeletexString"));}
+static bool __asn1_v2_parse_BY(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "BY"));}
+static bool __asn1_v2_parse_FALSE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "FALSE"));}
+static bool __asn1_v2_parse_ObjectDescriptor(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "ObjectDescriptor"));}
+static bool __asn1_v2_parse_TIME(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "TIME"));}
+static bool __asn1_v2_parse_CHARACTER(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "CHARACTER"));}
+static bool __asn1_v2_parse_FROM(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "FROM"));}
+static bool __asn1_v2_parse_OCTET(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "OCTET"));}
+static bool __asn1_v2_parse_TIME_OF_DAY(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "TIME-OF-DAY"));}
+static bool __asn1_v2_parse_CHOICE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "CHOICE"));}
+static bool __asn1_v2_parse_GeneralizedTime(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "GeneralizedTime"));}
+static bool __asn1_v2_parse_OF(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "OF"));}
+static bool __asn1_v2_parse_TRUE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "TRUE"));}
+static bool __asn1_v2_parse_CLASS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "CLASS"));}
+static bool __asn1_v2_parse_GeneralString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "GeneralString"));}
+static bool __asn1_v2_parse_OID_IRI(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "OID-IRI"));}
+static bool __asn1_v2_parse_TYPE_IDENTIFIER(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "TYPE-IDENTIFIER"));}
+static bool __asn1_v2_parse_COMPONENT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "COMPONENT"));}
+static bool __asn1_v2_parse_GraphicString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "GraphicString"));}
+static bool __asn1_v2_parse_OPTIONAL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "OPTIONAL"));}
+static bool __asn1_v2_parse_UNION(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "UNION"));}
+static bool __asn1_v2_parse_COMPONENTS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "COMPONENTS"));}
+static bool __asn1_v2_parse_IA5String(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "IA5String"));}
+static bool __asn1_v2_parse_PATTERN(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "PATTERN"));}
+static bool __asn1_v2_parse_UNIQUE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "UNIQUE"));}
+static bool __asn1_v2_parse_CONSTRAINED(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "CONSTRAINED"));}
+static bool __asn1_v2_parse_IDENTIFIER(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "IDENTIFIER"));}
+static bool __asn1_v2_parse_PDV(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "PDV"));}
+static bool __asn1_v2_parse_UNIVERSAL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "UNIVERSAL"));}
+static bool __asn1_v2_parse_CONTAINING(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "CONTAINING"));}
+static bool __asn1_v2_parse_IMPLICIT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "IMPLICIT"));}
+static bool __asn1_v2_parse_PLUS_INFINITY(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "PLUS-INFINITY"));}
+static bool __asn1_v2_parse_UniversalString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "UniversalString"));}
+static bool __asn1_v2_parse_DATE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "DATE"));}
+static bool __asn1_v2_parse_IMPLIED(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "IMPLIED"));}
+static bool __asn1_v2_parse_PRESENT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "PRESENT"));}
+static bool __asn1_v2_parse_UTCTime(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "UTCTime"));}
+static bool __asn1_v2_parse_DATE_TIME(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "DATE-TIME"));}
+static bool __asn1_v2_parse_IMPORTS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "IMPORTS"));}
+static bool __asn1_v2_parse_PrintableString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "PrintableString"));}
+static bool __asn1_v2_parse_UTF8String(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "UTF8String"));}
+static bool __asn1_v2_parse_DEFAULT(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "DEFAULT"));}
+static bool __asn1_v2_parse_INCLUDES(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "INCLUDES"));}
+static bool __asn1_v2_parse_PRIVATE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "PRIVATE"));}
+static bool __asn1_v2_parse_VideotexString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "VideotexString"));}
+static bool __asn1_v2_parse_DEFINITIONS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "DEFINITIONS"));}
+static bool __asn1_v2_parse_INSTANCE(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "INSTANCE"));}
+static bool __asn1_v2_parse_REAL(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "REAL"));}
+static bool __asn1_v2_parse_VisibleString(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "VisibleString"));}
+static bool __asn1_v2_parse_DURATION(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "DURATION"));}
+static bool __asn1_v2_parse_INSTRUCTIONS(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "INSTRUCTIONS"));}
+static bool __asn1_v2_parse_RELATIVE_OID(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "RELATIVE-OID"));}
+static bool __asn1_v2_parse_WITH(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "WITH"));}
+static bool __asn1_v2_parse_EMBEDDED(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "EMBEDDED"));}
+static bool __asn1_v2_parse_INTEGER(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "INTEGER"));}
+static bool __asn1_v2_parse_RELATIVE_OID_IRI(t_asn_v2_token *token) { return (__asn1_v2_token_expect_keyword(token, "RELATIVE-OID-IRI"));}
 
 static bool __asn1_v2_parse_encoding_ref_default(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token)
 {
@@ -1376,8 +1583,25 @@ label_error:
 int asn1_v2_parse(const char *s, size_t slen)
 {
 	if (NULL == s) return (SSL_ERR);
-	t_asn_v2_parser_ctx ctx = {0};
+
 	t_asn_v2_token token = { .s = s, .slen = slen };
+	t_list tokens = {0};
+
+	while (__asn1_v2_token_next(&token)) {
+		t_asn_v2_token *t = __asn1_v2_token_create();
+		*t = token;
+		ft_list_append_ref(&tokens, t);
+	}
+
+	t_asn_v2_parser_ctx ctx = {0};
+	SSL_ALLOC(ctx.tokens, sizeof(t_asn_v2_token) * tokens.size);
+	ctx.token_count = tokens.size;
+	t_list_next next = {0};
+	void *ref = NULL;
+	for (size_t i = 0; ft_list_next_ref(&tokens, &next, &ref); i++) {
+		t_asn_v2_token *t = ref;
+		ctx.tokens[i] = *t;
+	}
 
 	if (!__asn1_v2_parse_module(&ctx, &token)) {
 		return (SSL_ERR);
