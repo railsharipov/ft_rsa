@@ -214,15 +214,14 @@ bool __asn1_v2_is_bound(char c)
 bool __asn1_v2_token_next(t_asn_v2_parser_ctx *ctx)
 {
 	assert(NULL != ctx);
-	t_asn_v2_token token = ctx->token;
-	if (token->end >= token->slen) return false;
-
-	t_asn_v2_token t = { .s = token->s, .slen = token->slen, .start = token->end, };
+	t_asn_v2_token t = ctx->token;
+	if (t.end >= t.slen) return false;
+	t.start = t.end;
 
 	while (t.start < t.slen && ft_iseolws(t.s[t.start])) t.start++;
 	if (t.start == t.slen) {
-		token->kind = ASN_V2_TOKEN_KIND_NONE;
-		token->done = true;
+		ctx->token.kind = ASN_V2_TOKEN_KIND_NONE;
+		ctx->token.done = true;
 		return false;
 	}
 
@@ -373,7 +372,7 @@ bool __asn1_v2_token_next(t_asn_v2_parser_ctx *ctx)
 		}
 	}
 
-	SSL_LOG(TRACE, "no match at pos: %zu", token->end);
+	SSL_LOG(TRACE, "no match at pos: %zu", ctx->token.end);
 	return false;
 
 label_ok:
@@ -382,8 +381,8 @@ label_ok:
 	ft_strncpy(cbuf, t.s + t.start, len);
 	cbuf[len-1] = 0;
 	SSL_LOG(TRACE, "match at pos: % 5zu: %-12s: %s", t.start, __asn1_v2_get_token_kind_name(t.kind), cbuf);
-	*token = t;
-	if (token->kind == ASN_V2_TOKEN_KIND_COMMENT) {
+	ctx->token = t;
+	if (ctx->token.kind == ASN_V2_TOKEN_KIND_COMMENT) {
 		return (__asn1_v2_token_next(ctx));
 	}
 	return true;
@@ -812,7 +811,7 @@ static bool __asn1_v2_parse_EncodingReferenceDefault(t_asn_v2_parser_ctx *ctx)
 {
 	t_asn_v2_token old_token = ctx->token;
 	if (__asn1_v2_parse_upper_first_name(ctx)) {
-		t_asn_v2_token name_token = *ctx->token;
+		t_asn_v2_token name_token = ctx->token;
 		if (__asn1_v2_parse_keyword_DEFINITIONS(ctx)) {
 			return true;
 		}
@@ -830,7 +829,7 @@ static bool __asn1_v2_parse_TagDefault(t_asn_v2_parser_ctx *ctx)
 		__asn1_v2_parse_keyword_IMPLICIT(ctx) ||
 		__asn1_v2_parse_keyword_AUTOMATIC(ctx)
 	) {
-		t_asn_v2_token tag_token = *ctx->token;
+		t_asn_v2_token tag_token = ctx->token;
 		if (__asn1_v2_parse_keyword_TAGS(ctx)) {
 			return true;
 		}
@@ -982,7 +981,7 @@ static bool __asn1_v2_parse_ModuleIdentifier(t_asn_v2_parser_ctx *ctx)
 	// modulereference DefinitiveIdentification
 	t_asn_v2_token old_token = ctx->token;
 	if (__asn1_v2_parse_upper_first_name(ctx)) {
-		t_asn_v2_token name_token = *ctx->token;
+		t_asn_v2_token name_token = ctx->token;
 		if (__asn1_v2_parse_DefinitiveIdentification(ctx)) {
 			// SSL_LOG(TRACE, "match: ModuleIdentifier");
 			return true;
@@ -1067,7 +1066,7 @@ static bool __asn1_v2_parse_SymbolList(t_asn_v2_parser_ctx *ctx)
 			__asn1_v2_parse_token_COMMA(ctx) &&
 			__asn1_v2_parse_Symbol(ctx)
 		) {
-			old_token = *ctx->token;
+			old_token = ctx->token;
 		}
 		ctx->token = old_token;
 	}
@@ -1587,13 +1586,12 @@ int asn1_v2_parse(const char *s, size_t slen)
 {
 	if (NULL == s) return (SSL_ERR);
 
-	t_asn_v2_token token = { .s = s, .slen = slen };
-	t_asn_v2_parser_ctx ctx = { .token = &token };
+	t_asn_v2_parser_ctx ctx = { .token.s = s, .token.slen = slen };
 
 	if (!__asn1_v2_parse_Module(&ctx)) {
 		return (SSL_ERR);
 	}
-	if (!token.done) {
+	if (!ctx.token.done) {
 		SSL_LOG(ERROR, "parsing is not complete");
 		return (SSL_ERR);
 	}
