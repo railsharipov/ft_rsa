@@ -20,6 +20,8 @@ typedef enum e_asn_v2_token_kind {
 	ASN_V2_TOKEN_KIND_KEYWORD,
 	ASN_V2_TOKEN_KIND_SINGLE_CHAR,
 	ASN_V2_TOKEN_KIND_NAME,
+	ASN_V2_TOKEN_KIND_INT_UNI_LBL,
+	ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL,
 } t_asn_v2_token_kind;
 
 static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
@@ -40,6 +42,8 @@ static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
 	case ASN_V2_TOKEN_KIND_KEYWORD: 		return "KEYWORD";
 	case ASN_V2_TOKEN_KIND_SINGLE_CHAR:		return "SINGLE_CHAR";
 	case ASN_V2_TOKEN_KIND_NAME: 			return "NAME";
+	case ASN_V2_TOKEN_KIND_INT_UNI_LBL:		return "integerUnicodeLabel";
+	case ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL:	return "non-integerUnicodeLabel";
 	default:								return "unknown";
 	}
 }
@@ -404,6 +408,27 @@ bool __asn1_v2_token_next(t_asn_v2_token *token)
 			}
 			is_prev_hyphen = (s[i] == '-');
 			if (s[i] == '-' && is_prev_hyphen) break;
+		}
+	}
+
+	if (ft_isalnum(s[0]) || s[0] == '.' || s[0] == '_' || s[0] == '~') {
+		bool has_at_least_one_non_digit = false;
+		bool has_hyphen_at_idx_2 = false;
+		bool has_hyphen_at_idx_3 = false;
+		for (size_t i = 0; i < slen; i++) {
+			if (!ft_isdigit(s[i])) has_at_least_one_non_digit = true;
+			if (i == 2 && s[i] == '-') has_hyphen_at_idx_2 = true;
+			if (i == 3 && s[i] == '-') has_hyphen_at_idx_3 = true;
+			if (!(ft_isalnum_or_hyphen(s[i]) || s[i] == '.' || s[i] == '_' || s[i] == '~')) {
+				if (__asn1_v2_is_bound(s[i])) {
+					if (has_at_least_one_non_digit && !(has_hyphen_at_idx_2 && has_hyphen_at_idx_3)) {
+						t.kind = ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL;
+						t.end = t.start + i;
+						goto label_ok;
+					}
+				}
+				break;
+			}
 		}
 	}
 
@@ -979,6 +1004,37 @@ static bool __asn1_v2_parse_lower_first_name(t_asn_v2_parser_ctx *ctx, t_asn_v2_
 	return false;
 }
 
+static bool __asn1_v2_parse_integer_unicode_label(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	char cbuf[1024];
+	t_asn_v2_token t = *token;
+
+	if (__asn1_v2_token_next(&t) && t.kind == ASN_V2_TOKEN_KIND_NUMBER) {
+		t.kind = ASN_V2_TOKEN_KIND_INT_UNI_LBL;
+		SSL_LOG(TRACE, "match: integerUnicodeLabel: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
+		UNUSED(ctx);
+		*token = t;
+		return true;
+	}
+	SSL_LOG(TRACE, "no match: integerUnicodeLabel: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
+	return false;
+}
+
+static bool __asn1_v2_parse_non_integer_unicode_label(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	char cbuf[1024];
+	t_asn_v2_token t = *token;
+
+	if (__asn1_v2_token_next(&t) && t.kind == ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL) {
+		SSL_LOG(TRACE, "match: non-integerUnicodeLabel: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
+		UNUSED(ctx);
+		*token = t;
+		return true;
+	}
+	SSL_LOG(TRACE, "no match: non-integerUnicodeLabel: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
+	return false;
+}
+
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
@@ -1068,6 +1124,16 @@ static bool __asn1_v2_parse_valuereference(t_asn_v2_parser_ctx *ctx, t_asn_v2_to
 }
 
 static bool __asn1_v2_parse_typereference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_upper_first_name);
+
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_encodingreference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_upper_first_name);
 
@@ -2042,6 +2108,7 @@ static bool __asn1_v2_parse_IRIType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *to
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_NullType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_NULL);
@@ -2050,6 +2117,7 @@ static bool __asn1_v2_parse_NullType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *t
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_ObjectClassFieldType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// DefinedObjectClass "." FieldName
@@ -2063,6 +2131,7 @@ static bool __asn1_v2_parse_ObjectClassFieldType(t_asn_v2_parser_ctx *ctx, t_asn
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_ObjectIdentifierType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_AND(ctx,
@@ -2074,6 +2143,7 @@ static bool __asn1_v2_parse_ObjectIdentifierType(t_asn_v2_parser_ctx *ctx, t_asn
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_OctetStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_AND(ctx,
@@ -2103,6 +2173,7 @@ static bool __asn1_v2_parse_RelativeIRIType(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_RelativeOIDType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_RELATIVE_OID);
@@ -2400,17 +2471,133 @@ static bool __asn1_v2_parse_SetOfType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *
 	return false;
 }
 
-static bool __asn1_v2_parse_PrefixedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_ClassNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-	SSL_LOG(WARN, "skipping __asn1_v2_parse_PrefixedType: NOT_IMPLEMENTED");
-	return false;
-
-	NOT_IMPLEMENTED("__asn1_v2_parse_PrefixedType");
+	// number | DefinedValue
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
 	return false;
 }
+
+static bool __asn1_v2_parse_Class(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// UNIVERSAL | APPLICATION | PRIVATE | empty
+	PUSH_OP_OR_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UNIVERSAL),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_APPLICATION),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PRIVATE)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+
+static bool __asn1_v2_parse_EncodingReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// encodingreference ":" | empty
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_encodingreference),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+
+static bool __asn1_v2_parse_Tag(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "[" EncodingReference Class ClassNumber "]"
+	PUSH_OP_AND_5(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_SQUARE_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_EncodingReference),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Class),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ClassNumber),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_SQUARE_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_TaggedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Tag Type | Tag IMPLICIT Type | Tag EXPLICIT Type
+	PUSH_OP_OR_3(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Tag),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Tag),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_IMPLICIT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Tag),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXPLICIT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_EncodingInstruction(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_EncodingInstruction");
+}
+
+static bool __asn1_v2_parse_EncodingPrefixed(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "[" EncodingReference EncodingInstruction "]"
+	PUSH_OP_AND_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_SQUARE_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_EncodingReference),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_EncodingInstruction),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_SQUARE_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_EncodingPrefixedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// EncodingPrefix Type
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_EncodingPrefix),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PrefixedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// TaggedType | EncodingPrefixedType
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_TaggedType),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_EncodingPrefixedType)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_TimeType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_TIME);
@@ -2475,10 +2662,49 @@ static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 	return false;
 }
 
+static bool __asn1_v2_parse_UsefulType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_UsefulType");
+}
+
+static bool __asn1_v2_parse_SelectionType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// identifier "<" Type
+	PUSH_OP_AND_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_ANGLE_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_TypeFromObject(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_TypeFromObject");
+}
+
+static bool __asn1_v2_parse_ValueSetFromObjects(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_ValueSetFromObjects");
+}
+
 static bool __asn1_v2_parse_ReferencedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// DefinedType | UsefulType | SelectionType | TypeFromObject | ValueSetFromObjects
-	NOT_IMPLEMENTED("__asn1_v2_parse_ReferencedType");
+	PUSH_OP_OR_5(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedType),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UsefulType),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SelectionType),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeFromObject),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueSetFromObjects)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 
 static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2606,7 +2832,12 @@ static bool __asn1_v2_parse_XMLChoiceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_to
 
 static bool __asn1_v2_parse_EmbeddedPDVValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// SequenceValue
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceValue);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 
 static bool __asn1_v2_parse_EnumeratedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2649,9 +2880,59 @@ static bool __asn1_v2_parse_XMLIntegerValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLIntegerValue");
 }
 
+static bool __asn1_v2_parse_ArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// integerUnicodeLabel | non-integerUnicodeLabel
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_integer_unicode_label),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_non_integer_unicode_label)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_FirstArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "/" ArcIdentifier
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SLASH),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ArcIdentifier)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_SubsequentArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "/" ArcIdentifier SubsequentArcIdentifier | empty
+	PUSH_OP_AND_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SLASH),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ArcIdentifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SubsequentArcIdentifier)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+
 static bool __asn1_v2_parse_IRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// """ FirstArcIdentifier SubsequentArcIdentifier """
+	PUSH_OP_AND_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_DOUBLE_QUOTE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_FirstArcIdentifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SubsequentArcIdentifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_DOUBLE_QUOTE)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -2695,17 +2976,90 @@ static bool __asn1_v2_parse_XMLOctetStringValue(t_asn_v2_parser_ctx *ctx, t_asn_
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLOctetStringValue");
 }
 
+static bool __asn1_v2_parse_NumberForm(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// number | DefinedValue
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_NameAndNumberForm(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// identifier "(" NumberForm ")"
+	PUSH_OP_AND_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NumberForm),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ObjIdComponents(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// NameForm | NumberForm | NameAndNumberForm | DefinedValue
+	PUSH_OP_OR_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NameForm),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NumberForm),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NameAndNumberForm),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ObjIdComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ObjIdComponents | ObjIdComponents ObjIdComponentsList
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponents),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList),
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponents),
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
 
 static bool __asn1_v2_parse_ObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// "{" ObjIdComponentsList "}" | "{" DefinedValue ObjIdComponentsList "}"
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+		),
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLObjectIdentifierValue");
 }
-
-
 
 static bool __asn1_v2_parse_NumericRealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -2741,7 +3095,7 @@ static bool __asn1_v2_parse_RealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *
 	// NumericRealValue | SpecialRealValue
 	PUSH_OP_OR(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_NumericRealValue),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_SpecialRealValue),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SpecialRealValue)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -2753,18 +3107,77 @@ static bool __asn1_v2_parse_XMLRealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLRealValue");
 }
 
+static bool __asn1_v2_parse_FirstRelativeArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ArcIdentifier
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ArcIdentifier);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_RelativeIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// """ FirstRelativeArcIdentifier SubsequentArcIdentifier """
+	PUSH_OP_AND_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_DOUBLE_QUOTE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_FirstRelativeArcIdentifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SubsequentArcIdentifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_DOUBLE_QUOTE)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLRelativeIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLRelativeIRIValue");
 }
 
+static bool __asn1_v2_parse_RelativeOIDComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// NumberForm | NameAndNumberForm | DefinedValue
+	PUSH_OP_OR_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NumberForm),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NameAndNumberForm),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_RelativeOIDComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// RelativeOIDComponents | RelativeOIDComponents RelativeOIDComponentsList
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDComponents),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDComponentsList)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDComponents)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_RelativeOIDValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// "{" RelativeOIDComponentsList "}"
+	PUSH_OP_AND_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDComponentsList),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLRelativeOIDValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -2930,7 +3343,12 @@ static bool __asn1_v2_parse_XMLSetOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_tok
 
 static bool __asn1_v2_parse_PrefixedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// Value
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_Value);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLPrefixedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
