@@ -10,6 +10,7 @@ typedef enum e_asn_v2_token_kind {
 	ASN_V2_TOKEN_KIND_BSTRING,
 	ASN_V2_TOKEN_KIND_HSTRING,
 	ASN_V2_TOKEN_KIND_CSTRING,
+	ASN_V2_TOKEN_KIND_TSTRING,
 	ASN_V2_TOKEN_KIND_NUMBER,
 	ASN_V2_TOKEN_KIND_REAL_NUMBER,
 	ASN_V2_TOKEN_KIND_ASSIGNMENT,
@@ -32,6 +33,7 @@ static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
 	case ASN_V2_TOKEN_KIND_BSTRING: 		return "BSTRING";
 	case ASN_V2_TOKEN_KIND_HSTRING: 		return "HSTRING";
 	case ASN_V2_TOKEN_KIND_CSTRING: 		return "CSTRING";
+	case ASN_V2_TOKEN_KIND_TSTRING: 		return "TSTRING";
 	case ASN_V2_TOKEN_KIND_NUMBER: 			return "NUMBER";
 	case ASN_V2_TOKEN_KIND_REAL_NUMBER:		return "REAL_NUMBER";
 	case ASN_V2_TOKEN_KIND_ASSIGNMENT: 		return "ASSIGNMENT";
@@ -902,6 +904,34 @@ static bool __asn1_v2_parse_cstring(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *to
 	return false;
 }
 
+static bool __asn1_v2_parse_tstring(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	char cbuf[1024];
+	t_asn_v2_token t = *token;
+
+	if (__asn1_v2_token_next(&t) && t.kind == ASN_V2_TOKEN_KIND_CSTRING) {
+		const char time_specific_chars[] = {
+			'+', '-', ':', '.', ',', '/', 'C', 'D', 'H', 'M', 'R', 'P', 'S', 'T', 'W', 'Y', 'Z'
+		};
+		for (size_t i = t.start; i < t.end; i++) {
+			bool is_digit = ft_isdigit(t.s[i]);
+			bool is_time_char = false;
+			for (size_t j = 0; j < sizeof(time_specific_chars); i++) {
+				if ((is_time_char = (t.s[i] == time_specific_chars[j]))) break;
+			}
+			if (!is_digit && !is_time_spec_char) goto label_error;
+		}
+		SSL_LOG(TRACE, "match: TSTRING: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
+		UNUSED(ctx);
+		*token = t;
+		return true;
+	}
+
+label_error:
+	SSL_LOG(TRACE, "no match: TSTRING: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
+	return false;
+}
+
 static bool __asn1_v2_parse_number(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	char cbuf[1024];
@@ -1745,11 +1775,57 @@ static bool __asn1_v2_parse_BooleanType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 	return false;
 }
 
-static bool __asn1_v2_parse_CharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_RestrictedCharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// See Rec. ITU-T X.680
+	// Definition of restricted character string types.
+
+	// BMPString | GeneralString | GraphicString | IA5String | ISO646String | NumericString | PrintableString | TeletexString
+	// | T61String | UniversalString | UTF8String | VideotexString | VisibleString
+	PUSH_OP_OR(ctx,
+		PUSH_OP_OR_10(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_BMPString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_GeneralString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_GraphicString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_IA5String),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ISO646String),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_NumericString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PrintableString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_TeletexString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_T61String),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UniversalString)
+		),
+		PUSH_OP_OR_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UTF8String),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_VideotexString),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_VisibleString)
+		)
+	);
+
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UnrestrictedCharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_AND(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_CHARACTER),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_STRING)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_CharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// RestrictedCharacterStringType | UnrestrictedCharacterStringType
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_RestrictedCharacterStringType),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UnrestrictedCharacterStringType)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -1875,6 +1951,7 @@ static bool __asn1_v2_parse_DateType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *t
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_DateTimeType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_DATE_TIME);
@@ -1883,6 +1960,7 @@ static bool __asn1_v2_parse_DateTimeType(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_DurationType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_DURATION);
@@ -1891,6 +1969,7 @@ static bool __asn1_v2_parse_DurationType(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_EmbeddedPDVType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_AND(ctx,
@@ -2606,6 +2685,7 @@ static bool __asn1_v2_parse_TimeType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *t
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_TimeOfDayType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_TIME_OF_DAY);
@@ -2664,7 +2744,16 @@ static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 
 static bool __asn1_v2_parse_UsefulType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-	NOT_IMPLEMENTED("__asn1_v2_parse_UsefulType");
+	// GeneralizedTime | UTCTime | ObjectDescriptor
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_GeneralizedTime),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UTCTime),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ObjectDescriptor)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 
 static bool __asn1_v2_parse_SelectionType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2707,9 +2796,124 @@ static bool __asn1_v2_parse_ReferencedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_to
 	return false;
 }
 
+static bool __asn1_v2_parse_SubtypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ElementSetSpecs
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpecs);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ConstraintSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// SubtypeConstraint | GeneralConstraint
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SubtypeConstraint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_GeneralConstraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Constraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "(" ConstraintSpec ExceptionSpec ")"
+	PUSH_OP_AND_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ConstraintSpec),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ExceptionSpec),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-	NOT_IMPLEMENTED("__asn1_v2_parse_ConstrainedType");
+	// SET Constraint OF Type
+	// | SET SizeConstraint OF Type
+	// | SEQUENCE Constraint OF Type
+	// | SEQUENCE SizeConstraint OF Type
+	// | SET Constraint OF NamedType
+	// | SET SizeConstraint OF NamedType
+	// | SEQUENCE Constraint OF NamedType
+	// | SEQUENCE SizeConstraint OF NamedType
+	PUSH_OP_OR_8(ctx,
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SET),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SET),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SizeConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SEQUENCE),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SEQUENCE),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SizeConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SET),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedType)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SET),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SizeConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedType)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SEQUENCE),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedType)
+		),
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SEQUENCE),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SizeConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OF),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedType)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Type Constraint | TypeWithConstraint
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeWithConstraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 
 static bool __asn1_v2_parse_Type(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2803,9 +3007,129 @@ static bool __asn1_v2_parse_XMLBooleanValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLBooleanValue");
 }
 
+static bool __asn1_v2_parse_Tuple(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "{" TableColumn "," TableRow "," Row "," Cell "}"
+	PUSH_OP_AND_5(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Quadruple(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "{" Group "," Plane "," Row "," Cell "}"
+	PUSH_OP_AND_9(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_CharsDefn(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// cstring	| Quadruple	| Tuple	| DefinedValue
+	PUSH_OP_OR_4(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_cstring),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Quadruple),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Tuple),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_CharSyms(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// CharsDefn | CharSyms "," CharsDefn
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_CharsDefn),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_CharSyms)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharDefn)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_CharacterStringList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "{" CharSyms "}"
+
+	PUSH_OP_AND_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharSyms),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+static bool __asn1_v2_parse_RestrictedCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// See Rec. ITU-T X.680
+	// Definition of restricted character string types.
+
+	// cstring | CharacterStringList | Quadruple | Tuple
+
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_cstring),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharacterStringList),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Quadruple),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Tuple)
+	);
+
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UnrestrictedCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// SequenceValue
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceValue);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_CharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// RestrictedCharacterStringValue | UnrestrictedCharacterStringValue
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_RestrictedCharacterStringValue),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UnrestrictedCharacterStringValue),
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -2856,8 +3180,18 @@ static bool __asn1_v2_parse_XMLEnumeratedValue(t_asn_v2_parser_ctx *ctx, t_asn_v
 
 static bool __asn1_v2_parse_ExternalValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// SequenceValue
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceValue);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
+static bool __asn1_v2_parse_XMLExternalValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_XMLExternalValue");
+}
+
 static bool __asn1_v2_parse_InstanceOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 
@@ -3357,7 +3691,12 @@ static bool __asn1_v2_parse_XMLPrefixedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_
 
 static bool __asn1_v2_parse_TimeValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	// tstring
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_tstring);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 static bool __asn1_v2_parse_XMLTimeValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -3517,9 +3856,534 @@ static bool __asn1_v2_parse_XMLValueAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v
 	return false;
 }
 
+static bool __asn1_v2_parse_SingleValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Value
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_Value);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Includes(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// INCLUDES | empty
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INCLUDES);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+static bool __asn1_v2_parse_ContainedSubtype(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Includes Type
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Includes),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UpperEndValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// UpperEndValue ::= Value | MAX
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_MAX)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_LowerEndValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// LowerEndValue ::= Value | MIN
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_MIN)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UpperEndpoint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// UpperEndpoint ::= UpperEndValue | "<" UpperEndValue
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UpperEndValue),
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_ANGLE_BRKT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_UpperEndValue)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_LowerEndpoint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// LowerEndpoint ::= LowerEndValue | LowerEndValue "<"
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_LowerEndValue),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_ANGLE_BRKT)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_LowerEndValue)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ValueRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// LowerEndpoint ".." UpperEndpoint
+	PUSH_OP_AND_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_LowerEndpoint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_RANGE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UpperEndpoint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PermittedAlphabet(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// FROM Constraint
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_FROM),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_SizeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// SIZE Constraint
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SIZE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_TypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Type
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_Type);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PresenceConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// PRESENT | ABSENT | OPTIONAL | empty
+	PUSH_OP_OR_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PRESENT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ABSENT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OPTIONAL)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+
+static bool __asn1_v2_parse_ValueConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Constraint | empty
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+
+static bool __asn1_v2_parse_ComponentConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ValueConstraint PresenceConstraint
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueConstraint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_PresenceConstraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_NamedConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// identifier ComponentConstraint
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ComponentConstraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_TypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// NamedConstraint | NamedConstraint "," TypeConstraints
+	// NamedConstraint ::= identifier ComponentConstraint
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeConstraints)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedConstraint)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_MultipleTypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// FullSpecification | PartialSpecification
+	// FullSpecification ::= "{" TypeConstraints "}"
+	// PartialSpecification ::= "{" "..." "," TypeConstraints "}"
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeConstraints),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+		),
+		PUSH_OP_AND_5(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeConstraints),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_InnerTypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// WITH COMPONENT SingleTypeConstraint
+	// | WITH COMPONENTS MultipleTypeConstraints
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_WITH),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_COMPONENT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint)
+		),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_WITH),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_COMPONENTS),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_MultipleTypeConstraints)
+		),
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PatternConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// PATTERN Value
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PATTERN),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PropertyAndSettingPair(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// PropertyName "=" SettingName
+	// PropertyName ::= psname
+	// SettingName ::= psname
+	PUSH_OP_AND_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_upper_first_name),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_EQUAL),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_upper_first_name)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PropertySettingsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// PropertyAndSettingPair | PropertySettingsList PropertyAndSettingPair
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_PropertyAndSettingPair),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_PropertySettingsList)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_PropertySettingsList)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_PropertySettings(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// SETTINGS simplestring
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_SETTINGS),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_cstring)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_DurationRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ValueRange
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueRange);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_TimePointRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ValueRange
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueRange);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_RecurrenceRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ValueRange
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueRange);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// SingleValue
+	// | ContainedSubtype
+	// | ValueRange
+	// | PermittedAlphabet
+	// | SizeConstraint
+	// | TypeConstraint
+	// | InnerTypeConstraints
+	// | PatternConstraint
+	// | PropertySettings
+	// | DurationRange
+	// | TimePointRange
+	// | RecurrenceRange
+	PUSH_OP_OR(ctx,
+		PUSH_OP_OR_10(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SingleValue),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ContainedSubtype),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueRange),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_PermittedAlphabet),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SizeConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_InnerTypeConstraints),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_PatternConstraint),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_PropertySettings),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_DurationRange)
+		),
+		PUSH_OP_OR(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimePointRange),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_RecurrenceRange)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// SubtypeElements | ObjectSetElements | "(" ElementSetSpec ")"
+	PUSH_OP_OR_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SubtypeElements),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectSetElements),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_BRKT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_BRKT)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Exclusions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// EXCEPT Elements
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXCEPT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Elements)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Elements | Elems Exclusions
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Elements),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Exclusions)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Elements)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_IntersectionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "^" | INTERSECTION
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_CARET),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INTERSECTION)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// IntersectionElements | IElems IntersectionMark IntersectionElements
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionElements),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionMark),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionElements)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UnionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "|" | UNION
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_PIPE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UNION)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Unions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Intersections | UElems UnionMark Intersections
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Unions),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_UnionMark),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ElementSetSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Unions | ALL Exclusions
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Unions),
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ALL),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Exclusions)
+		)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_ElementSetSpecs(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-	NOT_IMPLEMENTED("ElementSetSpecs");
+	// RootElementSetSpec
+	// | RootElementSetSpec "," "..."
+	// | RootElementSetSpec "," "..." "," AdditionalElementSetSpec
+	PUSH_OP_OR_3(ctx,
+		PUSH_OP_AND_5(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
+		),
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
 }
 
 static bool __asn1_v2_parse_ValueSet(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
