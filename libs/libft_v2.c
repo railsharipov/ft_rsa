@@ -68,7 +68,7 @@ t_node_v2 *ft_list_remove(t_list *list, t_node_v2 *node)
 {
 	assert(NULL != list);
 	assert(NULL != node);
-	if (list->size == 0) return (NULL);
+	assert(list->size > 0);
 
 	t_node_v2 *cur = list->first;
 	if (NULL != cur && cur == node) {
@@ -85,11 +85,12 @@ t_node_v2 *ft_list_remove(t_list *list, t_node_v2 *node)
 		}
 		if (NULL != cur) {
 			// Remove the node from a list.
-			if (cur == list->last) {
-				list->last = prev;
-			}
 			prev->next = cur->next;
 			list->size -= 1;
+			if (cur == list->last) {
+				list->last = prev;
+				assert(prev->next == NULL);
+			}
 		}
 	}
 	if (list->first == NULL) {
@@ -565,11 +566,12 @@ bool ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del
 	while (NULL != node) {
 		t_ref_node *ref = container_of(node, t_ref_node, base);
 		t_htbl_v2_entry *entry = ref->ptr;
+		t_node_v2 *next_node = node->next;
 		if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
 			__ft_htbl_v2_deactivate_entry(entry, f_del_content);
 			__ft_ref_delete_node(ft_list_remove(list, node));
 		}
-		node = node->next;
+		node = next_node;
 	}
 	return (true);
 }
