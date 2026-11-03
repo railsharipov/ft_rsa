@@ -699,22 +699,18 @@ char *ft_htbl_v2_dumps(t_htbl_v2 *htbl)
 	else {
 		ft_ostr_append_cstr(&ostring, "[");
 		uint32_t commas = 0;
-		for (uint32_t idx = 0; idx < htbl->size; idx++) {
-			t_list *list = htbl->arr + idx;
-			if (list->size > 0) {
-				t_node_v2 *node = list->first;
-				for (; node != NULL; node = node->next) {
-					if (commas++) {
-						ft_ostr_append_cstr(&ostring, ",");
-					}
-					t_ref_node *ref = container_of(node, t_ref_node, base);
-					t_htbl_v2_entry *entry = ref->ptr;
-					ft_ostr_appendf(&ostring, "{\"idx\":%lu,\"key\":\"%s\",\"hash\":\"%#lx\",\"content\":\"%p\"}",
-						idx, entry->key, entry->hash, entry->content);
-				}
+
+		t_node_v2 *node = htbl->values.first;
+		while (node != NULL) {
+			t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
+			if (entry->active) {
+				if (commas++) ft_ostr_append_cstr(&ostring, ",");
+				ft_ostr_appendf(&ostring, "\n    {\"key\":\"%s\",\"hash\":\"%#lx\",\"content\":\"%p\"}",
+					entry->key, entry->hash, entry->content);
 			}
+			node = node->next;
 		}
-		ft_ostr_append_cstr(&ostring, "]");
+		ft_ostr_append_cstr(&ostring, "\n]");
 	}
 
 	char *arr_dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
