@@ -192,6 +192,8 @@ const struct {
 	{"EMBEDDED",         "EMBEDDED"},
 	{"INTEGER",          "INTEGER"},
 	{"RELATIVE_OID_IRI", "RELATIVE-OID-IRI"},
+	{"ANY",              "ANY"},
+	{"DEFINED",          "DEFINED"},
 };
 const size_t RESERVED_KEYWORD_COUNT = sizeof(RESERVED_KEYWORDS)/sizeof(*RESERVED_KEYWORDS);
 
@@ -500,6 +502,13 @@ static inline const char *__asn1_v2_strip_parse_func_prefix(const char *name)
     return (ft_strncmp(name, prefix, sizeof(prefix)) == 0 ? name + sizeof(prefix) : name);
 }
 
+static t_list call_history = {0};
+static t_list call_history = {0};
+static void __asn1_v2_call_history_init(size_t slen)
+{
+	
+}
+
 static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// {
@@ -542,7 +551,6 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 		if (func->call(&call_ctx, token, data)) {
 			return true;
 		}
-		// ft_list_prepend_content(&ctx->funcs, func);
 		break;
 	}
 	case ASN_V2_PARSER_OP_KIND_AND: {
@@ -783,6 +791,8 @@ static bool __asn1_v2_parse_keyword_WITH(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 static bool __asn1_v2_parse_keyword_EMBEDDED(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)         { return (__asn1_v2_parse_keyword(ctx, token, data, "EMBEDDED")); }
 static bool __asn1_v2_parse_keyword_INTEGER(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)          { return (__asn1_v2_parse_keyword(ctx, token, data, "INTEGER")); }
 static bool __asn1_v2_parse_keyword_RELATIVE_OID_IRI(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data) { return (__asn1_v2_parse_keyword(ctx, token, data, "RELATIVE-OID-IRI")); }
+static bool __asn1_v2_parse_keyword_ANY(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)              { return (__asn1_v2_parse_keyword(ctx, token, data, "ANY")); }
+static bool __asn1_v2_parse_keyword_DEFINED(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)          { return (__asn1_v2_parse_keyword(ctx, token, data, "DEFINED")); }
 
 static bool __asn1_v2_parse_token_ASSIGNMENT(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -919,7 +929,7 @@ static bool __asn1_v2_parse_tstring(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *to
 			for (size_t j = 0; j < sizeof(time_specific_chars); i++) {
 				if ((is_time_char = (t.s[i] == time_specific_chars[j]))) break;
 			}
-			if (!is_digit && !is_time_spec_char) goto label_error;
+			if (!is_digit && !is_time_char) goto label_error;
 		}
 		SSL_LOG(TRACE, "match: TSTRING: %s", __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
 		UNUSED(ctx);
@@ -1086,9 +1096,9 @@ static bool __asn1_v2_parse_DefinitiveNumberForm(t_asn_v2_parser_ctx *ctx, t_asn
 static bool __asn1_v2_parse_DefinitiveNameAndNumberForm(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_DefinitiveObjIdComponent(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_DefinitiveObjIdComponentList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
-static bool __asn1_v2_parse_DefinitiveOid(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
-static bool __asn1_v2_parse_IriValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
-static bool __asn1_v2_parse_DefinitiveOidAndIri(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_DefinitiveOID(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_DefinitiveOIDAndIRI(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_DefinitiveIdentification(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ModuleIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_Reference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
@@ -1099,7 +1109,6 @@ static bool __asn1_v2_parse_SymbolsExported(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 static bool __asn1_v2_parse_Exports(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_AssignedIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
-static bool __asn1_v2_parse_ModuleRef(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_GlobalModuleReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_SelectionOption(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_SymbolsFromModule(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
@@ -1108,18 +1117,203 @@ static bool __asn1_v2_parse_SymbolsImported(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 static bool __asn1_v2_parse_Imports(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ExternalTypeReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ExternalValueReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ItemId(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ItemSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_AbsoluteReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_xmlasn1typename(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_NonParametrizedTypeName(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ParameterizedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ParameterizedValueSetType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_DefinedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ParameterizedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_DefinedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedBit(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedBitList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_BitStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_BooleanType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RestrictedCharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_UnrestrictedCharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_CharacterStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_AlternativeTypeList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditionAlternativeGroup(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditionAlternative(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditionAlternativeList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditionAlternatives(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_AlternativeTypeLists(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ChoiceType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_DateType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_DateTimeType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_DurationType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EmbeddedPDVType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EnumerationItem(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Enumeration(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExceptionIdentification(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExceptionSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Enumerations(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EnumeratedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExternalType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_InstanceOfType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SignedNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedNumberList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IntegerType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IRIType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NullType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ObjectClassFieldType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ObjectIdentifierType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_OctetStringType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RealType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RelativeIRIType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RelativeOIDType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAndException(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_OptionalExtensionMarker(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ComponentType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ComponentTypeList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_VersionNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditionGroup(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAddition(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditionList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExtensionAdditions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ComponentTypeLists(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SequenceType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SequenceOfType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SetType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SetOfType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ClassNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Class(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EncodingReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Tag(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TaggedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EncodingInstruction(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EncodingPrefix(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EncodingPrefixedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PrefixedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TimeType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TimeOfDayType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_UsefulType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SelectionType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TypeFromObject(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ValueSetFromObjects(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ReferencedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SubtypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ConstraintSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Constraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_Type(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IdentifierList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_BitStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLBitStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_BooleanValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLBooleanValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Tuple(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Quadruple(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_CharsDefn(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_CharSyms(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_CharacterStringList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RestrictedCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_UnrestrictedCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_CharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ChoiceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLChoiceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EmbeddedPDVValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_EnumeratedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLEnumeratedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ExternalValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLExternalValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_InstanceOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IntegerValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLIntegerValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_FirstArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SubsequentArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NullValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLNullValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_OctetStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLOctetStringValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NumberForm(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NameAndNumberForm(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ObjIdComponents(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ObjIdComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NumericRealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SpecialRealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLRealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_FirstRelativeArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RelativeIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLRelativeIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RelativeOIDComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RelativeOIDComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RelativeOIDValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLRelativeOIDValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ComponentValueList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SequenceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLSequenceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ValueList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedValueList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SequenceOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLSequenceOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SetValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLSetValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SetOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLSetOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PrefixedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLPrefixedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TimeValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLTimeValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_BuiltinValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ValueFromObject(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ReferencedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ObjectClassFieldValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_Value(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_XMLNamedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_TypeAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ValueAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_XMLTypedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_XMLValueAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SingleValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Includes(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ContainedSubtype(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_UpperEndValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_LowerEndValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_UpperEndpoint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_LowerEndpoint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ValueRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PermittedAlphabet(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_SizeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PresenceConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ValueConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ComponentConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_NamedConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_MultipleTypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_InnerTypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PatternConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PropertyAndSettingPair(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PropertySettingsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_PropertySettings(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_DurationRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_TimePointRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_RecurrenceRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Exclusions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_IntersectionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_UnionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_Unions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
+static bool __asn1_v2_parse_ElementSetSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ElementSetSpecs(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ValueSet(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ValueSetTypeAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
@@ -1131,11 +1325,10 @@ static bool __asn1_v2_parse_Assignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 static bool __asn1_v2_parse_AssignmentList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ModuleBody(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_Module(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
-static bool __asn1_v2_parse_ItemSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 
 static bool __asn1_v2_parse_identifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-	PUSH_OP_CALL(ctx, __asn1_v2_parse_lower_name);
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_lower_first_name);
 
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -1341,11 +1534,6 @@ static bool __asn1_v2_parse_DefinitiveOID(t_asn_v2_parser_ctx *ctx, t_asn_v2_tok
 	return false;
 }
 
-static bool __asn1_v2_parse_IRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
-{
-	NOT_IMPLEMENTED("value grammar");
-}
-
 static bool __asn1_v2_parse_DefinitiveOIDAndIRI(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// DefinitiveOID IRIValue
@@ -1478,11 +1666,6 @@ static bool __asn1_v2_parse_Exports(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *to
 		return true;
 	}
 	return true;
-}
-
-static bool __asn1_v2_parse_ObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
-{
-	NOT_IMPLEMENTED("value grammar");
 }
 
 static bool __asn1_v2_parse_AssignedIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -1662,11 +1845,17 @@ static bool __asn1_v2_parse_NonParametrizedTypeName(t_asn_v2_parser_ctx *ctx, t_
 
 static bool __asn1_v2_parse_ParameterizedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
+	SSL_LOG(WARN, "skipping parsing of ParameterizedType");
+	return false;
+
 	NOT_IMPLEMENTED("ParameterizedType");
 }
 
 static bool __asn1_v2_parse_ParameterizedValueSetType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
+	SSL_LOG(WARN, "skipping parsing of ParameterizedValueSetType");
+	return false;
+
 	NOT_IMPLEMENTED("ParameterizedValueSetType");
 }
 
@@ -1912,7 +2101,7 @@ static bool __asn1_v2_parse_AlternativeTypeLists(t_asn_v2_parser_ctx *ctx, t_asn
 {
 	// RootAlternativeTypeList
 	// | RootAlternativeTypeList "," ExtensionAndException ExtensionAdditionAlternatives OptionalExtensionMarker
-	PUSH_OP_OR_5(ctx,
+	PUSH_OP_OR(ctx,
 		PUSH_OP_AND_5(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_AlternativeTypeList),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
@@ -1936,7 +2125,7 @@ static bool __asn1_v2_parse_ChoiceType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_AlternativeTypeLists),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
-	)
+	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
@@ -2016,8 +2205,8 @@ static bool __asn1_v2_parse_ExceptionIdentification(t_asn_v2_parser_ctx *ctx, t_
 {
 	// SignedNumber | DefinedValue | Type ":" Value
 	PUSH_OP_OR_3(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_SignedNumber)
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SignedNumber),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue),
 		PUSH_OP_AND_3(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON),
@@ -2047,7 +2236,7 @@ static bool __asn1_v2_parse_Enumerations(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	// RootEnumeration
 	// | RootEnumeration "," "..." ExceptionSpec
 	// | RootEnumeration "," "..." ExceptionSpec "," AdditionalEnumeration
-	PUSH_OP_AND_4(ctx,
+	PUSH_OP_OR_3(ctx,
 		PUSH_OP_AND_6(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_Enumeration),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
@@ -2112,7 +2301,7 @@ static bool __asn1_v2_parse_SignedNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
 		PUSH_OP_AND(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_HYPHEN),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_number)
 		)
 	);
 	if (RUN_OP(ctx, token, data)) {
@@ -2121,7 +2310,7 @@ static bool __asn1_v2_parse_SignedNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	return false;
 }
 
-static bool __asn1_v2_parse_keyword_NamedNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_NamedNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// identifier "(" SignedNumber ")" | identifier "(" DefinedValue ")"
 	PUSH_OP_OR(ctx,
@@ -2131,7 +2320,7 @@ static bool __asn1_v2_parse_keyword_NamedNumber(t_asn_v2_parser_ctx *ctx, t_asn_
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SignedNumber),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_BRKT)
 		),
-		PUSH_OP_AND(ctx,
+		PUSH_OP_AND_4(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_BRKT),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue),
@@ -2144,7 +2333,7 @@ static bool __asn1_v2_parse_keyword_NamedNumber(t_asn_v2_parser_ctx *ctx, t_asn_
 	return false;
 }
 
-static bool __asn1_v2_parse_keyword_NamedNumberList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_NamedNumberList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// NamedNumber | NamedNumberList "," NamedNumber
 	PUSH_OP_OR(ctx,
@@ -2168,10 +2357,10 @@ static bool __asn1_v2_parse_IntegerType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 		PUSH_OP_AND_4(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INTEGER),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_NamedNumberList),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_NamedNumberList),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
-		);
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INTEGER);
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INTEGER)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -2267,7 +2456,7 @@ static bool __asn1_v2_parse_ExtensionAndException(t_asn_v2_parser_ctx *ctx, t_as
 	// "..." | "..." ExceptionSpec
 	PUSH_OP_OR(ctx,
 		PUSH_OP_AND(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ExceptionSpec)
 		),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
@@ -2283,7 +2472,7 @@ static bool __asn1_v2_parse_OptionalExtensionMarker(t_asn_v2_parser_ctx *ctx, t_
 {
 	// "," "..." | empty
 	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
 	);
 	if (RUN_OP(ctx, token, data)) {
@@ -2339,7 +2528,7 @@ static bool __asn1_v2_parse_VersionNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_tok
 	// empty | number ":"
 	PUSH_OP_AND(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_number),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -2389,12 +2578,26 @@ static bool __asn1_v2_parse_ExtensionAdditionList(t_asn_v2_parser_ctx *ctx, t_as
 	}
 	return false;
 }
+
 static bool __asn1_v2_parse_ExtensionAdditions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "," ExtensionAdditionList | empty
 	PUSH_OP_AND(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ExtensionAdditionList)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return true;
+}
+
+static bool __asn1_v2_parse_ExtensionEndMarker(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// "," "..."
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -2636,7 +2839,7 @@ static bool __asn1_v2_parse_EncodingInstruction(t_asn_v2_parser_ctx *ctx, t_asn_
 	NOT_IMPLEMENTED("__asn1_v2_parse_EncodingInstruction");
 }
 
-static bool __asn1_v2_parse_EncodingPrefixed(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_EncodingPrefix(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "[" EncodingReference EncodingInstruction "]"
 	PUSH_OP_AND_4(ctx,
@@ -2695,12 +2898,31 @@ static bool __asn1_v2_parse_TimeOfDayType(t_asn_v2_parser_ctx *ctx, t_asn_v2_tok
 	return false;
 }
 
+// This is legacy and included only for backward compatibility.
+static bool __asn1_v2_parse_AnyType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ANY | ANY DEFINED BY identifier
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ANY),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_DEFINED),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_BY),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ANY)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// BitStringType | BooleanType | CharacterStringType | ChoiceType | DateType | DateTimeType | DurationType |
 	// EmbeddedPDVType | EnumeratedType | ExternalType | InstanceOfType | IntegerType | IRIType | NullType |
 	// ObjectClassFieldType | ObjectIdentifierType | OctetStringType | RealType | RelativeIRIType | RelativeOIDType |
-	// SequenceType | SequenceOfType | SetType | SetOfType | PrefixedType | TimeType | TimeOfDayType
+	// SequenceType | SequenceOfType | SetType | SetOfType | PrefixedType | TimeType | TimeOfDayType | AnyType
 	PUSH_OP_OR_3(ctx,
 		PUSH_OP_OR_10(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_BitStringType),
@@ -2726,14 +2948,15 @@ static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeIRIType),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDType)
 		),
-		PUSH_OP_OR_7(ctx,
+		PUSH_OP_OR_8(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceType),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceOfType),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetType),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfType),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedType),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeOfDayType)
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeOfDayType),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_AnyType)
 		)
 	);
 	if (RUN_OP(ctx, token, data)) {
@@ -2745,7 +2968,7 @@ static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 static bool __asn1_v2_parse_UsefulType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// GeneralizedTime | UTCTime | ObjectDescriptor
-	PUSH_OP_OR(ctx,
+	PUSH_OP_OR_3(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_GeneralizedTime),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UTCTime),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ObjectDescriptor)
@@ -2772,11 +2995,17 @@ static bool __asn1_v2_parse_SelectionType(t_asn_v2_parser_ctx *ctx, t_asn_v2_tok
 
 static bool __asn1_v2_parse_TypeFromObject(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
+	SSL_LOG(WARN, "skipping parsing of TypeFromObject");
+	return false;
+
 	NOT_IMPLEMENTED("__asn1_v2_parse_TypeFromObject");
 }
 
 static bool __asn1_v2_parse_ValueSetFromObjects(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
+	SSL_LOG(WARN, "skipping parsing of ValueSetFromObjects");
+	return false;
+
 	NOT_IMPLEMENTED("__asn1_v2_parse_ValueSetFromObjects");
 }
 
@@ -2804,6 +3033,11 @@ static bool __asn1_v2_parse_SubtypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2
 		return true;
 	}
 	return false;
+}
+
+static bool __asn1_v2_parse_GeneralConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_GeneralConstraint");
 }
 
 static bool __asn1_v2_parse_ConstraintSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2834,7 +3068,7 @@ static bool __asn1_v2_parse_Constraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 	return false;
 }
 
-static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_TypeWithConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// SET Constraint OF Type
 	// | SET SizeConstraint OF Type
@@ -2935,7 +3169,7 @@ static bool __asn1_v2_parse_NamedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *
 	// identifier Type
 	PUSH_OP_AND(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -2995,7 +3229,7 @@ static bool __asn1_v2_parse_BooleanValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	// TRUE | FALSE
 	PUSH_OP_OR(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_TRUE),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_FALSE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_FALSE)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3067,7 +3301,7 @@ static bool __asn1_v2_parse_CharSyms(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *t
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_CharSyms)
 		),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharDefn)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharsDefn)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3096,7 +3330,7 @@ static bool __asn1_v2_parse_RestrictedCharacterStringValue(t_asn_v2_parser_ctx *
 
 	// cstring | CharacterStringList | Quadruple | Tuple
 
-	PUSH_OP_OR(ctx,
+	PUSH_OP_OR_4(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_cstring),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharacterStringList),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Quadruple),
@@ -3124,7 +3358,7 @@ static bool __asn1_v2_parse_CharacterStringValue(t_asn_v2_parser_ctx *ctx, t_asn
 	// RestrictedCharacterStringValue | UnrestrictedCharacterStringValue
 	PUSH_OP_OR(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_RestrictedCharacterStringValue),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_UnrestrictedCharacterStringValue),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UnrestrictedCharacterStringValue)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3139,7 +3373,7 @@ static bool __asn1_v2_parse_XMLCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_
 static bool __asn1_v2_parse_ChoiceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// identifier ":" Value
-	PUSH_OP_OR(ctx,
+	PUSH_OP_OR_3(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
@@ -3194,7 +3428,11 @@ static bool __asn1_v2_parse_XMLExternalValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_
 
 static bool __asn1_v2_parse_InstanceOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
-
+	NOT_IMPLEMENTED("__asn1_v2_parse_InstanceOfValue");
+}
+static bool __asn1_v2_parse_XMLInstanceOfValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_XMLInstanceOfValue");
 }
 
 static bool __asn1_v2_parse_IntegerValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -3202,7 +3440,7 @@ static bool __asn1_v2_parse_IntegerValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	// SignedNumber | identifier
 	PUSH_OP_OR(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_SignedNumber),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3359,9 +3597,9 @@ static bool __asn1_v2_parse_ObjIdComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_
 	PUSH_OP_OR(ctx,
 		PUSH_OP_AND(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponents),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList)
 		),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponents),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponents)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3373,12 +3611,12 @@ static bool __asn1_v2_parse_ObjectIdentifierValue(t_asn_v2_parser_ctx *ctx, t_as
 {
 	// "{" ObjIdComponentsList "}" | "{" DefinedValue ObjIdComponentsList "}"
 	PUSH_OP_OR(ctx,
-		PUSH_OP_AND(ctx,
+		PUSH_OP_AND_3(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
 		),
-		PUSH_OP_AND(ctx,
+		PUSH_OP_AND_4(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjIdComponentsList),
@@ -3401,7 +3639,7 @@ static bool __asn1_v2_parse_NumericRealValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_
 	PUSH_OP_OR_3(ctx,
 		PUSH_OP_AND(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_HYPHEN),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_realnumber),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_realnumber)
 		),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_realnumber),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceValue)
@@ -3470,7 +3708,7 @@ static bool __asn1_v2_parse_XMLRelativeIRIValue(t_asn_v2_parser_ctx *ctx, t_asn_
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLRelativeIRIValue");
 }
 
-static bool __asn1_v2_parse_RelativeOIDComponentsList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_RelativeOIDComponents(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// NumberForm | NameAndNumberForm | DefinedValue
 	PUSH_OP_OR_3(ctx,
@@ -3703,13 +3941,26 @@ static bool __asn1_v2_parse_XMLTimeValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	NOT_IMPLEMENTED("__asn1_v2_parse_XMLTimeValue");
 }
 
+// This is legacy and included only for backward compatibility.
+static bool __asn1_v2_parse_AnyValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// Type Value
+	PUSH_OP_AND(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
+	);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
 
 static bool __asn1_v2_parse_BuiltinValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// BitStringValue | BooleanValue | CharacterStringValue | ChoiceValue | EmbeddedPDVValue | EnumeratedValue |
 	// ExternalValue | InstanceOfValue | IntegerValue | IRIValue | NullValue | ObjectIdentifierValue | OctetStringValue |
 	// RealValue | RelativeIRIValue | RelativeOIDValue | SequenceValue | SequenceOfValue | SetValue | SetOfValue |
-	// PrefixedValue | TimeValue
+	// PrefixedValue | TimeValue | AnyValue
 	PUSH_OP_OR_3(ctx,
 		PUSH_OP_OR_10(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_BitStringValue),
@@ -3735,9 +3986,10 @@ static bool __asn1_v2_parse_BuiltinValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfValue)
 		),
-		PUSH_OP_OR_10(ctx,
+		PUSH_OP_OR_3(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedValue),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeValue)
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeValue),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_AnyValue)
 		)
 	);
 	if (RUN_OP(ctx, token, data)) {
@@ -3756,7 +4008,7 @@ static bool __asn1_v2_parse_ReferencedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	// DefinedValue | ValueFromObject
 	PUSH_OP_OR(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueFromObject),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueFromObject)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3788,7 +4040,7 @@ static bool __asn1_v2_parse_NamedValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 	// identifier Value
 	PUSH_OP_AND(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -3964,7 +4216,7 @@ static bool __asn1_v2_parse_PermittedAlphabet(t_asn_v2_parser_ctx *ctx, t_asn_v2
 {
 	// FROM Constraint
 	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_FROM),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_FROM),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint)
 	);
 	if (RUN_OP(ctx, token, data)) {
@@ -4103,7 +4355,7 @@ static bool __asn1_v2_parse_InnerTypeConstraints(t_asn_v2_parser_ctx *ctx, t_asn
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_WITH),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_COMPONENTS),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_MultipleTypeConstraints)
-		),
+		)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -4199,7 +4451,7 @@ static bool __asn1_v2_parse_RecurrenceRange(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	return false;
 }
 
-static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_SubtypeElements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// SingleValue
 	// | ContainedSubtype
@@ -4237,6 +4489,11 @@ static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *t
 	return false;
 }
 
+static bool __asn1_v2_parse_ObjectSetElements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	NOT_IMPLEMENTED("__asn1_v2_parse_ObjectSetElements");
+}
+
 static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// SubtypeElements | ObjectSetElements | "(" ElementSetSpec ")"
@@ -4268,7 +4525,7 @@ static bool __asn1_v2_parse_Exclusions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 	return false;
 }
 
-static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_IntersectionElements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// Elements | Elems Exclusions
 	PUSH_OP_OR(ctx,
