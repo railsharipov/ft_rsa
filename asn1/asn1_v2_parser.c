@@ -64,10 +64,9 @@ typedef struct s_asn_v2_data {
 } t_asn_v2_data;
 
 typedef struct s_asn_v2_parser_ctx {
-	t_asn_v2_token token;
 	t_list ops;
 	t_list funcs;
-	bool abort;
+	bool done;
 } t_asn_v2_parser_ctx;
 
 typedef bool (*t_func_asn_v2_parse)(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
@@ -237,9 +236,14 @@ const size_t SINGLE_CHAR_LEX_COUNT = sizeof(SINGLE_CHAR_LEXES)/sizeof(*SINGLE_CH
 
 const char *__asn1_v2_token_dumpb(t_asn_v2_token token, char *buf, size_t bufsize)
 {
-	size_t len = MIN(bufsize, token.end - token.start+1);
-	ft_strncpy(buf, token.s + token.start, len);
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, bufsize);
+	ft_ostr_appendf(&ostring, "pos=%zu,kind=%s,value=", token.start, __asn1_v2_get_token_kind_name(token.kind));
+	ft_ostr_append(&ostring, token.s + token.start, token.end - token.start);
+	size_t len = MIN(bufsize, ostring.size+1);
+	ft_strncpy(buf, (const char *)ostring.content, len);
 	buf[len-1] = 0;
+	ft_ostr_clear(&ostring);
 	return (buf);
 }
 
@@ -502,11 +506,42 @@ static inline const char *__asn1_v2_strip_parse_func_prefix(const char *name)
     return (ft_strncmp(name, prefix, sizeof(prefix)) == 0 ? name + sizeof(prefix) : name);
 }
 
-static t_list call_history = {0};
-static t_list call_history = {0};
-static void __asn1_v2_call_history_init(size_t slen)
+typedef struct s_call_h_entry {
+	const char *name;
+	t_asn_v2_token token;
+} t_call_h_entry;
+
+static t_list __call_history = {0};
+
+static size_t __token_history_len;
+static t_htbl_v2 *__token_history;
+
+static void __asn1_v2_token_history_init(size_t slen)
 {
-	
+	SSL_ALLOC(__token_history, slen * sizeof(t_htbl_v2));
+	__token_history_len = slen;
+	return;
+}
+
+static bool __asn1_v2_token_history_add(size_t idx, const char *name, t_func_asn_v2_parse f)
+{
+	if (idx < __token_history_len) {
+		t_htbl_v2 *h = __token_history + idx;
+		if (h->size == 0) ft_htbl_v2_init(h, 1024);
+		return (ft_htbl_v2_set(h, name, f));
+	}
+	return false;
+}
+
+static bool __asn1_v2_token_history_remove(size_t idx, const char *name)
+{
+	if (idx < __token_history_len) {
+		t_htbl_v2 *h = __token_history + idx;
+		if (h->size > 0) {
+			return (ft_htbl_v2_unset(h, name, NULL));
+		}
+	}
+	return false;
 }
 
 static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -545,20 +580,59 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 	switch (op->kind) {
 	case ASN_V2_PARSER_OP_KIND_CALL: {
 		t_asn_v2_parser_func *func = ft_list_pop_content(&ctx->funcs);
-		if (ctx->abort) return false;
-		SSL_LOG(TRACE, "CALL : %s => %s", __asn1_v2_strip_parse_func_prefix(name), __asn1_v2_strip_parse_func_prefix(func->name));
+		if (ctx->done) {
+			__asn1_v2_parser_func_delete(func);
+			return false;
+		}
+		SSL_LOG(TRACE, "CALL : %s => %s", name, func->name);
+
+		// For debugging only.
+		t_call_h_entry *e = NULL;
+		SSL_ALLOC(e, sizeof(t_call_h_entry));
+		e->name = func->name;
+		e->token = *token;
+		ft_list_prepend_content(&__call_history, e);
+		// End.
+
+		if (!__asn1_v2_token_history_add(token->start, func->name, func->call)) {
+			char cbuf[1024];
+			SSL_LOG(CRIT, "infinite loop after token: %s, func: %s", __asn1_v2_token_dumpb(*token, cbuf, sizeof(cbuf)), func->name);
+			SSL_LOG(CRIT, "call stack:");
+			t_list_next next = {0};
+			void *content = NULL;
+			while (ft_list_next_content(&__call_history, &next, &content)) {
+				t_call_h_entry *e = content;
+				SSL_LOG(CRIT, "    %-40s", e->name);
+			}
+			abort();
+		}
+
 		t_asn_v2_parser_ctx call_ctx = {0};
 		if (func->call(&call_ctx, token, data)) {
+			// For debugging only.
+			e = ft_list_pop_content(&__call_history);
+			SSL_FREE(e);
+			// End.
+			__asn1_v2_parser_func_delete(func);
 			return true;
 		}
+
+		// For debugging only.
+		e = ft_list_pop_content(&__call_history);
+		SSL_FREE(e);
+		// End.
+
+		__asn1_v2_token_history_remove(token->start, func->name);
+		__asn1_v2_parser_func_delete(func);
+
 		break;
 	}
 	case ASN_V2_PARSER_OP_KIND_AND: {
 		t_asn_v2_token old_token = *token;
 		bool b1 = __asn1_v2_parser_op_run(ctx, name, token, data);
-		if (!ctx->abort) ctx->abort = !b1;
+		if (!ctx->done) ctx->done = !b1;
 		bool b2 = __asn1_v2_parser_op_run(ctx, name, token, data);
-		ctx->abort = false;
+		ctx->done = false;
 		if (b1 && b2) {
 			return true;
 		}
@@ -567,9 +641,9 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 	}
 	case ASN_V2_PARSER_OP_KIND_OR: {
 		bool b1 = __asn1_v2_parser_op_run(ctx, name, token, data);
-		if (!ctx->abort) ctx->abort = b1;
+		if (!ctx->done) ctx->done = b1;
 		bool b2 = __asn1_v2_parser_op_run(ctx, name, token, data);
-		ctx->abort = false;
+		ctx->done = false;
 		if (b1 || b2) {
 			return true;
 		}
@@ -4786,6 +4860,8 @@ static bool __asn1_v2_parse_Module(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *tok
 int asn1_v2_parse(const char *s, size_t slen)
 {
 	if (NULL == s) return (SSL_ERR);
+
+	__asn1_v2_token_history_init(slen);
 
 	t_asn_v2_parser_ctx ctx = {0};
 	t_asn_v2_token token = {.s = s, .slen = slen,};
