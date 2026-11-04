@@ -19,6 +19,7 @@ typedef void (*t_func_node_del)(t_node_v2 *node);
 typedef void (*t_func_node_map)(t_node_v2 *node, void *vctx);
 typedef bool (*t_func_node_op)(t_node_v2 *node, void *vctx);
 typedef bool (*t_func_node_find)(t_node_v2 *node, const void *vctx);
+typedef char *(*t_func_node_dumps)(const t_node_v2 *node);
 typedef t_node_v2 *(*t_func_node_copy)(t_node_v2 *node);
 
 /****************************************************************************/
@@ -109,6 +110,7 @@ void		ft_ntree_v2_dfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
 t_node_v2	*ft_ntree_v2_bfs(t_node_v2 *node, t_func_node_find f_find, const void *vctx);
 void		ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
 void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
+char		*ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps);
 
 /****************************************************************************/
 

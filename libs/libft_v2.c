@@ -828,3 +828,69 @@ void ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del)
 	ft_ntree_v2_del(node->next, f_del);
 	f_del(node);
 }
+
+static char *__ft_ntree_default_node_dumps(const t_node_v2 *node)
+{
+	if (NULL == node) return (ft_strdup("null"));
+	char *s = NULL;
+	ft_sprintf(&s, "p=%p", node);
+	return (s);
+}
+
+static int level = 0;
+
+static char *__ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps)
+{
+	level++;
+	if (level >= 50) return (ft_strdup("\"abort\""));
+
+	assert(NULL != f_dumps);
+	if (NULL == node) ft_strdup("null");
+
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 2048);
+
+	ft_ostr_append_cstr(&ostring, "[{");
+	char *dumps = f_dumps(node);
+	if (NULL != dumps) {
+		ft_ostr_appendf(&ostring, "\"node\":\"%s\"", dumps);
+		LIBFT_FREE(dumps);
+	} else {
+		ft_ostr_appendf(&ostring, "\"node\":\"p=%p\"", node);
+	}
+
+	ft_ostr_append_cstr(&ostring, ",\"nodes\":[");
+	t_node_v2 *n = node->nodes;
+	size_t commas = 0;
+	while (NULL != n) {
+		if (commas++) ft_ostr_append_cstr(&ostring, ",");
+		dumps = __ft_ntree_v2_dumps(n, f_dumps);
+		ft_ostr_append_cstr(&ostring, dumps);
+		LIBFT_FREE(dumps);
+		LIBFT_LOG(WARN, "level: %d", level);
+		n = n->next;
+	}
+	ft_ostr_append_cstr(&ostring, "]}");
+
+	n = node->next;
+	if (NULL != n) {
+		ft_ostr_append_cstr(&ostring, ",");
+		dumps = __ft_ntree_v2_dumps(n, f_dumps);
+		ft_ostr_append_cstr(&ostring, dumps);
+		LIBFT_FREE(dumps);
+	}
+	ft_ostr_append_cstr(&ostring, "]");
+
+	dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+
+	level--;
+
+	return (dumps);
+}
+
+char *ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps)
+{
+	if (NULL == f_dumps) f_dumps = __ft_ntree_default_node_dumps;
+	return (__ft_ntree_v2_dumps(node, f_dumps));
+}
