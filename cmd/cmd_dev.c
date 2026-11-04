@@ -152,12 +152,17 @@ int	cmd_dev(const t_cmd *cmd)
 		SSL_LOG(ERROR, "file read error: %s", asn1_filename);
 		return (SSL_ERR);
 	}
-	if (SSL_OK != asn1_v2_parse((char *)asn1_text.content, asn1_text.size)) {
+
+	t_asn_v2_data *asn1_data = NULL;
+	if (SSL_OK != asn1_v2_parse((char *)asn1_text.content, asn1_text.size, &asn1_data)) {
 		SSL_LOG(ERROR, "asn1 parse failed");
 		return (SSL_ERR);
 	} else {
 		SSL_LOG(INFO, "asn1 parse success");
 	}
+
+	char *dumps = asn1_v2_data_pretty_dumps(asn1_data);
+	ft_printf("%s\n", dumps);
 
 	return (SSL_OK);
 }

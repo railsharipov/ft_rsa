@@ -335,7 +335,54 @@ typedef struct s_asn_v2_module {
 	char *name;
 } t_asn_v2_module;
 
-int asn1_v2_parse(const char *s, size_t slen);
+/////////////////////////////////////////////////////////////////
+
+typedef enum e_asn_v2_token_kind {
+	ASN_V2_TOKEN_KIND_NONE = 0,
+	ASN_V2_TOKEN_KIND_COMMENT,
+	ASN_V2_TOKEN_KIND_BSTRING,
+	ASN_V2_TOKEN_KIND_HSTRING,
+	ASN_V2_TOKEN_KIND_CSTRING,
+	ASN_V2_TOKEN_KIND_TSTRING,
+	ASN_V2_TOKEN_KIND_NUMBER,
+	ASN_V2_TOKEN_KIND_REAL_NUMBER,
+	ASN_V2_TOKEN_KIND_ASSIGNMENT,
+	ASN_V2_TOKEN_KIND_RANGE,
+	ASN_V2_TOKEN_KIND_ELLIPSIS,
+	ASN_V2_TOKEN_KIND_LVER_BRACKET,
+	ASN_V2_TOKEN_KIND_RVER_BRACKET,
+	ASN_V2_TOKEN_KIND_KEYWORD,
+	ASN_V2_TOKEN_KIND_SINGLE_CHAR,
+	ASN_V2_TOKEN_KIND_NAME,
+	ASN_V2_TOKEN_KIND_INT_UNI_LBL,
+	ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL,
+} t_asn_v2_token_kind;
+
+typedef struct s_asn_v2_token {
+	t_asn_v2_token_kind kind;
+	const char *s;
+	size_t slen;
+	size_t start;
+	size_t end;
+	bool done;
+} t_asn_v2_token;
+
+typedef enum e_asn_v2_data_kind {
+	ASN_V2_DATA_KIND_EMPTY = 0,
+	ASN_V2_DATA_KIND_LEAF,
+	ASN_V2_DATA_KIND_LIST,
+	ASN_V2_DATA_KIND_CHOICE,
+} t_asn_v2_data_kind;
+
+typedef struct s_asn_v2_data {
+	t_node_v2 base;
+	t_asn_v2_data_kind kind;
+	t_asn_v2_token *token;
+} t_asn_v2_data;
+
+int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data);
+
+char *asn1_v2_data_pretty_dumps(const t_asn_v2_data *data);
 
 int	asn1_v2_schema_validate(const t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema);
