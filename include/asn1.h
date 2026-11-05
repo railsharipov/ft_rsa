@@ -368,7 +368,8 @@ typedef struct s_asn_v2_token {
 } t_asn_v2_token;
 
 typedef enum e_asn_v2_data_kind {
-	ASN_V2_DATA_KIND_EMPTY = 0,
+	ASN_V2_DATA_KIND_ROOT = 0,
+	ASN_V2_DATA_KIND_EMPTY,
 	ASN_V2_DATA_KIND_LEAF,
 	ASN_V2_DATA_KIND_LIST,
 	ASN_V2_DATA_KIND_CHOICE,
@@ -382,7 +383,7 @@ typedef struct s_asn_v2_data {
 
 int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data);
 
-char *asn1_v2_data_pretty_dumps(const t_asn_v2_data *data);
+char *asn1_v2_data_dumps(const t_asn_v2_data *data);
 
 int	asn1_v2_schema_validate(const t_json_v2 *jschema);
 int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema);

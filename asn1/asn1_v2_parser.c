@@ -4,6 +4,19 @@
 #include <libft.h>
 #include <textutil.h>
 
+static const char *__asn1_v2_get_data_kind_name(t_asn_v2_data_kind kind)
+{
+	switch (kind) {
+	case ASN_V2_DATA_KIND_ROOT: return ("ROOT");
+	case ASN_V2_DATA_KIND_EMPTY: return ("EMPTY");
+	case ASN_V2_DATA_KIND_LEAF: return ("LEAF");
+	case ASN_V2_DATA_KIND_LIST: return ("LIST");
+	case ASN_V2_DATA_KIND_CHOICE: return ("CHOICE");
+	default: return ("unknown");
+	}
+}
+
+
 static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
 {
 	switch (kind) {
@@ -588,7 +601,6 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 	t_asn_v2_parser_op *op = ft_list_pop_content(&ctx->ops);
 	if (NULL == op) return false;
 
-	t_asn_v2_data *root = __asn1_v2_data_create();
 	bool call_result = false;
 
 	switch (op->kind) {
@@ -599,10 +611,11 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 
 		if (ctx->done) {
 			__asn1_v2_parser_func_delete(func);
-			goto label_error;
+			return false;
 		}
 		SSL_LOG(TRACE, "CALL : %s => %s", name, func->name);
 
+		// t_asn_v2_data *root = __asn1_v2_data_create();
 		bool skip_call = false;
 
 		if (__call_history.size > 0) {
@@ -632,7 +645,9 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 			bool no_cycle = __asn1_v2_token_history_set(token->start, func->name, true);
 			if (no_cycle) {
 				t_asn_v2_parser_ctx call_ctx = {0};
-				call_result = func->call(&call_ctx, token, &root);
+				// call_result = func->call(&call_ctx, token, &root);
+				if (*data == NULL) *data = __asn1_v2_data_create();
+				call_result = func->call(&call_ctx, token, data);
 			}
 			else {
 				// Fail early when cyclical call dependency is detected.
@@ -657,15 +672,21 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 		__asn1_v2_parser_func_delete(func);
 
 		if (call_result) {
-			root->kind = ASN_V2_DATA_KIND_LEAF;
+			// root->kind = ASN_V2_DATA_KIND_LEAF;
+			// *data = root;
 		}
 		else if (!call_result && op->kind == ASN_V2_PARSER_OP_KIND_CALL_OPTIONAL) {
-			root->kind = ASN_V2_DATA_KIND_EMPTY;
 			call_result = true;
+			(*data)->kind = ASN_V2_DATA_KIND_EMPTY;
 		}
-		break;
+		else {
+			// __asn1_v2_data_delete(root);
+			*data = NULL;
+		}
+		return (call_result);
 	}
 	case ASN_V2_PARSER_OP_KIND_AND: {
+		t_asn_v2_data *root = __asn1_v2_data_create();
 		t_asn_v2_token old_token = *token;
 		t_asn_v2_data *ldata = NULL;
 		t_asn_v2_data *rdata = NULL;
@@ -675,16 +696,23 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 		ctx->done = false;
 		call_result = b1 && b2;
 		if (call_result) {
-			ldata->base.next = &rdata->base;
+			if (rdata->kind == ASN_V2_DATA_KIND_LIST) {
+				ldata->base.next = rdata->base.nodes;
+			} else {
+				ldata->base.next = &rdata->base;
+			}
 			__asn1_v2_data_add_children(root, ldata);
 			root->kind = ASN_V2_DATA_KIND_LIST;
+			*data = root;
 		}
 		else {
+			*data = NULL;
 			if (b1) __asn1_v2_data_delete(ldata);
 			if (b2) __asn1_v2_data_delete(rdata);
+			__asn1_v2_data_delete(root);
 			*token = old_token;
 		}
-		break;
+		return (call_result);
 	}
 	case ASN_V2_PARSER_OP_KIND_OR: {
 		t_asn_v2_data *ldata = NULL;
@@ -695,26 +723,18 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 		ctx->done = false;
 		call_result = b1 || b2;
 		if (call_result) {
-			(b1) ? __asn1_v2_data_add_children(root, ldata) : __asn1_v2_data_add_children(root, rdata);
-			root->kind = ASN_V2_DATA_KIND_CHOICE;
+			*data = (b1) ? ldata : rdata;
 		}
 		else {
 			if (b1) __asn1_v2_data_delete(ldata);
 			if (b2) __asn1_v2_data_delete(rdata);
+			*data = NULL;
 		}
-		break;
+		return (call_result);
 	}
 	default: {
 		UNREACHABLE("__asn1_v2_parser_op_run");
 	}}
-
-	if (call_result) {
-		*data = root;
-		return true;
-	}
-
-label_error:
-	__asn1_v2_data_delete(root);
 	return false;
 }
 
@@ -794,6 +814,15 @@ static void __asn1_v2_token_delete(t_asn_v2_token *token)
 {
 	*token = (t_asn_v2_token){0};
 	SSL_FREE(token);
+}
+
+static char *__asn1_v2_token_dumps(t_asn_v2_token token)
+{
+	assert(token.end >= token.start);
+	char *toks = ft_strsub(token.s, token.start, token.end-token.start);
+	char *dumps = NULL;
+	ft_sprintf(&dumps, "\"%s\"(%s)", toks, __asn1_v2_get_token_kind_name(token.kind));
+	return (dumps);
 }
 
 /*****************************************************************************/
@@ -1276,6 +1305,7 @@ static bool __asn1_v2_parse_not_impl_fatal(const char *name)
 	return false;
 }
 
+static bool __asn1_v2_parse_empty(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_identifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_valuereference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_typereference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
@@ -1608,6 +1638,11 @@ static bool __asn1_v2_parse_ParameterizedValueSetTypeAssignment(t_asn_v2_parser_
 static bool __asn1_v2_parse_ParameterizedValueAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 static bool __asn1_v2_parse_ParameterizedTypeAssignment(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data);
 
+static bool __asn1_v2_parse_empty(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	return true;
+}
+
 static bool __asn1_v2_parse_identifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	PUSH_OP_CALL(ctx, __asn1_v2_parse_lower_first_name);
@@ -1751,20 +1786,23 @@ static bool __asn1_v2_parse_modulereference(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 static bool __asn1_v2_parse_EncodingReferenceDefault(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// encodingreference INSTRUCTIONS | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_upper_first_name),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INSTRUCTIONS)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_upper_first_name),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INSTRUCTIONS)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_TagDefault(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// EXPLICIT TAGS | IMPLICIT TAGS | AUTOMATIC TAGS | empty
-	PUSH_OP_OR_3(ctx,
+	PUSH_OP_OR_4(ctx,
 		PUSH_OP_AND(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXPLICIT),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_TAGS)
@@ -1776,25 +1814,29 @@ static bool __asn1_v2_parse_TagDefault(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 		PUSH_OP_AND(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_AUTOMATIC),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_TAGS)
-		)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ExtensionDefault(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// EXTENSIBILITY IMPLIED | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXTENSIBILITY),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_IMPLIED)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXTENSIBILITY),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_IMPLIED)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_NameForm(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -1892,14 +1934,15 @@ static bool __asn1_v2_parse_DefinitiveOIDAndIRI(t_asn_v2_parser_ctx *ctx, t_asn_
 static bool __asn1_v2_parse_DefinitiveIdentification(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// DefinitiveOIDandIRI | DefinitiveOID | empty
-	PUSH_OP_OR(ctx,
+	PUSH_OP_OR_3(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinitiveOIDAndIRI),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinitiveOID)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinitiveOID),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ModuleIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -1964,18 +2007,20 @@ static bool __asn1_v2_parse_SymbolList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 static bool __asn1_v2_parse_SymbolsExported(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// SymbolList | empty
-	PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolList);
-
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolList),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
+	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_Exports(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// EXPORTS SymbolsExported ";" | EXPORTS ALL ";" | empty
-	PUSH_OP_OR(ctx,
+	PUSH_OP_OR_3(ctx,
 		PUSH_OP_AND_3(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXPORTS),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolsExported),
@@ -1985,20 +2030,22 @@ static bool __asn1_v2_parse_Exports(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *to
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_EXPORTS),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ALL),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SEMICOLON)
-		)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_AssignedIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// ObjectIdentifierValue | DefinedValue | empty
-	PUSH_OP_OR(ctx,
+	PUSH_OP_OR_3(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectIdentifierValue),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedValue),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
@@ -2031,7 +2078,7 @@ static bool __asn1_v2_parse_SelectionOption(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_SymbolsFromModule(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2068,25 +2115,31 @@ static bool __asn1_v2_parse_SymbolsFromModuleList(t_asn_v2_parser_ctx *ctx, t_as
 static bool __asn1_v2_parse_SymbolsImported(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// SymbolsFromModuleList | empty
-	PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolsFromModuleList);
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolsFromModuleList),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
+	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_Imports(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// IMPORTS SymbolsImported ";" | empty
-	PUSH_OP_AND_3(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_IMPORTS),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolsImported),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SEMICOLON)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_IMPORTS),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SymbolsImported),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SEMICOLON)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ExternalTypeReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2391,14 +2444,17 @@ static bool __asn1_v2_parse_ExtensionAdditionAlternativeList(t_asn_v2_parser_ctx
 static bool __asn1_v2_parse_ExtensionAdditionAlternatives(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "," ExtensionAdditionAlternativeList | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ExtensionAdditionAlternativeList)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ExtensionAdditionAlternativeList)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_AlternativeTypeLists(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2520,19 +2576,22 @@ static bool __asn1_v2_parse_ExceptionIdentification(t_asn_v2_parser_ctx *ctx, t_
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 static bool __asn1_v2_parse_ExceptionSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "!" ExceptionIdentification | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_BANG),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ExceptionIdentification)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_BANG),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ExceptionIdentification)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_Enumerations(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2778,14 +2837,17 @@ static bool __asn1_v2_parse_ExtensionAndException(t_asn_v2_parser_ctx *ctx, t_as
 static bool __asn1_v2_parse_OptionalExtensionMarker(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "," "..." | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ComponentType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2840,7 +2902,7 @@ static bool __asn1_v2_parse_VersionNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_tok
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ExtensionAdditionGroup(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2889,14 +2951,17 @@ static bool __asn1_v2_parse_ExtensionAdditionList(t_asn_v2_parser_ctx *ctx, t_as
 static bool __asn1_v2_parse_ExtensionAdditions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "," ExtensionAdditionList | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ExtensionAdditionList)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ExtensionAdditionList)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ExtensionEndMarker(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -2909,7 +2974,7 @@ static bool __asn1_v2_parse_ExtensionEndMarker(t_asn_v2_parser_ctx *ctx, t_asn_v
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ComponentTypeLists(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -3076,28 +3141,32 @@ static bool __asn1_v2_parse_ClassNumber(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 static bool __asn1_v2_parse_Class(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// UNIVERSAL | APPLICATION | PRIVATE | empty
-	PUSH_OP_OR_3(ctx,
+	PUSH_OP_OR_4(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_UNIVERSAL),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_APPLICATION),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PRIVATE)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PRIVATE),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_EncodingReference(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// encodingreference ":" | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_encodingreference),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_encodingreference),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_Tag(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -3777,15 +3846,18 @@ static bool __asn1_v2_parse_FirstArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v
 static bool __asn1_v2_parse_SubsequentArcIdentifier(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// "/" ArcIdentifier SubsequentArcIdentifier | empty
-	PUSH_OP_AND_3(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SLASH),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ArcIdentifier),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_SubsequentArcIdentifier)
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_SLASH),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ArcIdentifier),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SubsequentArcIdentifier)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_IRIValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -4448,11 +4520,14 @@ static bool __asn1_v2_parse_SingleValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 static bool __asn1_v2_parse_Includes(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// INCLUDES | empty
-	PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INCLUDES);
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_INCLUDES),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
+	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 static bool __asn1_v2_parse_ContainedSubtype(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
@@ -4578,25 +4653,29 @@ static bool __asn1_v2_parse_TypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_to
 static bool __asn1_v2_parse_PresenceConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// PRESENT | ABSENT | OPTIONAL | empty
-	PUSH_OP_OR_3(ctx,
+	PUSH_OP_OR_4(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_PRESENT),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ABSENT),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OPTIONAL)
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_OPTIONAL),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ValueConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// Constraint | empty
-	PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint);
+	PUSH_OP_OR(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
+	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ComponentConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -6241,23 +6320,24 @@ static bool __asn1_v2_parse_AssignmentList(t_asn_v2_parser_ctx *ctx, t_asn_v2_to
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_ModuleBody(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// Exports Imports AssignmentList | empty
-	PUSH_OP_AND(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_Exports),
-		PUSH_OP_AND(ctx,
+	PUSH_OP_OR(ctx,
+		PUSH_OP_AND_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Exports),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_Imports),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_AssignmentList)
-		)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_empty)
 	);
 	if (RUN_OP(ctx, token, data)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 static bool __asn1_v2_parse_Module(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
@@ -6306,16 +6386,22 @@ int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data)
 	return (SSL_ERR);
 }
 
-char *asn1_v2_data_pretty_dumps(const t_asn_v2_data *data)
+static char *__asn1_v2_data_node_dumps(const t_node_v2 *node)
 {
-	char *dumps = ft_ntree_v2_dumps(&data->base, NULL);
-	const t_json_v2 *json = NULL;
-	int status = json_v2_parse(dumps, &json);
-	if (JSON_V2_OK == status) {
-		SSL_FREE(dumps);
-		return (json_v2_pretty_dumps(json, 2, 0, 1));
-	} else {
-		SSL_LOG(ERROR, "failed to pretty format dump string");
-		return (dumps);
+	if (NULL == node) return (ft_strdup("null"));
+	t_asn_v2_data *data = container_of(node, t_asn_v2_data, base);
+	char *dumps = NULL;
+	if (NULL != data->token) {
+		char *toks = __asn1_v2_token_dumps(*data->token);
+		ft_sprintf(&dumps, "kind=%s,token=%s", __asn1_v2_get_data_kind_name(data->kind), toks);
 	}
+	else {
+		ft_sprintf(&dumps, "kind=%s", __asn1_v2_get_data_kind_name(data->kind));
+	}
+	return (dumps);
+}
+
+char *asn1_v2_data_dumps(const t_asn_v2_data *data)
+{
+	return (ft_ntree_v2_dumps(&data->base, __asn1_v2_data_node_dumps));
 }

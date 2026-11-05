@@ -161,7 +161,7 @@ int	cmd_dev(const t_cmd *cmd)
 		SSL_LOG(INFO, "asn1 parse success");
 	}
 
-	char *dumps = asn1_v2_data_pretty_dumps(asn1_data);
+	char *dumps = asn1_v2_data_dumps(asn1_data);
 	ft_printf("%s\n", dumps);
 
 	return (SSL_OK);
