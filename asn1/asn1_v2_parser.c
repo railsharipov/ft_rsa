@@ -52,7 +52,7 @@ typedef enum e_asn_v2_parser_op_kind {
 	ASN_V2_PARSER_OP_KIND_CALL = 0,
 	ASN_V2_PARSER_OP_KIND_OPTIONAL,
 	ASN_V2_PARSER_OP_KIND_SEQUENCE,
-	ASN_V2_PARSER_OP_KIND_OR,
+	ASN_V2_PARSER_OP_KIND_CHOICE,
 } t_asn_v2_parser_op_kind;
 
 static const char *__asn1_v2_get_op_kind_name(t_asn_v2_parser_op_kind kind)
@@ -61,7 +61,7 @@ static const char *__asn1_v2_get_op_kind_name(t_asn_v2_parser_op_kind kind)
 	case ASN_V2_PARSER_OP_KIND_CALL: return ("CALL");
 	case ASN_V2_PARSER_OP_KIND_OPTIONAL: return ("OPTIONAL");
 	case ASN_V2_PARSER_OP_KIND_SEQUENCE: return ("SEQUENCE");
-	case ASN_V2_PARSER_OP_KIND_OR: return ("OR");
+	case ASN_V2_PARSER_OP_KIND_CHOICE: return ("CHOICE");
 	default: return ("unknown");
 	}
 }
@@ -583,7 +583,7 @@ static void __asn1_v2_parser_op_push_sequence(t_asn_v2_parser_ctx *ctx)
 
 static void __asn1_v2_parser_op_push_or(t_asn_v2_parser_ctx *ctx)
 {
-	ft_list_append_content(&ctx->ops, __asn1_v2_parser_op_create(ASN_V2_PARSER_OP_KIND_OR));
+	ft_list_append_content(&ctx->ops, __asn1_v2_parser_op_create(ASN_V2_PARSER_OP_KIND_CHOICE));
 }
 
 static inline const char *__asn1_v2_strip_parse_func_prefix(const char *name)
@@ -778,7 +778,7 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 			return false;
 		}
 	}
-	case ASN_V2_PARSER_OP_KIND_OR: {
+	case ASN_V2_PARSER_OP_KIND_CHOICE: {
 		t_asn_v2_data *ldata = NULL;
 		t_asn_v2_data *rdata = NULL;
 		bool b1 = __asn1_v2_parser_op_run(ctx, name, token, &ldata);
