@@ -829,6 +829,12 @@ void ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del)
 	f_del(node);
 }
 
+typedef struct s_ntree_dump_ctx {
+	int depth;
+	int max_depth;
+	int visited_node_count;
+} t_ntree_dump_ctx;
+
 static char *__ft_ntree_default_node_dumps(const t_node_v2 *node)
 {
 	if (NULL == node) return (ft_strdup("null"));
@@ -837,60 +843,83 @@ static char *__ft_ntree_default_node_dumps(const t_node_v2 *node)
 	return (s);
 }
 
-static int level = 0;
-
-static char *__ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps)
+static char *__ft_ntree_v2_dumps(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t_func_node_dumps f_dumps)
 {
-	level++;
-	if (level >= 50) return (ft_strdup("\"abort\""));
-
 	assert(NULL != f_dumps);
-	if (NULL == node) ft_strdup("null");
+	if (NULL == node) ft_strdup("null\n");
 
 	t_ostring ostring = {0};
-	ft_ostr_init_with_capacity(&ostring, 2048);
+	ft_ostr_init_with_capacity(&ostring, 1024);
 
-	ft_ostr_append_cstr(&ostring, "[{");
+// 	t_list list = {0};
+// 	while (NULL != node) {
+// 		ft_list_append_ref(&list, node);
+// 		node = node->next;
+// 	}
+// 	int depth = 0;
+// 	while (list.size != 0) {
+// 		node = ft_list_pop_ref(&list);
+// 		char *dumps = NULL;
+// 		char *ps = NULL;
+// 		ft_sprintf(&ps, "[self_ref=%p]", node);
+// 		if (ft_htbl_v2_has(table, ps)) {
+// 			ctx->self_ref_count++;
+// 			dumps = ps;
+// 		} else {
+// 			dumps = f_dumps(node);
+// 			ctx->uniq_node_count++;
+// 		}
+// 		ft_ostr_appendf(&ostring, "[node=%s]", dumps);
+// 		ctx->visited_node_count++;
+//
+// 		t_node_v2 *child_node = node->nodes;
+// 		while (NULL != child_node) {
+// 			ft_list_append_ref(&list, child_node);
+// 			child_node = child_node->next;
+// 		}
+// 	}
+// 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+// 	ft_ostr_clear(&ostring);
+// 	return (dumps);
+
 	char *dumps = f_dumps(node);
 	if (NULL != dumps) {
-		ft_ostr_appendf(&ostring, "\"node\":\"%s\"", dumps);
+		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, " ", dumps);
+		ft_ostr_appendf(&ostring, "node=%s\n", dumps);
 		LIBFT_FREE(dumps);
 	} else {
-		ft_ostr_appendf(&ostring, "\"node\":\"p=%p\"", node);
+		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, " ", dumps);
+		ft_ostr_appendf(&ostring, "node=%p\n", node);
 	}
 
-	ft_ostr_append_cstr(&ostring, ",\"nodes\":[");
-	t_node_v2 *n = node->nodes;
-	size_t commas = 0;
-	while (NULL != n) {
-		if (commas++) ft_ostr_append_cstr(&ostring, ",");
-		dumps = __ft_ntree_v2_dumps(n, f_dumps);
-		ft_ostr_append_cstr(&ostring, dumps);
+	t_node_v2 *nodes = node->nodes;
+	if (NULL != nodes) {
+		int depth = ctx->depth;
+		ctx->depth++;
+		dumps = __ft_ntree_v2_dumps(ctx, nodes, f_dumps);
+		ctx->depth = depth;
+		ft_ostr_appendf(&ostring, "%s", dumps);
 		LIBFT_FREE(dumps);
-		LIBFT_LOG(WARN, "level: %d", level);
-		n = n->next;
 	}
-	ft_ostr_append_cstr(&ostring, "]}");
 
-	n = node->next;
-	if (NULL != n) {
-		ft_ostr_append_cstr(&ostring, ",");
-		dumps = __ft_ntree_v2_dumps(n, f_dumps);
-		ft_ostr_append_cstr(&ostring, dumps);
+	t_node_v2 *next = node->next;
+	if (NULL != next) {
+		dumps = __ft_ntree_v2_dumps(ctx, next, f_dumps);
+		ft_ostr_appendf(&ostring, "%s", dumps);
 		LIBFT_FREE(dumps);
 	}
-	ft_ostr_append_cstr(&ostring, "]");
 
 	dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
-
-	level--;
 
 	return (dumps);
 }
 
 char *ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps)
 {
+	t_ntree_dump_ctx ctx = {0};
 	if (NULL == f_dumps) f_dumps = __ft_ntree_default_node_dumps;
-	return (__ft_ntree_v2_dumps(node, f_dumps));
+	char *dumps = __ft_ntree_v2_dumps(&ctx, node, f_dumps);
+	LIBFT_LOG(TRACE, "ntree dumps stats: visited_nodes=%d, max_depth=%d", ctx.visited_node_count, ctx.max_depth);
+	return (dumps);
 }
