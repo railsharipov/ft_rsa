@@ -338,7 +338,7 @@ typedef struct s_asn_v2_module {
 /////////////////////////////////////////////////////////////////
 
 typedef enum e_asn_v2_token_kind {
-	ASN_V2_TOKEN_KIND_NONE = 0,
+	ASN_V2_TOKEN_KIND_EMPTY = 0,
 	ASN_V2_TOKEN_KIND_COMMENT,
 	ASN_V2_TOKEN_KIND_BSTRING,
 	ASN_V2_TOKEN_KIND_HSTRING,
@@ -368,11 +368,9 @@ typedef struct s_asn_v2_token {
 } t_asn_v2_token;
 
 typedef enum e_asn_v2_data_kind {
-	ASN_V2_DATA_KIND_ROOT = 0,
-	ASN_V2_DATA_KIND_EMPTY,
+	ASN_V2_DATA_KIND_EMPTY = 0,
 	ASN_V2_DATA_KIND_LEAF,
 	ASN_V2_DATA_KIND_LIST,
-	ASN_V2_DATA_KIND_CHOICE,
 } t_asn_v2_data_kind;
 
 typedef struct s_asn_v2_data {
