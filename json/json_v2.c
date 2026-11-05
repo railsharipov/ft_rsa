@@ -691,6 +691,7 @@ static void	__json_v2_f_default_dumper(const t_json_v2 *json, t_ostring *ostring
 typedef struct __s_json_v2_f_pretty_dumper_ctx {
     int cur_level;
     int max_level;
+    int limit_level;
     bool colored;
     size_t max_width;
     int retries;
@@ -709,9 +710,11 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
 
 	__t_json_v2_f_pretty_dumper_ctx *ctx = vctx;
 
+	if (ctx->cur_level > ctx->max_level) ctx->max_level = ctx->cur_level;
+
 	size_t indents = MIN(2*ctx->cur_level, sizeof(ibuf)-1);
 
-	if (ctx->cur_level > ctx->max_level) {
+	if (ctx->cur_level > ctx->limit_level) {
 		ibuf[0] = '\0';
 		line_prefix = "";
 		delim = " ";
@@ -800,14 +803,15 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
 	}
 
 	// Automatic depth adjustment based on line length.
-	if (ctx->max_width > 0 && ctx->cur_level > ctx->max_level) {
+	if (ctx->max_width > 0 && ctx->cur_level > ctx->limit_level) {
 		if (ostring->size - start + indents > ctx->max_width && ctx->retries < max_auto_retries) {
 			ostring->size = start;
-			int max_level = ctx->max_level;
-			ctx->retries++;
-			ctx->max_level = ctx->cur_level;
-			__json_v2_f_pretty_dumper(json, ostring, vctx);
-			ctx->max_level = max_level;
+			__t_json_v2_f_pretty_dumper_ctx rctx = *ctx;
+			rctx.retries++;
+			LIBFT_LOG(WARN, "retries: %d", rctx.retries);
+			rctx.limit_level = rctx.retries * (rctx.max_level / max_auto_retries + 1);
+			__json_v2_f_pretty_dumper(json, ostring, &rctx);
+			ctx->limit_level = rctx.limit_level;
 			ctx->retries = 0;
 		}
 	}
@@ -815,7 +819,7 @@ static void	__json_v2_f_pretty_dumper(const t_json_v2 *json, t_ostring *ostring,
 
 char	*json_v2_pretty_dumps(const t_json_v2 *json, int depth, size_t width, bool colored)
 {
-    __t_json_v2_f_pretty_dumper_ctx ctx = { .max_level = depth, .colored = colored, };
+    __t_json_v2_f_pretty_dumper_ctx ctx = { .limit_level = depth, .colored = colored, };
     if (width > 0) ctx.max_width = width;
 	return (json_v2_dumps_with_f_dumper(json, __json_v2_f_pretty_dumper, &ctx));
 }
