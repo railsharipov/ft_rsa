@@ -371,12 +371,14 @@ typedef enum e_asn_v2_data_kind {
 	ASN_V2_DATA_KIND_EMPTY = 0,
 	ASN_V2_DATA_KIND_LEAF,
 	ASN_V2_DATA_KIND_LIST,
+	ASN_V2_DATA_KIND_WRAP,
 } t_asn_v2_data_kind;
 
 typedef struct s_asn_v2_data {
 	t_node_v2 base;
 	t_asn_v2_data_kind kind;
 	t_asn_v2_token *token;
+	const char *parser;
 } t_asn_v2_data;
 
 int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data);
