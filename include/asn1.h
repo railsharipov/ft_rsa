@@ -368,7 +368,8 @@ typedef struct s_asn_v2_token {
 } t_asn_v2_token;
 
 typedef enum e_asn_v2_data_kind {
-	ASN_V2_DATA_KIND_EMPTY = 0,
+	ASN_V2_DATA_KIND_NULL = 0,
+	ASN_V2_DATA_KIND_EMPTY,
 	ASN_V2_DATA_KIND_LEAF,
 	ASN_V2_DATA_KIND_LIST,
 	ASN_V2_DATA_KIND_WRAP,
