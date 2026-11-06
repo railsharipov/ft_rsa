@@ -884,11 +884,11 @@ static char *__ft_ntree_v2_dumps(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t
 
 	char *dumps = f_dumps(node);
 	if (NULL != dumps) {
-		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, " ", dumps);
+		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, "  ", dumps);
 		ft_ostr_appendf(&ostring, "node=%s\n", dumps);
 		LIBFT_FREE(dumps);
 	} else {
-		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, " ", dumps);
+		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, "  ", dumps);
 		ft_ostr_appendf(&ostring, "node=%p\n", node);
 	}
 
