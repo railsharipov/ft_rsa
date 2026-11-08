@@ -46,5 +46,15 @@
         {"id": "subjectPublicKey", "type": {"kind": "BIT STRING"}}
       ]
     }
+  },
+  "values": {
+    "myPrivateKeyInfo": {
+      "kind": "PrivateKeyInfo",
+      "value": [
+        ["version", 0],
+        ["privateKeyAlgorithm", [ [ "algorithm", [1, 2, 840, 113549, 1, 1, 1] ] ] ],
+        ["privateKey", "'308204A3020100028201010090C698D0EBC3CD21227EE96'H"]
+      ]
+    }
   }
 }
