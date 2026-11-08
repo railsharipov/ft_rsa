@@ -6478,7 +6478,7 @@ static bool __asn1_v2_parse_ModuleBody(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 	return false;
 }
 
-static bool __asn1_v2_parse_Module(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+static bool __asn1_v2_parse_ModuleDefinition(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
 {
 	// ModuleIdentifier DEFINITIONS EncodingReferenceDefault TagDefault ExtensionDefault "::="
 	// BEGIN ModuleBody EncodingControlSections END
@@ -6499,6 +6499,16 @@ static bool __asn1_v2_parse_Module(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *tok
 	return false;
 }
 
+static bool __asn1_v2_parse_root(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_data **data)
+{
+	// ModuleDefinition
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ModuleDefinition);
+	if (RUN_OP(ctx, token, data)) {
+		return true;
+	}
+	return false;
+}
+
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
@@ -6512,9 +6522,7 @@ int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data)
 	t_asn_v2_parser_ctx ctx = {0};
 	t_asn_v2_token token = {.s = s, .slen = slen,};
 
-	PUSH_OP_CALL(&ctx, __asn1_v2_parse_Module);
-
-	if (RUN_OP(&ctx, &token, data)) {
+	if (__asn1_v2_parse_root(&ctx, &token, data)) {
 		if (!(!__asn1_v2_token_next(&token) && token.done)) {
 			SSL_LOG(ERROR, "parsing is not complete");
 			return (SSL_ERR);
