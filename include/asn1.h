@@ -391,7 +391,7 @@ int	asn1_v2_schema_parse(t_asn_v2_module **asn1_module, const t_json_v2 *jschema
 
 char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
 char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);
-char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, int depth, size_t width, bool colored);
+char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, bool colored);
 
 const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
@@ -448,15 +448,17 @@ typedef struct s_der_v2_component {
 } t_der_v2_component;
 
 t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name);
+t_asn_v2_value *asn1_v2_module_get_value(const t_asn_v2_module *asn1_module, const char *name);
 
 int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type);
+int	asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1_value);
 
 char *der_v2_type_dumps(const t_der_v2_type *der_type);
 char *der_v2_type_dumpb(const t_der_v2_type *der_type, char *buf, size_t size);
-char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, int depth, size_t width, bool colored);
+char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, bool colored);
 
 char *der_v2_value_dumps(const t_der_v2_value *der_value);
-char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, int depth, size_t width, bool colored);
+char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, bool colored);
 
 int der_v2_decode(const uint8_t *encoded, size_t encsize, const t_der_v2_type *der_type, t_der_v2_value **der_value);
 int der_v2_generic_decode(const uint8_t *encoded, size_t encsize, t_der_v2_value **der_value);

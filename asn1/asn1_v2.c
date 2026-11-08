@@ -879,14 +879,14 @@ char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module)
 	return (dumps);
 }
 
-char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, int depth, size_t width, bool colored)
+char *asn1_v2_module_pretty_dumps(const t_asn_v2_module *asn1_module, bool colored)
 {
 	char *dumps = asn1_v2_module_dumps(asn1_module);
 	const t_json_v2 *json = NULL;
 	int status = json_v2_parse(dumps, &json);
 	if (JSON_V2_OK == status) {
 		SSL_FREE(dumps);
-		return (json_v2_pretty_dumps(json, depth, width, colored));
+		return (json_v2_pretty_dumps_special(json, colored));
 	} else {
 		SSL_LOG(ERROR, "failed to pretty format dump string");
 		return (dumps);
@@ -1811,6 +1811,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 			}
 			const t_asn_v2_type *type = symbol->resolved.value_ref.type;
 			const t_asn_v2_value *value = symbol->resolved.value_ref.value;
+			// TODO: need proper type comparing, currently this only checks whether type kinds match between types.
 			if (!__asn1_v2_type_eq(type, asn1_type)) {
 				SSL_LOG(ERROR, "failed to parse value ref: %s: incompatible type: %s", name, __asn1_v2_type_dumpb(type, cbuf, sizeof(cbuf)));
 				return (SSL_ERR);
@@ -1825,33 +1826,33 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 
 	switch (asn1_type->kind) {
 	case ASN_V2_TYPE_KIND_NULL: {
-		if (jvalue->kind != JSON_V2_TYPE_NULL) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_NULL) goto label_format;
 		avalue->as.boolean = jvalue->as.boolean;
 		break;
 	}
 	// TODO: implement a proper parsing for different kinds of strings.
 	case ASN_V2_TYPE_KIND_IA5_STRING: {
 		expected_fmt = "DOUBLE-QUOTED STRING";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
-		if (slen < 2) goto label_error;
-		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		if (slen < 2) goto label_format;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_format;
 		for (size_t i = 1; i < slen-1; i++) {
-			if (!ft_isascii(s[i])) goto label_error;
+			if (!ft_isascii(s[i])) goto label_format;
 		}
 		avalue->as.cstring = ft_strndup(s+1, slen-2);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_NUMERIC_STRING: {
 		expected_fmt = "DOUBLE-QUOTED STRING";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
-		if (slen < 2) goto label_error;
-		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		if (slen < 2) goto label_format;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_format;
 		for (size_t i = 1; i < slen-1; i++) {
-			if (!ft_isdigit(s[i]) && s[i] != ' ') goto label_error;
+			if (!ft_isdigit(s[i]) && s[i] != ' ') goto label_format;
 		}
 		avalue->as.cstring = ft_strndup(s+1, slen-2);
 		break;
@@ -1859,13 +1860,13 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 	case ASN_V2_TYPE_KIND_VISIBLE_STRING:
 	case ASN_V2_TYPE_KIND_PRINTABLE_STRING: {
 		expected_fmt = "DOUBLE-QUOTED STRING";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
-		if (slen < 2) goto label_error;
-		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
+		if (slen < 2) goto label_format;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_format;
 		for (size_t i = 1; i < slen-1; i++) {
-			if (!ft_isprint(s[i])) goto label_error;
+			if (!ft_isprint(s[i])) goto label_format;
 		}
 		avalue->as.cstring = ft_strndup(s+1, slen-2);
 		break;
@@ -1873,27 +1874,27 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 	case ASN_V2_TYPE_KIND_UTC_TIME: {
 		// TODO: Handle leap years, etc.
 		expected_fmt = "YYMMDDhhmmssZ";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
 		int t[6] = {0};
 		char z = 0;
 		size_t scanned = 0;
 		int matches = textutil_sscanf(s, slen, "%2d%2d%2d%2d%2d%2d%c%zn", t, t+1, t+2, t+3, t+4, t+5, &z, &scanned);
-		if (matches != 7 || scanned != slen) goto label_error;
-		if (t[1] < 1 || t[1] > 12) goto label_error;
-		if (t[2] < 1 || t[2] > 31) goto label_error;
-		if (t[3] < 0 || t[3] > 23) goto label_error;
-		if (t[4] < 0 || t[4] > 59) goto label_error;
-		if (t[5] < 0 || t[5] > 59) goto label_error;
-		if (z != 'Z') goto label_error;
+		if (matches != 7 || scanned != slen) goto label_format;
+		if (t[1] < 1 || t[1] > 12) goto label_format;
+		if (t[2] < 1 || t[2] > 31) goto label_format;
+		if (t[3] < 0 || t[3] > 23) goto label_format;
+		if (t[4] < 0 || t[4] > 59) goto label_format;
+		if (t[5] < 0 || t[5] > 59) goto label_format;
+		if (z != 'Z') goto label_format;
 		avalue->as.cstring = ft_strdup(s);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_GENERALIZED_TIME: {
 		// TODO: Handle leap years, etc.
 		expected_fmt = "YYYYMMDDhhmmss[.fraction]Z";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
 		int t[6] = {0};
@@ -1902,35 +1903,35 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 		int fraction = 0;
 		size_t scanned = 0;
 		int matches = textutil_sscanf(s, slen, "%4d%2d%2d%2d%2d%2d%zn", t, t+1, t+2, t+3, t+4, t+5, &scanned);
-		if (matches != 6 || scanned != 14) goto label_error;
-		if (t[1] < 1 || t[1] > 12) goto label_error;
-		if (t[2] < 1 || t[2] > 31) goto label_error;
-		if (t[3] < 0 || t[3] > 23) goto label_error;
-		if (t[4] < 0 || t[4] > 59) goto label_error;
-		if (t[5] < 0 || t[5] > 59) goto label_error;
+		if (matches != 6 || scanned != 14) goto label_format;
+		if (t[1] < 1 || t[1] > 12) goto label_format;
+		if (t[2] < 1 || t[2] > 31) goto label_format;
+		if (t[3] < 0 || t[3] > 23) goto label_format;
+		if (t[4] < 0 || t[4] > 59) goto label_format;
+		if (t[5] < 0 || t[5] > 59) goto label_format;
 
 		if (scanned < slen && s[scanned] == '.') {
 			has_fraction = true;
 			size_t scanned_suffix = 0;
 			matches = textutil_sscanf(s+scanned, slen-scanned, ".%d%c%zn", &fraction, &z, &scanned_suffix);
-			if (matches != 2 || scanned + scanned_suffix != slen) goto label_error;
+			if (matches != 2 || scanned + scanned_suffix != slen) goto label_format;
 		}
 		else {
-			if (scanned+1 != slen) goto label_error;
+			if (scanned+1 != slen) goto label_format;
 			z = s[scanned];
 		}
 
 		// Zero fraction must be omitted.
-		if (has_fraction && fraction == 0) goto label_error;
-		if (z != 'Z') goto label_error;
+		if (has_fraction && fraction == 0) goto label_format;
+		if (z != 'Z') goto label_format;
 		avalue->as.cstring = ft_strdup(s);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_RELATIVE_OBJECT_ID:
 	case ASN_V2_TYPE_KIND_OBJECT_ID: {
 		expected_fmt = "[ ARC_1, ARC_2, ..., ARC_N ] where ARC is STRING or NUMBER";
-		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_error;
-		if (jvalue->as.list.size < 1) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_format;
+		if (jvalue->as.list.size < 1) goto label_format;
 		t_list_next next = {0};
 		void *content = NULL;
 		while (ft_list_next_content(&jvalue->as.list, &next, &content)) {
@@ -1942,15 +1943,15 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 				size_t slen = ft_strlen(s);
 				size_t i = 0;
 				for (; i < slen && s[i] != '('; i++) {
-					if (!ft_isalpha(s[i])) goto label_error;
+					if (!ft_isalpha(s[i])) goto label_format;
 				}
 				if (s[i] == '(') {
 					size_t name_end = i;
 					size_t num_start = ++i;
 					for (; i < slen && s[i] != ')'; i++) {
-						if (!ft_isdigit(s[i])) goto label_error;
+						if (!ft_isdigit(s[i])) goto label_format;
 					}
-					if (i == num_start || s[i] != ')') goto label_error;
+					if (i == num_start || s[i] != ')') goto label_format;
 					arc = __asn1_v2_oid_arc_create();
 					arc->kind = ASN_V2_OID_ARC_KIND_NAMED_AND_NUMERIC;
 					arc->as.name = ft_strsub(jarc->as.cstring, 0, name_end);
@@ -1976,7 +1977,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 					}
 				}
 				else {
-					goto label_error;
+					goto label_format;
 				}
 			}
 			else if (jarc->kind == JSON_V2_TYPE_NUMBER) {
@@ -1986,7 +1987,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 				ft_list_append_content(&avalue->as.object_id.arcs, arc);
 			}
 			else {
-				goto label_error;
+				goto label_format;
 			}
 		}
 		break;
@@ -1997,18 +1998,18 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 	}
 	case ASN_V2_TYPE_KIND_BIT_STRING: {
 		expected_fmt = "STRING as hex or binary literal such as 'AA2ABBCE0'H or '11101010'B";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		// Expect strings such as '1110101010'B or 'D10AEB11C'H
 		const char *lit = jvalue->as.cstring;
 		size_t lsize = ft_strlen(lit);
-		if (lsize < 3) goto label_error;
-		if (lit[0] != '\'' || lit[lsize-2] != '\'') goto label_error;
+		if (lsize < 3) goto label_format;
+		if (lit[0] != '\'' || lit[lsize-2] != '\'') goto label_format;
 		if (lit[lsize-1] == 'B') {
 			// Literal represents binary as a string with '1' and '0' characters.
 			const char *bins = lit+1;
 			size_t nbits = lsize-3;
 			for (size_t i = 0; i < nbits; i++) {
-				if (bins[i] != '0' && bins[i] != '1') goto label_error;
+				if (bins[i] != '0' && bins[i] != '1') goto label_format;
 			}
 			size_t trail_bits = nbits % 8;
 			size_t nbytes = NBITS_TO_NBYTES(nbits);
@@ -2025,7 +2026,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 			const char *hexs = lit+1;
 			size_t nhexs = lsize-3;
 			for (size_t i = 0; i < nhexs; i++) {
-				if (!ft_ishex(hexs[i])) goto label_error;
+				if (!ft_ishex(hexs[i])) goto label_format;
 			}
 			size_t trail_bits = 4 * (nhexs % 2);
 			size_t nbytes = CEIL_DIV(nhexs, 2);
@@ -2036,24 +2037,24 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 			ft_ostr_append(&avalue->as.ostring, octets, nbytes+1);
 			SSL_FREE(octets);
 		} else {
-			goto label_error;
+			goto label_format;
 		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_OCTET_STRING: {
 		expected_fmt = "STRING as hex or binary literal such as 'AA2ABBCE0'H or '11101010'B";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		// Expect strings such as '1110101010'B or 'D10AEB11C'H
 		const char *lit = jvalue->as.cstring;
 		size_t lsize = ft_strlen(lit);
-		if (lsize < 3) goto label_error;
-		if (lit[0] != '\'' || lit[lsize-2] != '\'') goto label_error;
+		if (lsize < 3) goto label_format;
+		if (lit[0] != '\'' || lit[lsize-2] != '\'') goto label_format;
 		if (lit[lsize-1] == 'B') {
 			// Literal represents binary as a string with '1' and '0' characters.
 			const char *bins = lit+1;
 			size_t nbits = lsize-3;
 			for (size_t i = 0; i < nbits; i++) {
-				if (bins[i] != '0' && bins[i] != '1') goto label_error;
+				if (bins[i] != '0' && bins[i] != '1') goto label_format;
 			}
 			size_t nbytes = NBITS_TO_NBYTES(nbits);
 			uint8_t *octets = NULL;
@@ -2067,7 +2068,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 			const char *hexs = lit+1;
 			size_t nhexs = lsize-3;
 			for (size_t i = 0; i < nhexs; i++) {
-				if (!ft_ishex(hexs[i])) goto label_error;
+				if (!ft_ishex(hexs[i])) goto label_format;
 			}
 			size_t nbytes = CEIL_DIV(nhexs, 2);
 			uint8_t *octets = NULL;
@@ -2076,19 +2077,19 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 			ft_ostr_append(&avalue->as.ostring, octets, nbytes);
 			SSL_FREE(octets);
 		} else {
-			goto label_error;
+			goto label_format;
 		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_INTEGER: {
 		expected_fmt = "NUMBER";
-		if (jvalue->kind != JSON_V2_TYPE_NUMBER) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_NUMBER) goto label_format;
 		bnum_copy(&jvalue->as.number, &avalue->as.number);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_ENUMERATED: {
 		expected_fmt = "STRING";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		t_list_next next = {0};
 		void *content = NULL;
 		const t_num *number = NULL;
@@ -2106,93 +2107,107 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 	}
 	case ASN_V2_TYPE_KIND_BOOLEAN: {
 		expected_fmt = "BOOLEAN literal: true or false";
-		if (jvalue->kind != JSON_V2_TYPE_BOOL) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_BOOL) goto label_format;
 		avalue->as.boolean = jvalue->as.boolean;
 		break;
 	}
 	case ASN_V2_TYPE_KIND_UTF8_STRING: {
 		expected_fmt = "DOUBLE-QUOTED STRING";
-		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_STRING) goto label_format;
 		const char *s = jvalue->as.cstring;
 		size_t slen = ft_strlen(s);
-		if (slen < 2) goto label_error;
-		if (s[0] != '"' || s[slen-1] != '"') goto label_error;
-		if (!utf8_is_valid((uint8_t *)(s+1), slen-2)) goto label_error;
+		if (slen < 2) goto label_format;
+		if (s[0] != '"' || s[slen-1] != '"') goto label_format;
+		if (!utf8_is_valid((uint8_t *)(s+1), slen-2)) goto label_format;
 		ft_ostr_init_from(&avalue->as.ostring, s+1, slen-2);
 		break;
 	}
 	case ASN_V2_TYPE_KIND_SEQUENCE: {
 		expected_fmt = "[[ID_1, VALUE_1], [ID_2, VALUE_2], ..., [ID_N, VALUE_N]]";
-		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_format;
 		t_list_next jnext = {0};
 		t_list_next anext = {0};
 		void *content = NULL;
 
+		if (jvalue->as.list.size > asn1_type->as.composite.elements.size) {
+			goto label_error;
+		}
 		while (ft_list_next_content(&jvalue->as.list, &jnext, &content)) {
 			const t_json_v2 *jelement = content;
 			const t_json_v2 *jelement_id = NULL;
 			const t_json_v2 *jelement_value = NULL;
-			if (jelement->kind != JSON_V2_TYPE_ARRAY) goto label_error;
-			if (JSON_V2_OK != json_v2_query_nonnull("[0]", jelement, &jelement_id)) goto label_error;
-			if (jelement_id->kind != JSON_V2_TYPE_STRING) goto label_error;
-			if (JSON_V2_OK != json_v2_query_nonnull("[1]", jelement, &jelement_value)) goto label_error;
+			if (jelement->kind != JSON_V2_TYPE_ARRAY) goto label_format;
+			if (JSON_V2_OK != json_v2_query_nonnull("[0]", jelement, &jelement_id)) goto label_format;
+			if (jelement_id->kind != JSON_V2_TYPE_STRING) goto label_format;
+			if (JSON_V2_OK != json_v2_query("[1]", jelement, &jelement_value)) goto label_format;
 
 			t_asn_v2_value *element_value = NULL;
 			while (ft_list_next_content(&asn1_type->as.composite.elements, &anext, &content)) {
 				t_asn_v2_component *element = content;
 				assert(NULL != element->id && NULL != element->type);
-				if (ft_streq(element->id, jelement_id->as.cstring)) {
+
+				bool id_match = ft_streq(element->id, jelement_id->as.cstring);
+
+				if (id_match) {
 					if (SSL_OK != __asn1_v2_schema_parse_value(symbol_table, element->type, &element_value, jelement_value)) {
-						element_value = NULL; // Must be null, but let me be paranoid.
-					};
+						goto label_error;
+					}
+					ft_list_append_content(&avalue->as.composite.elements, element_value);
 					break;
 				}
-				else if (NULL != element->default_value) {
-					element_value = __asn1_v2_value_copy_adapter(element->default_value);
-					break;
-				}
-				else if (!element->optional) {
-					SSL_LOG(ERROR, "missing required field");
-					break;
+				else {
+					if (NULL != element->default_value) {
+						element_value = __asn1_v2_value_copy_adapter(element->default_value);
+						ft_list_append_content(&avalue->as.composite.elements, element_value);
+						break;
+					}
+					else if (!element->optional) {
+						goto label_error;
+					}
 				}
 			}
-			if (NULL == element_value) {
-				goto label_error;
-			}
-			ft_list_append_content(&avalue->as.composite.elements, element_value);
 		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_SET: {
 		expected_fmt = "[[ID_1, VALUE_1], [ID_2, VALUE_2], ..., [ID_N, VALUE_N]]";
-		if (jvalue->kind != JSON_V2_TYPE_OBJECT) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_OBJECT) goto label_format;
 		t_list_next anext = {0};
 		void *content = NULL;
 
+		if (jvalue->as.list.size > asn1_type->as.composite.elements.size) {
+			goto label_error;
+		}
 		while (ft_list_next_content(&asn1_type->as.composite.elements, &anext, &content)) {
 			t_asn_v2_component *element = content;
 			assert(NULL != element->id && NULL != element->type);
 			t_asn_v2_value *element_value = NULL;
 			const t_json_v2 *jelement_value = NULL;
-			if (JSON_V2_OK == json_v2_query_nonnull(element->id, jvalue, &jelement_value)) {
+
+			bool id_exists = (JSON_V2_OK == json_v2_query(element->id, jvalue, &jelement_value));
+
+			if (id_exists) {
 				if (SSL_OK != __asn1_v2_schema_parse_value(symbol_table, element->type, &element_value, jelement_value)) {
-					element_value = NULL; // Must be null, but let me be paranoid.
-				};
+					goto label_error;
+				}
+				ft_list_append_content(&avalue->as.composite.elements, element_value);
 			}
-			else if (NULL != element->default_value) {
-				element_value = __asn1_v2_value_copy_adapter(element->default_value);
+			else {
+				if (NULL != element->default_value) {
+					element_value = __asn1_v2_value_copy_adapter(element->default_value);
+					ft_list_append_content(&avalue->as.composite.elements, element_value);
+				}
+				else if (!element->optional) {
+					goto label_error;
+				}
 			}
-			else if (!element->optional) {
-				goto label_error;
-			}
-			ft_list_append_content(&avalue->as.composite.elements, element_value);
 		}
 		break;
 	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF: {
 		expected_fmt = "[VALUE_1, VALUE_2, ..., VALUE_N]";
-		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_ARRAY) goto label_format;
 		assert(NULL != asn1_type->as.collection.element_type);
 		t_list_next next = {0};
 		void *content = NULL;
@@ -2207,7 +2222,7 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 	}
 	case ASN_V2_TYPE_KIND_CHOICE: {
 		expected_fmt = "{ID: VALUE}";
-		if (jvalue->kind != JSON_V2_TYPE_OBJECT) goto label_error;
+		if (jvalue->kind != JSON_V2_TYPE_OBJECT) goto label_format;
 		t_list_next next = {0};
 		void *content = NULL;
 		bool found = false;
@@ -2240,9 +2255,14 @@ static int	__asn1_v2_schema_parse_value(t_asn_v2_symbol_table *symbol_table, con
 	*asn1_value = avalue;
 	return (SSL_OK);
 
-label_error:
+label_format:
 	if (NULL != expected_fmt) SSL_LOG(ERROR, "value does not match expected format: %s", expected_fmt);
 	SSL_LOG(ERROR, "provided json value is not a valid asn1 %s: %s", asn1_v2_get_type_name(asn1_type->kind), json_v2_dumpb(jvalue, cbuf, sizeof(cbuf)));
+	__asn1_v2_value_delete(avalue);
+	return (SSL_ERR);
+
+label_error:
+	SSL_LOG(ERROR, "failed to parse json value: %s", json_v2_dumpb(jvalue, cbuf, sizeof(cbuf)));
 	__asn1_v2_value_delete(avalue);
 	return (SSL_ERR);
 }
@@ -2855,6 +2875,15 @@ t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const
 	return (NULL);
 }
 
+t_asn_v2_value *asn1_v2_module_get_value(const t_asn_v2_module *asn1_module, const char *name)
+{
+	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&asn1_module->symbol_table.symbols, name);
+	if (NULL != symbol && symbol->kind == ASN_V2_SYMBOL_KIND_VALUE_REF) {
+		return (symbol->resolved.value_ref.value);
+	}
+	return (NULL);
+}
+
 /****************************************************************************/
 
 static t_der_v2_tag *__der_v2_tag_create(void);
@@ -3208,7 +3237,7 @@ static t_der_v2_tag __der_v2_get_tag_universal(t_asn_v2_type_kind type)
 	}
 }
 
-static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1_value)
+int asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1_value)
 {
 	assert(NULL != asn1_value && NULL != der_value);
 
@@ -3296,7 +3325,7 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 			for (size_t idx = 0; ft_list_next_content(&asn1_value->as.composite.elements, &next, &content); idx++) {
 				assert(idx < compiled->as.composite.count);
 				t_der_v2_value *compiled_element = NULL;
-				if (SSL_OK != __asn1_v2_value_compile(&compiled_element, content)) {
+				if (SSL_OK != asn1_v2_value_compile(&compiled_element, content)) {
 					goto label_error;
 				}
 				__der_v2_value_copy(compiled_element, compiled->as.composite.items + idx);
@@ -3307,7 +3336,7 @@ static int	__asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_va
 	}
 	case ASN_V2_TYPE_KIND_CHOICE: {
 		if (NULL != asn1_value->as.choice.id) compiled->as.choice.id = ft_strdup(asn1_value->as.choice.id);
-		if (SSL_OK != __asn1_v2_value_compile(&compiled->as.choice.value, asn1_value->as.choice.value)) {
+		if (SSL_OK != asn1_v2_value_compile(&compiled->as.choice.value, asn1_value->as.choice.value)) {
 			goto label_error;
 		}
 		break;
@@ -3349,7 +3378,7 @@ static int __asn1_v2_component_compile(t_der_v2_component **der_component, const
 
 	if (NULL != asn1_component->default_value) {
 		dcomponent->default_value = NULL;
-		if (SSL_OK != __asn1_v2_value_compile(&dcomponent->default_value, asn1_component->default_value)) {
+		if (SSL_OK != asn1_v2_value_compile(&dcomponent->default_value, asn1_component->default_value)) {
 			SSL_LOG(ERROR, "failed to compile asn1 component default value: %s", __asn1_v2_value_dumpb(asn1_component->default_value, cbuf, sizeof(cbuf)));
 			SSL_FREE(dcomponent);
 			return (SSL_ERR);
@@ -3856,28 +3885,28 @@ char *der_v2_type_dumps(const t_der_v2_type *der_type)
 	return (dumps);
 }
 
-char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, int depth, size_t width, bool colored)
+char *der_v2_type_pretty_dumps(const t_der_v2_type *der_type, bool colored)
 {
 	char *dumps = der_v2_type_dumps(der_type);
 	const t_json_v2 *json = NULL;
 	int status = json_v2_parse(dumps, &json);
 	if (JSON_V2_OK == status) {
 		SSL_FREE(dumps);
-		return (json_v2_pretty_dumps(json, depth, width, colored));
+		return (json_v2_pretty_dumps_special(json, colored));
 	} else {
 		SSL_LOG(ERROR, "failed to pretty format dump string");
 		return (dumps);
 	}
 }
 
-char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, int depth, size_t width, bool colored)
+char *der_v2_value_pretty_dumps(const t_der_v2_value *der_value, bool colored)
 {
 	char *dumps = der_v2_value_dumps(der_value);
 	const t_json_v2 *json = NULL;
 	int status = json_v2_parse(dumps, &json);
 	if (JSON_V2_OK == status) {
 		SSL_FREE(dumps);
-		return (json_v2_pretty_dumps(json, depth, width, colored));
+		return (json_v2_pretty_dumps_special(json, colored));
 	} else {
 		SSL_LOG(ERROR, "failed to pretty format dump string");
 		return (dumps);
