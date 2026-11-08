@@ -15,3 +15,13 @@ t_logger *libft_get_logger(void)
 {
 	return (&__logger);
 }
+
+void libft_set_log_level(enum e_logger_level level)
+{
+	__logger.log_level_thres = level;
+}
+
+enum e_logger_level libft_get_log_level(void)
+{
+	return (__logger.log_level_thres);
+}

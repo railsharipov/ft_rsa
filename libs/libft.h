@@ -265,8 +265,7 @@ t_htbl		*ft_lst_to_htable(t_node *lst);
 
 typedef int	(*t_func_log)(const char *mes);
 
-enum	e_logger_level
-{
+typedef enum e_logger_level {
 	LIBFT_LOG_LEVEL_ALWAYS = 0,
 	LIBFT_LOG_LEVEL_CRIT,
 	LIBFT_LOG_LEVEL_ERROR,
@@ -275,7 +274,7 @@ enum	e_logger_level
 	LIBFT_LOG_LEVEL_DEBUG,
 	LIBFT_LOG_LEVEL_TRACE,
 	LIBFT_NUM_LOG_LEVELS,
-};
+} t_logger_level;
 
 typedef struct	s_logger {
 	t_func_log	log_writer;
