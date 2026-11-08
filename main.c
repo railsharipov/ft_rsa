@@ -144,7 +144,10 @@ int	main(int ac, const char **av)
 	args_add_cmd_opt(sub_cmd_arg, args_new_opt("--outform", "output format: PEM (default), DER or JSON", AP_OPT_TYPE_STRING));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
-	sub_cmd_arg = args_new_cmd("dev", "Development", cmd_dev);
+	sub_cmd_arg = args_new_cmd("dev", "Dev: a playground for new features", cmd_dev);
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-m", "the name of the dev module to use", AP_OPT_TYPE_STRING));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("-v", "increase verbosity", AP_OPT_TYPE_FLAG));
+	args_add_cmd_opt(sub_cmd_arg, args_new_opt("--params", "parameters string in JSON format", AP_OPT_TYPE_STRING));
 	args_add_sub_cmd(cmd_arg, sub_cmd_arg);
 
 	// NOT FULLY IMPLEMENTED YET
