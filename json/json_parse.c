@@ -62,33 +62,6 @@ static int	__parse_array(const char *s, t_node *node);
 static void	__skip_ws(const char *s);
 static void __init_node(t_node *node);
 
-int json_parse(const char *s, t_node **node)
-{
-	t_node	*json_node;
-	int 	status;
-
-	if (s == NULL) {
-		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
-		return (JSON_ERR);
-	}
-	*node = NULL;
-	__pos = 0;
-
-	json_node = ft_node_create();
-	__init_node(json_node);
-	status = __parse_value(s, json_node);
-	__skip_ws(s);
-
-	if (status != __JSON_MATCH || s[__pos] != '\0') {
-		ft_node_del(json_node);
-		SSL_LOG(ERROR, "bad format");
-		return (JSON_ERR);
-	}
-	*node = json_node;
-
-	return (JSON_OK);
-}
-
 static void	__skip_ws(const char *s)
 {
 	while (ft_iseolws(s[__pos]) && s[__pos] != '\0') {
@@ -512,26 +485,34 @@ label_exit:
 	return (status);
 }
 
-int	json_parse_file(const char *filename, t_node **node)
+int json_parse(const char *s, t_node **node)
 {
-	t_ostring file_content;
-	if (JSON_OK != file_read_all(filename, &file_content)) {
-		SSL_LOG(ERROR, "file read error");
-		return (JSON_ERR);
-	}
-	char *json_s = ft_ostr_to_cstr(&file_content, 0, file_content.size);
-	ft_ostr_clear(&file_content);
-	if (NULL == json_s) {
-		SSL_LOG(ERROR, "memory error");
-		return (JSON_ERR);
-	}
-	int ret = json_parse(json_s, node);
-	LIBFT_FREE(json_s);
+	t_node	*json_node;
+	int 	status;
 
-	if (JSON_OK != ret) {
-		SSL_LOG(ERROR, "json file parse error");
+	if (s == NULL) {
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
 		return (JSON_ERR);
 	}
+	*node = NULL;
+	__pos = 0;
+
+	json_node = ft_node_create();
+	__init_node(json_node);
+	status = __parse_value(s, json_node);
+	__skip_ws(s);
+
+	if (status != __JSON_MATCH || s[__pos] != '\0') {
+		ft_node_del(json_node);
+		SSL_LOG(ERROR, "bad format");
+		return (JSON_ERR);
+	}
+	if (JSON_OK != json_validate(json_node)) {
+		SSL_LOG(ERROR, "bad json");
+		return (SSL_ERR);
+	}
+	*node = json_node;
+
 	return (JSON_OK);
 }
 
@@ -566,6 +547,29 @@ int	json_parse_stream(t_io_v2_stream *stream, t_node **node)
 
 	if (JSON_OK != ret) {
 		SSL_LOG(ERROR, "json stream parse error");
+		return (JSON_ERR);
+	}
+	return (JSON_OK);
+}
+
+int	json_parse_file(const char *filename, t_node **node)
+{
+	t_ostring file_content;
+	if (JSON_OK != file_read_all(filename, &file_content)) {
+		SSL_LOG(ERROR, "file read error");
+		return (JSON_ERR);
+	}
+	char *json_s = ft_ostr_to_cstr(&file_content, 0, file_content.size);
+	ft_ostr_clear(&file_content);
+	if (NULL == json_s) {
+		SSL_LOG(ERROR, "memory error");
+		return (JSON_ERR);
+	}
+	int ret = json_parse(json_s, node);
+	LIBFT_FREE(json_s);
+
+	if (JSON_OK != ret) {
+		SSL_LOG(ERROR, "json file parse error");
 		return (JSON_ERR);
 	}
 	return (JSON_OK);
