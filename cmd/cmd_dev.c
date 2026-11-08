@@ -62,15 +62,15 @@ int	cmd_dev(const t_cmd *cmd)
 			return (SSL_ERR);
 		}
 
-		t_asn_v2_data *asn1_data = NULL;
-		if (SSL_OK != asn1_v2_parse((char *)asn1_text.content, asn1_text.size, &asn1_data)) {
+		t_asn_v2_ast *asn1_ast = NULL;
+		if (SSL_OK != asn1_v2_parse((char *)asn1_text.content, asn1_text.size, &asn1_ast)) {
 			SSL_LOG(ERROR, "%s: asn1 parse failed", module_name);
 			return (SSL_ERR);
 		} else {
 			SSL_LOG(INFO, "%s: asn1 parse success", module_name);
 		}
 
-		char *dumps = asn1_v2_data_dumps(asn1_data);
+		char *dumps = asn1_v2_ast_dumps(asn1_ast);
 		ft_printf("%s\n", dumps);
 	}
 
