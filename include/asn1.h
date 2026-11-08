@@ -317,7 +317,7 @@ typedef enum e_asn_v2_symbol_kind {
 typedef struct s_asn_v2_symbol {
 	t_asn_v2_symbol_kind kind;
 	t_asn_v2_symbol_state state;
-	const t_json_v2 *source;
+	const void *source;
 	union {
 		struct { t_asn_v2_type *type; } type_ref;
 		struct { t_asn_v2_type *type; t_asn_v2_value *value; } value_ref;
@@ -397,12 +397,20 @@ const char	*asn1_v2_get_tag_class_name(t_asn_v2_tag_class tag_class);
 const char	*asn1_v2_get_tag_mode_name(t_asn_v2_tag_mode tag_mode);
 const char	*asn1_v2_get_type_name(t_asn_v2_type_kind type);
 
+t_asn_v2_oid_arc	*asn1_v2_oid_arc_create(void);
+void	asn1_v2_oid_arc_copy(const t_asn_v2_oid_arc *src, t_asn_v2_oid_arc *dst);
+void	asn1_v2_oid_arc_clear(t_asn_v2_oid_arc *arc);
+void	asn1_v2_oid_arc_delete(t_asn_v2_oid_arc *arc);
+
 int		asn1_v2_oid_tree_create(const char *filename, t_node_v2 **tree);
 void	asn1_v2_oid_tree_delete(t_node_v2 *tree);
 
 const char	*asn1_v2_get_oid_name(t_node_v2 *tree, const t_asn_v2_oid *oid);
 int		asn1_v2_get_oid_by_name(t_node_v2 *tree, const char *name, t_asn_v2_oid *oid);
 int 	asn1_v2_get_arc_number_by_name(t_node_v2 *tree, const char *name, size_t *number);
+
+void	asn1_v2_oid_clear(t_asn_v2_oid *oid);
+void	asn1_v2_oid_delete(t_asn_v2_oid *oid);
 char	*asn1_v2_oid_dumps(const t_asn_v2_oid *oid);
 
 typedef struct s_der_v2_tag {
