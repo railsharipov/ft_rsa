@@ -2,7 +2,6 @@
 #include <logger.h>
 #include <asn1.h>
 #include <libft.h>
-#include <textutil.h>
 
 static const char *__asn1_v2_get_data_kind_name(t_asn_v2_data_kind kind)
 {
@@ -6509,10 +6508,6 @@ static bool __asn1_v2_parse_root(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token
 	return false;
 }
 
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
-
 int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data)
 {
 	if (NULL == s) return (SSL_ERR);
@@ -6531,6 +6526,10 @@ int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_data **data)
 	}
 	return (SSL_ERR);
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 
 static char *__asn1_v2_data_node_dumps(const t_node_v2 *node)
 {
