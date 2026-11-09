@@ -5,7 +5,7 @@
 #include <libft.h>
 #include <bnum.h>
 
-#include "__asn1_v2_private.h"
+#include "__asn1_v2.h"
 
 /****************************************************************************/
 

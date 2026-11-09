@@ -6,7 +6,7 @@
 #include <bnum.h>
 #include <textutil.h>
 
-#include "__asn1_v2_private.h"
+#include "__asn1_v2.h"
 
 typedef struct s_der_v2_tlv {
 	t_der_v2_tag tag;

@@ -15,7 +15,6 @@ static const char *__asn1_v2_get_ast_kind_name(t_asn_v2_ast_kind kind)
 	}
 }
 
-
 static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
 {
 	switch (kind) {

@@ -6,7 +6,7 @@
 #include <libft.h>
 #include <bnum.h>
 
-#include "__asn1_v2_private.h"
+#include "__asn1_v2.h"
 
 int der_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1_value)
 {
