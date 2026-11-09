@@ -1,7 +1,7 @@
 #ifndef ASN_1_PRIVATE_H
 #define ASN_1_PRIVATE_H
 
-#include <asn1.h>
+#include <asn1_v2.h>
 
 static inline void __asn1_v2_oid_arc_delete_adapter(void *vctx) { asn1_v2_oid_arc_delete((t_asn_v2_oid_arc *)vctx); }
 static inline void __asn1_v2_symbol_delete_adapter(void *p)		{ asn1_v2_symbol_delete((t_asn_v2_symbol *)p); }

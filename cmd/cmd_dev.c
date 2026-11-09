@@ -3,7 +3,7 @@
 #include <args.h>
 #include <cmd.h>
 #include <json.h>
-#include <asn1.h>
+#include <asn1_v2.h>
 #include <der.h>
 #include <pem.h>
 #include <base64.h>
@@ -142,7 +142,7 @@ int	cmd_dev(const t_cmd *cmd)
 		}
 
 		t_der_v2_type *der_type = NULL;
-		if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
+		if (SSL_OK != der_v2_type_compile(&der_type, asn1_type)) {
 			SSL_LOG(ERROR, "%s: asn1 type compile failed", module_name);
 			return (SSL_ERR);
 		} else {
@@ -184,7 +184,7 @@ int	cmd_dev(const t_cmd *cmd)
 			return (SSL_ERR);
 		}
 		t_der_v2_type *der_type = NULL;
-		if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
+		if (SSL_OK != der_v2_type_compile(&der_type, asn1_type)) {
 			SSL_LOG(ERROR, "%s: asn1 type compile failed", module_name);
 			return (SSL_ERR);
 		}
@@ -276,12 +276,12 @@ int	cmd_dev(const t_cmd *cmd)
 		}
 
 		t_der_v2_type *der_type = NULL;
-		if (SSL_OK != asn1_v2_type_compile(&der_type, asn1_type)) {
+		if (SSL_OK != der_v2_type_compile(&der_type, asn1_type)) {
 			SSL_LOG(ERROR, "%s: asn1 type compile failed", module_name);
 			return (SSL_ERR);
 		}
 		t_der_v2_value *der_value = NULL;
-		if (SSL_OK != asn1_v2_value_compile(&der_value, asn1_value)) {
+		if (SSL_OK != der_v2_value_compile(&der_value, asn1_value)) {
 			SSL_LOG(ERROR, "%s: asn1 value compile failed", module_name);
 			return (SSL_ERR);
 		}
@@ -336,7 +336,7 @@ int	cmd_dev(const t_cmd *cmd)
 			return (SSL_ERR);
 		}
 		t_der_v2_value *der_value = NULL;
-		if (SSL_OK != asn1_v2_value_compile(&der_value, asn1_value)) {
+		if (SSL_OK != der_v2_value_compile(&der_value, asn1_value)) {
 			SSL_LOG(ERROR, "%s: asn1 value compile failed", module_name);
 			return (SSL_ERR);
 		}

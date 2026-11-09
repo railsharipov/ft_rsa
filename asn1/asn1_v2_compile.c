@@ -1,16 +1,14 @@
 #include <common.h>
 #include <logger.h>
-#include <asn1.h>
+#include <asn1_v2.h>
 #include <der.h>
 #include <io.h>
 #include <libft.h>
 #include <bnum.h>
 
-#include "__asn1_private.h"
+#include "__asn1_v2_private.h"
 
-/****************************************************************************/
-
-int asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1_value)
+int der_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1_value)
 {
 	assert(NULL != asn1_value && NULL != der_value);
 
@@ -98,7 +96,7 @@ int asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1
 			for (size_t idx = 0; ft_list_next_content(&asn1_value->as.composite.elements, &next, &content); idx++) {
 				assert(idx < compiled->as.composite.count);
 				t_der_v2_value *compiled_element = NULL;
-				if (SSL_OK != asn1_v2_value_compile(&compiled_element, content)) {
+				if (SSL_OK != der_v2_value_compile(&compiled_element, content)) {
 					goto label_error;
 				}
 				der_v2_value_copy(compiled_element, compiled->as.composite.items + idx);
@@ -109,7 +107,7 @@ int asn1_v2_value_compile(t_der_v2_value **der_value, const t_asn_v2_value *asn1
 	}
 	case ASN_V2_TYPE_KIND_CHOICE: {
 		if (NULL != asn1_value->as.choice.id) compiled->as.choice.id = ft_strdup(asn1_value->as.choice.id);
-		if (SSL_OK != asn1_v2_value_compile(&compiled->as.choice.value, asn1_value->as.choice.value)) {
+		if (SSL_OK != der_v2_value_compile(&compiled->as.choice.value, asn1_value->as.choice.value)) {
 			goto label_error;
 		}
 		break;
@@ -131,7 +129,7 @@ label_error:
 	return (SSL_ERR);
 }
 
-static int __asn1_v2_component_compile(t_der_v2_component **der_component, const t_asn_v2_component *asn1_component)
+int der_v2_component_compile(t_der_v2_component **der_component, const t_asn_v2_component *asn1_component)
 {
 	char cbuf[1024] = {0};
 
@@ -142,7 +140,7 @@ static int __asn1_v2_component_compile(t_der_v2_component **der_component, const
 	}
 
 	t_der_v2_type *compiled = NULL;
-	if (SSL_OK != asn1_v2_type_compile(&compiled, asn1_component->type)) {
+	if (SSL_OK != der_v2_type_compile(&compiled, asn1_component->type)) {
 		SSL_LOG(ERROR, "failed to compile asn1 component type: %s", asn1_v2_type_dumpb(asn1_component->type, cbuf, sizeof(cbuf)));
 		return (SSL_ERR);
 	}
@@ -151,7 +149,7 @@ static int __asn1_v2_component_compile(t_der_v2_component **der_component, const
 
 	if (NULL != asn1_component->default_value) {
 		dcomponent->default_value = NULL;
-		if (SSL_OK != asn1_v2_value_compile(&dcomponent->default_value, asn1_component->default_value)) {
+		if (SSL_OK != der_v2_value_compile(&dcomponent->default_value, asn1_component->default_value)) {
 			SSL_LOG(ERROR, "failed to compile asn1 component default value: %s", asn1_v2_value_dumpb(asn1_component->default_value, cbuf, sizeof(cbuf)));
 			SSL_FREE(dcomponent);
 			return (SSL_ERR);
@@ -169,7 +167,7 @@ static int __asn1_v2_component_compile(t_der_v2_component **der_component, const
 	return (SSL_OK);
 }
 
-int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type)
+int	der_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_type)
 {
 	if (NULL == der_type || NULL == asn1_type) {
 		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
@@ -194,7 +192,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 			while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
 				t_asn_v2_component *element = content;
 				t_der_v2_component *compiled_element = NULL;
-				if (SSL_OK != __asn1_v2_component_compile(&compiled_element, element)) {
+				if (SSL_OK != der_v2_component_compile(&compiled_element, element)) {
 					SSL_LOG(ERROR, "failed to compile asn1 %s component", asn1_v2_get_type_name(asn1_type->kind));
 					goto label_error;
 				}
@@ -228,7 +226,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 		void *content = NULL;
 		while (ft_list_next_content(&asn1_type->as.composite.elements, &next, &content)) {
 			t_der_v2_component *compiled_element = NULL;
-			if (SSL_OK != __asn1_v2_component_compile(&compiled_element, content)) {
+			if (SSL_OK != der_v2_component_compile(&compiled_element, content)) {
 				SSL_LOG(ERROR, "failed to compile asn1 %s alternative", asn1_v2_get_type_name(asn1_type->kind));
 				goto label_error;
 			}
@@ -246,7 +244,7 @@ int	asn1_v2_type_compile(t_der_v2_type **der_type, const t_asn_v2_type *asn1_typ
 	}
 	case ASN_V2_TYPE_KIND_SEQUENCE_OF:
 	case ASN_V2_TYPE_KIND_SET_OF: {
-		if (SSL_OK != asn1_v2_type_compile(&compiled->as.collection.element_type, asn1_type->as.collection.element_type)) {
+		if (SSL_OK != der_v2_type_compile(&compiled->as.collection.element_type, asn1_type->as.collection.element_type)) {
 			SSL_LOG(ERROR, "failed to compile asn1 %s collection element type", asn1_v2_get_type_name(asn1_type->kind));
 			goto label_error;
 		}
