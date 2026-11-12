@@ -23,7 +23,7 @@ int	main(int ac, const char **av)
 		.log_writer = __app_log_writer,
 		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
 		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
-		.is_ansi_colored = 1,
+		.is_ansi_colored = true,
 	};
 
 	t_logger *__libft_logger = libft_get_logger();
@@ -31,7 +31,7 @@ int	main(int ac, const char **av)
 		.log_writer = __app_log_writer,
 		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
 		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
-		.is_ansi_colored = 1,
+		.is_ansi_colored = true,
 	};
 
 	// default command
@@ -41,6 +41,7 @@ int	main(int ac, const char **av)
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("--warn", "set warning log level", AP_OPT_TYPE_FLAG));
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("--info", "set info log level", AP_OPT_TYPE_FLAG));
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("--error", "set error log level", AP_OPT_TYPE_FLAG));
+	args_add_global_cmd_opt(cmd_arg, args_new_opt("--no-color", "disable colors in logs", AP_OPT_TYPE_FLAG));
 	args_add_global_cmd_opt(cmd_arg, args_new_opt("-q", "quiet mode, errors only", AP_OPT_TYPE_FLAG));
 
 	// base64 command
@@ -213,6 +214,10 @@ int	main(int ac, const char **av)
 	if (ft_htbl_has(cmd.opts, "--trace")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
 		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
+	}
+	if (ft_htbl_has(cmd.opts, "--no-color")) {
+		__app_logger->is_ansi_colored = false;
+		__libft_logger->is_ansi_colored = false;
 	}
 	if (ft_htbl_has(cmd.opts, "-q") || ft_htbl_has(cmd.opts, "--error")) {
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_ERROR;
