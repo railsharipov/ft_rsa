@@ -43,6 +43,7 @@ static const char *__asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
 typedef struct s_asn_v2_parser_ctx {
 	t_list ops;
 	t_list funcs;
+	int depth;
 	bool done;
 } t_asn_v2_parser_ctx;
 
@@ -83,6 +84,7 @@ typedef struct s_asn_v2_parser_op {
 typedef struct s_asn_v2_parser_func {
 	t_func_asn_v2_parse call;
 	const char *name;
+	char *trace;
 } t_asn_v2_parser_func;
 
 const struct {
@@ -234,18 +236,7 @@ static inline const char *__asn1_v2_strip_parse_func_prefix(const char *name)
 /*****************************************************************************/
 /*****************************************************************************/
 
-const char *__asn1_v2_token_dumpb(t_asn_v2_token token, char *buf, size_t bufsize)
-{
-	t_ostring ostring = {0};
-	ft_ostr_init_with_capacity(&ostring, bufsize);
-	ft_ostr_appendf(&ostring, "pos=%zu,kind=%s,value=", token.start, __asn1_v2_get_token_kind_name(token.kind));
-	ft_ostr_append(&ostring, token.s + token.start, token.end - token.start);
-	size_t len = MIN(bufsize, ostring.size+1);
-	ft_strncpy(buf, (const char *)ostring.content, len);
-	buf[len-1] = 0;
-	ft_ostr_clear(&ostring);
-	return (buf);
-}
+const char *__asn1_v2_token_dumpb(t_asn_v2_token token, char *buf, size_t bufsize);
 
 bool __asn1_v2_token_is_bound(char c)
 {
@@ -330,9 +321,12 @@ bool __asn1_v2_token_next(t_asn_v2_token *token)
 		for (size_t i = 1; i < slen; i++) {
 			if (!ft_isdigit(s[i])) {
 				if (s[i] == '.') {
-					t.kind = ASN_V2_TOKEN_KIND_REAL_NUMBER;
-					i++;
-					while (i < slen && ft_isdigit(s[i])) i++;
+					// Ensure this not an ELLIPSIS since this DOT could be part of the range: (NUMBER..NUMBER)
+					if (s[i+1] != '.') {
+						t.kind = ASN_V2_TOKEN_KIND_REAL_NUMBER;
+						i++;
+						while (i < slen && ft_isdigit(s[i])) i++;
+					}
 				}
 				if (i < slen && (s[i] == 'e' || s[i] == 'E')) {
 					t.kind = ASN_V2_TOKEN_KIND_REAL_NUMBER;
@@ -414,8 +408,8 @@ bool __asn1_v2_token_next(t_asn_v2_token *token)
 				}
 				break;
 			}
-			is_prev_hyphen = (s[i] == '-');
 			if (s[i] == '-' && is_prev_hyphen) break;
+			is_prev_hyphen = (s[i] == '-');
 		}
 	}
 
@@ -444,10 +438,10 @@ bool __asn1_v2_token_next(t_asn_v2_token *token)
 	return false;
 
 label_ok:
-	// char cbuf[512];
+	// char cbuf[1024];
 	// SSL_LOG(TRACE, "next token: pos: % 5zu: %-12s: %s", t.start, __asn1_v2_get_token_kind_name(t.kind), __asn1_v2_token_dumpb(t, cbuf, sizeof(cbuf)));
 	*token = t;
-	if (token->kind == ASN_V2_TOKEN_KIND_COMMENT) {
+	if (t.kind == ASN_V2_TOKEN_KIND_COMMENT) {
 		return (__asn1_v2_token_next(token));
 	}
 	return true;
@@ -478,13 +472,35 @@ static void __asn1_v2_token_delete(t_asn_v2_token *token)
 	SSL_FREE(token);
 }
 
+static bool __asn1_v2_token_value_eq(t_asn_v2_token token, const char *s)
+{
+	size_t slen = ft_strlen(s);
+	size_t len = MIN(slen, token.end - token.start);
+	return (ft_strneq(token.s + token.start, s, len));
+}
+
 static char *__asn1_v2_token_dumps(t_asn_v2_token token)
 {
-	assert(token.end >= token.start);
-	char *toks = ft_strsub(token.s, token.start, token.end-token.start);
-	char *dumps = NULL;
-	ft_sprintf(&dumps, "\"%s\"(%s)", toks, __asn1_v2_get_token_kind_name(token.kind));
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 256);
+	ft_ostr_appendf(&ostring, "pos=%zu,kind=%s,value=", token.start, __asn1_v2_get_token_kind_name(token.kind));
+	ft_ostr_append(&ostring, token.s + token.start, token.end - token.start);
+	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
 	return (dumps);
+}
+
+const char *__asn1_v2_token_dumpb(t_asn_v2_token token, char *buf, size_t bufsize)
+{
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, bufsize);
+	ft_ostr_appendf(&ostring, "pos=%zu,kind=%s,value=", token.start, __asn1_v2_get_token_kind_name(token.kind));
+	ft_ostr_append(&ostring, token.s + token.start, token.end - token.start);
+	size_t len = MIN(bufsize, ostring.size+1);
+	ft_strncpy(buf, (const char *)ostring.content, len);
+	buf[len-1] = 0;
+	ft_ostr_clear(&ostring);
+	return (buf);
 }
 
 /*****************************************************************************/
@@ -561,15 +577,34 @@ static void __asn1_v2_ast_move_children(t_asn_v2_ast *dst, t_asn_v2_ast *src)
 	src->base.nodes = NULL;
 }
 
-static void __asn1_v2_ast_delete_adapter(t_node_v2 *node)
+static void __asn1_v2_ast_node_delete_adapter(t_node_v2 *node)
 {
 	t_asn_v2_ast *ast = container_of(node, t_asn_v2_ast, base);
+	if (ast->token != NULL) __asn1_v2_token_delete(ast->token);
 	SSL_FREE(ast);
 }
 
 static void __asn1_v2_ast_delete(t_asn_v2_ast *ast)
 {
-	ft_ntree_v2_del(&ast->base, __asn1_v2_ast_delete_adapter);
+	ft_ntree_v2_del(&ast->base, __asn1_v2_ast_node_delete_adapter);
+}
+
+static t_node_v2 *__asn1_v2_ast_node_copy_adapter(const t_node_v2 *node)
+{
+	t_asn_v2_ast *src = container_of(node, t_asn_v2_ast, base);
+	t_asn_v2_ast *clone = __asn1_v2_ast_create();
+	clone->kind = src->kind;
+	clone->parser = src->parser;
+	if (NULL != src->token) clone->token = __asn1_v2_token_clone(src->token);
+	return (&clone->base);
+}
+
+t_asn_v2_ast *__asn1_v2_ast_clone(const t_asn_v2_ast *src)
+{
+	if (NULL == src) return (NULL);
+	t_node_v2 *clone = ft_ntree_v2_clone(&src->base, __asn1_v2_ast_node_copy_adapter);
+	assert(clone != NULL);
+	return (container_of(clone, t_asn_v2_ast, base));
 }
 
 /*****************************************************************************/
@@ -599,11 +634,13 @@ static t_asn_v2_parser_func *__asn1_v2_parser_func_create(void)
 }
 static void __asn1_v2_parser_func_delete(t_asn_v2_parser_func *func)
 {
+	SSL_FREE(func->trace);
 	SSL_FREE(func);
 }
 static void __asn1_v2_parser_func_copy(const t_asn_v2_parser_func *src, t_asn_v2_parser_func *dst)
 {
 	*dst = *src;
+	dst->trace = ft_strdup(src->trace);
 }
 
 static void __asn1_v2_parser_op_delete_adapter(void *p) { __asn1_v2_parser_op_delete((t_asn_v2_parser_op *)p); }
@@ -631,6 +668,7 @@ static void *__asn1_v2_parser_func_copy_adapter(const void *p)
 static void __asn1_v2_parser_ctx_copy(const t_asn_v2_parser_ctx *src, t_asn_v2_parser_ctx *dst)
 {
 	dst->done = src->done;
+	dst->depth = src->depth;
 	ft_list_copy_all_content(&src->ops, &dst->ops, __asn1_v2_parser_op_copy_adapter);
 	ft_list_copy_all_content(&src->funcs, &dst->funcs, __asn1_v2_parser_func_copy_adapter);
 }
@@ -650,6 +688,20 @@ typedef struct s_call_h_entry {
 	t_asn_v2_token token;
 } t_call_h_entry;
 
+static t_call_h_entry *__asn1_v2_call_history_entry_create(t_asn_v2_token token, const char *name)
+{
+	t_call_h_entry *e = NULL;
+	SSL_ALLOC(e, sizeof(t_call_h_entry));
+	e->name = name;
+	e->token = token;
+	return (e);
+}
+
+static void __asn1_v2_call_history_entry_delete(t_call_h_entry *e)
+{
+	SSL_FREE(e);
+}
+
 static t_list __call_history = {0};
 
 static char *__asn1_v2_call_stack_dumps(void)
@@ -660,11 +712,24 @@ static char *__asn1_v2_call_stack_dumps(void)
 	void *content = NULL;
 	while (ft_list_next_content(&__call_history, &next, &content)) {
 		t_call_h_entry *e = content;
-		ft_ostr_appendf(&ostring, "    %-40s\n", e->name);
+		char cbuf[256];
+		ft_ostr_appendf(&ostring, "    %-40s --- %s\n", e->name, __asn1_v2_token_dumpb(e->token, cbuf, sizeof(cbuf)));
 	}
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
 	return (dumps);
+}
+
+static void __asn1_v2_call_stack_dump(void)
+{
+	t_list_next next = {0};
+	void *content = NULL;
+	while (ft_list_next_content(&__call_history, &next, &content)) {
+		t_call_h_entry *e = content;
+		char cbuf[256];
+		ft_fprintf(2, "\t%-40s --- %s\n", e->name, __asn1_v2_token_dumpb(e->token, cbuf, sizeof(cbuf)));
+	}
+	ft_fprintf(2, "\n");
 }
 
 static size_t __token_history_len;
@@ -677,12 +742,25 @@ static void __asn1_v2_token_history_init(size_t slen)
 	return;
 }
 
-static bool __asn1_v2_token_history_set(size_t idx, const char *name, bool boolean)
+static void *__asn1_v2_token_history_entry_copy_adapter(const void *content) { return ((void *)content); }
+
+static bool __asn1_v2_token_history_get(size_t idx, const char *name)
+{
+	if (idx < __token_history_len) {
+		t_htbl_v2 *h = __token_history + idx;
+		if (h->size == 0) return false;
+		void *p = ft_htbl_v2_get(h, name);
+		return ((bool)p);
+	}
+	return false;
+}
+
+static bool __asn1_v2_token_history_set(size_t idx, const char *name)
 {
 	if (idx < __token_history_len) {
 		t_htbl_v2 *h = __token_history + idx;
 		if (h->size == 0) ft_htbl_v2_init(h, 1024);
-		return (ft_htbl_v2_set(h, name, (void *)boolean));
+		return (ft_htbl_v2_set(h, name, (void *)true));
 	}
 	return false;
 }
@@ -692,7 +770,122 @@ static bool __asn1_v2_token_history_unset(size_t idx, const char *name)
 	if (idx < __token_history_len) {
 		t_htbl_v2 *h = __token_history + idx;
 		if (h->size > 0) {
-			return (ft_htbl_v2_unset(h, name, NULL));
+			bool ok = ft_htbl_v2_unset(h, name, NULL);
+			if (h->active_count == 0) {
+				ft_htbl_v2_clear(h, NULL);
+			}
+			return (ok);
+		}
+		return true;
+	}
+	return false;
+}
+
+static void __asn1_v2_token_history_unset_all_but_blocked(size_t idx)
+{
+	if (idx < __token_history_len) {
+		t_htbl_v2 *h = __token_history + idx;
+		if (h->size > 0) {
+			t_htbl_v2_next next = {0};
+			const char *key = NULL;
+			void *value = NULL;
+			while (ft_htbl_v2_next(h, &next, &key, &value)) {
+				if ((bool)value == (bool)false) ft_htbl_v2_unset(h, key, NULL);
+			}
+		}
+	}
+}
+
+// static t_htbl_v2 *__asn1_v2_token_history_get_table(size_t idx)
+// {
+// 	if (idx < __token_history_len) {
+// 		return (__token_history + idx);
+// 	}
+// 	return (NULL);
+// }
+//
+// static void __asn1_v2_token_history_set_table(size_t idx, t_htbl_v2 *table)
+// {
+// 	if (idx < __token_history_len) {
+// 		t_htbl_v2 *h = __token_history + idx;
+// 		if (h->size > 0) {
+// 			ft_htbl_v2_clear(h, NULL);
+// 		}
+// 		*h = *table;
+// 	}
+// }
+
+typedef struct s_asn_v2_ast_cache_entry {
+	t_asn_v2_ast *ast;
+	t_asn_v2_token token;
+} t_asn_v2_ast_cache_entry;
+
+static t_htbl_v2 *__ast_cache;
+static size_t __ast_cache_len;
+
+static t_asn_v2_ast_cache_entry *__asn1_v2_ast_cache_entry_create(const t_asn_v2_ast *ast, t_asn_v2_token token)
+{
+	t_asn_v2_ast_cache_entry *ce = NULL;
+	SSL_ALLOC(ce, sizeof(t_asn_v2_ast_cache_entry));
+	ce->ast = __asn1_v2_ast_clone(ast);
+	ce->token = token;
+	return (ce);
+}
+
+static void __asn1_v2_ast_cache_entry_delete(t_asn_v2_ast_cache_entry *ce)
+{
+	__asn1_v2_ast_delete(ce->ast);
+	SSL_FREE(ce);
+}
+
+static void __asn1_v2_ast_cache_init(size_t slen)
+{
+	SSL_ALLOC(__ast_cache, slen * sizeof(t_htbl_v2));
+	__ast_cache_len = slen;
+	return;
+}
+
+static t_asn_v2_ast_cache_entry *__asn1_v2_ast_cache_get(size_t idx, const char *name)
+{
+	if (idx < __ast_cache_len) {
+		t_htbl_v2 *h = __ast_cache + idx;
+		if (h->size == 0) ft_htbl_v2_init(h, 1024);
+		return (ft_htbl_v2_get(h, name));
+	}
+	return (NULL);
+}
+
+static bool __asn1_v2_ast_cache_set(size_t idx, const char *name, t_asn_v2_ast *src, t_asn_v2_token token)
+{
+	if (idx < __ast_cache_len) {
+		t_htbl_v2 *h = __ast_cache + idx;
+		if (h->size == 0) {
+			ft_htbl_v2_init(h, 1024);
+		}
+		else if (ft_htbl_v2_has(h, name)) {
+			return false;
+		}
+		t_asn_v2_ast_cache_entry *ce = __asn1_v2_ast_cache_entry_create(src, token);
+		bool b = ft_htbl_v2_set(h, name, ce);
+		if (!b) {
+			__asn1_v2_ast_cache_entry_delete(ce);
+		}
+		return (b);
+	}
+	return false;
+}
+
+static void __asn1_v2_ast_cache_entry_delete_adapter(void *p) { __asn1_v2_ast_cache_entry_delete((t_asn_v2_ast_cache_entry *)p); }
+static bool __asn1_v2_ast_cache_unset(size_t idx, const char *name)
+{
+	if (idx < __ast_cache_len) {
+		t_htbl_v2 *h = __ast_cache + idx;
+		if (h->size > 0) {
+			bool ok = ft_htbl_v2_unset(h, name, __asn1_v2_ast_cache_entry_delete_adapter);
+			if (h->active_count == 0) {
+				ft_htbl_v2_clear(h, __asn1_v2_ast_cache_entry_delete_adapter);
+			}
+			return (ok);
 		}
 	}
 	return false;
@@ -702,8 +895,26 @@ static bool __asn1_v2_token_history_unset(size_t idx, const char *name)
 /*****************************************************************************/
 /*****************************************************************************/
 
+static bool __f_eq_name(const void *content, void *vctx)
+{
+	const t_call_h_entry *e = content;
+	return (ft_streq(e->name, (const char *)vctx));
+}
+
+static bool __f_eq_token(const void *content, void *vctx)
+{
+	const t_call_h_entry *e = content;
+	return __asn1_v2_token_value_eq(e->token, "..");
+	// return (e->token.kind == ASN_V2_TOKEN_KIND_NUMBER);
+	// return (e->token.start >= 66421);
+}
+
+// static size_t max_pos;
+
 static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
+	// if (max_pos < token->start) max_pos = token->start, SSL_LOG(WARN, "%zu", max_pos);
+
 	t_asn_v2_parser_op *op = ft_list_pop_content(&ctx->ops);
 	if (NULL == op) return false;
 
@@ -711,75 +922,70 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 	case ASN_V2_PARSER_OP_KIND_CALL: {
 		t_asn_v2_parser_func *func = ft_list_pop_content(&ctx->funcs);
 		t_asn_v2_token cur_token = *token;
+		t_asn_v2_token next_token = *token;
+		bool has_tokens = __asn1_v2_token_next(&next_token);
 
-		if (ctx->done) {
+		if (ctx->done || !has_tokens) {
 			__asn1_v2_parser_func_delete(func);
-			return false;
+			goto label_error;
 		}
-		SSL_LOG(TRACE, "CALL : %s => %s", name, func->name);
+		{
+			char cbuf[1024];
+			SSL_LOG(TRACE, "%*sCALL : %s => %s --- [%s]", ctx->depth, "", name, func->name, __asn1_v2_token_dumpb(next_token, cbuf, sizeof(cbuf)));
+		}
 
-		bool skip_call = false;
 		bool call_result = false;
 
-		if (__call_history.size > 0) {
-			t_list tmp_list = {0};
-			t_call_h_entry *be = NULL;
-			while (__call_history.size > 0) {
-				be = ft_list_pop_content(&__call_history);
-				ft_list_prepend_ref(&tmp_list, be);
-				if (cur_token.start == be->token.start && ft_streq(func->name, be->name)) {
-					skip_call = true;
-					break;
-				}
-			}
-			while (tmp_list.size > 0) {
-				be = ft_list_pop_ref(&tmp_list);
-				ft_list_prepend_content(&__call_history, be);
-			}
+		t_asn_v2_ast_cache_entry *ce = __asn1_v2_ast_cache_get(cur_token.start, func->trace);
+		if (NULL != ce) {
+			char cbuf[1024];
+			SSL_LOG(TRACE, "%*scache hit for token: %s, func: %s", ctx->depth, "", __asn1_v2_token_dumpb(next_token, cbuf, sizeof(cbuf)), func->name);
+			__asn1_v2_parser_func_delete(func);
+			*ast = __asn1_v2_ast_clone(ce->ast);
+			*token = ce->token;
+			goto label_ok;
 		}
 
-		if (!skip_call) {
-			t_call_h_entry *e = NULL;
-			SSL_ALLOC(e, sizeof(t_call_h_entry));
-			e->name = func->name;
-			e->token = cur_token;
-			ft_list_prepend_content(&__call_history, e);
+		bool cycle = __asn1_v2_token_history_get(cur_token.start, func->name);
+		if (cycle) {
+			// char cbuf[1024];
+			// SSL_LOG(WARN, "call cycle at token: %s, call: %s", __asn1_v2_token_dumpb(cur_token, cbuf, sizeof(cbuf)), func->trace);
+			// SSL_LOG(CRIT, "call stack dump:");
+			// __asn1_v2_call_stack_dump();
+			// abort();
+		}
+		else {
+			ft_list_prepend_content(&__call_history, __asn1_v2_call_history_entry_create(next_token, func->name));
+//
+// 			if (
+// 				ft_list_has_content(&__call_history, __f_eq_name, "__asn1_v2_parse_ContainedSubtype") &&
+// 				!ft_list_has_content(&__call_history, __f_eq_name, "__asn1_v2_parse_AnyValue") &&
+// 				ft_list_has_content(&__call_history, __f_eq_token, NULL)
+// 			) {
+// 				SSL_LOG(CRIT, "call stack dump at pos: %zu:", token->start), __asn1_v2_call_stack_dump();
+// 			}
 
-			bool no_cycle = __asn1_v2_token_history_set(token->start, func->name, true);
-			if (no_cycle) {
-				t_asn_v2_parser_ctx call_ctx = {0};
-				call_result = func->call(&call_ctx, token, ast);
-			}
-			else {
-				// Fail early when cyclical call dependency is detected.
-				char cbuf[1024];
-				SSL_LOG(CRIT, "cyclical call dependency: last consumed token: %s, func: %s", __asn1_v2_token_dumpb(cur_token, cbuf, sizeof(cbuf)), func->name);
-				char *stack_dumps = __asn1_v2_call_stack_dumps();
-				SSL_LOG(CRIT, "call stack:\n%s", stack_dumps);
-				SSL_FREE(stack_dumps);
-				abort();
-			}
-			if (!__asn1_v2_token_history_unset(cur_token.start, func->name)) {
+			(void)__asn1_v2_token_history_set(cur_token.start, name);
+
+			t_asn_v2_parser_ctx call_ctx = { .depth = ctx->depth+1, };
+			call_result = func->call(&call_ctx, token, ast);
+
+			(void)__asn1_v2_token_history_unset(cur_token.start, name);
+
+			if (call_result && !__asn1_v2_ast_cache_set(cur_token.start, func->trace, *ast, *token)) {
 				UNREACHABLE("__asn1_v2_parser_op_run");
 			}
 
-			e = ft_list_pop_content(&__call_history);
-			SSL_FREE(e);
-		}
-		else {
-			char cbuf[1024];
-			SSL_LOG(TRACE, "skipping call: last consumed token: %s, func: %s", __asn1_v2_token_dumpb(cur_token, cbuf, sizeof(cbuf)), func->name);
+			__asn1_v2_call_history_entry_delete(ft_list_pop_content(&__call_history));
 		}
 
-		// if (!call_result && op->kind == ASN_V2_PARSER_OP_KIND_OPTIONAL) {
-		// 	call_result = true;
-		// }
 		if (call_result) {
 			__asn1_v2_ast_add_parser_info(*ast, func->name);
 		}
 		__asn1_v2_parser_func_delete(func);
 
-		return (call_result);
+		if (call_result) goto label_ok;
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_SEQUENCE: {
 		t_asn_v2_token old_token = *token;
@@ -806,17 +1012,21 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 			if (bi) {
 				__asn1_v2_ast_add_child(root, iast);
 			} else {
-				__asn1_v2_ast_delete(iast);
+				assert(iast == NULL);
 			}
 			b = b && bi;
 			if (!ctx->done) ctx->done = !b;
+			__asn1_v2_parser_op_delete(iop);
 			iop = ft_list_first_content(&ctx->ops);
 			assert(iop != NULL);
 		}
 
+		iast = NULL;
 		bi = __asn1_v2_parser_op_run(ctx, name, token, &iast);
 		if (bi) {
 			__asn1_v2_ast_add_child(root, iast);
+		} else {
+			assert(iast == NULL);
 		}
 		b = b && bi;
 
@@ -824,35 +1034,73 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 		if (b) {
 			*ast = root;
 			__asn1_v2_ast_add_parser_info(*ast, name);
-			return true;
+			goto label_ok;
 		}
 		__asn1_v2_ast_delete(root);
 		*token = old_token;
-		return false;
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_CHOICE: {
-		t_asn_v2_ast *last = NULL;
-		t_asn_v2_ast *rast = NULL;
-		bool b1 = __asn1_v2_parser_op_run(ctx, name, token, &last);
-		if (!ctx->done) ctx->done = b1;
-		bool b2 = __asn1_v2_parser_op_run(ctx, name, token, &rast);
-		ctx->done = false;
-		if (b1 || b2) {
-			*ast = (b1) ? last : rast;
-			__asn1_v2_ast_add_parser_info(*ast, name);
-			return true;
+		t_asn_v2_token old_token = *token;
+		t_asn_v2_ast *choice = NULL;
+
+		// char cbuf[1024];
+		// SSL_LOG(WARN, "iop:first:%p:token:%s", op, __asn1_v2_token_dumpb(*token, cbuf, sizeof(cbuf)));
+
+		t_asn_v2_ast *iast = NULL;
+		bool b = __asn1_v2_parser_op_run(ctx, name, token, &iast);
+		if (!ctx->done) ctx->done = b;
+		if (b) choice = iast;
+
+		t_asn_v2_parser_op *iop = ft_list_first_content(&ctx->ops);
+		assert(iop != NULL);
+		bool bi = false;
+		while (iop->kind == ASN_V2_PARSER_OP_KIND_CHOICE) {
+			iop = ft_list_pop_content(&ctx->ops);
+			iast = NULL;
+			// SSL_LOG(WARN, "iop:seq:%p:token:%s", iop, __asn1_v2_token_dumpb(*token, cbuf, sizeof(cbuf)));
+			bi = __asn1_v2_parser_op_run(ctx, name, token, &iast);
+			if (bi) {
+				assert(choice == NULL);
+				choice = iast;
+			} else {
+				assert(iast == NULL);
+			}
+			b = b || bi;
+			if (!ctx->done) ctx->done = b;
+			__asn1_v2_parser_op_delete(iop);
+			iop = ft_list_first_content(&ctx->ops);
+			assert(iop != NULL);
 		}
-		if (b1) __asn1_v2_ast_delete(last);
-		if (b2) __asn1_v2_ast_delete(rast);
-		return false;
+
+		iast = NULL;
+		bi = __asn1_v2_parser_op_run(ctx, name, token, &iast);
+		if (bi) {
+			assert(choice == NULL);
+			choice = iast;
+		} else {
+			assert(iast == NULL);
+		}
+		b = b || bi;
+
+		ctx->done = false;
+		if (b) {
+			*ast = choice;
+			__asn1_v2_ast_add_parser_info(*ast, name);
+			goto label_ok;
+		}
+		assert(choice == NULL);
+		*token = old_token;
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_OPTIONAL: {
 		bool b = __asn1_v2_parser_op_run(ctx, name, token, ast);
 		if (!b) {
+			assert(*ast == NULL);
 			*ast = __asn1_v2_ast_create_null();
 			__asn1_v2_ast_add_parser_info(*ast, name);
 		}
-		return true;
+		goto label_ok;
 	}
 	case ASN_V2_PARSER_OP_KIND_REPEAT: {
 		t_asn_v2_ast *root = __asn1_v2_ast_create_list();
@@ -867,21 +1115,19 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 			b = __asn1_v2_parser_op_run(&rctx, name, token, &iast);
 			__asn1_v2_parser_ctx_clear(&rctx);
 			if (b) {
-				// ft_list_append(&list, &iast->base);
 				__asn1_v2_ast_add_child(root, iast);
 				count++;
+			} else {
+				assert(iast == NULL);
 			}
 		}
 		if (count > 0) {
-			// *ast = container_of(list.first, t_asn_v2_ast, base);
 			*ast = root;
-			// __asn1_v2_ast_add_parser_info(*ast, name);
-			return true;
+			goto label_ok;
 		}
-		// ft_list_clear(&list, __asn1_v2_ast_delete_adapter);
 		__asn1_v2_ast_delete(root);
 		*token = old_token;
-		return false;
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_UNWRAP: {
 		t_asn_v2_ast *wrapped = NULL;
@@ -895,8 +1141,9 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 			else {
 				*ast = wrapped;
 			}
+			goto label_ok;
 		}
-		return (b);
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_WRAP: {
 		t_asn_v2_ast *to_wrap = NULL;
@@ -905,8 +1152,9 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 			*ast = __asn1_v2_ast_create_wrap();
 			(*ast)->base.nodes = &to_wrap->base;
 			__asn1_v2_ast_add_parser_info(*ast, name);
+			goto label_ok;
 		}
-		return (b);
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_COMPACT: {
 		t_list list = {0};
@@ -927,24 +1175,32 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 				n = next;
 			}
 			(*ast)->base.nodes = list.first;
+			goto label_ok;
 		}
-		return (b);
+		goto label_error;
 	}
 	case ASN_V2_PARSER_OP_KIND_NONE: {
 		*ast = __asn1_v2_ast_create_null();
-		return (true);
+		goto label_ok;
 	}
 	default: {
 		UNREACHABLE("__asn1_v2_parser_op_run");
 	}}
+
+label_error:
+	__asn1_v2_parser_op_delete(op);
 	return false;
+
+label_ok:
+	__asn1_v2_parser_op_delete(op);
+	return true;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 
-static void __asn1_v2_parser_op_push_call(t_asn_v2_parser_ctx *ctx, t_func_asn_v2_parse f, const char *name)
+static void __asn1_v2_parser_op_push_call(t_asn_v2_parser_ctx *ctx, t_func_asn_v2_parse f, const char *caller, const char *name)
 {
 	t_asn_v2_parser_op *op = __asn1_v2_parser_op_create();
 	op->kind = ASN_V2_PARSER_OP_KIND_CALL;
@@ -953,6 +1209,7 @@ static void __asn1_v2_parser_op_push_call(t_asn_v2_parser_ctx *ctx, t_func_asn_v
 	t_asn_v2_parser_func *func = __asn1_v2_parser_func_create();
 	func->call = f;
 	func->name = name;
+	func->trace = ft_strjoin_multi(3, caller, " => ", name);
 	ft_list_append_content(&ctx->funcs, func);
 }
 
@@ -1013,7 +1270,7 @@ static void __asn1_v2_parser_op_push_none(t_asn_v2_parser_ctx *ctx)
 }
 
 #define PUSH_OP_CALL(ctx, fn) \
-	((void)__asn1_v2_parser_op_push_call((ctx), (fn), #fn))
+	((void)__asn1_v2_parser_op_push_call((ctx), (fn), __func__, #fn))
 
 #define PUSH_OP_OPTIONAL(ctx, op) \
 	((void)__asn1_v2_parser_op_push_optional((ctx)), \
@@ -1092,14 +1349,14 @@ static void __asn1_v2_parser_op_push_none(t_asn_v2_parser_ctx *ctx)
 			PUSH_OP_UNWRAP(ctx, PUSH_OP_REPEAT(ctx, \
 				PUSH_OP_UNWRAP(ctx, PUSH_OP_SEQ_2(ctx, \
 					PUSH_OP_CALL(ctx, delim_op), \
-					PUSH_OP_CALL(ctx, item_op)))))));
+					PUSH_OP_CALL(ctx, item_op)))))))
 
 #define PUSH_OP_SEQ_OF(ctx, item_op) \
 	PUSH_OP_SEQ_2(ctx, \
 		PUSH_OP_CALL(ctx, item_op), \
 		PUSH_OP_OPTIONAL(ctx, \
 			PUSH_OP_UNWRAP(ctx, PUSH_OP_REPEAT(ctx, \
-				PUSH_OP_CALL(ctx, item_op)))));
+				PUSH_OP_CALL(ctx, item_op)))))
 
 #define RUN_OP(ctx, token, ast) \
 	__asn1_v2_parser_op_run((ctx), __func__, (token), (ast))
@@ -1717,7 +1974,6 @@ static bool __asn1_v2_parse_SubtypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2
 static bool __asn1_v2_parse_ConstraintSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_Constraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
-static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_Type(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_NamedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_IdentifierList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
@@ -1827,7 +2083,6 @@ static bool __asn1_v2_parse_Elements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *t
 static bool __asn1_v2_parse_Exclusions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_IntersectionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
-static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_UnionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_Unions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
 static bool __asn1_v2_parse_ElementSetSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast);
@@ -3550,46 +3805,92 @@ static bool __asn1_v2_parse_BuiltinType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token
 	// EmbeddedPDVType | EnumeratedType | ExternalType | InstanceOfType | IntegerType | IRIType | NullType |
 	// ObjectClassFieldType | ObjectIdentifierType | OctetStringType | RealType | RelativeIRIType | RelativeOIDType |
 	// SequenceType | SequenceOfType | SetType | SetOfType | PrefixedType | TimeType | TimeOfDayType | AnyType
-	PUSH_OP_CHOICE_3(ctx,
-		PUSH_OP_CHOICE_10(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_BitStringType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_BooleanType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_CharacterStringType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ChoiceType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_DateType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_DateTimeType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_DurationType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_EmbeddedPDVType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_EnumeratedType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ExternalType)
-		),
-		PUSH_OP_CHOICE_10(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_InstanceOfType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_IntegerType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_IRIType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_NullType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectClassFieldType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectIdentifierType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_OctetStringType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_RealType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeIRIType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDType)
-		),
-		PUSH_OP_CHOICE_8(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceOfType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeOfDayType),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_AnyType)
-		)
-	);
+
+	t_asn_v2_token t = *token;
+	if (!__asn1_v2_token_next(&t)) return false;
+	const char *s = t.s + t.start;
+
+	if (t.kind == ASN_V2_TOKEN_KIND_KEYWORD) {
+		if      (ft_strneq(s, "BIT",              ft_strlen("BIT")              )) PUSH_OP_CALL(ctx, __asn1_v2_parse_BitStringType);
+		else if (ft_strneq(s, "OCTET",            ft_strlen("OCTET")            )) PUSH_OP_CALL(ctx, __asn1_v2_parse_OctetStringType);
+		else if (ft_strneq(s, "SEQUENCE",         ft_strlen("SEQUENCE")         )) PUSH_OP_CHOICE(ctx,
+																						PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceType),
+																						PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceOfType));
+		else if (ft_strneq(s, "CHOICE",           ft_strlen("CHOICE")           )) PUSH_OP_CALL(ctx, __asn1_v2_parse_ChoiceType);
+		else if (ft_strneq(s, "SET",              ft_strlen("SET")              )) PUSH_OP_CHOICE(ctx,
+																						PUSH_OP_CALL(ctx, __asn1_v2_parse_SetType),
+																						PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfType));
+		else if (ft_strneq(s, "BOOLEAN",          ft_strlen("BOOLEAN")          )) PUSH_OP_CALL(ctx, __asn1_v2_parse_BooleanType);
+		else if (ft_strneq(s, "INTEGER",          ft_strlen("INTEGER")          )) PUSH_OP_CALL(ctx, __asn1_v2_parse_IntegerType);
+		else if (ft_strneq(s, "OBJECT",           ft_strlen("OBJECT")           )) PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectIdentifierType);
+		else if (ft_strneq(s, "RELATIVE_OID_IRI", ft_strlen("RELATIVE_OID_IRI") )) PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeIRIType);
+		else if (ft_strneq(s, "RELATIVE_OID",     ft_strlen("RELATIVE_OID")     )) PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDType);
+		else if (ft_strneq(s, "NULL",             ft_strlen("NULL")             )) PUSH_OP_CALL(ctx, __asn1_v2_parse_NullType);
+		else if (ft_strneq(s, "CHARACTER",        ft_strlen("CHARACTER")        )) PUSH_OP_CALL(ctx, __asn1_v2_parse_CharacterStringType);
+		else if (ft_strneq(s, "DATE",             ft_strlen("DATE")             )) PUSH_OP_CALL(ctx, __asn1_v2_parse_DateType);
+		else if (ft_strneq(s, "DATE_TIME",        ft_strlen("DATE_TIME")        )) PUSH_OP_CALL(ctx, __asn1_v2_parse_DateTimeType);
+		else if (ft_strneq(s, "DURATION",         ft_strlen("DURATION")         )) PUSH_OP_CALL(ctx, __asn1_v2_parse_DurationType);
+		else if (ft_strneq(s, "EMBEDDED",         ft_strlen("EMBEDDED")         )) PUSH_OP_CALL(ctx, __asn1_v2_parse_EmbeddedPDVType);
+		else if (ft_strneq(s, "ENUMERATED",       ft_strlen("ENUMERATED")       )) PUSH_OP_CALL(ctx, __asn1_v2_parse_EnumeratedType);
+		else if (ft_strneq(s, "EXTERNAL",         ft_strlen("EXTERNAL")         )) PUSH_OP_CALL(ctx, __asn1_v2_parse_ExternalType);
+		else if (ft_strneq(s, "INSTANCE",         ft_strlen("INSTANCE")         )) PUSH_OP_CALL(ctx, __asn1_v2_parse_InstanceOfType);
+		else if (ft_strneq(s, "OID_IRI",          ft_strlen("OID_IRI")          )) PUSH_OP_CALL(ctx, __asn1_v2_parse_IRIType);
+		else if (ft_strneq(s, "REAL",             ft_strlen("REAL")             )) PUSH_OP_CALL(ctx, __asn1_v2_parse_RealType);
+		else if (ft_strneq(s, "TIME",             ft_strlen("TIME")             )) PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeType);
+		else if (ft_strneq(s, "TIME_OF_DAY",      ft_strlen("TIME_OF_DAY")      )) PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeOfDayType);
+		else if (ft_strneq(s, "ANY",              ft_strlen("ANY")              )) PUSH_OP_CALL(ctx, __asn1_v2_parse_AnyType);
+		else return false;
+	}
+	else if (t.kind == ASN_V2_TOKEN_KIND_SINGLE_CHAR) {
+		if (ft_strneq(s, "[", 1)) PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedType);
+		else return false;
+	}
+	else {
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectClassFieldType);
+	}
+
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
 	}
 	return false;
+
+	// // Full scan.
+	// PUSH_OP_CHOICE_3(ctx,
+	// 	PUSH_OP_CHOICE_10(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_BitStringType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_BooleanType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_CharacterStringType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ChoiceType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_DateType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_DateTimeType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_DurationType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_EmbeddedPDVType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_EnumeratedType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ExternalType)
+	// 	),
+	// 	PUSH_OP_CHOICE_10(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_InstanceOfType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_IntegerType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_IRIType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_NullType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectClassFieldType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectIdentifierType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_OctetStringType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_RealType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeIRIType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDType)
+	// 	),
+	// 	PUSH_OP_CHOICE_8(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceOfType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_SetType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeOfDayType),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_AnyType)
+	// 	)
+	// );
 }
 
 static bool __asn1_v2_parse_UsefulType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
@@ -3646,9 +3947,172 @@ static bool __asn1_v2_parse_SubtypeConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2
 	return false;
 }
 
+static bool __asn1_v2_parse_ContentsConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// CONTAINING Type | ENCODED BY Value | CONTAINING Type ENCODED BY Value
+	PUSH_OP_CHOICE(ctx,
+		PUSH_OP_SEQ_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_CONTAINING),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Type),
+			PUSH_OP_OPTIONAL(ctx, PUSH_OP_UNWRAP(ctx,
+				PUSH_OP_SEQ_3(ctx,
+					PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ENCODED),
+					PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_BY),
+					PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
+				)
+			))
+		),
+		PUSH_OP_SEQ_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_ENCODED),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_BY),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
+		)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ComponentIdList(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// identifier "." +
+	PUSH_OP_SEQ_OF_DELIMITED(ctx, __asn1_v2_parse_identifier, __asn1_v2_parse_token_DOT);
+
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_Level(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// "." Level | empty
+	PUSH_OP_SEQ_OF(ctx, __asn1_v2_parse_token_DOT);
+
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_AtNotation(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// "@" ComponentIdList | "@" "." Level ComponentIdList
+	PUSH_OP_CHOICE(ctx,
+		PUSH_OP_SEQ_2(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_AT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ComponentIdList)
+		),
+		PUSH_OP_SEQ_4(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_AT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_DOT),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Level),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ComponentIdList)
+		)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_ComponentRelationConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// "{" DefinedObjectSet "}" "{" AtNotation "," + "}"
+	PUSH_OP_SEQ_6(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedObjectSet),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_UNWRAP(ctx,
+			PUSH_OP_SEQ_OF_DELIMITED(ctx, __asn1_v2_parse_AtNotation, __asn1_v2_parse_token_COMMA)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_SimpleTableConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// ObjectSet
+	PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectSet);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_TableConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// SimpleTableConstraint | ComponentRelationConstraint
+	PUSH_OP_CHOICE(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_SimpleTableConstraint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ComponentRelationConstraint)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UserDefinedConstraintParameter(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// Governor ":" Value | Governor ":" Object | DefinedObjectSet | Type | DefinedObjectClass
+	PUSH_OP_CHOICE_5(ctx,
+		PUSH_OP_SEQ_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Governor),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
+		),
+		PUSH_OP_SEQ_3(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Governor),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_Object)
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Type),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_DefinedObjectClass)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
+static bool __asn1_v2_parse_UserDefinedConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
+{
+	// CONSTRAINED BY "{" UserDefinedConstraintParameter "," * "}"
+	PUSH_OP_SEQ_5(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_CONSTRAINED),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_keyword_BY),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_L_CURLY_BRKT),
+		PUSH_OP_UNWRAP(ctx, PUSH_OP_OPTIONAL(ctx,
+			PUSH_OP_SEQ_OF_DELIMITED(ctx, __asn1_v2_parse_UserDefinedConstraintParameter, __asn1_v2_parse_token_COMMA)
+		)),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_R_CURLY_BRKT)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
+}
+
 static bool __asn1_v2_parse_GeneralConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
-	return __asn1_v2_parse_not_impl_fatal(__func__);
+	// UserDefinedConstraint | TableConstraint | ContentsConstraint
+	PUSH_OP_CHOICE_3(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_UserDefinedConstraint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_TableConstraint),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ContentsConstraint)
+	);
+	if (RUN_OP(ctx, token, ast)) {
+		return true;
+	}
+	return false;
 }
 
 static bool __asn1_v2_parse_ConstraintSpec(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
@@ -3747,6 +4211,7 @@ static bool __asn1_v2_parse_TypeWithConstraint(t_asn_v2_parser_ctx *ctx, t_asn_v
 
 static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
+	/* UNUSED */
 	// Type Constraint | TypeWithConstraint
 	PUSH_OP_CHOICE(ctx,
 		PUSH_OP_SEQ_2(ctx,
@@ -3763,11 +4228,26 @@ static bool __asn1_v2_parse_ConstrainedType(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 
 static bool __asn1_v2_parse_Type(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
-	// BuiltinType | ReferencedType | ConstrainedType
+	// Type ::= BuiltinType | ReferencedType | ConstrainedType
+	// PUSH_OP_CHOICE_3(ctx,
+	// 	PUSH_OP_CALL(ctx, __asn1_v2_parse_BuiltinType),
+	// 	PUSH_OP_CALL(ctx, __asn1_v2_parse_ReferencedType),
+	// 	PUSH_OP_CALL(ctx, __asn1_v2_parse_ConstrainedType)
+	// );
+
+	/* Optimized grammar. */
+	// Type ::= BuiltinType Constraint? | ReferencedType Constraint? | TypeWithConstraint
+
 	PUSH_OP_CHOICE_3(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_BuiltinType),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ReferencedType),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ConstrainedType)
+		PUSH_OP_SEQ_2(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_BuiltinType),
+			PUSH_OP_OPTIONAL(ctx, PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint))
+		),
+		PUSH_OP_SEQ_2(ctx,
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_ReferencedType),
+			PUSH_OP_OPTIONAL(ctx, PUSH_OP_CALL(ctx, __asn1_v2_parse_Constraint))
+		),
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_TypeWithConstraint)
 	);
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
@@ -3967,7 +4447,7 @@ static bool __asn1_v2_parse_XMLCharacterStringValue(t_asn_v2_parser_ctx *ctx, t_
 static bool __asn1_v2_parse_ChoiceValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
 	// identifier ":" Value
-	PUSH_OP_CHOICE_3(ctx,
+	PUSH_OP_SEQ_3(ctx,
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_identifier),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COLON),
 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Value)
@@ -4532,7 +5012,7 @@ static bool __asn1_v2_parse_BuiltinValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 	// RealValue | RelativeIRIValue | RelativeOIDValue | SequenceValue | SequenceOfValue | SetValue | SetOfValue |
 	// PrefixedValue | TimeValue | AnyValue
 	PUSH_OP_CHOICE_3(ctx,
-		PUSH_OP_CHOICE_10(ctx,
+		PUSH_OP_CHOICE_9(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_BitStringValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_BooleanValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_CharacterStringValue),
@@ -4540,11 +5020,11 @@ static bool __asn1_v2_parse_BuiltinValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_EmbeddedPDVValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_EnumeratedValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ExternalValue),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_InstanceOfValue),
+			// PUSH_OP_CALL(ctx, __asn1_v2_parse_InstanceOfValue), // This is effectively a Value
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_IntegerValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_IRIValue)
 		),
-		PUSH_OP_CHOICE_10(ctx,
+		PUSH_OP_CHOICE_9(ctx,
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_NullValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_OctetStringValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ObjectIdentifierValue),
@@ -4553,13 +5033,13 @@ static bool __asn1_v2_parse_BuiltinValue(t_asn_v2_parser_ctx *ctx, t_asn_v2_toke
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_RelativeOIDValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_SequenceOfValue),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetValue),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfValue)
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetValue)
 		),
 		PUSH_OP_CHOICE_3(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedValue),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SetOfValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimeValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_AnyValue)
+			// PUSH_OP_CALL(ctx, __asn1_v2_parse_PrefixedValue) // This is effectively a Value.
 		)
 	);
 	if (RUN_OP(ctx, token, ast)) {
@@ -5060,7 +5540,6 @@ static bool __asn1_v2_parse_SubtypeElements(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	// | RecurrenceRange
 	PUSH_OP_CHOICE(ctx,
 		PUSH_OP_CHOICE_10(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_SingleValue),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ContainedSubtype),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_ValueRange),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_PermittedAlphabet),
@@ -5069,11 +5548,12 @@ static bool __asn1_v2_parse_SubtypeElements(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_InnerTypeConstraints),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_PatternConstraint),
 			PUSH_OP_CALL(ctx, __asn1_v2_parse_PropertySettings),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_DurationRange)
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_DurationRange),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimePointRange)
 		),
 		PUSH_OP_CHOICE(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_TimePointRange),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_RecurrenceRange)
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_RecurrenceRange),
+			PUSH_OP_CALL(ctx, __asn1_v2_parse_SingleValue)
 		)
 	);
 	if (RUN_OP(ctx, token, ast)) {
@@ -5116,12 +5596,9 @@ static bool __asn1_v2_parse_Exclusions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token 
 static bool __asn1_v2_parse_IntersectionElements(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
 	// Elements | Elems Exclusions
-	PUSH_OP_CHOICE(ctx,
-		PUSH_OP_SEQ_2(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_Elements),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_Exclusions)
-		),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_Elements)
+	PUSH_OP_SEQ_2(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_Elements),
+		PUSH_OP_OPTIONAL(ctx, PUSH_OP_CALL(ctx, __asn1_v2_parse_Exclusions))
 	);
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
@@ -5144,15 +5621,21 @@ static bool __asn1_v2_parse_IntersectionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_
 
 static bool __asn1_v2_parse_Intersections(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
-	// IntersectionElements | IElems IntersectionMark IntersectionElements
-	PUSH_OP_CHOICE(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionElements),
-		PUSH_OP_SEQ_3(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionMark),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionElements)
-		)
-	);
+	// IntersectionElements | Intersections IntersectionMark IntersectionElements
+
+	/* Following grammar literally will cause infinite recursion. */
+
+	// PUSH_OP_CHOICE(ctx,
+	// 	PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionElements),
+	// 	PUSH_OP_SEQ_3(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionMark),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_IntersectionElements)
+	// 	)
+	// );
+
+	PUSH_OP_SEQ_OF_DELIMITED(ctx, __asn1_v2_parse_IntersectionElements, __asn1_v2_parse_IntersectionMark);
+
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
 	}
@@ -5175,14 +5658,20 @@ static bool __asn1_v2_parse_UnionMark(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *
 static bool __asn1_v2_parse_Unions(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
 	// Intersections | UElems UnionMark Intersections
-	PUSH_OP_CHOICE(ctx,
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections),
-		PUSH_OP_SEQ_3(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_Unions),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_UnionMark),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections)
-		)
-	);
+
+	/* Following grammar literally will cause infinite recursion. */
+
+	// PUSH_OP_CHOICE(ctx,
+	// 	PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections),
+	// 	PUSH_OP_SEQ_3(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Unions),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_UnionMark),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_Intersections)
+	// 	)
+	// );
+
+	PUSH_OP_SEQ_OF_DELIMITED(ctx, __asn1_v2_parse_Intersections, __asn1_v2_parse_UnionMark);
+
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
 	}
@@ -5210,20 +5699,40 @@ static bool __asn1_v2_parse_ElementSetSpecs(t_asn_v2_parser_ctx *ctx, t_asn_v2_t
 	// RootElementSetSpec
 	// | RootElementSetSpec "," "..."
 	// | RootElementSetSpec "," "..." "," AdditionalElementSetSpec
-	PUSH_OP_CHOICE_3(ctx,
-		PUSH_OP_SEQ_5(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
-		),
-		PUSH_OP_SEQ_3(ctx,
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
-			PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
-		),
-		PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
+
+	// PUSH_OP_CHOICE_3(ctx,
+	// 	PUSH_OP_SEQ_5(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
+	// 	),
+	// 	PUSH_OP_SEQ_3(ctx,
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+	// 		PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS)
+	// 	),
+	// 	PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
+	// );
+
+	/* Optimized grammar */
+	// RootElementSetSpec ("," "..." ("," AdditionalElementSetSpec)?)?
+
+	PUSH_OP_SEQ_2(ctx,
+		PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec),
+		PUSH_OP_OPTIONAL(ctx, PUSH_OP_UNWRAP(ctx,
+			PUSH_OP_SEQ_3(ctx,
+				PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+				PUSH_OP_CALL(ctx, __asn1_v2_parse_token_ELLIPSIS),
+				PUSH_OP_OPTIONAL(ctx, PUSH_OP_UNWRAP(ctx,
+					PUSH_OP_SEQ_2(ctx,
+						PUSH_OP_CALL(ctx, __asn1_v2_parse_token_COMMA),
+						PUSH_OP_CALL(ctx, __asn1_v2_parse_ElementSetSpec)
+					)
+				))
+			)
+		))
 	);
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
@@ -6499,8 +7008,8 @@ static bool __asn1_v2_parse_ModuleDefinition(t_asn_v2_parser_ctx *ctx, t_asn_v2_
 
 static bool __asn1_v2_parse_root(t_asn_v2_parser_ctx *ctx, t_asn_v2_token *token, t_asn_v2_ast **ast)
 {
-	// ModuleDefinition
-	PUSH_OP_CALL(ctx, __asn1_v2_parse_ModuleDefinition);
+	// ModuleDefinition | ModuleDefinition ModuleDefinitionList
+	PUSH_OP_SEQ_OF(ctx, __asn1_v2_parse_ModuleDefinition);
 	if (RUN_OP(ctx, token, ast)) {
 		return true;
 	}
@@ -6511,19 +7020,22 @@ int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_ast **ast)
 {
 	if (NULL == s) return (SSL_ERR);
 
+	SSL_ALLOC(__ast_cache, (slen+1) * sizeof(t_asn_v2_ast));
 	__asn1_v2_token_history_init(slen);
+	__asn1_v2_ast_cache_init(slen);
 
 	t_asn_v2_parser_ctx ctx = {0};
 	t_asn_v2_token token = {.s = s, .slen = slen,};
 
-	if (__asn1_v2_parse_root(&ctx, &token, ast)) {
-		if (!(!__asn1_v2_token_next(&token) && token.done)) {
-			SSL_LOG(ERROR, "parsing is not complete");
-			return (SSL_ERR);
-		}
-		return (SSL_OK);
+	bool ok = __asn1_v2_parse_root(&ctx, &token, ast);
+	SSL_FREE(__ast_cache);
+	if (!ok) return (SSL_ERR);
+
+	if (!(!__asn1_v2_token_next(&token) && token.done)) {
+		SSL_LOG(ERROR, "parsing is not complete at pos: %zu", token.start);
+		return (SSL_ERR);
 	}
-	return (SSL_ERR);
+	return (SSL_OK);
 }
 
 /*****************************************************************************/
