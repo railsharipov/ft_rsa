@@ -2736,7 +2736,7 @@ static const size_t __colored_lvl_prefixes_size = sizeof(__colored_lvl_prefixes)
 static int __log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg);
 
 static int __default_log_writer(const char *mes) {
-	return (ft_printf("%@%s\n", mes));
+	return (ft_fprintf(2, "%s\n", mes));
 }
 static t_logger __default_logger = {
 	.log_writer = __default_log_writer,
@@ -3724,12 +3724,73 @@ char 	*ft_ostr_to_cstr(const t_ostring *ostring, size_t idx, size_t len)
 
 /****************************************************************************/
 
+typedef enum e_pf_fmt_kind
+{
+	PF_FMT_NONE = 0,
+	PF_FMT_PERCENT,
+	PF_FMT_LO_I,
+	PF_FMT_LO_D,
+	PF_FMT_LO_O,
+	PF_FMT_LO_U,
+	PF_FMT_LO_X,
+	PF_FMT_UP_X,
+	PF_FMT_LO_P,
+	PF_FMT_LO_S,
+	PF_FMT_LO_Q,
+	PF_FMT_LO_C,
+} t_pf_fmt_kind;
+
+typedef struct	s_pf
+{
+	char		flag;
+	char		len;
+	int			fwid;
+	int			prec;
+	char		type;
+	int			num;
+	size_t		size;
+	size_t		str_size;
+	int			space;
+	int			base;
+	int			fd;
+	char		**buf;
+	t_pf_fmt_kind fmt_kind;
+	union {
+		intmax_t s_int;
+		uintmax_t u_int;
+		char chr;
+		unsigned int wchr;
+		char *cstr;
+		unsigned int *wcstr;
+	} as;
+}				t_pf;
+
+typedef enum e_pf_flag {
+	PF_PREC = (1 << 6),
+	PF_SHARP = (1 << 5),
+	PF_ZERO = (1 << 4),
+	PF_MINUS = (1 << 3),
+	PF_PLUS = (1 << 2),
+	PF_SPACE = (1 << 1),
+	PF_APOS = (1 << 0)
+} t_pf_flag;
+
+typedef enum e_pf_len
+{
+	PF_Z = (1 << 5),
+	PF_J = (1 << 4),
+	PF_LL = (1 << 3),
+	PF_L = (1 << 2),
+	PF_H = (1 << 1),
+	PF_HH = (1 << 0)
+} t_pf_len;
+
 static void	__l_arg_zero(t_pf *l);
 static t_pf	*__l_arg_new(int fd);
 
 static void __parse(t_pf *data, const char *s, va_list *arg);
 static void __format(t_pf *data, va_list *arg);
-static void	__get_data(t_pf *data, const char *s, int *i);
+static void	__get_data(t_pf *data, va_list *arg, const char *s, int *i);
 static void	__oper(t_pf *data, char *s, size_t *i, char op);
 
 static void __flags(char *len, char *flag, char *type);
@@ -3993,30 +4054,121 @@ static void __flags(char *len, char *flag, char *type)
 	}
 }
 
+static void __get_format_kind(t_pf *data)
+{
+	if (data->type == '%') {
+		data->fmt_kind = PF_FMT_PERCENT;
+	} else if (data->type == 'i') {
+		data->fmt_kind = PF_FMT_LO_I;
+	} else if (data->type == 'd') {
+		data->fmt_kind = PF_FMT_LO_D;
+	} else if (data->type == 'o') {
+		data->fmt_kind = PF_FMT_LO_O;
+	} else if (data->type == 'u') {
+		data->fmt_kind = PF_FMT_LO_U;
+	} else if (data->type == 'x') {
+		data->fmt_kind = PF_FMT_LO_X;
+	} else if (data->type == 'X') {
+		data->fmt_kind = PF_FMT_UP_X;
+	} else if (data->type == 'p') {
+		data->fmt_kind = PF_FMT_LO_P;
+	} else if (data->type == 's') {
+		data->fmt_kind = PF_FMT_LO_S;
+	} else if (data->type == 'q') {
+		data->fmt_kind = PF_FMT_LO_Q;
+	} else if (data->type == 'c') {
+		data->fmt_kind = PF_FMT_LO_C;
+	} else {
+		data->fmt_kind = PF_FMT_NONE;
+	}
+}
+
 static void __format(t_pf *data, va_list *arg)
 {
 	__flags(&(data->len), &(data->flag), &(data->type));
 
-	if (data->type == 'x' || data->type == 'X' || data->type == 'p') {
-		data->base = 16;
-	} else if (data->type == 'o') {
-		data->base = 8;
+	switch (data->fmt_kind) {
+	case PF_FMT_PERCENT: {
+		break;
 	}
-	if (data->type == '%') {
-		__out(data, "%", 1);
-	} else if (data->type == '@') {
-		data->fd = STDERR_FILENO;
-	} else if (ft_strchr("id", data->type)) {
+	case PF_FMT_LO_I:
+	case PF_FMT_LO_D: {
 		__format_di(data, data->len, arg);
-	} else if (ft_strchr("ouxXp", data->type)) {
-		__format_oux(data, data->len, arg);
-	} else if ((data->type == 's') || (data->type == 'q')) {
-		__format_s(data, data->len, arg);
-	} else if (data->type == 'c') {
-		__format_c(data, data->len, arg);
-	} else {
-		__print_else(data, data->flag, 0);
+		break;
 	}
+	case PF_FMT_LO_O:
+		data->base = 8;
+		[[fallthrough]];
+	case PF_FMT_LO_P:
+	case PF_FMT_LO_X:
+	case PF_FMT_UP_X:
+		data->base = 16;
+		[[fallthrough]];
+	case PF_FMT_LO_U: {
+		__format_oux(data, data->len, arg);
+		break;
+	}
+	case PF_FMT_LO_S:
+	case PF_FMT_LO_Q: {
+		__format_s(data, data->len, arg);
+		break;
+	}
+	case PF_FMT_LO_C: {
+		__format_c(data, data->len, arg);
+		break;
+	}
+	case PF_FMT_NONE: {
+		break;
+	}}
+}
+
+static void __print(t_pf *data, va_list *arg)
+{
+	switch (data->fmt_kind) {
+	case PF_FMT_PERCENT: {
+		__out(data, "%", 1);
+		break;
+	}
+	case PF_FMT_LO_I:
+	case PF_FMT_LO_D: {
+		__print_di(data, data->as.s_int, data->flag, 0);
+		break;
+	}
+	case PF_FMT_LO_O:
+	case PF_FMT_LO_P:
+	case PF_FMT_LO_X:
+	case PF_FMT_UP_X:
+	case PF_FMT_LO_U: {
+		__print_oux(data, data->as.u_int, data->flag, 0);
+		break;
+	}
+	case PF_FMT_LO_S:
+	case PF_FMT_LO_Q: {
+		if (!data->as.cstr && !data->as.wcstr && !(data->flag & PF_PREC)) {
+			if (!(data->flag & PF_PREC)) {
+				__out(data, "(null)", 6);
+			}
+			break;
+		}
+		if (data->len & PF_L) {
+			__print_ws(data, data->as.wcstr);
+		} else {
+			__print_s(data, data->as.cstr, 0);
+		}
+		break;
+	}
+	case PF_FMT_LO_C: {
+		if (data->len & PF_L) {
+			__print_wc(data, data->as.wchr);
+		} else {
+			__print_c(data, &data->as.chr, 1);
+		}
+		break;
+	}
+	case PF_FMT_NONE: {
+		__print_else(data, data->flag, 0);
+		break;
+	}}
 }
 
 static void	__parse(t_pf *data, const char *s, va_list *arg)
@@ -4041,9 +4193,11 @@ static void	__parse(t_pf *data, const char *s, va_list *arg)
 			if (s[i] == '%' || s[i] == '@') {
 				data->type = s[i];
 			} else {
-				__get_data(data, s, &i);
+				__get_data(data, arg, s, &i);
 			}
+			__get_format_kind(data);
 			__format(data, arg);
+			__print(data, arg);
 		}
 
 		__l_arg_zero(data);
@@ -4102,7 +4256,7 @@ static int	__is_len_flag(char c, char next, char *len, int *i)
 	return (1);
 }
 
-static void	__get_data(t_pf *data, const char *s, int *i)
+static void	__get_data(t_pf *data, va_list *arg, const char *s, int *i)
 {
 	if (s[*i] == 0) {
 		return ;
@@ -4115,6 +4269,11 @@ static void	__get_data(t_pf *data, const char *s, int *i)
 		while (s[*i] && s[*i] >= '0' && s[*i] <= '9') {
 			*i += 1;
 		}
+	} else if (s[*i] == '*') {
+		data->flag |= PF_PREC;
+		data->fwid = (int)va_arg(*arg, int);
+		data->prec = data->fwid;
+		*i += 1;
 	} else if (s[*i] == '.' && (*i += 1)) {
 		data->flag |= PF_PREC;
 		data->prec = (int)ft_atoi_zd(s + *i);
@@ -4128,7 +4287,7 @@ static void	__get_data(t_pf *data, const char *s, int *i)
 		data->type = s[*i];
 		return ;
 	}
-	__get_data(data, s, i);
+	__get_data(data, arg, s, i);
 }
 
 static void	__oper(t_pf *data, char *s, size_t *i, char op)
@@ -4187,7 +4346,7 @@ static void	__format_di(t_pf *data, char len, va_list *arg)
 	else if (len & PF_Z)
 		val = (size_t)va_arg(*arg, size_t);
 
-	__print_di(data, val, data->flag, 0);
+	data->as.s_int = val;
 }
 
 static void	__format_oux(t_pf *data, char len, va_list *arg)
@@ -4212,7 +4371,7 @@ static void	__format_oux(t_pf *data, char len, va_list *arg)
 	else if (len & PF_Z)
 		val = (size_t)va_arg(*arg, size_t);
 
-	__print_oux(data, val, data->flag, 0);
+	data->as.u_int = val;
 }
 
 static void	__format_c(t_pf *data, char len, va_list *arg)
@@ -4225,10 +4384,10 @@ static void	__format_c(t_pf *data, char len, va_list *arg)
 
 	if (len & PF_L) {
 		wc = va_arg(*arg, unsigned int);
-		__print_wc(data, wc);
+		data->as.wchr = wc;
 	} else {
 		c = (char)va_arg(*arg, int);
-		__print_c(data, &c, 1);
+		data->as.chr = c;
 	}
 }
 
@@ -4242,21 +4401,12 @@ static void	__format_s(t_pf *data, char len, va_list *arg)
 
 	if (len & PF_L) {
 		ws = va_arg(*arg, unsigned int *);
+		data->as.wcstr = ws;
 	}
-	else
+	else {
 		s = va_arg(*arg, char *);
-
-	if (!s && !ws && !(data->flag & PF_PREC)) {
-		if (!(data->flag & PF_PREC)) {
-			__out(data, "(null)", 6);
-		}
-		return ;
+		data->as.cstr = s;
 	}
-	if (len & PF_L) {
-		__print_ws(data, ws);
-	}
-	else
-		__print_s(data, s, 0);
 }
 
 static void	__out(t_pf *data, const char *s, int size)
@@ -5121,7 +5271,7 @@ void	ft_uint_to_bytes(void *bytes, uint64_t uint, int uint_size)
 }
 
 static int __log_writer(const char *mes) {
-	return (ft_printf("%@%s\n", mes));
+	return (ft_fprintf(2, "%s\n", mes));
 }
 
 static t_logger __logger = {

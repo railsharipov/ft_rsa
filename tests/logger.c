@@ -1,7 +1,7 @@
 #include "test.h"
 
 static int __log_writer(const char *mes) {
-	return (ft_printf("%@%s\n", mes));
+	return (ft_fprintf(2, "%s\n", mes));
 }
 
 static t_logger __logger = {

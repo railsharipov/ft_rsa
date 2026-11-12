@@ -72,9 +72,9 @@
 
 # define FLAG(FLAG, FLAGS)	((int)(((FLAGS)&(FLAG))==(FLAG)))
 
-#define NOT_IMPLEMENTED(MES)	do { ft_printf("%@" TXT_B_RED("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
-#define UNREACHABLE(MES)		do { ft_printf("%@" TXT_B_RED("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
-#define TODO(MES)				do { ft_printf("%@" TXT_B_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define NOT_IMPLEMENTED(MES)	do { ft_fprintf(2, TXT_B_RED("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define UNREACHABLE(MES)		do { ft_fprintf(2, TXT_B_RED("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define TODO(MES)				do { ft_fprintf(2, TXT_B_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
 
 typedef enum e_libft_status {
 	LIBFT_OK = 0,
@@ -353,44 +353,6 @@ t_node		*ft_stack_pop_list(t_stack *stack);
 /****************************************************************************/
 
 #define LIBFT_BUFF     256
-
-typedef struct	s_pf
-{
-	char		flag;
-	char		len;
-	int			fwid;
-	int			prec;
-	char		type;
-	int			num;
-	size_t		size;
-	size_t		str_size;
-	int			space;
-	int			base;
-	int			fd;
-	char		**buf;
-}				t_pf;
-
-/****************************************************************************/
-
-typedef enum e_pf_flag {
-	PF_PREC = (1 << 6),
-	PF_SHARP = (1 << 5),
-	PF_ZERO = (1 << 4),
-	PF_MINUS = (1 << 3),
-	PF_PLUS = (1 << 2),
-	PF_SPACE = (1 << 1),
-	PF_APOS = (1 << 0)
-} t_flag;
-
-typedef enum e_pf_len
-{
-	PF_Z = (1 << 5),
-	PF_J = (1 << 4),
-	PF_LL = (1 << 3),
-	PF_L = (1 << 2),
-	PF_H = (1 << 1),
-	PF_HH = (1 << 0)
-} t_len;
 
 int		ft_printf(const char *format, ...);
 int		ft_fprintf(int fd, const char *format, ...);

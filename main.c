@@ -9,7 +9,7 @@
 #include <libft.h>
 
 static int __app_log_writer(const char *mes) {
-	return (ft_printf("%@%s\n", mes));
+	return (ft_fprintf(2, "%s\n", mes));
 }
 
 int	main(int ac, const char **av)
