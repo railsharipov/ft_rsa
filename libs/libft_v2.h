@@ -20,7 +20,7 @@ typedef void (*t_func_node_map)(t_node_v2 *node, void *vctx);
 typedef bool (*t_func_node_op)(t_node_v2 *node, void *vctx);
 typedef bool (*t_func_node_find)(t_node_v2 *node, const void *vctx);
 typedef char *(*t_func_node_dumps)(const t_node_v2 *node);
-typedef t_node_v2 *(*t_func_node_copy)(t_node_v2 *node);
+typedef t_node_v2 *(*t_func_node_copy)(const t_node_v2 *node);
 
 /****************************************************************************/
 
@@ -55,6 +55,7 @@ void	ft_list_append_ref(t_list *list, void *ptr);
 void	ft_list_prepend_ref(t_list *list, void *ptr);
 void	*ft_list_pop_ref(t_list *list);
 bool	ft_list_next_ref(const t_list *list, t_list_next *next, void **ref);
+void	ft_list_copy_all_ref(const t_list *src, t_list *dst);
 void	ft_list_clear_all_ref(t_list *list);
 void	ft_list_del_all_ref(t_list *list);
 
@@ -62,6 +63,7 @@ void	ft_list_del_all_ref(t_list *list);
 
 typedef	void (*t_func_content_del)(void *content);
 typedef	void *(*t_func_content_copy)(const void *content);
+typedef	bool (*t_func_content_eq)(const void *content, void *vctx);
 
 void	ft_list_append_content(t_list *list, void *content);
 void	ft_list_prepend_content(t_list *list, void *content);
@@ -69,6 +71,7 @@ void	*ft_list_pop_content(t_list *list);
 void	*ft_list_first_content(t_list *list);
 void	*ft_list_last_content(t_list *list);
 void	*ft_list_content_at(t_list *list, size_t idx);
+bool	ft_list_has_content(const t_list *list, t_func_content_eq f_eq, void *vctx);
 bool	ft_list_next_content(const t_list *list, t_list_next *next, void **content);
 void	ft_list_copy_all_content(const t_list *src, t_list *dst, t_func_content_copy f_copy);
 void	ft_list_move_all_content(t_list *src, t_list *dst);
@@ -81,6 +84,7 @@ typedef struct s_htbl_v2 {
 	t_list 		*arr;
 	uint32_t	size;
 	size_t		colls;
+	size_t		active_count;
 	t_list		values;
 } t_htbl_v2;
 
@@ -98,6 +102,7 @@ bool		ft_htbl_v2_reset(t_htbl_v2 *htbl, const char *key, void *content, t_func_c
 bool		ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del_content);
 void		ft_htbl_v2_clear(t_htbl_v2 *htbl, t_func_content_del f_del_content);
 void		ft_htbl_v2_del(t_htbl_v2 *htbl, t_func_content_del f_del_content);
+t_htbl_v2	*ft_htbl_v2_clone(t_htbl_v2 *htbl, t_func_content_copy f_copy);
 bool		ft_htbl_v2_next(const t_htbl_v2 *htbl, t_htbl_v2_next *next, const char **key, void **content);
 void 		ft_htbl_v2_resize(t_htbl_v2 *htbl, uint32_t size);
 char		*ft_htbl_v2_dumps(t_htbl_v2 *htbl);
@@ -109,6 +114,7 @@ t_node_v2	*ft_ntree_v2_dfs_with_unwind(t_node_v2 *node, t_func_node_find f_find,
 void		ft_ntree_v2_dfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
 t_node_v2	*ft_ntree_v2_bfs(t_node_v2 *node, t_func_node_find f_find, const void *vctx);
 void		ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
+t_node_v2	*ft_ntree_v2_clone(const t_node_v2 *node, t_func_node_copy f_copy);
 void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
 char		*ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps);
 
