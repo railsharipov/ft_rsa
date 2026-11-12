@@ -1,3 +1,4 @@
+.ignore/
 dep/
 dep_test/
 obj/
