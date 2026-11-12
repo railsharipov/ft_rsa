@@ -23,11 +23,11 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 all: CFLAGS := -O3 -std=c23 -Wall -Wfatal-errors -I./include -I./libs
 all: $(NAME)
 
-debug: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -I./include -I./libs
+debug: CFLAGS := -O0 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -I./include -I./libs
 debug: $(NAME)
 
-sanitize: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -fsanitize=address -Wno-unused-function -fno-omit-frame-pointer -I./include -I./libs
-sanitize: LDFLAGS := -fsanitize=address
+sanitize: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -I./include -I./libs
+sanitize: LDFLAGS := -fsanitize=address,undefined
 sanitize: $(NAME)
 
 $(NAME): $(OBJS)
