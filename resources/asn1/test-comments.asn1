@@ -1,7 +1,0 @@
-KeyContainers
-    DEFINITIONS EXPLICIT TAGS ::=
-BEGIN
-
-X ::= INTEGER
-
-END
