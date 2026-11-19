@@ -448,8 +448,11 @@ typedef struct s_htbl_v2_entry {
 	bool		active;
 } t_htbl_v2_entry;
 
-static inline uint32_t	__ft_htbl_v2_calc_hash(const char *key)
+static inline uint32_t	__ft_htbl_v2_calc_hash(const t_htbl_v2 *htbl, const char *key)
 {
+	if (htbl->f_hash) {
+		return (htbl->f_hash((uint8_t *)key, ft_strlen(key)));
+	}
 	return (ft_hash((uint8_t *)key, ft_strlen(key)));
 }
 
@@ -471,13 +474,13 @@ static void __ft_htbl_v2_delete_entry_node(t_node_v2 *node, t_func_content_del f
 	LIBFT_FREE(entry);
 }
 
-static t_node_v2 *__ft_htbl_v2_create_entry_node(const char *key, void *vctx)
+static t_node_v2 *__ft_htbl_v2_create_entry_node(const t_htbl_v2 *htbl, const char *key, void *vctx)
 {
 	void *content = vctx;
 	t_htbl_v2_entry *entry = NULL;
 	LIBFT_ALLOC(entry, sizeof(t_htbl_v2_entry));
 	*entry = (t_htbl_v2_entry){0};
-	entry->hash = __ft_htbl_v2_calc_hash(key);
+	entry->hash = __ft_htbl_v2_calc_hash(htbl, key);
 	entry->key = ft_strdup(key);
 	entry->content = content;
 	entry->active = true;
@@ -527,7 +530,7 @@ bool ft_htbl_v2_set(t_htbl_v2 *htbl, const char *key, void *content)
 	assert(NULL != htbl && NULL != htbl->arr);
 	if (NULL == key) return (false);
 
-	uint32_t hash = __ft_htbl_v2_calc_hash(key);
+	uint32_t hash = __ft_htbl_v2_calc_hash(htbl, key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 
 	// We use the list because different keys may resolve to the same array index.
@@ -543,7 +546,7 @@ bool ft_htbl_v2_set(t_htbl_v2 *htbl, const char *key, void *content)
 		node = node->next;
 	}
 	if (list->size > 0) htbl->colls += 1;
-	node = __ft_htbl_v2_create_entry_node(key, content);
+	node = __ft_htbl_v2_create_entry_node(htbl, key, content);
 	ft_list_append(&htbl->values, node);
 	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
 	ft_list_append_ref(list, entry);
@@ -556,7 +559,7 @@ bool ft_htbl_v2_reset(t_htbl_v2 *htbl, const char *key, void *content, t_func_co
 	assert(NULL != htbl && NULL != htbl->arr);
 	if (NULL == key) return (false);
 
-	uint32_t hash = __ft_htbl_v2_calc_hash(key);
+	uint32_t hash = __ft_htbl_v2_calc_hash(htbl, key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 
 	// We use the list because different keys may resolve to the same array index.
@@ -575,7 +578,7 @@ bool ft_htbl_v2_reset(t_htbl_v2 *htbl, const char *key, void *content, t_func_co
 	}
 	// The key has not been set yet: set new value.
 	if (list->size > 0) htbl->colls += 1;
-	node = __ft_htbl_v2_create_entry_node(key, content);
+	node = __ft_htbl_v2_create_entry_node(htbl, key, content);
 	ft_list_append(&htbl->values, node);
 	t_htbl_v2_entry *entry = container_of(node, t_htbl_v2_entry, base);
 	ft_list_append_ref(list, entry);
@@ -587,7 +590,7 @@ bool ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del
 	assert(NULL != htbl && NULL != htbl->arr);
 	if (NULL == key) return (false);
 
-	uint32_t hash = __ft_htbl_v2_calc_hash(key);
+	uint32_t hash = __ft_htbl_v2_calc_hash(htbl, key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
@@ -610,7 +613,7 @@ bool ft_htbl_v2_has(const t_htbl_v2 *htbl, const char *key)
 	assert(NULL != htbl && NULL != htbl->arr);
 	if (NULL == key) return (false);
 
-	uint32_t hash = __ft_htbl_v2_calc_hash(key);
+	uint32_t hash = __ft_htbl_v2_calc_hash(htbl, key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
@@ -628,7 +631,7 @@ void *ft_htbl_v2_get(const t_htbl_v2 *htbl, const char *key)
 	assert(NULL != htbl && NULL != htbl->arr);
 	if (NULL == key) return (NULL);
 
-	uint32_t hash = __ft_htbl_v2_calc_hash(key);
+	uint32_t hash = __ft_htbl_v2_calc_hash(htbl, key);
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
@@ -951,4 +954,41 @@ char *ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps)
 	char *dumps = __ft_ntree_v2_dumps(&ctx, node, f_dumps);
 	LIBFT_LOG(TRACE, "ntree dumps stats: visited_nodes=%d, max_depth=%d", ctx.visited_node_count, ctx.max_depth);
 	return (dumps);
+}
+
+static void __ft_ntree_v2_dump(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t_func_node_dumps f_dumps)
+{
+	assert(NULL != f_dumps);
+	if (NULL == node) ft_strdup("null\n");
+
+	char *dumps = f_dumps(node);
+	if (NULL != dumps) {
+		for (int i = 0; i < ctx->depth; i++) ft_printf(" ", dumps);
+		ft_printf("node=%s\n", dumps);
+		LIBFT_FREE(dumps);
+	} else {
+		for (int i = 0; i < ctx->depth; i++) ft_printf(" ", dumps);
+		ft_printf("node=%p\n", node);
+	}
+
+	t_node_v2 *nodes = node->nodes;
+	if (NULL != nodes) {
+		int depth = ctx->depth;
+		ctx->depth++;
+		__ft_ntree_v2_dump(ctx, nodes, f_dumps);
+		ctx->depth = depth;
+	}
+
+	t_node_v2 *next = node->next;
+	if (NULL != next) {
+		__ft_ntree_v2_dump(ctx, next, f_dumps);
+	}
+}
+
+void ft_ntree_v2_dump(const t_node_v2 *node, t_func_node_dumps f_dumps)
+{
+	t_ntree_dump_ctx ctx = {0};
+	if (NULL == f_dumps) f_dumps = __ft_ntree_default_node_dumps;
+	__ft_ntree_v2_dump(&ctx, node, f_dumps);
+	LIBFT_LOG(TRACE, "ntree dumps stats: visited_nodes=%d, max_depth=%d", ctx.visited_node_count, ctx.max_depth);
 }

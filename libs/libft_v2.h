@@ -80,9 +80,12 @@ void	ft_list_del_all_content(t_list *list, t_func_content_del f_del);
 
 /****************************************************************************/
 
+typedef uint32_t (*t_func_hash)(uint8_t *buf, size_t size);
+
 typedef struct s_htbl_v2 {
 	t_list 		*arr;
 	uint32_t	size;
+	t_func_hash f_hash;
 	size_t		colls;
 	size_t		active_count;
 	t_list		values;
@@ -117,6 +120,7 @@ void		ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
 t_node_v2	*ft_ntree_v2_clone(const t_node_v2 *node, t_func_node_copy f_copy);
 void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
 char		*ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps);
+void		ft_ntree_v2_dump(const t_node_v2 *node, t_func_node_dumps f_dumps);
 
 /****************************************************************************/
 
