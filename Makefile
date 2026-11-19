@@ -26,6 +26,9 @@ all: $(NAME)
 debug: CFLAGS := -O0 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -Wshadow -I./include -I./libs
 debug: $(NAME)
 
+profile: CFLAGS := -O2 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -Wshadow -I./include -I./libs
+profile: $(NAME)
+
 sanitize: CFLAGS := -O0 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -Wshadow -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-sanitize-merge -fno-omit-frame-pointer -I./include -I./libs
 sanitize: LDFLAGS := -fsanitize=address,undefined
 sanitize: $(NAME)
