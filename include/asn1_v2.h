@@ -395,6 +395,7 @@ typedef struct s_asn_v2_ast {
 
 int	asn1_v2_parse(const char *s, size_t slen, t_asn_v2_ast **ast);
 char *asn1_v2_ast_dumps(const t_asn_v2_ast *ast);
+void asn1_v2_ast_dump(const t_asn_v2_ast *ast);
 
 /****************************************************************************/
 
