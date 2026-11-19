@@ -539,9 +539,9 @@ bool ft_htbl_v2_set(t_htbl_v2 *htbl, const char *key, void *content)
 	while (NULL != node) {
 		t_ref_node *ref = container_of(node, t_ref_node, base);
 		t_htbl_v2_entry *entry = ref->ptr;
-		if (__ft_htbl_v2_match_entry(entry, key)) {
-			// Check if key has already been set.
-			if (entry->active) return false;
+		// Check if key has already been set.
+		if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
+			return false;
 		}
 		node = node->next;
 	}
@@ -594,18 +594,30 @@ bool ft_htbl_v2_unset(t_htbl_v2 *htbl, const char *key, t_func_content_del f_del
 	uint32_t idx = __ft_htbl_v2_calc_array_idx(htbl, hash);
 	t_list *list = htbl->arr + idx;
 	t_node_v2 *node = list->first;
-	while (NULL != node) {
+	if (list->size == 1) {
 		t_ref_node *ref = container_of(node, t_ref_node, base);
 		t_htbl_v2_entry *entry = ref->ptr;
-		t_node_v2 *next_node = node->next;
-		if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
+		if (entry->active) {
 			__ft_htbl_v2_deactivate_entry(entry, f_del_content);
-			__ft_ref_delete_node(ft_list_remove(list, node));
+			__ft_ref_delete_node(ft_list_pop(list));
 			if (htbl->active_count > 0) htbl->active_count--;
 		}
-		node = next_node;
+		return (true);
 	}
-	return (true);
+	else {
+		while (NULL != node) {
+			t_ref_node *ref = container_of(node, t_ref_node, base);
+			t_htbl_v2_entry *entry = ref->ptr;
+			t_node_v2 *next_node = node->next;
+			if (entry->active && __ft_htbl_v2_match_entry(entry, key)) {
+				__ft_htbl_v2_deactivate_entry(entry, f_del_content);
+				__ft_ref_delete_node(ft_list_remove(list, node));
+				if (htbl->active_count > 0) htbl->active_count--;
+			}
+			node = next_node;
+		}
+		return (true);
+	}
 }
 
 bool ft_htbl_v2_has(const t_htbl_v2 *htbl, const char *key)
