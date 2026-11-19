@@ -198,7 +198,8 @@ int	rsa_check(t_node *asn1_key)
 	ret |= __check_crt_comps();
 
 	if (SSL_OK != ret) {
-		ret = SSL_LOG(ERROR, "invalid rsa key");
+		SSL_LOG(ERROR, "invalid rsa key");
+		ret = SSL_ERR;
 	}
 
 	SSL_FREE(__items);

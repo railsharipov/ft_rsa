@@ -27,7 +27,8 @@ int	rsa_key_items(t_node *asn1_key, t_rsa **rsa_key)
 	} else if (!ft_strcmp(asn1_key->key, "sequence:PUBLIC_KEY")) {
 		ret = __public_key_items(asn1_items, rsa_key);
 	} else {
-		ret = SSL_LOG(ERROR, "invalid asn key: %s", asn1_key->key);
+		SSL_LOG(ERROR, "invalid asn key: %s", asn1_key->key);
+		ret = SSL_ERR;
 	}
 	asn1_tree_items_del(asn1_items);
 

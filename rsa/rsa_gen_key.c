@@ -90,13 +90,16 @@ int	rsa_gen_key(t_node **asn1_pkey, int modsize, const char *frand)
 		return (SSL_ERR);
 	}
 	if (NULL == (pkey_tree = asn1_tree(MAP_RSA_PRIVATE_KEY))) {
-		res = SSL_LOG(ERROR, "failed to construct asn tree");
+		SSL_LOG(ERROR, "failed to construct asn tree");
+		res = SSL_ERR;
 	}
 	else if (SSL_OK != rsa_key_items(pkey_tree, &__items)) {
-		res = SSL_LOG(ERROR, "failed to get asn key items");
+		SSL_LOG(ERROR, "failed to get asn key items");
+		res = SSL_ERR;
 	}
 	else if (SSL_OK != rand_fseed(&seed, frand)) {
-		res = SSL_LOG(ERROR, "failed to create random seed");
+		SSL_LOG(ERROR, "failed to create random seed");
+		res = SSL_ERR;
 	}
 	if (SSL_OK != res) {
 		SSL_FREE(pkey_tree);

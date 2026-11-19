@@ -410,7 +410,8 @@ int	asn1_item_set_type(t_iasn *item, char *type)
 	uint8_t	tagnum;
 
 	if (NULL == type || NULL == item) {
-		return (SSL_LOG(ERROR, INVALID_INPUT_ERROR));
+		SSL_LOG(ERROR, INVALID_INPUT_ERROR);
+		return (SSL_ERR);
 	}
 
 	if (ft_streq(type, ASN_TYPE_NAME_SEQUENCE)) {
