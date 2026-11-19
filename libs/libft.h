@@ -590,13 +590,21 @@ void    ft_free_all(void);
 		} \
 	} while (0)
 
-#define LIBFT_ALLOC(PTR, SZ) \
+#define LIBFT_ALLOCZ(PTR, SZ) \
 	do { \
 		PTR = malloc(SZ); \
 		if (ENOMEM == errno) { \
 			PTR = NULL; \
 		} else { \
 			ft_bzero(PTR, SZ); \
+		} \
+	} while (0)
+
+#define LIBFT_ALLOC(PTR, SZ) \
+	do { \
+		PTR = malloc(SZ); \
+		if (ENOMEM == errno) { \
+			PTR = NULL; \
 		} \
 	} while (0)
 
