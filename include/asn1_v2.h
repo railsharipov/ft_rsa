@@ -367,6 +367,7 @@ typedef enum e_asn_v2_token_kind {
 	ASN_V2_TOKEN_KIND_NAME,
 	ASN_V2_TOKEN_KIND_INT_UNI_LBL,
 	ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL,
+	ASN_V2_TOKEN_KIND_EOF,
 } t_asn_v2_token_kind;
 
 typedef struct s_asn_v2_token {
@@ -375,6 +376,7 @@ typedef struct s_asn_v2_token {
 	size_t slen;
 	size_t start;
 	size_t end;
+	size_t idx;
 	bool done;
 } t_asn_v2_token;
 
