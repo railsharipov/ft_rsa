@@ -592,11 +592,9 @@ void    ft_free_all(void);
 
 #define LIBFT_ALLOCZ(PTR, SZ) \
 	do { \
-		PTR = malloc(SZ); \
+		PTR = calloc(SZ, 1); \
 		if (ENOMEM == errno) { \
 			PTR = NULL; \
-		} else { \
-			ft_bzero(PTR, SZ); \
 		} \
 	} while (0)
 
