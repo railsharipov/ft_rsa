@@ -509,16 +509,16 @@ static int	__decode_oid(uint8_t tag, t_ostring *decoded, t_ostring *encoded)
 	//	First two ids are concatenated into one single id using following formula:
 	//	CONCAT_ID = 40 * ID_0 + ID_1
 	char *sub_id_strings[encoded->size + 1];
-	ft_sprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
-	ft_sprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
+	ft_asprintf(&sub_id_strings[0], "%lu.", sub_ids[0] / 40);
+	ft_asprintf(&sub_id_strings[1], "%lu.", sub_ids[0] % 40);
 
 	// Get the rest of ids, except the last one
 	for (int i = 1; i < num_sub_ids-1; i++) {
-		ft_sprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
+		ft_asprintf(&sub_id_strings[i+1], "%lu.", sub_ids[i]);
 	}
 
 	// Get the last id
- 	ft_sprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
+ 	ft_asprintf(&sub_id_strings[num_sub_ids], "%lu", sub_ids[num_sub_ids-1]);
 
 	// Join all sub-id strings into an object id string
 	char *obj_id = ft_2darray_strjoin(sub_id_strings, num_sub_ids + 1, "");

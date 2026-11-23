@@ -28,7 +28,7 @@ int		bnum_prime_test(const t_num *num, int bits, int prob, int verbous)
 		}
 	}
  	if (verbous) {
-		ft_fprintf(2, ".");
+		ft_dprintf(2, ".");
  	}
 
 	bnum_set_dig_u(&rnd, 2);
@@ -50,10 +50,10 @@ int		bnum_prime_test(const t_num *num, int bits, int prob, int verbous)
 			return (BNUM_FALSE);
 		}
 		else if (verbous)
-			ft_fprintf(2, "+");
+			ft_dprintf(2, "+");
 	}
 	if (verbous) {
-		ft_fprintf(2, "\n");
+		ft_dprintf(2, "\n");
 	}
 
     return (BNUM_TRUE);

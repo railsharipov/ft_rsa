@@ -776,7 +776,7 @@ char *ft_htbl_v2_dumps(t_htbl_v2 *htbl)
 	char *arr_dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
 	char *dumps = NULL;
-	ft_sprintf(&dumps, "{\"size\":%d,\"arr\":%s}", htbl->size, arr_dumps);
+	ft_asprintf(&dumps, "{\"size\":%d,\"arr\":%s}", htbl->size, arr_dumps);
 	LIBFT_FREE(arr_dumps);
 
 	return (dumps);
@@ -910,31 +910,22 @@ typedef struct s_ntree_dump_ctx {
 	int visited_node_count;
 } t_ntree_dump_ctx;
 
-static char *__ft_ntree_default_node_dumps(const t_node_v2 *node)
+static char *__ft_ntree_node_dumps_example(const t_node_v2 *node, int depth)
 {
 	if (NULL == node) return (ft_strdup("null"));
 	char *s = NULL;
-	ft_sprintf(&s, "p=%p", node);
+	ft_asprintf(&s, "%*snode=%p\n", depth, "", node);
 	return (s);
 }
 
 static char *__ft_ntree_v2_dumps(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t_func_node_dumps f_dumps)
 {
-	assert(NULL != f_dumps);
 	if (NULL == node) ft_strdup("null\n");
 
 	t_ostring ostring = {0};
 	ft_ostr_init_with_capacity(&ostring, 1024);
 
-	char *dumps = f_dumps(node);
-	if (NULL != dumps) {
-		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, "  ", dumps);
-		ft_ostr_appendf(&ostring, "node=%s\n", dumps);
-		LIBFT_FREE(dumps);
-	} else {
-		for (int i = 0; i < ctx->depth; i++) ft_ostr_appendf(&ostring, "  ", dumps);
-		ft_ostr_appendf(&ostring, "node=%p\n", node);
-	}
+	char *dumps = f_dumps(node, ctx->depth);
 
 	t_node_v2 *nodes = node->nodes;
 	if (NULL != nodes) {
@@ -961,46 +952,37 @@ static char *__ft_ntree_v2_dumps(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t
 
 char *ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps)
 {
+	assert(NULL != f_dumps);
 	t_ntree_dump_ctx ctx = {0};
-	if (NULL == f_dumps) f_dumps = __ft_ntree_default_node_dumps;
 	char *dumps = __ft_ntree_v2_dumps(&ctx, node, f_dumps);
 	LIBFT_LOG(TRACE, "ntree dumps stats: visited_nodes=%d, max_depth=%d", ctx.visited_node_count, ctx.max_depth);
 	return (dumps);
 }
 
-static void __ft_ntree_v2_dump(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t_func_node_dumps f_dumps)
+static void __ft_ntree_v2_dump(t_ntree_dump_ctx *ctx, const t_node_v2 *node, t_func_node_dump f_dump)
 {
-	assert(NULL != f_dumps);
-	if (NULL == node) ft_strdup("null\n");
+	if (NULL == node) return;
 
-	char *dumps = f_dumps(node);
-	if (NULL != dumps) {
-		for (int i = 0; i < ctx->depth; i++) ft_printf(" ", dumps);
-		ft_printf("node=%s\n", dumps);
-		LIBFT_FREE(dumps);
-	} else {
-		for (int i = 0; i < ctx->depth; i++) ft_printf(" ", dumps);
-		ft_printf("node=%p\n", node);
-	}
+	f_dump(node, ctx->depth);
 
 	t_node_v2 *nodes = node->nodes;
 	if (NULL != nodes) {
 		int depth = ctx->depth;
 		ctx->depth++;
-		__ft_ntree_v2_dump(ctx, nodes, f_dumps);
+		__ft_ntree_v2_dump(ctx, nodes, f_dump);
 		ctx->depth = depth;
 	}
 
 	t_node_v2 *next = node->next;
 	if (NULL != next) {
-		__ft_ntree_v2_dump(ctx, next, f_dumps);
+		__ft_ntree_v2_dump(ctx, next, f_dump);
 	}
 }
 
-void ft_ntree_v2_dump(const t_node_v2 *node, t_func_node_dumps f_dumps)
+void ft_ntree_v2_dump(const t_node_v2 *node, t_func_node_dump f_dump)
 {
+	assert(NULL != f_dump);
 	t_ntree_dump_ctx ctx = {0};
-	if (NULL == f_dumps) f_dumps = __ft_ntree_default_node_dumps;
-	__ft_ntree_v2_dump(&ctx, node, f_dumps);
+	__ft_ntree_v2_dump(&ctx, node, f_dump);
 	LIBFT_LOG(TRACE, "ntree dumps stats: visited_nodes=%d, max_depth=%d", ctx.visited_node_count, ctx.max_depth);
 }

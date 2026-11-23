@@ -359,7 +359,7 @@ static int __test_asn1_tree_create_privateKeyInfo(void)
 	const char *params[] = { "version", "modulus", "publicExponent", "privateExponent", "prime1", "prime2", "exponent1", "exponent2", "coefficient" };
 	for (int i = 0; i < 9; i++) {
 		char *query;
-		ft_sprintf(&query, "[%d]", i);
+		ft_asprintf(&query, "[%d]", i);
 		result_asn1_node = NULL;
 		ret = asn1_query(query, asn1_node, &result_asn1_node);
 		TEST_ASSERT(ret == SSL_OK);
@@ -478,7 +478,7 @@ static int __test_asn1_tree_query_privateKeyInfo(void)
 	const char *params[] = { "version", "modulus", "publicExponent", "privateExponent", "prime1", "prime2", "exponent1", "exponent2", "coefficient" };
 	for (int i = 0; i < 9; i++) {
 		char *query;
-		ft_sprintf(&query, "[%d]", i);
+		ft_asprintf(&query, "[%d]", i);
 		result_asn1_node = NULL;
 		ret = asn1_query(query, asn1_node, &result_asn1_node);
 		TEST_ASSERT(ret == SSL_OK);

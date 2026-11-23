@@ -19,7 +19,8 @@ typedef void (*t_func_node_del)(t_node_v2 *node);
 typedef void (*t_func_node_map)(t_node_v2 *node, void *vctx);
 typedef bool (*t_func_node_op)(t_node_v2 *node, void *vctx);
 typedef bool (*t_func_node_find)(t_node_v2 *node, const void *vctx);
-typedef char *(*t_func_node_dumps)(const t_node_v2 *node);
+typedef char *(*t_func_node_dumps)(const t_node_v2 *node, int depth);
+typedef void (*t_func_node_dump)(const t_node_v2 *node, int depth);
 typedef t_node_v2 *(*t_func_node_copy)(const t_node_v2 *node);
 
 /****************************************************************************/
@@ -120,7 +121,7 @@ void		ft_ntree_v2_bfs_map(t_node_v2 *node, t_func_node_map f_map, void *vctx);
 t_node_v2	*ft_ntree_v2_clone(const t_node_v2 *node, t_func_node_copy f_copy);
 void		ft_ntree_v2_del(t_node_v2 *node, t_func_node_del f_del);
 char		*ft_ntree_v2_dumps(const t_node_v2 *node, t_func_node_dumps f_dumps);
-void		ft_ntree_v2_dump(const t_node_v2 *node, t_func_node_dumps f_dumps);
+void		ft_ntree_v2_dump(const t_node_v2 *node, t_func_node_dump f_dump);
 
 /****************************************************************************/
 
@@ -130,5 +131,7 @@ bool	utf8_escape(const uint8_t *bytes, size_t size, uint8_t **escaped, size_t *e
 				const uint8_t *escape_prefix, size_t prefix_size, const uint8_t *escape_charset, size_t charset_size);
 bool	utf8_escape_nt(const uint8_t *bytes, size_t size, char **escaped, const char *escape_prefix,
 				const uint8_t *escape_charset, size_t charset_size);
+
+/****************************************************************************/
 
 #endif //LIBFT_V2_H

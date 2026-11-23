@@ -169,7 +169,7 @@ static int __dumps_bytes(t_node *node, t_ostring *ostring)
 {
 	char	*s;
 
-	ft_sprintf(&s, "type:<%s>,content:<ptr=%p,size=%zu>", json_get_type_name(node->type), (char *)node->content, node->size);
+	ft_asprintf(&s, "type:<%s>,content:<ptr=%p,size=%zu>", json_get_type_name(node->type), (char *)node->content, node->size);
 	ft_ostr_append(ostring, s, ft_strlen(s));
 	SSL_FREE(s);
 

@@ -72,9 +72,9 @@
 
 # define FLAG(FLAG, FLAGS)	((int)(((FLAGS)&(FLAG))==(FLAG)))
 
-#define NOT_IMPLEMENTED(MES)	do { ft_fprintf(2, TXT_B_RED("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
-#define UNREACHABLE(MES)		do { ft_fprintf(2, TXT_B_RED("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
-#define TODO(MES)				do { ft_fprintf(2, TXT_B_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define NOT_IMPLEMENTED(MES)	do { ft_dprintf(2, TXT_B_RED("NOT_IMPLEMENTED: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define UNREACHABLE(MES)		do { ft_dprintf(2, TXT_B_RED("UNREACHABLE: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
+#define TODO(MES)				do { ft_dprintf(2, TXT_B_YELL("TODO: ") "%s " TXT_YELL("(%s:%d)") "\n", MES, __FILE__, __LINE__); abort(); } while (0)
 
 typedef enum e_libft_status {
 	LIBFT_OK = 0,
@@ -352,15 +352,16 @@ t_node		*ft_stack_pop_list(t_stack *stack);
 
 /****************************************************************************/
 
-#define LIBFT_BUFF     256
-
-int		ft_printf(const char *format, ...);
-int		ft_fprintf(int fd, const char *format, ...);
-int		ft_sprintf(char **buf, const char *format, ...);
-int		ft_snprintf(char *buf, size_t size, const char *format, ...);
-int		ft_vprintf(const char *format, va_list arg);
-int		ft_vfprintf(int fd, const char *format, va_list arg);
-int		ft_vsprintf(char **buf, const char *format, va_list arg);
+int ft_printf(const char *fmt, ...);
+int ft_vprintf(const char *fmt, va_list ap);
+int ft_dprintf(int fd, const char *fmt, ...);
+int ft_vdprintf(int fd, const char *fmt, va_list ap);
+int ft_sprintf(char *buf, const char *fmt, ...);
+int ft_vsprintf(char *buf, const char *fmt, va_list ap);
+int ft_snprintf(char *buf, size_t size, const char *fmt, ...);
+int ft_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap);
+int ft_asprintf(char **s, const char *fmt, ...);
+int ft_vasprintf(char **s, const char *fmt, va_list ap);
 
 /****************************************************************************/
 

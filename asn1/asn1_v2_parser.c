@@ -748,9 +748,9 @@ static void __asn1_v2_call_stack_dump(void)
 	for (size_t i = __call_history_idx; i > 0; i--) {
 		t_call_h_entry *e = __call_history + (i-1);
 		char cbuf[256];
-		ft_fprintf(2, "\t%-40s --- %s\n", e->name, __asn1_v2_token_dumpb(e->token, cbuf, sizeof(cbuf)));
+		ft_dprintf(2, "\t%-40s --- %s\n", e->name, __asn1_v2_token_dumpb(e->token, cbuf, sizeof(cbuf)));
 	}
-	ft_fprintf(2, "\n");
+	ft_dprintf(2, "\n");
 }
 
 /*****************************************************************************/
@@ -7082,7 +7082,9 @@ int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_ast **ast)
 
 	bool ok = __asn1_v2_parse_root(&ctx, &token, ast);
 
-	// TODO: cleanup.
+	SSL_FREE(__tokens);
+	SSL_FREE(__token_history);
+	SSL_FREE(__choice_history);
 
 	if (!ok) return (SSL_ERR);
 
@@ -7097,19 +7099,33 @@ int asn1_v2_parse(const char *s, size_t slen, t_asn_v2_ast **ast)
 /*****************************************************************************/
 /*****************************************************************************/
 
-static char *__asn1_v2_ast_node_dumps(const t_node_v2 *node)
+static char *__asn1_v2_ast_node_dumps(const t_node_v2 *node, int depth)
 {
 	if (NULL == node) return (ft_strdup("null"));
 	t_asn_v2_ast *ast = container_of(node, t_asn_v2_ast, base);
 	char *dumps = NULL;
 	if (NULL != ast->token) {
 		char *toks = __asn1_v2_token_dumps(*ast->token);
-		ft_sprintf(&dumps, "kind=%s,parser=%s,token=%s", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser, toks);
+		ft_asprintf(&dumps, "%*skind=%s,parser=%s,token=%s", depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser, toks);
 	}
 	else {
-		ft_sprintf(&dumps, "kind=%s,parser=%s", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser);
+		ft_asprintf(&dumps, "%*skind=%s,parser=%s", depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser);
 	}
 	return (dumps);
+}
+
+static void __asn1_v2_ast_node_dump(const t_node_v2 *node, int depth)
+{
+	if (NULL == node) return;
+	t_asn_v2_ast *ast = container_of(node, t_asn_v2_ast, base);
+	t_asn_v2_token *t = ast->token;
+	if (NULL != t && t->end >= t->start) {
+		ft_printf("%*skind=%s,parser=%s,token=%.*s\n",
+			depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser, (int)(t->end-t->start), t->s+t->start);
+	}
+	else {
+		ft_printf("%*skind=%s,parser=%s\n", depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser);
+	}
 }
 
 char *asn1_v2_ast_dumps(const t_asn_v2_ast *ast)
@@ -7119,5 +7135,5 @@ char *asn1_v2_ast_dumps(const t_asn_v2_ast *ast)
 
 void asn1_v2_ast_dump(const t_asn_v2_ast *ast)
 {
-	ft_ntree_v2_dump(&ast->base, __asn1_v2_ast_node_dumps);
+	ft_ntree_v2_dump(&ast->base, __asn1_v2_ast_node_dump);
 }

@@ -355,7 +355,7 @@ char *der_v2_tag_dumps(const t_der_v2_tag *der_tag)
 	if (NULL == der_tag) return ft_strdup("null");
 
 	char *dumps = NULL;
-	ft_sprintf(&dumps, "{\"class\":\"%s\",\"number\":%d,\"constructed\":%s}",
+	ft_asprintf(&dumps, "{\"class\":\"%s\",\"number\":%d,\"constructed\":%s}",
 		asn1_v2_get_tag_class_name(der_tag->class),
 		der_tag->number,
 		der_tag->constructed ? "true" : "false"

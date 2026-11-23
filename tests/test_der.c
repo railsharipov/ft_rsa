@@ -144,7 +144,7 @@ static int	__test_der_decode_pkcs1_rsaPrivateKey(void)
 
     for (size_t i = 0; i < 9; i++) {
         char *query;
-        ft_sprintf(&query, "[%zu]", i);
+        ft_asprintf(&query, "[%zu]", i);
         ret = asn1_query(query, tree, &asn1_node);
         TEST_ASSERT(SSL_OK == ret);
         asn1_item = asn1_node->content;
@@ -307,7 +307,7 @@ static int	__test_der_decode_pkcs8_privateKeyInfo(void)
 	for (size_t i = 0; i < size; i++) {
 		char *query;
 
-		ft_sprintf(&query, "[%zu]", i);
+		ft_asprintf(&query, "[%zu]", i);
 
 		ret = asn1_query(query, tree, &asn1_node);
 		TEST_ASSERT(SSL_OK == ret);

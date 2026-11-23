@@ -896,91 +896,91 @@ static int __test_ft_printf(void)
 	int	test_num;
 	int	ref_num;
 
-	test_num = ft_sprintf(&test_str, "%s", "apple\n");
+	test_num = ft_asprintf(&test_str, "%s", "apple\n");
 	ref_num = asprintf(&ref_str, "%s", "apple\n");
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%.2s", "apple\n");
+	test_num = ft_asprintf(&test_str, "%.2s", "apple\n");
 	ref_num = asprintf(&ref_str, "%.2s", "apple\n");
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%9s", "apple\n");
+	test_num = ft_asprintf(&test_str, "%9s", "apple\n");
 	ref_num = asprintf(&ref_str, "%9s", "apple\n");
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%d", 1244);
+	test_num = ft_asprintf(&test_str, "%d", 1244);
 	ref_num = asprintf(&ref_str, "%d", 1244);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%ld", LONG_MAX);
+	test_num = ft_asprintf(&test_str, "%ld", LONG_MAX);
 	ref_num = asprintf(&ref_str, "%ld", LONG_MAX);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%lld", LLONG_MAX);
+	test_num = ft_asprintf(&test_str, "%lld", LLONG_MAX);
 	ref_num = asprintf(&ref_str, "%lld", LLONG_MAX);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%u", 1244u);
+	test_num = ft_asprintf(&test_str, "%u", 1244u);
 	ref_num = asprintf(&ref_str, "%u", 1244u);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%lu", ULONG_MAX);
+	test_num = ft_asprintf(&test_str, "%lu", ULONG_MAX);
 	ref_num = asprintf(&ref_str, "%lu", ULONG_MAX);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%llu", ULLONG_MAX);
+	test_num = ft_asprintf(&test_str, "%llu", ULLONG_MAX);
 	ref_num = asprintf(&ref_str, "%llu", ULLONG_MAX);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%zu", SIZE_T_MAX);
+	test_num = ft_asprintf(&test_str, "%zu", SIZE_T_MAX);
 	ref_num = asprintf(&ref_str, "%zu", SIZE_T_MAX);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%x", 0x1244);
+	test_num = ft_asprintf(&test_str, "%x", 0x1244);
 	ref_num = asprintf(&ref_str, "%x", 0x1244);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%p", ptr);
+	test_num = ft_asprintf(&test_str, "%p", ptr);
 	ref_num = asprintf(&ref_str, "%p", ptr);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);
 	free(test_str);
 	free(ref_str);
 
-	test_num = ft_sprintf(&test_str, "%o", 01244);
+	test_num = ft_asprintf(&test_str, "%o", 01244);
 	ref_num = asprintf(&ref_str, "%o", 01244);
 	TEST_ASSERT(strcmp(test_str, ref_str) == 0);
 	TEST_ASSERT(test_num == ref_num);

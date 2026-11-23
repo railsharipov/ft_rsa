@@ -163,7 +163,7 @@ ssize_t textutil_findf(const char *octets, size_t olen, const char *format, ...)
 	int		idx;
 
 	va_start(ap, format);
-	patlen = ft_vsprintf(&pattern, format, ap);
+	patlen = ft_vasprintf(&pattern, format, ap);
 	va_end(ap);
 
 	idx = textutil_find(octets, olen, pattern, patlen);
@@ -228,7 +228,7 @@ ssize_t textutil_seekf(const char *in, size_t inlen, const char *format, ...)
 		return (0);
 	}
 	va_start(ap, format);
-	patlen = ft_vsprintf(&pat, format, ap);
+	patlen = ft_vasprintf(&pat, format, ap);
 	va_end(ap);
 
 	match = 0;
@@ -252,7 +252,7 @@ ssize_t textutil_bseekf(const char *in, size_t inlen, const char *format, ...)
 		return (0);
 	}
 	va_start(ap, format);
-	patlen = ft_vsprintf(&pat, format, ap);
+	patlen = ft_vasprintf(&pat, format, ap);
 	va_end(ap);
 
 	match = 0;
