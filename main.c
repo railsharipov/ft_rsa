@@ -7,9 +7,12 @@
 #include <cmd.h>
 #include <args.h>
 #include <libft.h>
+#include <libft_v2.h>
+
+static t_io_v2_stream *__log_writer;
 
 static int __app_log_writer(const char *mes) {
-	return (ft_dprintf(2, "%s\n", mes));
+	return (ft_fprintf(__log_writer, "%s\n", mes));
 }
 
 int	main(int ac, const char **av)
@@ -17,6 +20,10 @@ int	main(int ac, const char **av)
 	t_arg_cmd	*cmd_arg, *sub_cmd_arg;
 	t_cmd		cmd;
 	t_func_cmd	f_cmd;
+
+	if (!io_v2_buffered_writer(&__log_writer, io_v2_stderr_writer, 64*1024)) {
+		__log_writer = io_v2_stderr_writer;
+	}
 
 	t_logger *__app_logger = logger_get_logger();
 	*__app_logger = (t_logger){
@@ -232,8 +239,9 @@ int	main(int ac, const char **av)
 
 	// call command function
 	f_cmd = (t_func_cmd)cmd.func;
-	if (f_cmd != NULL && SSL_OK != f_cmd(&cmd)) {
-		return (1);
-	}
-	return (0);
+	int ret = SSL_ERR;
+	if (f_cmd != NULL) ret = f_cmd(&cmd);
+	io_v2_flush(__log_writer);
+
+	return (ret == SSL_OK) ? 0 : 1;
 }
