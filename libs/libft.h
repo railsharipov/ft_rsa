@@ -292,6 +292,9 @@ int	ft_log_va_log(const char *func_name, const char *file_name, int line_number,
 
 t_logger	*libft_get_logger(void);
 
+void	libft_set_log_level(enum e_logger_level level);
+t_logger_level	libft_get_log_level(void);
+
 /****************************************************************************/
 
 typedef int 	(*t_func_ntree_map)(t_node *node, const void *farg);

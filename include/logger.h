@@ -16,6 +16,6 @@ void	logger_set_log_level_debug(void);
 void	logger_set_log_level_trace(void);
 
 #define SSL_LOG(LEVEL, FMT, ...) {if (LIBFT_LOG_LEVEL_##LEVEL <= logger_get_log_level())\
-	ft_log_log(__func__, __FILE__, __LINE__, logger_get_logger(), LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__);}\
+	ft_log_log(__func__, __FILE__, __LINE__, logger_get_logger(), LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__);}
 
 #endif

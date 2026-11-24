@@ -15,15 +15,15 @@ bool io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_st
 	t_io_v2_pipe_ctx *ctx;
 
     if (NULL == pipe || NULL == upstream || NULL == downstream) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (!FLAG(IO_V2_FLAG_READ, upstream->flags)) {
-        LIBFT_LOG(ERROR, "upstream stream is not readable");
+        IO_LOG(ERROR, "upstream stream is not readable");
         return false;
     }
     if (!FLAG(IO_V2_FLAG_WRITE, downstream->flags)) {
-        LIBFT_LOG(ERROR, "downstream stream is not writable");
+        IO_LOG(ERROR, "downstream stream is not writable");
         return false;
     }
     LIBFT_ALLOC((*pipe), sizeof(t_io_v2_pipe));
@@ -41,10 +41,10 @@ bool io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_st
 bool io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream)
 {
 	if (NULL == pipe || NULL == upstream || NULL == downstream) {
-		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+		IO_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
-    LIBFT_LOG(ERROR, "not implemented error");
+    IO_LOG(ERROR, "not implemented error");
 
     return false;
 }
@@ -70,23 +70,23 @@ bool io_v2_pipe_pump(t_io_v2_pipe *pipe)
 	t_io_v2_pipe_ctx *ctx;
     t_buffer *buffer;
 
-    LIBFT_LOG(TRACE, "pumping though pipe %p", pipe);
+    IO_LOG(TRACE, "pumping though pipe %p", pipe);
 
     if (NULL == pipe) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     switch (pipe->status) {
         case IO_V2_STATUS_PIPE_OK:
             break;
         case IO_V2_STATUS_PIPE_ERROR:
-			LIBFT_LOG(ERROR, "pipe is in error state");
+			IO_LOG(ERROR, "pipe is in error state");
 			return false;
         case IO_V2_STATUS_PIPE_END:
-			LIBFT_LOG(ERROR, "pipe is in end state");
+			IO_LOG(ERROR, "pipe is in end state");
 			return false;
         default:
-            LIBFT_LOG(ERROR, "invalid pipe state");
+            IO_LOG(ERROR, "invalid pipe state");
             return false;
     }
 	ctx = (t_io_v2_pipe_ctx *)pipe->ctx;
@@ -98,38 +98,38 @@ bool io_v2_pipe_pump(t_io_v2_pipe *pipe)
 
     switch (downstream->status) {
     case IO_V2_STATUS_OK:
-	   	LIBFT_LOG(TRACE, "writing %zu bytes max to downstream", ft_buffer_used(buffer));
+	   	IO_LOG(TRACE, "writing %zu bytes max to downstream", ft_buffer_used(buffer));
 		wbytes = ft_buffer_read_with_func(buffer, __write_to_downstream, downstream, ft_buffer_used(buffer));
 
 		switch (downstream->status) {
 		case IO_V2_STATUS_OK:
 		case IO_V2_STATUS_FINISHED:
-	   		LIBFT_LOG(TRACE, "wrote %zu bytes to downstream", wbytes);
+	   		IO_LOG(TRACE, "wrote %zu bytes to downstream", wbytes);
 	       	break;
 		case IO_V2_STATUS_EOF:
 		case IO_V2_STATUS_CLOSED:
 		case IO_V2_STATUS_ERROR:
 		default:
-			LIBFT_LOG(ERROR, "write to downstream failed");
+			IO_LOG(ERROR, "write to downstream failed");
 			pipe->status = IO_V2_STATUS_PIPE_ERROR;
 			return false;
 	    }
     	break;
     case IO_V2_STATUS_ERROR:
-		LIBFT_LOG(ERROR, "downstream is in error state");
+		IO_LOG(ERROR, "downstream is in error state");
 		pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     case IO_V2_STATUS_CLOSED:
-    	LIBFT_LOG(ERROR, "downstream is in closed state");
+    	IO_LOG(ERROR, "downstream is in closed state");
      	pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     case IO_V2_STATUS_FINISHED:
-    	LIBFT_LOG(ERROR, "downstream is in finished state");
+    	IO_LOG(ERROR, "downstream is in finished state");
     	pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     case IO_V2_STATUS_EOF:
     default:
-  		LIBFT_LOG(ERROR, "downstream is in invalid state");
+  		IO_LOG(ERROR, "downstream is in invalid state");
    		pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     }
@@ -140,42 +140,42 @@ bool io_v2_pipe_pump(t_io_v2_pipe *pipe)
 
     switch (upstream->status) {
     case IO_V2_STATUS_OK:
-	   	LIBFT_LOG(TRACE, "reading %zu bytes max from upstream", ft_buffer_available(buffer));
+	   	IO_LOG(TRACE, "reading %zu bytes max from upstream", ft_buffer_available(buffer));
 	    rbytes = ft_buffer_write_with_func(buffer, __read_from_upstream, upstream, ft_buffer_available(buffer));
 
 	   	switch (upstream->status) {
 		case IO_V2_STATUS_OK:
-	   		LIBFT_LOG(TRACE, "read %zu bytes from upstream", rbytes);
+	   		IO_LOG(TRACE, "read %zu bytes from upstream", rbytes);
 	       	break;
 		case IO_V2_STATUS_EOF:
-			LIBFT_LOG(TRACE, "upstream is at EOF");
+			IO_LOG(TRACE, "upstream is at EOF");
 			break;
 		case IO_V2_STATUS_CLOSED:
 		case IO_V2_STATUS_FINISHED:
 		case IO_V2_STATUS_ERROR:
 		default:
-			LIBFT_LOG(ERROR, "read from upstream failed");
+			IO_LOG(ERROR, "read from upstream failed");
 			pipe->status = IO_V2_STATUS_PIPE_ERROR;
 			return false;
 	    }
         break;
     case IO_V2_STATUS_EOF:
     	if (ft_buffer_is_empty(buffer)) {
-			LIBFT_LOG(TRACE, "upstream is at EOF and internal buffer is empty");
+			IO_LOG(TRACE, "upstream is at EOF and internal buffer is empty");
 			pipe->status = IO_V2_STATUS_PIPE_END;
 		}
      	break;
     case IO_V2_STATUS_ERROR:
-		LIBFT_LOG(ERROR, "upstream is in error state");
+		IO_LOG(ERROR, "upstream is in error state");
 		pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     case IO_V2_STATUS_CLOSED:
-    	LIBFT_LOG(ERROR, "upstream is in closed state");
+    	IO_LOG(ERROR, "upstream is in closed state");
      	pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     case IO_V2_STATUS_FINISHED:
     default:
-  		LIBFT_LOG(ERROR, "upstream is in invalid state");
+  		IO_LOG(ERROR, "upstream is in invalid state");
    		pipe->status = IO_V2_STATUS_PIPE_ERROR;
         return false;
     }
@@ -187,20 +187,20 @@ bool io_v2_pipe_del(t_io_v2_pipe *pipe)
 	t_io_v2_pipe_ctx *ctx = pipe->ctx;
 	bool ret = true;
 
-	LIBFT_LOG(TRACE, "deleting pipe");
+	IO_LOG(TRACE, "deleting pipe");
     if (NULL == pipe) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
 	if (!ft_buffer_is_empty(ctx->buffer)) {
-		LIBFT_LOG(ERROR, "deleting pipe with data loss");
+		IO_LOG(ERROR, "deleting pipe with data loss");
 		ret = false;
 	}
     ft_buffer_del(ctx->buffer);
 	LIBFT_FREE(ctx);
 	pipe->ctx = NULL;
 	pipe->status = IO_V2_STATUS_PIPE_END;
-	LIBFT_LOG(TRACE, "deleted pipe");
+	IO_LOG(TRACE, "deleted pipe");
 
    	return (ret);
 }

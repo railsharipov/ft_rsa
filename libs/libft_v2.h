@@ -242,6 +242,18 @@ bool	io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_str
 bool	io_v2_pipe_del(t_io_v2_pipe *pipe);
 bool	io_v2_pipe_pump(t_io_v2_pipe *pipe);
 
+#ifdef IO_ENABLE_LOGS
+	#define IO_LOG(LEVEL, FMT, ...)	{if (LIBFT_LOG_LEVEL_##LEVEL <= libft_get_log_level())\
+		ft_dprintf(2, "[%s] [%s:%d] [%s] " FMT "\n", #LEVEL, __FILE__, __LINE__, __func__ __VA_OPT__(,) __VA_ARGS__);}
+#else
+	#define IO_LOG(LEVEL, FMT, ...) (void)(FMT)
+#endif
+
+/****************************************************************************/
+
+int ft_fprintf(t_io_v2_stream *stream, const char *fmt, ...);
+int ft_vfprintf(t_io_v2_stream *stream, const char *fmt, va_list ap);
+
 /****************************************************************************/
 
 #endif //LIBFT_V2_H

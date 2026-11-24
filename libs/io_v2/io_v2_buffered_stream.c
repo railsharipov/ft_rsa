@@ -22,15 +22,15 @@ bool io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, si
     t_io_v2_buffered_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == upstream) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (capacity == 0) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     LIBFT_ALLOC(ctx, sizeof(t_io_v2_buffered_ctx));
@@ -38,7 +38,7 @@ bool io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, si
     ctx->buffer = ft_buffer_new(capacity);
 
 	if (!io_v2_stream(stream, interface, ctx)) {
-		LIBFT_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return false;
 	}
     return true;
@@ -54,15 +54,15 @@ bool io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, 
     t_io_v2_buffered_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == downstream) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (capacity == 0) {
-        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
+        IO_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     LIBFT_ALLOC(ctx, sizeof(t_io_v2_buffered_ctx));
@@ -70,7 +70,7 @@ bool io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, 
     ctx->buffer = ft_buffer_new(capacity);
 
 	if (!io_v2_stream(stream, interface, ctx)) {
-		LIBFT_LOG(ERROR, IO_CREATE_STREAM_ERROR);
+		IO_LOG(ERROR, IO_CREATE_STREAM_ERROR);
 		return false;
 	}
     return true;
@@ -101,7 +101,7 @@ static ssize_t	__io_v2_buffered_read(void *vctx, void *buf, size_t nbytes)
 	ssize_t wbytes;
 	size_t tbytes;
 
-	LIBFT_LOG(TRACE, "reading %zu bytes from buffered stream", nbytes);
+	IO_LOG(TRACE, "reading %zu bytes from buffered stream", nbytes);
 
 	ctx = (t_io_v2_buffered_ctx *)vctx;
 	upstream = ctx->stream;
@@ -109,44 +109,44 @@ static ssize_t	__io_v2_buffered_read(void *vctx, void *buf, size_t nbytes)
 
 	while (tbytes < nbytes) {
 		if (ft_buffer_is_empty(ctx->buffer)) {
-			LIBFT_LOG(TRACE, "buffer is empty");
+			IO_LOG(TRACE, "buffer is empty");
 			switch (upstream->status) {
 				case IO_V2_STATUS_OK:
 					break;
 				case IO_V2_STATUS_EOF:
-					LIBFT_LOG(TRACE, "stream is at EOF, stopping read");
+					IO_LOG(TRACE, "stream is at EOF, stopping read");
 					if (tbytes == 0) {
 						return (IO_V2_STATUS_EOF);
 					}
 					return (tbytes);
 				case IO_V2_STATUS_ERROR:
-					LIBFT_LOG(ERROR, "stream is in error state");
+					IO_LOG(ERROR, "stream is in error state");
 					return (IO_V2_STATUS_ERROR);
 				case IO_V2_STATUS_CLOSED:
-					LIBFT_LOG(ERROR, "stream is closed");
+					IO_LOG(ERROR, "stream is closed");
 					return (IO_V2_STATUS_ERROR);
 				case IO_V2_STATUS_FINISHED:
 				default:
-					LIBFT_LOG(ERROR, "invalid stream status");
+					IO_LOG(ERROR, "invalid stream status");
 					return (IO_V2_STATUS_ERROR);
 			}
-			LIBFT_LOG(TRACE, "filling internal buffer from stream");
+			IO_LOG(TRACE, "filling internal buffer from stream");
 			wbytes = ft_buffer_write_with_func(ctx->buffer, __read_from_upstream, upstream, ctx->buffer->capacity);
 			if (wbytes < 0) {
-				LIBFT_LOG(ERROR, "failed to write to buffer from stream");
+				IO_LOG(ERROR, "failed to write to buffer from stream");
 				return (IO_V2_STATUS_ERROR);
 			} else {
-				LIBFT_LOG(TRACE, "wrote %zu bytes to buffer from stream", wbytes);
+				IO_LOG(TRACE, "wrote %zu bytes to buffer from stream", wbytes);
 			}
 		}
 		else {
-			LIBFT_LOG(TRACE, "reading %zu bytes from buffer", nbytes - tbytes);
+			IO_LOG(TRACE, "reading %zu bytes from buffer", nbytes - tbytes);
 			rbytes = ft_buffer_read(ctx->buffer, buf + tbytes, nbytes - tbytes);
 			if (rbytes < 0) {
-				LIBFT_LOG(ERROR, "failed to read from buffer");
+				IO_LOG(ERROR, "failed to read from buffer");
 				return (IO_V2_STATUS_ERROR);
 			}
-			LIBFT_LOG(TRACE, "read %zu bytes from buffer", rbytes);
+			IO_LOG(TRACE, "read %zu bytes from buffer", rbytes);
 			tbytes += rbytes;
 		}
 	}
@@ -161,7 +161,7 @@ static ssize_t __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes
 	ssize_t rbytes;
 	size_t tbytes;
 
-	LIBFT_LOG(TRACE, "writing %zu bytes to buffered stream", nbytes);
+	IO_LOG(TRACE, "writing %zu bytes to buffered stream", nbytes);
 
 	ctx = (t_io_v2_buffered_ctx *)vctx;
 	downstream = ctx->stream;
@@ -173,33 +173,33 @@ static ssize_t __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes
 				case IO_V2_STATUS_OK:
 					break;
 				case IO_V2_STATUS_ERROR:
-					LIBFT_LOG(ERROR, "stream is in error state");
+					IO_LOG(ERROR, "stream is in error state");
 					return (IO_V2_STATUS_ERROR);
 				case IO_V2_STATUS_CLOSED:
-					LIBFT_LOG(ERROR, "stream is closed");
+					IO_LOG(ERROR, "stream is closed");
 					return (IO_V2_STATUS_ERROR);
 				case IO_V2_STATUS_FINISHED:
 				case IO_V2_STATUS_EOF:
 				default:
-					LIBFT_LOG(ERROR, "invalid stream status");
+					IO_LOG(ERROR, "invalid stream status");
 					return (IO_V2_STATUS_ERROR);
 			}
-			LIBFT_LOG(TRACE, "buffer is full, reading %zd bytes from buffer to stream", ft_buffer_used(ctx->buffer));
+			IO_LOG(TRACE, "buffer is full, reading %zd bytes from buffer to stream", ft_buffer_used(ctx->buffer));
 			rbytes = ft_buffer_read_with_func(ctx->buffer, __write_to_downstream, downstream, ft_buffer_used(ctx->buffer));
 			if (rbytes < 0) {
-				LIBFT_LOG(ERROR, "failed to read from buffer to stream");
+				IO_LOG(ERROR, "failed to read from buffer to stream");
 			} else {
-				LIBFT_LOG(TRACE, "read %zd bytes from buffer to stream", rbytes);
+				IO_LOG(TRACE, "read %zd bytes from buffer to stream", rbytes);
 			}
 		}
 		else {
-			LIBFT_LOG(TRACE, "writing %zu bytes to buffer", nbytes - tbytes);
+			IO_LOG(TRACE, "writing %zu bytes to buffer", nbytes - tbytes);
 			wbytes = ft_buffer_write(ctx->buffer, buf + tbytes, nbytes - tbytes);
 			if (wbytes < 0) {
-				LIBFT_LOG(ERROR, "failed to write to buffer");
+				IO_LOG(ERROR, "failed to write to buffer");
 				return (IO_V2_STATUS_ERROR);
 			}
-			LIBFT_LOG(TRACE, "wrote %zd bytes to buffer", wbytes);
+			IO_LOG(TRACE, "wrote %zd bytes to buffer", wbytes);
 			tbytes += wbytes;
 		}
 	}
@@ -218,28 +218,28 @@ static ssize_t __io_v2_buffered_flush(void *vctx)
     downstream = ctx->stream;
     buffer = ctx->buffer;
 
-    LIBFT_LOG(TRACE, "flushing buffered stream with downstream=%p, buffer=%p, capacity=%zu", downstream, buffer, buffer->capacity);
+    IO_LOG(TRACE, "flushing buffered stream with downstream=%p, buffer=%p, capacity=%zu", downstream, buffer, buffer->capacity);
 
     wbytes = ft_buffer_read_with_func(buffer, __write_to_downstream, downstream, ft_buffer_used(buffer));
     if (wbytes < 0) {
-		LIBFT_LOG(ERROR, "failed to flush buffered stream");
+		IO_LOG(ERROR, "failed to flush buffered stream");
 		switch (downstream->status) {
 			case IO_V2_STATUS_ERROR:
-				LIBFT_LOG(ERROR, "stream is in error state");
+				IO_LOG(ERROR, "stream is in error state");
 				return (IO_V2_STATUS_ERROR);
 			case IO_V2_STATUS_CLOSED:
-				LIBFT_LOG(ERROR, "stream is closed");
+				IO_LOG(ERROR, "stream is closed");
 				return (IO_V2_STATUS_ERROR);
 			case IO_V2_STATUS_FINISHED:
 			case IO_V2_STATUS_EOF:
 			case IO_V2_STATUS_OK:
 			    UNREACHABLE("__io_v2_buffered_flush");
 			default:
-				LIBFT_LOG(ERROR, "invalid stream status");
+				IO_LOG(ERROR, "invalid stream status");
 				return (IO_V2_STATUS_ERROR);
 		}
     } else {
-		LIBFT_LOG(TRACE, "flushed %zd bytes to downstream", wbytes);
+		IO_LOG(TRACE, "flushed %zd bytes to downstream", wbytes);
 	}
     return (wbytes);
 }
@@ -250,25 +250,25 @@ static ssize_t __io_v2_buffered_close(void *vctx)
     int flush_ret = IO_V2_STATUS_OK;
     int close_ret = IO_V2_STATUS_OK;
 
-    LIBFT_LOG(TRACE, "closing buffered stream");
+    IO_LOG(TRACE, "closing buffered stream");
 
     flush_ret = __io_v2_buffered_flush(vctx);
     if (flush_ret < 0) {
-        LIBFT_LOG(ERROR, "failed to flush buffered stream on close");
+        IO_LOG(ERROR, "failed to flush buffered stream on close");
     } else {
-        LIBFT_LOG(TRACE, "flushed buffered stream on close");
+        IO_LOG(TRACE, "flushed buffered stream on close");
     }
     close_ret = io_v2_close(ctx->stream);
     if (close_ret < 0) {
-        LIBFT_LOG(ERROR, "failed to close upstream");
+        IO_LOG(ERROR, "failed to close upstream");
     } else {
-        LIBFT_LOG(TRACE, "closed upstream");
+        IO_LOG(TRACE, "closed upstream");
     }
     ctx->stream = NULL;
     ft_buffer_del(ctx->buffer);
     ctx->buffer = NULL;
     LIBFT_FREE(ctx);
-    LIBFT_LOG(TRACE, "buffered stream closed");
+    IO_LOG(TRACE, "buffered stream closed");
 
     if (flush_ret < 0 || close_ret < 0) {
     	return (IO_V2_STATUS_ERROR);
