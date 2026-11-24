@@ -1,4 +1,4 @@
-#include <io.h>
+#include <libft_v2.h>
 #include <logger.h>
 
 static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes);
@@ -15,7 +15,7 @@ bool io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_st
 	t_io_v2_pipe_ctx *ctx;
 
     if (NULL == pipe || NULL == upstream || NULL == downstream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (!FLAG(IO_V2_FLAG_READ, upstream->flags)) {
@@ -41,10 +41,10 @@ bool io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_st
 bool io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream)
 {
 	if (NULL == pipe || NULL == upstream || NULL == downstream) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
-    LIBFT_LOG(ERROR, NOT_IMPLEMENTED_ERROR);
+    LIBFT_LOG(ERROR, "not implemented error");
 
     return false;
 }
@@ -73,7 +73,7 @@ bool io_v2_pipe_pump(t_io_v2_pipe *pipe)
     LIBFT_LOG(TRACE, "pumping though pipe %p", pipe);
 
     if (NULL == pipe) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     switch (pipe->status) {
@@ -189,7 +189,7 @@ bool io_v2_pipe_del(t_io_v2_pipe *pipe)
 
 	LIBFT_LOG(TRACE, "deleting pipe");
     if (NULL == pipe) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
 	if (!ft_buffer_is_empty(ctx->buffer)) {

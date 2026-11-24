@@ -1,4 +1,4 @@
-#include <io.h>
+#include <libft_v2.h>
 
 typedef struct s_io_v2_buffered_ctx {
 	t_io_v2_stream *stream;
@@ -22,18 +22,18 @@ bool io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, si
     t_io_v2_buffered_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == upstream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (capacity == 0) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
-    SSL_ALLOC(ctx, sizeof(t_io_v2_buffered_ctx));
+    LIBFT_ALLOC(ctx, sizeof(t_io_v2_buffered_ctx));
     ctx->stream = upstream;
     ctx->buffer = ft_buffer_new(capacity);
 
@@ -54,18 +54,18 @@ bool io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, 
     t_io_v2_buffered_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == downstream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (capacity == 0) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
-    SSL_ALLOC(ctx, sizeof(t_io_v2_buffered_ctx));
+    LIBFT_ALLOC(ctx, sizeof(t_io_v2_buffered_ctx));
 	ctx->stream = downstream;
     ctx->buffer = ft_buffer_new(capacity);
 
@@ -267,7 +267,7 @@ static ssize_t __io_v2_buffered_close(void *vctx)
     ctx->stream = NULL;
     ft_buffer_del(ctx->buffer);
     ctx->buffer = NULL;
-    SSL_FREE(ctx);
+    LIBFT_FREE(ctx);
     LIBFT_LOG(TRACE, "buffered stream closed");
 
     if (flush_ret < 0 || close_ret < 0) {

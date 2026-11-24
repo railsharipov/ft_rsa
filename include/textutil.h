@@ -3,7 +3,7 @@
 
 # include <string.h>
 # include <common.h>
-# include <io.h>
+#include <libft_v2.h>
 #include <libft.h>
 
 # define RK_PRIME 101

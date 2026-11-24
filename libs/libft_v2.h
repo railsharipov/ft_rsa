@@ -2,7 +2,10 @@
 #define LIBFT_V2_H
 
 #include <assert.h>
+#include <stdint.h>
 #include <stddef.h>
+#include <string.h>
+#include <libft.h>
 
 /****************************************************************************/
 
@@ -131,6 +134,113 @@ bool	utf8_escape(const uint8_t *bytes, size_t size, uint8_t **escaped, size_t *e
 				const uint8_t *escape_prefix, size_t prefix_size, const uint8_t *escape_charset, size_t charset_size);
 bool	utf8_escape_nt(const uint8_t *bytes, size_t size, char **escaped, const char *escape_prefix,
 				const uint8_t *escape_charset, size_t charset_size);
+
+/****************************************************************************/
+
+#define IO_BUFSIZE 16*1024
+
+#define IO_INPUT_ERROR				"i/o input error"
+#define IO_INIT_ERROR				"i/o init error"
+#define IO_READ_ERROR				"i/o read error"
+#define IO_WRITE_ERROR				"i/o write error"
+#define IO_CLOSE_ERROR				"i/o close error"
+#define IO_CREATE_STREAM_ERROR		"i/o stream create error"
+
+typedef ssize_t	(*t_func_io_v2_read)(void *ctx, void *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_write)(void *ctx, const void *buf, size_t nbytes);
+typedef ssize_t	(*t_func_io_v2_flush)(void *ctx);
+typedef ssize_t	(*t_func_io_v2_finish)(void *ctx);
+typedef ssize_t	(*t_func_io_v2_close)(void *ctx);
+
+typedef struct s_io_v2_interface {
+	t_func_io_v2_read	read;
+	t_func_io_v2_write	write;
+	t_func_io_v2_flush	flush;
+	t_func_io_v2_finish	finish;
+	t_func_io_v2_close	close;
+} t_io_v2_interface;
+
+typedef enum e_io_v2_flag {
+	IO_V2_FLAG_READ		= 1UL << 1,
+	IO_V2_FLAG_WRITE	= 1UL << 2,
+	IO_V2_FLAG_FLUSH 	= 1UL << 3,
+	IO_V2_FLAG_FINISH 	= 1UL << 4,
+	IO_V2_FLAG_CLOSE 	= 1UL << 5,
+} t_io_v2_flag;
+
+typedef enum e_io_v2_status {
+	IO_V2_STATUS_OK		  = 0,
+	IO_V2_STATUS_ERROR	  = -1,
+	IO_V2_STATUS_EOF	  = -2,
+	IO_V2_STATUS_FINISHED = -3,
+	IO_V2_STATUS_CLOSED	  = -4,
+} t_io_v2_status;
+
+typedef struct s_io_v2_stream {
+	t_io_v2_interface	interface;
+	t_io_v2_flag		flags;
+	t_io_v2_status		status;
+	void				*ctx;
+} t_io_v2_stream;
+
+extern t_io_v2_stream *io_v2_stdin_reader;
+extern t_io_v2_stream *io_v2_stdin_writer;
+extern t_io_v2_stream *io_v2_stdout_reader;
+extern t_io_v2_stream *io_v2_stdout_writer;
+extern t_io_v2_stream *io_v2_stderr_reader;
+extern t_io_v2_stream *io_v2_stderr_writer;
+
+// NON-BLOCKING
+ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
+ssize_t	io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes);
+
+// BLOCKING
+ssize_t	io_v2_read_all(t_io_v2_stream *stream, void *buf, size_t nbytes);
+ssize_t io_v2_write_all(t_io_v2_stream *stream, const void *buf, size_t nbytes);
+ssize_t	io_v2_finish(t_io_v2_stream *stream);
+ssize_t	io_v2_flush(t_io_v2_stream *stream);
+ssize_t	io_v2_close(t_io_v2_stream *stream);
+
+bool	io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, void *ctx);
+
+bool	io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity);
+bool	io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);
+
+bool	io_v2_file_reader(t_io_v2_stream **stream, const char *file_path);
+bool	io_v2_fd_reader(t_io_v2_stream **stream, int fd);
+bool	io_v2_file_writer(t_io_v2_stream **stream, const char *file_path);
+bool	io_v2_fd_writer(t_io_v2_stream **stream, int fd);
+
+bool	io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
+bool	io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
+
+bool	io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
+							t_func_transform update, t_func_transform final, void *filter_ctx);
+
+bool	io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
+							t_func_transform update, t_func_transform final, void *filter_ctx);
+
+typedef enum e_io_v2_pipe_status {
+    IO_V2_STATUS_PIPE_OK,
+    IO_V2_STATUS_PIPE_END,
+    IO_V2_STATUS_PIPE_ERROR
+} t_io_v2_pipe_status;
+
+typedef enum e_io_v2_pipe_type {
+	IO_V2_PIPE_TYPE_UNIDIR,
+	IO_V2_PIPE_TYPE_BIDIR,
+} t_io_v2_pipe_type;
+
+typedef struct s_io_v2_pipe {
+	t_io_v2_pipe_type	type;
+	t_io_v2_pipe_status	status;
+	void				*ctx;
+} t_io_v2_pipe;
+
+bool	io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
+bool	io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
+bool	io_v2_pipe_del(t_io_v2_pipe *pipe);
+bool	io_v2_pipe_pump(t_io_v2_pipe *pipe);
 
 /****************************************************************************/
 

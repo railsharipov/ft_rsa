@@ -1,8 +1,8 @@
 NAME := ft_ssl
 TEST_NAME := test
 
-SRCS := main.c $(filter-out tests/%,$(sort $(wildcard */*.c)))
-TEST_SRCS := $(filter-out main.c,$(sort $(wildcard */*.c)))
+SRCS := main.c $(filter-out tests/%,$(sort $(wildcard */*.c) $(wildcard libs/io_v2/*.c)))
+TEST_SRCS := $(filter-out main.c,$(sort $(wildcard */*.c) $(wildcard libs/io_v2/*.c)))
 
 OBJ_DIR := obj
 DEP_DIR := dep
@@ -29,7 +29,7 @@ debug: $(NAME)
 profile: CFLAGS := -O2 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -Wshadow -I./include -I./libs
 profile: $(NAME)
 
-sanitize: CFLAGS := -O0 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -Wshadow -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-sanitize-merge -fno-omit-frame-pointer -I./include -I./libs
+sanitize: CFLAGS := -O0 -g -std=c23 -Wall -Wfatal-errors -Werror=switch -Werror=switch-enum -Wimplicit-fallthrough -Wno-unused-function -Wshadow -fsanitize=address,undefined -fno-sanitize-merge -fno-omit-frame-pointer -I./include -I./libs
 sanitize: LDFLAGS := -fsanitize=address,undefined
 sanitize: $(NAME)
 
@@ -53,7 +53,7 @@ $(TEST_OBJ_DIR)/%.o: %.c | $(TEST_DEP_DIR)/%.d
 $(DEPS):
 $(TEST_DEPS):
 
-sanitize_test: CFLAGS := -Og -g -std=c23 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
+sanitize_test: CFLAGS := -O0 -g -std=c23 -Wall -Wfatal-errors -fsanitize=address -fno-omit-frame-pointer -I./include -I./libs
 sanitize_test: LDFLAGS := -fsanitize=address
 sanitize_test: test_bin
 

@@ -2,7 +2,7 @@
 # define SSL_RSA_H
 
 # include <common.h>
-# include <io.h>
+#include <libft_v2.h>
 # include <bnum.h>
 #include <libft.h>
 

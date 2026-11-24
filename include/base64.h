@@ -2,7 +2,7 @@
 # define SSL_BASE64_H
 
 # include <common.h>
-# include <io.h>
+#include <libft_v2.h>
 #include <libft.h>
 
 # define B64_A(X)	(((X)&(0xfc))>>(2))

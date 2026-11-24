@@ -8,7 +8,7 @@
 #include <pem.h>
 #include <base64.h>
 #include <textutil.h>
-#include <io.h>
+#include <libft_v2.h>
 
 typedef enum __e_asn1_form {
 	__ASN1_FORM_PEM,

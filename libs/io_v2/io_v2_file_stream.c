@@ -1,4 +1,4 @@
-#include <io.h>
+#include <libft_v2.h>
 #include <unistd.h>
 #include <sys/fcntl.h>
 #include <logger.h>
@@ -69,7 +69,7 @@ bool io_v2_fd_reader(t_io_v2_stream **stream, int fd)
     t_io_v2_file_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     LIBFT_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
@@ -85,11 +85,11 @@ bool io_v2_fd_reader(t_io_v2_stream **stream, int fd)
 bool io_v2_file_reader(t_io_v2_stream **stream, const char *file_path)
 {
 	if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == file_path) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     int fd = open(file_path, O_RDONLY);
@@ -109,7 +109,7 @@ bool io_v2_fd_writer(t_io_v2_stream **stream, int fd)
     t_io_v2_file_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     LIBFT_ALLOC(ctx, sizeof(t_io_v2_file_ctx));
@@ -125,11 +125,11 @@ bool io_v2_fd_writer(t_io_v2_stream **stream, int fd)
 bool io_v2_file_writer(t_io_v2_stream **stream, const char *file_path)
 {
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == file_path) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     int fd = open(file_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -149,7 +149,7 @@ static ssize_t __io_v2_file_read(void *vctx, void *buf, size_t nbytes)
     LIBFT_LOG(TRACE, "reading %zu bytes from file stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
 
@@ -190,7 +190,7 @@ static ssize_t __io_v2_file_write(void *vctx, const void *buf, size_t nbytes)
     LIBFT_LOG(TRACE, "writing %zu bytes to file stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     if (nbytes == 0) {
@@ -233,7 +233,7 @@ static ssize_t __io_v2_file_close(void *vctx)
     LIBFT_LOG(TRACE, "closing file stream");
 
     if (NULL == vctx) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     ctx = (t_io_v2_file_ctx *)vctx;

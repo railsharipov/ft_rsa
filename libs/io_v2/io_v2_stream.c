@@ -1,15 +1,15 @@
-#include <io.h>
+#include <libft_v2.h>
 
 bool io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, void *ctx)
 {
 	t_io_v2_flag flags = 0;
 
 	if (NULL == stream) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 	if (NULL == ctx) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 	if (NULL != interface.read) flags |= IO_V2_FLAG_READ;

@@ -3,7 +3,7 @@
 #include <common.h>
 #include <logger.h>
 #include <rand.h>
-#include <io.h>
+#include <libft_v2.h>
 #include <libft.h>
 
 int	rand_fseed(uint64_t *seed, const char *files)

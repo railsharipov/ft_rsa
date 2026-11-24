@@ -1,4 +1,4 @@
-#include <io.h>
+#include <libft_v2.h>
 #include <logger.h>
 
 typedef struct s_io_v2_bytes_ctx {
@@ -19,11 +19,11 @@ bool io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring)
     t_io_v2_bytes_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == ostring) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     LIBFT_ALLOC(ctx, sizeof(t_io_v2_bytes_ctx));
@@ -46,11 +46,11 @@ bool io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring)
     t_io_v2_bytes_ctx *ctx;
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     if (NULL == ostring) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return false;
     }
     LIBFT_ALLOC(ctx, sizeof(t_io_v2_bytes_ctx));
@@ -72,7 +72,7 @@ static ssize_t __io_v2_bytes_read(void *vctx, void *buf, size_t nbytes)
     LIBFT_LOG(TRACE, "reading %zu bytes from bytes stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     if (nbytes == 0) {
@@ -101,7 +101,7 @@ static ssize_t __io_v2_bytes_write(void *vctx, const void *buf, size_t nbytes)
 	LIBFT_LOG(TRACE, "writing %zu bytes to bytes stream", nbytes);
 
     if (NULL == vctx || NULL == buf) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     if (nbytes == 0) {
@@ -128,7 +128,7 @@ static ssize_t __io_v2_bytes_close(void *vctx)
     LIBFT_LOG(TRACE, "closing bytes stream");
 
     if (NULL == vctx) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (IO_V2_STATUS_ERROR);
     }
     ctx = (t_io_v2_bytes_ctx *)vctx;

@@ -1,4 +1,4 @@
-#include <io.h>
+#include <libft_v2.h>
 
 # define __IO_INVALID_INTFC_ERROR	"interface is invalid"
 
@@ -15,7 +15,7 @@ ssize_t io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes)
     LIBFT_LOG(TRACE, "reading from stream %p with buffer %p, nbytes=%zu", stream, buf, nbytes);
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_READ, stream->flags)) {
@@ -96,7 +96,7 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
     LIBFT_LOG(TRACE, "writing to stream %p with buffer %p, nbytes=%zu", stream, buf, nbytes);
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_WRITE, stream->flags)) {
@@ -170,7 +170,7 @@ ssize_t io_v2_finish(t_io_v2_stream *stream)
     LIBFT_LOG(TRACE, "finishing stream %p", stream);
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_FINISH, stream->flags)) {
@@ -219,7 +219,7 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
     LIBFT_LOG(TRACE, "flushing stream %p", stream);
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
@@ -266,7 +266,7 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
     LIBFT_LOG(TRACE, "closing stream %p", stream);
 
     if (NULL == stream) {
-        LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+        LIBFT_LOG(ERROR, IO_INPUT_ERROR);
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_CLOSE, stream->flags)) {

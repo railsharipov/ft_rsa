@@ -12,3 +12,4 @@ test
 compile_commands.json
 *.log
 libft.o
+ft_ssl.dSYM/

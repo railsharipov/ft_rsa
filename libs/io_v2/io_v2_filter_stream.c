@@ -1,4 +1,4 @@
-#include <io.h>
+#include <libft_v2.h>
 #include <logger.h>
 
 typedef enum {
@@ -36,18 +36,18 @@ bool io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 	t_func_transform f_update, t_func_transform f_final, void *filter_ctx)
 {
 	if (NULL == stream) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 	if (NULL == upstream) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 	if (NULL == f_update) {
 		LIBFT_LOG(DEBUG, "no update transform provided");
 	}
 	if (NULL == f_final) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 
@@ -78,18 +78,18 @@ bool io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 	t_func_transform f_update, t_func_transform f_final, void *filter_ctx)
 {
 	if (NULL == stream) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 	if (NULL == downstream) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 	if (NULL == f_update) {
 		LIBFT_LOG(DEBUG, "no update transform provided");
 	}
 	if (NULL == f_final) {
-		LIBFT_LOG(ERROR, INVALID_INPUT_ERROR);
+		LIBFT_LOG(ERROR, IO_INPUT_ERROR);
 		return false;
 	}
 
