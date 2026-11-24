@@ -19,7 +19,7 @@ char	*bnum_to_hex_u(const t_num *num)
 		return (strdup("0"));
 	}
 	hexsize = NBITS_TO_NWORDS(num->len * BNUM_DIGIT_BIT, 4);
-	BNUM_ALLOC(hexrev, hexsize+1);
+	BNUM_ALLOCZ(hexrev, hexsize+1);
 
 	hptr = hexrev;
 

@@ -45,9 +45,11 @@
 # define BNUM_ODD(X)	(((X)->val[0] & 1u) == 1u)
 # define BNUM_SIGN(X)	(((X)->sign == BNUM_NEG)?(BNUM_NEG):(BNUM_POS))
 
-# define BNUM_ALLOC(PTR, SZ)		LIBFT_ALLOC(PTR, SZ)
-# define BNUM_REALLOC(PTR, SZ, NSZ)	LIBFT_REALLOC(PTR, SZ, NSZ)
-# define BNUM_FREE(PTR)				LIBFT_FREE(PTR)
+# define BNUM_ALLOC(PTR, SZ)			LIBFT_ALLOC(PTR, SZ)
+# define BNUM_ALLOCZ(PTR, SZ)			LIBFT_ALLOCZ(PTR, SZ)
+# define BNUM_REALLOC(PTR, SZ, NSZ)		LIBFT_REALLOC(PTR, SZ, NSZ)
+# define BNUM_REALLOCZ(PTR, SZ, NSZ)	LIBFT_REALLOCZ(PTR, SZ, NSZ)
+# define BNUM_FREE(PTR)					LIBFT_FREE(PTR)
 
 typedef __uint128_t		uint128_t;
 typedef __int128_t		int128_t;

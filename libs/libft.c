@@ -80,6 +80,7 @@ char	*ft_2darray_strjoin(char **str_arr, size_t str_arr_len, const char *delim)
 	}
 
 	ft_strcpy(p, str_arr[str_arr_len-1]);
+	joined_str[joined_size] = 0;
 
 	return (joined_str);
 }
@@ -709,6 +710,7 @@ char	*ft_bytes_dumps_bin(const void *bytes, size_t size)
 			*p++ = ((octets[i] << j) & (1 << 7)) ? '1' : '0';
 		}
 	}
+	*p = 0;
 	return (dumps);
 }
 
@@ -922,9 +924,9 @@ char	*ft_strjoin_multi(int n, ...)
 	va_end(arg);
 
 	LIBFT_ALLOC(res, slen+1);
+	res[0] = 0;
 
 	va_start(arg, n);
-	slen = 0;
 
 	idx = 0;
 	while (idx < n) {
@@ -933,6 +935,7 @@ char	*ft_strjoin_multi(int n, ...)
 		idx++;
 	}
 	va_end(arg);
+	res[slen] = 0;
 
 	return (res);
 }
@@ -1268,6 +1271,7 @@ char	*ft_strndup(const char *s, size_t len)
 		sdup[idx] = 0;
 		idx++;
 	}
+	sdup[len] = 0;
 
 	return (sdup);
 }
@@ -1767,7 +1771,7 @@ int	get_next_line(int fd, char **line)
 	if ((NULL == line) || (fd < 0)) {
 		return (-1);
 	}
-	LIBFT_ALLOC(*line, 1);
+	LIBFT_ALLOCZ(*line, 1);
 
 	tbytes = 0;
 	while ((rbytes = read_to_buf(fd, buf, LIBFT_GNXTL_BUFSIZE, &done)) > 0) {
@@ -1824,7 +1828,7 @@ void *ft_htbl_create(int size)
 
 	htbl->size = MAX(LIBFT_HT_SIZE, CEIL_TO_MULTIPLE(size, LIBFT_HT_SIZE));
 
-	LIBFT_ALLOC(htbl->arr, htbl->size * sizeof(void *));
+	LIBFT_ALLOCZ(htbl->arr, htbl->size * sizeof(void *));
 
 	return (htbl);
 }
@@ -1944,8 +1948,8 @@ void	ft_htbl_del_key_with_f_del(t_htbl *htbl, const char *key, t_func_content_de
 
 void ft_htbl_resize(t_htbl *htbl, int size)
 {
-	t_htbl new_htbl;
-	t_node *node;
+	t_htbl new_htbl = {0};
+	t_node *node = NULL;
 
 	if (NULL == htbl || size <= 0) {
 		return;
@@ -1957,7 +1961,7 @@ void ft_htbl_resize(t_htbl *htbl, int size)
 		return;
 	}
 
-	LIBFT_ALLOC(new_htbl.arr, new_htbl.size * sizeof(void *));
+	LIBFT_ALLOCZ(new_htbl.arr, new_htbl.size * sizeof(void *));
 
 	node = ft_htbl_node_next(htbl, NULL);
 
@@ -2791,32 +2795,67 @@ t_logger *ft_log_get_default_logger(void)
 
 static int	__log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg)
 {
-	char *mes = NULL;
-	ft_vasprintf(&mes, fmt, va_arg);
+	char buf[4096];
 
 	const char *lvl_prefix = __LVL_PREFIX(level, logger->is_ansi_colored);
 
-	char *full_mes = NULL;
+	size_t total = 0;
+	int nw = 0;
 	if (level <= logger->debug_info_thres) {
 		if (NULL != file_name && NULL != func_name) {
-			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d]") TXT_GRAY(" [%s]") " %s" : "%s[%s:%d] [%s] %s";
-			ft_asprintf(&full_mes, debug_fmt, lvl_prefix, file_name, line_number, func_name, mes);
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d]") TXT_GRAY(" [%s] ") : "%s[%s:%d] [%s] ";
+			nw = ft_snprintf(buf, sizeof(buf), debug_fmt, lvl_prefix, file_name, line_number, func_name);
 		} else if (NULL != file_name) {
-			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d]") " %s" : "%s[%s:%d] %s";
-			ft_asprintf(&full_mes, debug_fmt, lvl_prefix, file_name, line_number, mes);
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d] ") : "%s[%s:%d] ";
+			nw = ft_snprintf(buf, sizeof(buf), debug_fmt, lvl_prefix, file_name, line_number);
 		} else if (NULL != func_name) {
-			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s]") " %s" : "%s[%s:%d] %s";
-			ft_asprintf(&full_mes, debug_fmt, lvl_prefix, func_name, mes);
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s] ") : "%s[%s:%d] ";
+			nw = ft_snprintf(buf, sizeof(buf), debug_fmt, lvl_prefix, func_name);
 		}
 	} else {
-		ft_asprintf(&full_mes, "%s[%s] %s", lvl_prefix, mes);
+		nw = ft_snprintf(buf, sizeof(buf), "[%s] ", lvl_prefix);
 	}
-	int ret = logger->log_writer(full_mes);
+	if (nw < 0) return (nw);
+	total += nw;
 
-	LIBFT_FREE(full_mes);
-	LIBFT_FREE(mes);
+	if (total < sizeof(buf)) {
+		nw = ft_vsnprintf(buf+total, sizeof(buf)-total, fmt, va_arg);
+		if (nw < 0) return (nw);
+		total += nw;
+		if (total < sizeof(buf)) {
+			return (logger->log_writer(buf));
+		}
+	}
+	else {
+		nw = ft_vsnprintf(buf, sizeof(buf), fmt, va_arg);
+		if (nw < 0) return (nw);
+		total += nw;
+	}
 
-	return (ret);
+	char bbuf[total];
+	total = 0;
+
+	if (level <= logger->debug_info_thres) {
+		if (NULL != file_name && NULL != func_name) {
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d]") TXT_GRAY(" [%s] ") : "%s[%s:%d] [%s] ";
+			nw = ft_snprintf(bbuf, sizeof(bbuf), debug_fmt, lvl_prefix, file_name, line_number, func_name);
+		} else if (NULL != file_name) {
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s:%d] ") : "%s[%s:%d] ";
+			nw = ft_snprintf(bbuf, sizeof(bbuf), debug_fmt, lvl_prefix, file_name, line_number);
+		} else if (NULL != func_name) {
+			const char *debug_fmt = (logger->is_ansi_colored) ? "%s" TXT_GRAY("[%s] ") : "%s[%s:%d] ";
+			nw = ft_snprintf(bbuf, sizeof(bbuf), debug_fmt, lvl_prefix, func_name);
+		}
+	} else {
+		nw = ft_snprintf(bbuf, sizeof(bbuf), "[%s] ", lvl_prefix);
+	}
+	if (nw < 0) return (nw);
+	total += nw;
+
+	nw = ft_vsnprintf(bbuf+total, sizeof(bbuf)-total, fmt, va_arg);
+	if (nw < 0) return (nw);
+
+	return (logger->log_writer(bbuf));
 }
 
 /****************************************************************************/
@@ -3065,7 +3104,7 @@ t_node *(ft_node_create)(void)
 {
 	t_node	*node;
 
-	LIBFT_ALLOC(node, sizeof(t_node));
+	LIBFT_ALLOCZ(node, sizeof(t_node));
 
 	return (node);
 }
@@ -3074,7 +3113,7 @@ t_node *ft_node_create_with_f_del(t_func_content_del f_del)
 {
 	t_node	*node;
 
-	LIBFT_ALLOC(node, sizeof(t_node));
+	LIBFT_ALLOCZ(node, sizeof(t_node));
 	node->f_del_content = f_del;
 
 	return (node);
@@ -3084,7 +3123,7 @@ t_node	*(ft_node_new)(const char *key, void *content, size_t size)
 {
 	t_node	*node;
 
-	node = ft_node_create();
+	LIBFT_ALLOCZ(node, sizeof(t_node));
 
 	if (NULL == node) {
 		return (NULL);
@@ -3093,6 +3132,7 @@ t_node	*(ft_node_new)(const char *key, void *content, size_t size)
 	node->key = ft_strdup(key);
 	node->content = content;
 	node->size = size;
+	node->f_del_content = NULL;
 
 	return (node);
 }
@@ -3101,7 +3141,7 @@ t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, t_fu
 {
 	t_node	*node;
 
-	node = ft_node_create_with_f_del(f_del);
+	LIBFT_ALLOCZ(node, sizeof(t_node));
 
 	if (NULL == node) {
 		return (NULL);
@@ -3110,6 +3150,7 @@ t_node	*ft_node_new_with_f_del(const char *key, void *content, size_t size, t_fu
 	node->key = ft_strdup(key);
 	node->content = content;
 	node->size = size;
+	node->f_del_content = f_del;
 
 	return (node);
 }
@@ -3684,9 +3725,6 @@ t_ostring	*ft_ostr_prepend(t_ostring *ostring, const void *content, size_t size)
 		if (ostring->size + size > ostring->capacity) {
 			void *new_content = NULL;
 			LIBFT_ALLOC(new_content, ostring->capacity + size);
-			if (NULL == new_content) {
-				return (NULL);
-			}
 			ft_memcpy(new_content, content, size);
 			ft_memcpy(new_content + size, ostring->content, ostring->size);
 			ostring->content = new_content;
@@ -3719,7 +3757,7 @@ char 	*ft_ostr_to_cstr(const t_ostring *ostring, size_t idx, size_t len)
 		return (NULL);
 	}
 	ft_memcpy(str, ostring->content + idx, len);
-	str[len] = '\0';
+	str[len] = 0;
 
 	return (str);
 }
@@ -3730,7 +3768,7 @@ t_queue	*ft_queue_create(void)
 {
 	t_queue	*new;
 
-	LIBFT_ALLOC(new, sizeof(t_queue));
+	LIBFT_ALLOCZ(new, sizeof(t_queue));
 
 	return (new);
 }
@@ -3942,7 +3980,7 @@ t_stack	*ft_stack_create(void)
 {
 	t_stack	*stack;
 
-	LIBFT_ALLOC(stack, sizeof(t_stack));
+	LIBFT_ALLOCZ(stack, sizeof(t_stack));
 
 	return (stack);
 }
@@ -4120,7 +4158,7 @@ static t_tuple	*__create_tuple(void)
 {
 	t_tuple *tuple;
 
-	LIBFT_ALLOC(tuple, sizeof(t_tuple));
+	LIBFT_ALLOCZ(tuple, sizeof(t_tuple));
 	ft_bzero(tuple, sizeof(t_tuple));
 	return (tuple);
 }

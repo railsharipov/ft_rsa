@@ -8,7 +8,7 @@ void	bnum_to_bytes(const t_num *num, uint8_t **bin, size_t *binsize)
 		return ;
 	}
 	if (BNUM_ZERO(num)) {
-		BNUM_ALLOC(*bin, 1);
+		BNUM_ALLOCZ(*bin, 1);
 		**bin = 0;
 		*binsize = 1;
 		return;
@@ -25,7 +25,7 @@ void	bnum_to_bytes(const t_num *num, uint8_t **bin, size_t *binsize)
 		bnum_add_dig_u(tmp, 1u, tmp);
 	}
 	*binsize = nbytes;
-	BNUM_ALLOC(*bin, *binsize);
+	BNUM_ALLOCZ(*bin, *binsize);
 
 	uint8_t *bptr = *bin + *binsize-1;
 	size_t idx = 0;

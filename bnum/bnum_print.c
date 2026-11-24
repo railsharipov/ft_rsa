@@ -19,7 +19,7 @@ char *__to_hex_string(const t_num *num)
 		return (strdup("0"));
 	}
 	hexsize = NBITS_TO_NWORDS(num->len * BNUM_DIGIT_BIT, 4);
-	BNUM_ALLOC(hexrev, hexsize + 1);
+	BNUM_ALLOCZ(hexrev, hexsize + 1);
 	hptr = hexrev;
 
 	idx = 0;
@@ -35,7 +35,7 @@ char *__to_hex_string(const t_num *num)
 	while (hexsize > 0 && hexrev[hexsize - 1] == '0') {
 		hexsize--;
 	}
-	BNUM_ALLOC(hex, hexsize + 1);
+	BNUM_ALLOCZ(hex, hexsize + 1);
 
 	idx = 0;
 	while (hexsize > 0) {
@@ -94,7 +94,7 @@ void	bnum_print_raw(const t_num *num)
 	}
 
 	slen = num->len * (1 + BNUM_DIGIT_BIT);
-	BNUM_ALLOC(str, slen + 1);
+	BNUM_ALLOCZ(str, slen + 1);
 	sign = __get_sign(num);
 
 	tbytes = 0;
@@ -132,7 +132,7 @@ void	bnum_print_bits(const char *prefix, const t_num *num)
 	size += (num->len * BNUM_DIGIT_BIT) / 4; // spaces between every 4 bits
 	size += num->len - 1; // newlines between every word
 	size += 1; // null character
-	BNUM_ALLOC(str, size);
+	BNUM_ALLOCZ(str, size);
 
 	tbytes = 0;
 	for (int i = num->len-1; i >= 0; i--) {

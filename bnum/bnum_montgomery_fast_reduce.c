@@ -9,7 +9,7 @@ void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 		bnum_increase_size(num, mod->len + 1);
 	}
 
-	BNUM_ALLOC(tw, MAX(num->len, 2 * mod->len + 1) * sizeof(uint128_t));
+	BNUM_ALLOCZ(tw, MAX(num->len, 2 * mod->len + 1) * sizeof(uint128_t));
 
 	for (idx = 0; idx < num->len; idx++) {
 		tw[idx] = num->val[idx];
@@ -65,6 +65,6 @@ void	bnum_montgomery_fast_reduce(t_num *num, const t_num *mod, uint64_t rho)
 	if (bnum_cmp_u(num, mod) >= 0) {
 		bnum_sub_u(num, mod, num);
 	}
-	
+
 	BNUM_FREE(tw);
 }

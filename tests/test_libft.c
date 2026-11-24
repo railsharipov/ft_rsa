@@ -1602,7 +1602,7 @@ static int __test_ft_htbl(void)
 	TEST_ASSERT(words != NULL);
 	TEST_ASSERT(nwords > 6);
 
-	LIBFT_ALLOC(test_content, sizeof(char *) * (nwords + 1));
+	LIBFT_ALLOCZ(test_content, sizeof(char *) * (nwords + 1));
 
 	idx = 0;
 	while (idx < nwords) {

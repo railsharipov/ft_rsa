@@ -134,7 +134,7 @@ static int	__test_bnum_to_hex_u(void)
 	bnum_set_rand(&test_num, 1709);
 
 	hexsize = 2 * NBITS_TO_NBYTES(test_num.len * BNUM_DIGIT_BIT);
-	SSL_ALLOC(ref_hex, hexsize+1);
+	SSL_ALLOCZ(ref_hex, hexsize+1);
 	ref_hex_ptr = ref_hex;
 
 	idx = test_num.len - 1;

@@ -22,7 +22,7 @@ void	bnum_m_powmod(const t_num *b, const t_num *e, const t_num *m, t_num *res)
 		for (wsize = 0; i > thres[wsize];)
 			wsize++;
 
-		BNUM_ALLOC(window, (1 << wsize) * sizeof(t_num));
+		BNUM_ALLOCZ(window, (1 << wsize) * sizeof(t_num));
 
 		for (i = 0; i < (1 << wsize); i++)
 			bnum_init(window + i);

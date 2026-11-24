@@ -12,7 +12,7 @@ void	bnum_to_bytes_u(const t_num *num, uint8_t **bin, size_t *binsize)
 
 	size_t nbits = bnum_lmbit(num);
 	*binsize = NBITS_TO_NBYTES(nbits);
-	BNUM_ALLOC(*bin, *binsize);
+	BNUM_ALLOCZ(*bin, *binsize);
 
 	uint8_t *bptr = *bin + *binsize-1;
 	t_num *copy = bnum_clone(num);

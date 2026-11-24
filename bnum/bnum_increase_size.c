@@ -5,6 +5,6 @@ void	bnum_increase_size(t_num *num, size_t newsize)
 	if (newsize <= num->size) {
 		return ;
 	}
-	BNUM_REALLOC(num->val, num->size * sizeof(uint64_t), newsize * sizeof(uint64_t));
+	BNUM_REALLOCZ(num->val, num->size * sizeof(uint64_t), newsize * sizeof(uint64_t));
 	num->size = newsize;
 }

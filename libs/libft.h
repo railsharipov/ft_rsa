@@ -545,6 +545,8 @@ void    ft_free_all(void);
 		} \
 	} while (0)
 
+#define LIBFT_ALLOCZ(PTR, SZ) LIBFT_ALLOC(PTR, SZ)
+
 #define LIBFT_REALLOC(PTR, SZ, NSZ) \
 	do { \
 		void	*NEWPTR; \
@@ -558,6 +560,8 @@ void    ft_free_all(void);
 		} \
 		PTR = NEWPTR; \
 	} while (0)
+
+#define LIBFT_REALLOCZ(PTR, SZ, NSZ) LIBFT_REALLOC(PTR, SZ, NSZ)
 
 #define LIBFT_MUST_ALLOC(PTR, SZ) \
 	do { \
@@ -611,6 +615,17 @@ void    ft_free_all(void);
 	do { \
 		void *NEWPTR; \
 		LIBFT_ALLOC(NEWPTR, NSZ); \
+		if (NULL != PTR && NULL != NEWPTR) { \
+			ft_memcpy(NEWPTR, PTR, SZ); \
+			free(PTR); \
+		} \
+		PTR = NEWPTR; \
+	} while (0)
+
+#define LIBFT_REALLOCZ(PTR, SZ, NSZ) \
+	do { \
+		void *NEWPTR; \
+		LIBFT_ALLOCZ(NEWPTR, NSZ); \
 		if (NULL != PTR && NULL != NEWPTR) { \
 			ft_memcpy(NEWPTR, PTR, SZ); \
 			free(PTR); \
