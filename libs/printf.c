@@ -1,4 +1,5 @@
 #include <libft.h>
+#include <libft_v2.h>
 
 typedef enum e_prf_fmt_kind
 {
@@ -21,6 +22,7 @@ typedef struct s_prf_ctx
 	char *buf;
 	size_t bufsize;
 	int	bufpos;
+	t_io_v2_stream *stream;
 	int fd;
 	int fwid;
 	int prec;
@@ -53,6 +55,7 @@ typedef void (*__t_func_prf_flush)(t_prf_ctx *ctx);
 
 static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf_write f_write, __t_func_prf_flush f_flush);
 
+static void	__prf_fwrite(t_prf_ctx *ctx, const char *s, int slen);
 static void	__prf_dwrite(t_prf_ctx *ctx, const char *s, int slen);
 static void	__prf_dflush(t_prf_ctx *ctx);
 static void	__prf_bwrite(t_prf_ctx *ctx, const char *s, int slen);
@@ -74,6 +77,23 @@ int ft_vprintf(const char *fmt, va_list ap)
 	char buf[FT_PRINTF_BUFSIZE];
 	t_prf_ctx ctx = { .fd = 1, .buf = buf, .bufsize = sizeof(buf), };
 	__prf_core(&ctx, fmt, ap, __prf_dwrite, __prf_dflush);
+	return (ctx.written);
+}
+
+int ft_fprintf(t_io_v2_stream *stream, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	t_prf_ctx ctx = { .stream = stream, };
+	__prf_core(&ctx, fmt, ap, __prf_fwrite, NULL);
+	va_end(ap);
+	return (ctx.written);
+}
+
+int ft_vfprintf(t_io_v2_stream *stream, const char *fmt, va_list ap)
+{
+	t_prf_ctx ctx = { .stream = stream, };
+	__prf_core(&ctx, fmt, ap, __prf_fwrite, NULL);
 	return (ctx.written);
 }
 
@@ -431,6 +451,17 @@ static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf
 	}
 	// Flush buffer.
 	if (NULL != f_flush) f_flush(ctx);
+}
+
+static void	__prf_fwrite(t_prf_ctx *ctx, const char *s, int slen)
+{
+	ssize_t wbytes = io_v2_write_all(ctx->stream, s, slen);
+	if (wbytes != slen) ctx->written = -1;
+	if (ctx->written != -1) {
+		if (INT_MAX - ctx->written < slen) ctx->written = -1;
+		else ctx->written += slen;
+	}
+	ctx->seen = ctx->written;
 }
 
 static void	__prf_dwrite(t_prf_ctx *ctx, const char *s, int slen)
