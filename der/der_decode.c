@@ -34,7 +34,7 @@ int	der_decode(t_node **asn1_node, t_ostring *encoded)
 	}
 
 	t_io_v2_stream *in = NULL;
-	if (SSL_OK != io_v2_bytes_reader(&in, encoded)) {
+	if (!io_v2_bytes_reader(&in, encoded)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
@@ -252,7 +252,7 @@ static ssize_t	__read_content_octets(t_ostring *osbuf, t_io_v2_stream *in)
     if (ASN_LEN_LONG == lenform && len == 0) {
 		SSL_LOG(TRACE, "reading indefinite length content");
 		t_io_v2_stream *out = NULL;
-		if (SSL_OK != io_v2_bytes_writer(&out, osbuf)) {
+		if (!io_v2_bytes_writer(&out, osbuf)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (-1);
 		}
@@ -314,7 +314,7 @@ static int	__decode_construct(t_node **nodes, t_ostring *encoded)
 	*nodes = NULL;
 
 	t_io_v2_stream *in = NULL;
-	if (SSL_OK != io_v2_bytes_reader(&in, encoded)) {
+	if (!io_v2_bytes_reader(&in, encoded)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}

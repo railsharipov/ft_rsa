@@ -68,23 +68,23 @@ ssize_t	io_v2_finish(t_io_v2_stream *stream);
 ssize_t	io_v2_flush(t_io_v2_stream *stream);
 ssize_t	io_v2_close(t_io_v2_stream *stream);
 
-int		io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, void *ctx);
+bool	io_v2_stream(t_io_v2_stream **stream, t_io_v2_interface interface, void *ctx);
 
-int		io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity);
-int		io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);
+bool	io_v2_buffered_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream, size_t capacity);
+bool	io_v2_buffered_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream, size_t capacity);
 
-int		io_v2_file_reader(t_io_v2_stream **stream, const char *file_path);
-int		io_v2_fd_reader(t_io_v2_stream **stream, int fd);
-int		io_v2_file_writer(t_io_v2_stream **stream, const char *file_path);
-int		io_v2_fd_writer(t_io_v2_stream **stream, int fd);
+bool	io_v2_file_reader(t_io_v2_stream **stream, const char *file_path);
+bool	io_v2_fd_reader(t_io_v2_stream **stream, int fd);
+bool	io_v2_file_writer(t_io_v2_stream **stream, const char *file_path);
+bool	io_v2_fd_writer(t_io_v2_stream **stream, int fd);
 
-int		io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
-int		io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
+bool	io_v2_bytes_reader(t_io_v2_stream **stream, t_ostring *ostring);
+bool	io_v2_bytes_writer(t_io_v2_stream **stream, t_ostring *ostring);
 
-int 	io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
+bool	io_v2_filter_reader(t_io_v2_stream **stream, t_io_v2_stream *upstream,
 							t_func_transform update, t_func_transform final, void *filter_ctx);
 
-int 	io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
+bool	io_v2_filter_writer(t_io_v2_stream **stream, t_io_v2_stream *downstream,
 							t_func_transform update, t_func_transform final, void *filter_ctx);
 
 typedef enum e_io_v2_pipe_status {
@@ -104,9 +104,9 @@ typedef struct s_io_v2_pipe {
 	void				*ctx;
 } t_io_v2_pipe;
 
-int		io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
-int		io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
-int		io_v2_pipe_del(t_io_v2_pipe *pipe);
-int		io_v2_pipe_pump(t_io_v2_pipe *pipe);
+bool	io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
+bool	io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
+bool	io_v2_pipe_del(t_io_v2_pipe *pipe);
+bool	io_v2_pipe_pump(t_io_v2_pipe *pipe);
 
 #endif

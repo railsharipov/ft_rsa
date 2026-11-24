@@ -16,12 +16,12 @@ int	cmd_base64(const t_cmd *cmd)
 
 	// Source
 	if (ft_htbl_has(cmd->opts, "-i")) {
-		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
+		if (!io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	} else {
-		if (SSL_OK != io_v2_fd_reader(&in, 0)) {
+		if (!io_v2_fd_reader(&in, 0)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -29,12 +29,12 @@ int	cmd_base64(const t_cmd *cmd)
 
 	// Sink
 	if (ft_htbl_has(cmd->opts, "-o")) {
-		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
+		if (!io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	} else {
-		if (SSL_OK != io_v2_fd_writer(&out, 1)) {
+		if (!io_v2_fd_writer(&out, 1)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -51,13 +51,13 @@ int	cmd_base64(const t_cmd *cmd)
 		t_io_v2_stream *textutil_filter = NULL;
 		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
 		*textutil_ctx = (t_textutil_ctx){0};
-		if (io_v2_filter_reader(&textutil_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, textutil_ctx) < 0) {
+		if (!io_v2_filter_reader(&textutil_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, textutil_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 		in = textutil_filter;
 		// Feed processed input into base64 decoder
-		if (io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, &b64_ctx) < 0) {
+		if (!io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, &b64_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -65,7 +65,7 @@ int	cmd_base64(const t_cmd *cmd)
 	}
 	else {
 		// Feed input into base64 encoder
-		if (io_v2_filter_reader(&b64_filter, in, base64_encode_transform_update, base64_encode_transform_final, &b64_ctx) < 0) {
+		if (!io_v2_filter_reader(&b64_filter, in, base64_encode_transform_update, base64_encode_transform_final, &b64_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -75,7 +75,7 @@ int	cmd_base64(const t_cmd *cmd)
 		t_io_v2_stream *textutil_filter = NULL;
 		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
 		*textutil_ctx = (t_textutil_ctx){.delim = '\n'};
-		if (io_v2_filter_reader(&textutil_filter, in, NULL, textutil_terminator_final, textutil_ctx) < 0) {
+		if (!io_v2_filter_reader(&textutil_filter, in, NULL, textutil_terminator_final, textutil_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -98,7 +98,7 @@ int	cmd_base64(const t_cmd *cmd)
 			t_io_v2_stream *textutil_filter = NULL;
 			SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
 			*textutil_ctx = (t_textutil_ctx){.line_width = line_width, .delim = '\n'};
-			if (io_v2_filter_reader(&textutil_filter, in, textutil_insert_delim_update, textutil_insert_delim_final, textutil_ctx) < 0) {
+			if (!io_v2_filter_reader(&textutil_filter, in, textutil_insert_delim_update, textutil_insert_delim_final, textutil_ctx)) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
@@ -108,7 +108,7 @@ int	cmd_base64(const t_cmd *cmd)
 
 	// Create and run the pipe
 	t_io_v2_pipe *pipe = NULL;
-	if (io_v2_pipe_unidir(&pipe, in, out) < 0) {
+	if (!io_v2_pipe_unidir(&pipe, in, out)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}

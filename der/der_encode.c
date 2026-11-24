@@ -35,7 +35,7 @@ int	der_encode(t_node *asn1_node, t_ostring *encoded)
 	t_io_v2_stream *out = NULL;
 	ft_ostr_init(encoded);
 
-	if (SSL_OK != io_v2_bytes_writer(&out, encoded)) {
+	if (!io_v2_bytes_writer(&out, encoded)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
@@ -353,7 +353,7 @@ static int	__encode_sequence(uint8_t tag, t_ostring *encoded, t_ostring *data)
 	}
 
 	t_io_v2_stream *out = NULL;
-	if (SSL_OK != io_v2_bytes_writer(&out, encoded)) {
+	if (!io_v2_bytes_writer(&out, encoded)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}

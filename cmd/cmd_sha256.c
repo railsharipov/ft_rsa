@@ -18,12 +18,12 @@ int	cmd_sha256(const t_cmd *cmd)
 	if (ft_htbl_has(cmd->opts, "-s")) {
 		char *strarg = ft_htbl_get(cmd->opts, "-s");
 		t_ostring *ostring = ft_ostr_create_from_cstr(strarg);
-		if (SSL_OK != io_v2_bytes_reader(&in, ostring)) {
+		if (!io_v2_bytes_reader(&in, ostring)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	} else {
-		if (SSL_OK != io_v2_fd_reader(&in, 0)) {
+		if (!io_v2_fd_reader(&in, 0)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -31,12 +31,12 @@ int	cmd_sha256(const t_cmd *cmd)
 
 	// Sink
 	if (ft_htbl_has(cmd->opts, "-p")) {
-		if (SSL_OK != io_v2_fd_writer(&out, 1)) {
+		if (!io_v2_fd_writer(&out, 1)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	} else {
-		if (SSL_OK != io_v2_file_writer(&out, "/dev/null")) {
+		if (!io_v2_file_writer(&out, "/dev/null")) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -46,7 +46,7 @@ int	cmd_sha256(const t_cmd *cmd)
 	t_digest_ctx sha256_ctx = {0};
 	sha256_init(&sha256_ctx);
 	t_io_v2_stream *sha256_filter = NULL;
-	if (io_v2_filter_reader(&sha256_filter, in, sha256_transform_update, sha256_transform_final, &sha256_ctx) < 0) {
+	if (!io_v2_filter_reader(&sha256_filter, in, sha256_transform_update, sha256_transform_final, &sha256_ctx)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
@@ -54,7 +54,7 @@ int	cmd_sha256(const t_cmd *cmd)
 
 	// Create and run the pipe
 	t_io_v2_pipe *pipe = NULL;
-	if (io_v2_pipe_unidir(&pipe, in, out) < 0) {
+	if (!io_v2_pipe_unidir(&pipe, in, out)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
@@ -77,14 +77,14 @@ int	cmd_sha256(const t_cmd *cmd)
 	}
 
 	// Format and write output
-	if (SSL_OK != io_v2_fd_writer(&out, 1)) {
+	if (!io_v2_fd_writer(&out, 1)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}
 	// Add terminating newline when writing output
 	t_textutil_ctx textutil_ctx = {.delim = '\n'};
 	t_io_v2_stream *textutil_filter = NULL;
-	if (io_v2_filter_writer(&textutil_filter, out, NULL, textutil_terminator_final, &textutil_ctx) < 0) {
+	if (!io_v2_filter_writer(&textutil_filter, out, NULL, textutil_terminator_final, &textutil_ctx)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}

@@ -21,12 +21,12 @@ int	cmd_des_ecb(const t_cmd *cmd)
 	// Source
 	t_io_v2_stream *in = NULL;
 	if (ft_htbl_has(cmd->opts, "-i")) {
-		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
+		if (!io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	} else {
-		if (SSL_OK != io_v2_fd_reader(&in, 0)) {
+		if (!io_v2_fd_reader(&in, 0)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -34,12 +34,12 @@ int	cmd_des_ecb(const t_cmd *cmd)
 	// Sink
 	t_io_v2_stream *out = NULL;
 	if (ft_htbl_has(cmd->opts, "-o")) {
-		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
+		if (!io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
 	} else {
-		if (SSL_OK != io_v2_fd_writer(&out, 1)) {
+		if (!io_v2_fd_writer(&out, 1)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -56,7 +56,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			t_io_v2_stream *eolws_remover_filter = NULL;
 			SSL_ALLOC(eolws_remover_ctx, sizeof(t_textutil_ctx));
 			*eolws_remover_ctx = (t_textutil_ctx){0};
-			if (io_v2_filter_reader(&eolws_remover_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, eolws_remover_ctx) < 0) {
+			if (!io_v2_filter_reader(&eolws_remover_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, eolws_remover_ctx)) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
@@ -66,7 +66,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			t_io_v2_stream *b64_filter = NULL;
 			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
 			*b64_ctx = (t_b64_ctx){0};
-			if (io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, b64_ctx) < 0) {
+			if (!io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, b64_ctx)) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
@@ -174,7 +174,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			return (SSL_ERR);
 		}
 		t_io_v2_stream *des_filter = NULL;
-		if (SSL_OK != io_v2_filter_writer(&des_filter, out, des_ecb_decrypt_transform_update, des_ecb_decrypt_transform_final, &des_ctx)) {
+		if (!io_v2_filter_writer(&des_filter, out, des_ecb_decrypt_transform_update, des_ecb_decrypt_transform_final, &des_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -191,7 +191,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			t_io_v2_stream *terminator_filter = NULL;
 			SSL_ALLOC(terminator_ctx, sizeof(t_textutil_ctx));
 			*terminator_ctx = (t_textutil_ctx){.delim = '\n'};
-			if (io_v2_filter_writer(&terminator_filter, out, NULL, textutil_terminator_final, terminator_ctx) < 0) {
+			if (!io_v2_filter_writer(&terminator_filter, out, NULL, textutil_terminator_final, terminator_ctx)) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
@@ -201,7 +201,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			t_io_v2_stream *linebreak_filter = NULL;
 			SSL_ALLOC(linebreak_ctx, sizeof(t_textutil_ctx));
 			*linebreak_ctx = (t_textutil_ctx){.delim = '\n', .line_width = 64};
-			if (io_v2_filter_writer(&linebreak_filter, out, textutil_insert_delim_update, textutil_insert_delim_final, linebreak_ctx) < 0) {
+			if (!io_v2_filter_writer(&linebreak_filter, out, textutil_insert_delim_update, textutil_insert_delim_final, linebreak_ctx)) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
@@ -211,7 +211,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			t_io_v2_stream *b64_filter = NULL;
 			SSL_ALLOC(b64_ctx, sizeof(t_b64_ctx));
 			*b64_ctx = (t_b64_ctx){0};
-			if (io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, b64_ctx) < 0) {
+			if (!io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, b64_ctx)) {
 				SSL_LOG(ERROR, IO_INIT_ERROR);
 				return (SSL_ERR);
 			}
@@ -320,7 +320,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 			return (SSL_ERR);
 		}
 		t_io_v2_stream *des_filter = NULL;
-		if (SSL_OK != io_v2_filter_reader(&des_filter, in, des_ecb_encrypt_transform_update, des_ecb_encrypt_transform_final, &des_ctx)) {
+		if (!io_v2_filter_reader(&des_filter, in, des_ecb_encrypt_transform_update, des_ecb_encrypt_transform_final, &des_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -329,7 +329,7 @@ int	cmd_des_ecb(const t_cmd *cmd)
 
 	// Run the pipeline
 	t_io_v2_pipe *pipe = NULL;
-	if (io_v2_pipe_unidir(&pipe, in, out) < 0) {
+	if (!io_v2_pipe_unidir(&pipe, in, out)) {
 		SSL_LOG(ERROR, IO_INIT_ERROR);
 		return (SSL_ERR);
 	}

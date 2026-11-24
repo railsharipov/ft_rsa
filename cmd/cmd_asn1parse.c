@@ -64,7 +64,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 	// Source
 	t_io_v2_stream *in = NULL;
 	if (ft_htbl_has(cmd->opts, "-i")) {
-		if (SSL_OK != io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
+		if (!io_v2_file_reader(&in, ft_htbl_get(cmd->opts, "-i"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -76,7 +76,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 	// Sink
 	t_io_v2_stream *out = NULL;
 	if (ft_htbl_has(cmd->opts, "-o")) {
-		if (SSL_OK != io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
+		if (!io_v2_file_writer(&out, ft_htbl_get(cmd->opts, "-o"))) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -115,7 +115,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		t_io_v2_stream *textutil_filter = NULL;
 		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
 		*textutil_ctx = (t_textutil_ctx){0};
-		if (SSL_OK != io_v2_filter_reader(&textutil_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, textutil_ctx)) {
+		if (!io_v2_filter_reader(&textutil_filter, in, textutil_del_eolws_update, textutil_del_eolws_final, textutil_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -123,7 +123,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		// Feed processed input into base64 decoder
 		t_b64_ctx b64_ctx = {0};
 		t_io_v2_stream *b64_filter = NULL;
-		if (SSL_OK != io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, &b64_ctx)) {
+		if (!io_v2_filter_reader(&b64_filter, in, base64_decode_transform_update, base64_decode_transform_final, &b64_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -191,7 +191,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		t_io_v2_stream *textutil_filter = NULL;
 		SSL_ALLOC(textutil_ctx, sizeof(t_textutil_ctx));
 		*textutil_ctx = (t_textutil_ctx){.delim = '\n'};
-		if (io_v2_filter_writer(&textutil_filter, out, NULL, textutil_terminator_final, textutil_ctx) < 0) {
+		if (!io_v2_filter_writer(&textutil_filter, out, NULL, textutil_terminator_final, textutil_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
@@ -199,7 +199,7 @@ int	cmd_asn1parse(const t_cmd *cmd)
 		// Feed DER output to base64 encoder
 		t_b64_ctx b64_ctx = {0};
 		t_io_v2_stream *b64_filter = NULL;
-		if (SSL_OK != io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, &b64_ctx)) {
+		if (!io_v2_filter_writer(&b64_filter, out, base64_encode_transform_update, base64_encode_transform_final, &b64_ctx)) {
 			SSL_LOG(ERROR, IO_INIT_ERROR);
 			return (SSL_ERR);
 		}
