@@ -692,8 +692,8 @@ static t_transform_result __decrypt_transform_final(void *vctx, __t_func_permute
 			return (t_transform_result){.status = TRANSFORM_ERROR};
 		}
 		// all pad bytes must have the same value
-		for (uint8_t i = 0; i < padsize; i++) {
-			if (final_block[DES_BLOCK_SIZE-i-1] != padsize) {
+		for (uint8_t j = 0; j < padsize; j++) {
+			if (final_block[DES_BLOCK_SIZE-j-1] != padsize) {
 				SSL_LOG(ERROR, "bad des-ecb crypt");
 				return (t_transform_result){.status = TRANSFORM_ERROR};
 			}
