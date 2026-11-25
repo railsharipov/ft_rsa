@@ -1,23 +1,6 @@
 #include <libft_v2.h>
 #include <logger.h>
 
-typedef enum {
-	FILTER_STREAM,
-	FILTER_TRANSFORM_UPDATE,
-	FILTER_TRANSFORM_FINAL,
-	FILTER_DONE
-} t_filter_mode;
-
-typedef struct s_io_v2_filter_ctx {
-	t_io_v2_stream		*stream;
-	t_buffer			*in;
-	t_buffer			*out;
-	t_func_transform	f_update;
-	t_func_transform	f_final;
-	t_filter_mode		mode;
-	void 				*filter_ctx;
-} t_io_v2_filter_ctx;
-
 static ssize_t __io_v2_filter_read(void *ctx, void *buf, size_t nbytes);
 static ssize_t __io_v2_filter_read_close(void *ctx);
 
@@ -145,7 +128,7 @@ static ssize_t __io_v2_filter_read(void *vctx, void *buf, size_t nbytes)
 	t_io_v2_filter_ctx *ctx = vctx;
 	t_io_v2_stream *upstream = ctx->stream;
 
-	t_filter_mode next_mode = FILTER_STREAM;
+	t_io_v2_filter_mode next_mode = FILTER_STREAM;
 	t_transform_result result = {.status = TRANSFORM_ERROR};
 
 	if (nbytes == 0) {
@@ -282,7 +265,7 @@ static ssize_t __io_v2_filter_passthrough_read(void *vctx, void *buf, size_t nby
 	t_io_v2_stream *upstream = ctx->stream;
 	// We can not simply delegate read to upstream since we have to make decision when to call finalizer.
 	// Remember that calling finalizer on read path is our responsibility.
-	t_filter_mode next_mode = FILTER_STREAM;
+	t_io_v2_filter_mode next_mode = FILTER_STREAM;
 	t_transform_result result = {.status = TRANSFORM_ERROR};
 
 	if (nbytes == 0) {
@@ -397,7 +380,7 @@ static ssize_t __io_v2_filter_write(void *vctx, const void *buf, size_t nbytes)
 	t_io_v2_filter_ctx *ctx = vctx;
 	t_io_v2_stream *downstream = ctx->stream;
 
-	t_filter_mode next_mode = FILTER_STREAM;
+	t_io_v2_filter_mode next_mode = FILTER_STREAM;
 	t_transform_result result = {.status = TRANSFORM_ERROR};
 
 	if (nbytes == 0) {
@@ -505,7 +488,7 @@ static ssize_t __io_v2_filter_write_finish(void *vctx)
 	t_io_v2_filter_ctx *ctx = vctx;
 	t_io_v2_stream *downstream = ctx->stream;
 
-	t_filter_mode next_mode = FILTER_STREAM;
+	t_io_v2_filter_mode next_mode = FILTER_STREAM;
 	t_transform_result result = {.status = TRANSFORM_ERROR};
 
 	ssize_t tbytes = 0;
@@ -603,7 +586,7 @@ static ssize_t __io_v2_filter_write_flush(void *vctx)
 	t_io_v2_filter_ctx *ctx = vctx;
 	t_io_v2_stream *downstream = ctx->stream;
 
-	t_filter_mode next_mode = FILTER_STREAM;
+	t_io_v2_filter_mode next_mode = FILTER_STREAM;
 
 	ssize_t tbytes = 0;
 	while (!ft_buffer_is_empty(ctx->out)) {

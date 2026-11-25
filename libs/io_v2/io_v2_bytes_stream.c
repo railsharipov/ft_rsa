@@ -1,11 +1,6 @@
 #include <libft_v2.h>
 #include <logger.h>
 
-typedef struct s_io_v2_bytes_ctx {
-    t_ostring	*ostring;
-    size_t      seek;
-} t_io_v2_bytes_ctx;
-
 static ssize_t __io_v2_bytes_read(void *vctx, void *buf, size_t nbytes);
 static ssize_t __io_v2_bytes_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t __io_v2_bytes_close(void *vctx);

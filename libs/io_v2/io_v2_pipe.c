@@ -4,12 +4,6 @@
 static ssize_t __read_from_upstream(void *ctx, void *buf, size_t nbytes);
 static ssize_t __write_to_downstream(void *ctx, const void *buf, size_t nbytes);
 
-typedef struct s_io_v2_pipe_ctx {
-	t_io_v2_stream *upstream;
-	t_io_v2_stream *downstream;
-	t_buffer *buffer;
-} t_io_v2_pipe_ctx;
-
 bool io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream)
 {
 	t_io_v2_pipe_ctx *ctx;

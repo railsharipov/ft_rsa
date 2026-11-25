@@ -131,7 +131,7 @@ ssize_t io_v2_write(t_io_v2_stream *stream, const void *buf, size_t nbytes)
         stream->status = IO_V2_STATUS_ERROR;
         return (-1);
     }
-	IO_LOG(TRACE, "wrote %zu bytes", result);
+	IO_LOG(TRACE, "wrote %zd bytes", result);
 
     return (result);
 }
@@ -174,8 +174,8 @@ ssize_t io_v2_finish(t_io_v2_stream *stream)
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_FINISH, stream->flags)) {
-        IO_LOG(ERROR, "stream is not finishable");
-        return (-1);
+        IO_LOG(TRACE, "stream is not finishable");
+        return (0);
     }
     switch (stream->status) {
     case IO_V2_STATUS_OK:
@@ -205,7 +205,7 @@ ssize_t io_v2_finish(t_io_v2_stream *stream)
         stream->status = IO_V2_STATUS_ERROR;
         return (-1);
     }
-	IO_LOG(TRACE, "wrote %zu bytes", result);
+	IO_LOG(TRACE, "wrote %zd bytes", result);
 	stream->status = IO_V2_STATUS_FINISHED;
 	IO_LOG(TRACE, "finished stream");
 
@@ -223,8 +223,8 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_FLUSH, stream->flags)) {
-        IO_LOG(ERROR, "stream is not flushable");
-        return (-1);
+        IO_LOG(TRACE, "stream is not flushable");
+        return (0);
     }
     switch (stream->status) {
     case IO_V2_STATUS_OK:
@@ -254,7 +254,7 @@ ssize_t io_v2_flush(t_io_v2_stream *stream)
 		stream->status = IO_V2_STATUS_ERROR;
 		return (-1);
 	}
-	IO_LOG(TRACE, "flushed %zu bytes", result);
+	IO_LOG(TRACE, "flushed %zd bytes", result);
 
     return (result);
 }
@@ -270,8 +270,8 @@ ssize_t io_v2_close(t_io_v2_stream *stream)
         return (-1);
     }
     if (!FLAG(IO_V2_FLAG_CLOSE, stream->flags)) {
-        IO_LOG(ERROR, "stream is not closable");
-        return (-1);
+        IO_LOG(TRACE, "stream is not closable");
+        return (0);
     }
 	/* All known states are ok except closed state */
     switch (stream->status) {

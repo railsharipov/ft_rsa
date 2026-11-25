@@ -1,14 +1,41 @@
 #include <libft_v2.h>
 
-typedef struct s_io_v2_buffered_ctx {
-	t_io_v2_stream *stream;
-	t_buffer *buffer;
-} t_io_v2_buffered_ctx;
-
 static ssize_t  __io_v2_buffered_read(void *vctx, void *buf, size_t nbytes);
 static ssize_t  __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes);
 static ssize_t  __io_v2_buffered_flush(void *vctx);
 static ssize_t  __io_v2_buffered_close(void *vctx);
+static ssize_t	__io_v2_buffered_noop_close(void *vctx);
+
+static uint8_t	__stdin_arr[64*1024];
+static uint8_t	__stdout_arr[64*1024];
+static uint8_t	__stderr_arr[64*1024];
+
+static t_buffer __stdin_buffer = { .arr = __stdin_arr, .capacity = sizeof(__stdin_arr), };
+static t_buffer __stdout_buffer = { .arr = __stdout_arr, .capacity = sizeof(__stdout_arr), };
+static t_buffer __stderr_buffer = { .arr = __stderr_arr, .capacity = sizeof(__stderr_arr), };
+
+static t_io_v2_buffered_ctx __buffered_stdin_ctx = { .stream = &io_v2_stdin_reader, .buffer = &__stdin_buffer };
+static t_io_v2_buffered_ctx __buffered_stdout_ctx = { .stream = &io_v2_stdout_writer, .buffer = &__stdout_buffer };
+static t_io_v2_buffered_ctx __buffered_stderr_ctx = { .stream = &io_v2_stderr_writer, .buffer = &__stderr_buffer };
+
+t_io_v2_stream io_v2_buffered_stdin_reader = {
+	.interface = (t_io_v2_interface){ .read = __io_v2_buffered_read, .close = __io_v2_buffered_noop_close, },
+	.flags = IO_V2_FLAG_READ|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__buffered_stdin_ctx,
+};
+t_io_v2_stream io_v2_buffered_stdout_writer = {
+	.interface = (t_io_v2_interface){ .write = __io_v2_buffered_write, .flush = __io_v2_buffered_flush, .close = __io_v2_buffered_noop_close, },
+	.flags = IO_V2_FLAG_WRITE|IO_V2_FLAG_FLUSH|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__buffered_stdout_ctx,
+};
+t_io_v2_stream io_v2_buffered_stderr_writer = {
+	.interface = (t_io_v2_interface){ .write = __io_v2_buffered_write, .flush = __io_v2_buffered_flush, .close = __io_v2_buffered_noop_close, },
+	.flags = IO_V2_FLAG_WRITE|IO_V2_FLAG_FLUSH|IO_V2_FLAG_CLOSE,
+	.status = IO_V2_STATUS_OK,
+	.ctx = &__buffered_stderr_ctx,
+};
 
 static ssize_t  __read_from_upstream(void *ctx, void *buf, size_t nbytes);
 static ssize_t	__write_to_downstream(void *ctx, const void *buf, size_t nbytes);
@@ -188,6 +215,7 @@ static ssize_t __io_v2_buffered_write(void *vctx, const void *buf, size_t nbytes
 			rbytes = ft_buffer_read_with_func(ctx->buffer, __write_to_downstream, downstream, ft_buffer_used(ctx->buffer));
 			if (rbytes < 0) {
 				IO_LOG(ERROR, "failed to read from buffer to stream");
+				return (IO_V2_STATUS_ERROR);
 			} else {
 				IO_LOG(TRACE, "read %zd bytes from buffer to stream", rbytes);
 			}
@@ -275,4 +303,11 @@ static ssize_t __io_v2_buffered_close(void *vctx)
     } else {
    		return (IO_V2_STATUS_OK);
     }
+}
+
+static ssize_t __io_v2_buffered_noop_close(void *vctx)
+{
+	(void)vctx;
+    IO_LOG(TRACE, "ignoring file stream close");
+    return (IO_V2_STATUS_OK);
 }

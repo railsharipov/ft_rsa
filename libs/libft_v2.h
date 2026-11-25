@@ -183,12 +183,56 @@ typedef struct s_io_v2_stream {
 	void				*ctx;
 } t_io_v2_stream;
 
-extern t_io_v2_stream *io_v2_stdin_reader;
-extern t_io_v2_stream *io_v2_stdin_writer;
-extern t_io_v2_stream *io_v2_stdout_reader;
-extern t_io_v2_stream *io_v2_stdout_writer;
-extern t_io_v2_stream *io_v2_stderr_reader;
-extern t_io_v2_stream *io_v2_stderr_writer;
+typedef struct s_io_v2_file_ctx {
+    int fd;
+} t_io_v2_file_ctx;
+
+typedef struct s_io_v2_buffered_ctx {
+	t_io_v2_stream *stream;
+	t_buffer *buffer;
+} t_io_v2_buffered_ctx;
+
+typedef struct s_io_v2_line_ctx {
+	t_io_v2_stream *stream;
+	t_buffer *buffer;
+} t_io_v2_line_ctx;
+
+typedef struct s_io_v2_bytes_ctx {
+    t_ostring	*ostring;
+    size_t      seek;
+} t_io_v2_bytes_ctx;
+
+typedef enum {
+	FILTER_STREAM,
+	FILTER_TRANSFORM_UPDATE,
+	FILTER_TRANSFORM_FINAL,
+	FILTER_DONE
+} t_io_v2_filter_mode;
+
+typedef struct s_io_v2_filter_ctx {
+	t_io_v2_stream		*stream;
+	t_buffer			*in;
+	t_buffer			*out;
+	t_func_transform	f_update;
+	t_func_transform	f_final;
+	t_io_v2_filter_mode	mode;
+	void 				*filter_ctx;
+} t_io_v2_filter_ctx;
+
+extern t_io_v2_stream io_v2_stdin_reader;
+extern t_io_v2_stream io_v2_stdin_writer;
+extern t_io_v2_stream io_v2_stdout_reader;
+extern t_io_v2_stream io_v2_stdout_writer;
+extern t_io_v2_stream io_v2_stderr_reader;
+extern t_io_v2_stream io_v2_stderr_writer;
+
+extern t_io_v2_stream io_v2_buffered_stdin_reader;
+extern t_io_v2_stream io_v2_buffered_stdout_writer;
+extern t_io_v2_stream io_v2_buffered_stderr_writer;
+
+extern t_io_v2_stream io_v2_line_stdin_reader;
+extern t_io_v2_stream io_v2_line_stdout_writer;
+extern t_io_v2_stream io_v2_line_stderr_writer;
 
 // NON-BLOCKING
 ssize_t	io_v2_read(t_io_v2_stream *stream, void *buf, size_t nbytes);
@@ -237,6 +281,12 @@ typedef struct s_io_v2_pipe {
 	void				*ctx;
 } t_io_v2_pipe;
 
+typedef struct s_io_v2_pipe_ctx {
+	t_io_v2_stream *upstream;
+	t_io_v2_stream *downstream;
+	t_buffer *buffer;
+} t_io_v2_pipe_ctx;
+
 bool	io_v2_pipe_unidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
 bool	io_v2_pipe_bidir(t_io_v2_pipe **pipe, t_io_v2_stream *upstream, t_io_v2_stream *downstream);
 bool	io_v2_pipe_del(t_io_v2_pipe *pipe);
@@ -244,7 +294,7 @@ bool	io_v2_pipe_pump(t_io_v2_pipe *pipe);
 
 #ifdef IO_ENABLE_LOGS
 	#define IO_LOG(LEVEL, FMT, ...)	{if (LIBFT_LOG_LEVEL_##LEVEL <= libft_get_log_level())\
-		ft_dprintf(2, "[%s] [%s:%d] [%s] " FMT "\n", #LEVEL, __FILE__, __LINE__, __func__ __VA_OPT__(,) __VA_ARGS__);}
+		ft_fprintf(&io_v2_line_stderr_writer, "[%s] [%s:%d] [%s] " FMT "\n", #LEVEL, __FILE__, __LINE__, __func__ __VA_OPT__(,) __VA_ARGS__);}
 #else
 	#define IO_LOG(LEVEL, FMT, ...) (void)(FMT)
 #endif
