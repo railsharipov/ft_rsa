@@ -1,9 +1,10 @@
 #include <common.h>
 #include <logger.h>
 #include <libft.h>
+#include <libft_v2.h>
 
 static int __log_writer(const char *mes) {
-	return (ft_dprintf(2, "%s\n", mes));
+	return (ft_fprintf(&io_v2_line_stderr_writer, "%s\n", mes));
 }
 
 static t_logger __logger = {

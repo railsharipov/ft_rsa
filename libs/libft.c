@@ -2795,7 +2795,7 @@ t_logger *ft_log_get_default_logger(void)
 
 static int	__log(const char *func_name, const char *file_name, int line_number, t_logger *logger, uint8_t level, const char *fmt, va_list va_arg)
 {
-	char buf[4096];
+	char buf[16*1024];
 
 	const char *lvl_prefix = __LVL_PREFIX(level, logger->is_ansi_colored);
 
@@ -2821,18 +2821,17 @@ static int	__log(const char *func_name, const char *file_name, int line_number, 
 	if (total < sizeof(buf)) {
 		nw = ft_vsnprintf(buf+total, sizeof(buf)-total, fmt, va_arg);
 		if (nw < 0) return (nw);
-		total += nw;
-		if (total < sizeof(buf)) {
-			return (logger->log_writer(buf));
-		}
 	}
 	else {
-		nw = ft_vsnprintf(buf, sizeof(buf), fmt, va_arg);
+		nw = ft_vsnprintf(NULL, 0, fmt, va_arg);
 		if (nw < 0) return (nw);
-		total += nw;
 	}
 
-	char bbuf[total];
+	if (total + nw < sizeof(buf)) {
+		return (logger->log_writer(buf));
+	}
+
+	char bbuf[total+nw];
 	total = 0;
 
 	if (level <= logger->debug_info_thres) {

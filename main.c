@@ -9,10 +9,16 @@
 #include <libft.h>
 #include <libft_v2.h>
 
-static t_io_v2_stream *__log_writer;
+static int __trace_log_writer(const char *mes) {
+	return (ft_fprintf(&io_v2_buffered_stderr_writer, "%s\n", mes));
+}
 
-static int __app_log_writer(const char *mes) {
-	return (ft_fprintf(__log_writer, "%s\n", mes));
+static int __log_writer(const char *mes) {
+	t_io_v2_stream *stream = &io_v2_line_stderr_writer;
+	if (!isatty(2)) {
+		stream = &io_v2_buffered_stderr_writer;
+	}
+	return (ft_fprintf(stream, "%s\n", mes));
 }
 
 int	main(int ac, const char **av)
@@ -21,13 +27,9 @@ int	main(int ac, const char **av)
 	t_cmd		cmd;
 	t_func_cmd	f_cmd;
 
-	if (!io_v2_buffered_writer(&__log_writer, io_v2_stderr_writer, 64*1024)) {
-		__log_writer = io_v2_stderr_writer;
-	}
-
 	t_logger *__app_logger = logger_get_logger();
 	*__app_logger = (t_logger){
-		.log_writer = __app_log_writer,
+		.log_writer = __log_writer,
 		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
 		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
 		.is_ansi_colored = true,
@@ -35,7 +37,7 @@ int	main(int ac, const char **av)
 
 	t_logger *__libft_logger = libft_get_logger();
 	*__libft_logger = (t_logger){
-		.log_writer = __app_log_writer,
+		.log_writer = __log_writer,
 		.log_level_thres = LIBFT_LOG_LEVEL_INFO,
 		.debug_info_thres = LIBFT_LOG_LEVEL_TRACE,
 		.is_ansi_colored = true,
@@ -219,7 +221,9 @@ int	main(int ac, const char **av)
 		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_DEBUG;
 	}
 	if (ft_htbl_has(cmd.opts, "--trace")) {
+		__app_logger->log_writer = __trace_log_writer;
 		__app_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
+		__libft_logger->log_writer = __trace_log_writer;
 		__libft_logger->log_level_thres = LIBFT_LOG_LEVEL_TRACE;
 	}
 	if (ft_htbl_has(cmd.opts, "--no-color")) {
@@ -241,7 +245,11 @@ int	main(int ac, const char **av)
 	f_cmd = (t_func_cmd)cmd.func;
 	int ret = SSL_ERR;
 	if (f_cmd != NULL) ret = f_cmd(&cmd);
-	io_v2_flush(__log_writer);
+
+	io_v2_flush(&io_v2_line_stderr_writer);
+	io_v2_flush(&io_v2_buffered_stderr_writer);
+	io_v2_flush(&io_v2_line_stdout_writer);
+	io_v2_flush(&io_v2_buffered_stdout_writer);
 
 	return (ret == SSL_OK) ? 0 : 1;
 }

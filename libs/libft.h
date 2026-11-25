@@ -288,7 +288,8 @@ int	ft_log_va_log(const char *func_name, const char *file_name, int line_number,
 
 /****************************************************************************/
 
-#define LIBFT_LOG(LEVEL, FMT, ...)	ft_log_log(__func__, __FILE__, __LINE__, libft_get_logger(), LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__)
+#define LIBFT_LOG(LEVEL, FMT, ...) {if (LIBFT_LOG_LEVEL_##LEVEL <= libft_get_log_level())\
+	ft_log_log(__func__, __FILE__, __LINE__, libft_get_logger(), LIBFT_LOG_LEVEL_##LEVEL, FMT __VA_OPT__(,) __VA_ARGS__);}
 
 t_logger	*libft_get_logger(void);
 

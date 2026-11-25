@@ -48,12 +48,11 @@ typedef enum e_prf_flag {
 	PF_HH	 = (1 << 11),
 } t_prf_flag;
 
-#define FT_PRINTF_BUFSIZE 4096
+#define FT_PRINTF_BUFSIZE 16*1024
 
 typedef void (*__t_func_prf_write)(t_prf_ctx *ctx, const char *s, int slen);
-typedef void (*__t_func_prf_flush)(t_prf_ctx *ctx);
 
-static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf_write f_write, __t_func_prf_flush f_flush);
+static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf_write f_write);
 
 static void	__prf_fwrite(t_prf_ctx *ctx, const char *s, int slen);
 static void	__prf_dwrite(t_prf_ctx *ctx, const char *s, int slen);
@@ -65,18 +64,24 @@ int ft_printf(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	char buf[FT_PRINTF_BUFSIZE];
-	t_prf_ctx ctx = { .fd = 1, .buf = buf, .bufsize = sizeof(buf), };
-	__prf_core(&ctx, fmt, ap, __prf_dwrite, __prf_dflush);
+	t_io_v2_stream *stream = &io_v2_buffered_stdout_writer;
+	if (isatty(1)) {
+		stream = &io_v2_line_stdout_writer;
+	}
+	t_prf_ctx ctx = { .stream = stream, };
+	__prf_core(&ctx, fmt, ap, __prf_fwrite);
 	va_end(ap);
 	return (ctx.written);
 }
 
 int ft_vprintf(const char *fmt, va_list ap)
 {
-	char buf[FT_PRINTF_BUFSIZE];
-	t_prf_ctx ctx = { .fd = 1, .buf = buf, .bufsize = sizeof(buf), };
-	__prf_core(&ctx, fmt, ap, __prf_dwrite, __prf_dflush);
+	t_io_v2_stream *stream = &io_v2_buffered_stdout_writer;
+	if (isatty(1)) {
+		stream = &io_v2_line_stdout_writer;
+	}
+	t_prf_ctx ctx = { .stream = stream, };
+	__prf_core(&ctx, fmt, ap, __prf_fwrite);
 	return (ctx.written);
 }
 
@@ -85,7 +90,7 @@ int ft_fprintf(t_io_v2_stream *stream, const char *fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 	t_prf_ctx ctx = { .stream = stream, };
-	__prf_core(&ctx, fmt, ap, __prf_fwrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_fwrite);
 	va_end(ap);
 	return (ctx.written);
 }
@@ -93,7 +98,7 @@ int ft_fprintf(t_io_v2_stream *stream, const char *fmt, ...)
 int ft_vfprintf(t_io_v2_stream *stream, const char *fmt, va_list ap)
 {
 	t_prf_ctx ctx = { .stream = stream, };
-	__prf_core(&ctx, fmt, ap, __prf_fwrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_fwrite);
 	return (ctx.written);
 }
 
@@ -103,7 +108,8 @@ int ft_dprintf(int fd, const char *fmt, ...)
 	va_start(ap, fmt);
 	char buf[FT_PRINTF_BUFSIZE];
 	t_prf_ctx ctx = { .fd = fd, .buf = buf, .bufsize = sizeof(buf), };
-	__prf_core(&ctx, fmt, ap, __prf_dwrite, __prf_dflush);
+	__prf_core(&ctx, fmt, ap, __prf_dwrite);
+	__prf_dflush(&ctx);
 	va_end(ap);
 	return (ctx.written);
 }
@@ -112,7 +118,8 @@ int ft_vdprintf(int fd, const char *fmt, va_list ap)
 {
 	char buf[FT_PRINTF_BUFSIZE];
 	t_prf_ctx ctx = { .fd = fd, .buf = buf, .bufsize = sizeof(buf), };
-	__prf_core(&ctx, fmt, ap, __prf_dwrite, __prf_dflush);
+	__prf_core(&ctx, fmt, ap, __prf_dwrite);
+	__prf_dflush(&ctx);
 	return (ctx.written);
 }
 
@@ -121,7 +128,7 @@ int ft_sprintf(char *buf, const char *fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 	t_prf_ctx ctx = { .buf = buf, .bufsize = INT_MAX, };
-	__prf_core(&ctx, fmt, ap, __prf_bwrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_bwrite);
 	va_end(ap);
 	return (ctx.written);
 }
@@ -129,7 +136,7 @@ int ft_sprintf(char *buf, const char *fmt, ...)
 int ft_vsprintf(char *buf, const char *fmt, va_list ap)
 {
 	t_prf_ctx ctx = { .buf = buf, .bufsize = INT_MAX, };
-	__prf_core(&ctx, fmt, ap, __prf_bwrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_bwrite);
 	return (ctx.written);
 }
 
@@ -137,8 +144,9 @@ int ft_snprintf(char *buf, size_t size, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
+	if (size > INT_MAX) size = INT_MAX;
 	t_prf_ctx ctx = { .buf = buf, .bufsize = size };
-	__prf_core(&ctx, fmt, ap, __prf_bwrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_bwrite);
 	va_end(ap);
 	return (ctx.seen);
 }
@@ -146,7 +154,7 @@ int ft_snprintf(char *buf, size_t size, const char *fmt, ...)
 int ft_vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 {
 	t_prf_ctx ctx = { .buf = buf, .bufsize = size };
-	__prf_core(&ctx, fmt, ap, __prf_bwrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_bwrite);
 	return (ctx.seen);
 }
 
@@ -155,7 +163,7 @@ int ft_asprintf(char **s, const char *fmt, ...)
 	va_list ap;
 	va_start(ap, fmt);
 	t_prf_ctx ctx = { .buf = NULL, .bufsize = 0, };
-	__prf_core(&ctx, fmt, ap, __prf_swrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_swrite);
 	if (NULL != s) *s = ctx.buf;
 	va_end(ap);
 	return (ctx.written);
@@ -164,12 +172,12 @@ int ft_asprintf(char **s, const char *fmt, ...)
 int ft_vasprintf(char **s, const char *fmt, va_list ap)
 {
 	t_prf_ctx ctx = { .buf = NULL, .bufsize = 0, };
-	__prf_core(&ctx, fmt, ap, __prf_swrite, NULL);
+	__prf_core(&ctx, fmt, ap, __prf_swrite);
 	if (NULL != s) *s = ctx.buf;
 	return (ctx.written);
 }
 
-static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf_write f_write, __t_func_prf_flush f_flush)
+static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf_write f_write)
 {
 	if (NULL != fmt) {
 		int i = 0;
@@ -449,8 +457,6 @@ static void __prf_core(t_prf_ctx *ctx, const char *fmt, va_list ap, __t_func_prf
 			}
 		}
 	}
-	// Flush buffer.
-	if (NULL != f_flush) f_flush(ctx);
 }
 
 static void	__prf_fwrite(t_prf_ctx *ctx, const char *s, int slen)
@@ -495,7 +501,7 @@ static void	__prf_dflush(t_prf_ctx *ctx)
 static void	__prf_bwrite(t_prf_ctx *ctx, const char *s, int slen)
 {
 	int left = ctx->bufsize - ctx->bufpos;
-	if (left) {
+	if (NULL != ctx->buf && left > 0) {
 		int tw = MIN(slen, left-1);
 		for (int i = 0; i < tw; i++) ctx->buf[i+ctx->bufpos] = s[i];
 		ctx->bufpos += tw;
