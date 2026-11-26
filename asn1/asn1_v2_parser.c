@@ -1075,6 +1075,7 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 					// If branch succeeds we are done with parsing.
 
 					t_asn_v2_ast *lookahed_ast = NULL;
+					t_asn_v2_parser_op *lookahead_iop = __asn1_v2_parser_op_peek(ctx);
 					bi = __asn1_v2_parser_op_run(ctx, name, token, &lookahed_ast);
 
 					if (bi) {
@@ -1082,7 +1083,13 @@ static bool __asn1_v2_parser_op_run(t_asn_v2_parser_ctx *ctx, const char *name, 
 						// Add node from previous successful run.
 						__asn1_v2_ast_add_child(root, iast);
 						// Then append all remaining nodes that must have been parsed by lookahed.
-						__asn1_v2_ast_add_child(root, lookahed_ast);
+						if (lookahead_iop->kind == ASN_V2_PARSER_OP_KIND_SEQUENCE) {
+							__asn1_v2_ast_move_children(root, lookahed_ast);
+							__asn1_v2_ast_delete(lookahed_ast);
+						}
+						else {
+							__asn1_v2_ast_add_child(root, lookahed_ast);
+						}
 						// We are done with parsing of the sequence.
 						ctx->params.done = false;
 						*ast = root;
@@ -7120,11 +7127,11 @@ static void __asn1_v2_ast_node_dump(const t_node_v2 *node, int depth)
 	t_asn_v2_ast *ast = container_of(node, t_asn_v2_ast, base);
 	t_asn_v2_token *t = ast->token;
 	if (NULL != t && t->end >= t->start) {
-		ft_printf("%*skind=%s,parser=%s,token=%.*s\n",
-			depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser, (int)(t->end-t->start), t->s+t->start);
+		ft_fprintf(&io_v2_buffered_stdout_writer, "%*skind=%s,parser=%s,token(%s)=%.*s\n",
+			depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser, __asn1_v2_get_token_kind_name(t->kind), (int)(t->end-t->start), t->s+t->start);
 	}
 	else {
-		ft_printf("%*skind=%s,parser=%s\n", depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser);
+		ft_fprintf(&io_v2_buffered_stdout_writer, "%*skind=%s,parser=%s\n", depth, "", __asn1_v2_get_ast_kind_name(ast->kind), ast->parser);
 	}
 }
 
@@ -7136,4 +7143,5 @@ char *asn1_v2_ast_dumps(const t_asn_v2_ast *ast)
 void asn1_v2_ast_dump(const t_asn_v2_ast *ast)
 {
 	ft_ntree_v2_dump(&ast->base, __asn1_v2_ast_node_dump);
+	io_v2_flush(&io_v2_buffered_stdout_writer);
 }
