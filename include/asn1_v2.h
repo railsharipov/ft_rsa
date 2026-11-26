@@ -380,24 +380,24 @@ typedef struct s_asn_v2_token {
 	bool done;
 } t_asn_v2_token;
 
-typedef enum e_asn_v2_ast_kind {
+typedef enum e_asn_v2_cst_kind {
 	ASN_V2_DATA_KIND_NULL = 0,
 	ASN_V2_DATA_KIND_EMPTY,
 	ASN_V2_DATA_KIND_LEAF,
 	ASN_V2_DATA_KIND_LIST,
 	ASN_V2_DATA_KIND_WRAP,
-} t_asn_v2_ast_kind;
+} t_asn_v2_cst_kind;
 
-typedef struct s_asn_v2_ast {
+typedef struct s_asn_v2_cst {
 	t_node_v2 base;
-	t_asn_v2_ast_kind kind;
+	t_asn_v2_cst_kind kind;
 	t_asn_v2_token *token;
 	const char *parser;
-} t_asn_v2_ast;
+} t_asn_v2_cst;
 
-int	asn1_v2_parse(const char *s, size_t slen, t_asn_v2_ast **ast);
-char *asn1_v2_ast_dumps(const t_asn_v2_ast *ast);
-void asn1_v2_ast_dump(const t_asn_v2_ast *ast);
+int	asn1_v2_parse(const char *s, size_t slen, t_asn_v2_cst **ast);
+char *asn1_v2_cst_dumps(const t_asn_v2_cst *ast);
+void asn1_v2_cst_dump(const t_asn_v2_cst *ast);
 
 /****************************************************************************/
 
