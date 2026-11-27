@@ -9,6 +9,152 @@
 
 /****************************************************************************/
 
+const char *asn1_v2_get_node_kind_name(t_asn_v2_node_kind kind)
+{
+	switch (kind) {
+	case ASN_V2_NODE_KIND_NULL: return ("NULL");
+	case ASN_V2_NODE_KIND_EMPTY: return ("EMPTY");
+	case ASN_V2_NODE_KIND_LEAF: return ("LEAF");
+	case ASN_V2_NODE_KIND_LIST: return ("LIST");
+	case ASN_V2_NODE_KIND_WRAP: return ("WRAP");
+	default: return ("unknown");
+	}
+}
+
+const char *asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind)
+{
+	switch (kind) {
+	case ASN_V2_TOKEN_KIND_EMPTY: 			return "EMPTY";
+	case ASN_V2_TOKEN_KIND_COMMENT: 		return "COMMENT";
+	case ASN_V2_TOKEN_KIND_BSTRING: 		return "BSTRING";
+	case ASN_V2_TOKEN_KIND_HSTRING: 		return "HSTRING";
+	case ASN_V2_TOKEN_KIND_CSTRING: 		return "CSTRING";
+	case ASN_V2_TOKEN_KIND_TSTRING: 		return "TSTRING";
+	case ASN_V2_TOKEN_KIND_NUMBER: 			return "NUMBER";
+	case ASN_V2_TOKEN_KIND_REAL_NUMBER:		return "REAL_NUMBER";
+	case ASN_V2_TOKEN_KIND_ASSIGNMENT: 		return "ASSIGNMENT";
+	case ASN_V2_TOKEN_KIND_RANGE: 			return "RANGE";
+	case ASN_V2_TOKEN_KIND_ELLIPSIS: 		return "ELLIPSIS";
+	case ASN_V2_TOKEN_KIND_LVER_BRACKET:	return "LVER_BRACKET";
+	case ASN_V2_TOKEN_KIND_RVER_BRACKET:	return "RVER_BRACKET";
+	case ASN_V2_TOKEN_KIND_KEYWORD: 		return "KEYWORD";
+	case ASN_V2_TOKEN_KIND_SINGLE_CHAR:		return "SINGLE_CHAR";
+	case ASN_V2_TOKEN_KIND_NAME: 			return "NAME";
+	case ASN_V2_TOKEN_KIND_INT_UNI_LBL:		return "integerUnicodeLabel";
+	case ASN_V2_TOKEN_KIND_NON_INT_UNI_LBL:	return "non-integerUnicodeLabel";
+	case ASN_V2_TOKEN_KIND_EOF:	            return "EOF";
+	default:								return "unknown";
+	}
+}
+
+/****************************************************************************/
+
+t_asn_v2_token *asn1_v2_token_create(void)
+{
+	t_asn_v2_token *token = NULL;
+	SSL_ALLOC(token, sizeof(t_asn_v2_token));
+	*token = (t_asn_v2_token){0};
+	return (token);
+}
+
+t_asn_v2_token *asn1_v2_token_clone(t_asn_v2_token *src)
+{
+	t_asn_v2_token *dst = asn1_v2_token_create();
+	*dst = *src;
+	return (dst);
+}
+
+void asn1_v2_token_delete(t_asn_v2_token *token)
+{
+	*token = (t_asn_v2_token){0};
+	SSL_FREE(token);
+}
+
+bool asn1_v2_token_value_eq(t_asn_v2_token token, const char *lex)
+{
+	size_t lexlen = ft_strlen(lex);
+	lexlen = MIN(lexlen, token.end - token.start);
+	return (ft_strneq(token.s + token.start, lex, lexlen));
+}
+
+bool asn1_v2_token_eq(t_asn_v2_token a, t_asn_v2_token b)
+{
+	return (
+		a.kind == b.kind
+		&& a.s == b.s
+		&& a.slen == b.slen
+		&& a.start == b.start
+		&& a.end == b.end
+	);
+}
+
+char *asn1_v2_token_dumps(t_asn_v2_token token)
+{
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 256);
+	ft_ostr_appendf(&ostring, "pos=%zu,kind=%s,value=", token.start, asn1_v2_get_token_kind_name(token.kind));
+	ft_ostr_append(&ostring, token.s + token.start, token.end - token.start);
+	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+	return (dumps);
+}
+
+const char *asn1_v2_token_dumpb(t_asn_v2_token token, char *buf, size_t bufsize)
+{
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, bufsize);
+	ft_ostr_appendf(&ostring, "pos=%zu,kind=%s,value=", token.start, asn1_v2_get_token_kind_name(token.kind));
+	ft_ostr_append(&ostring, token.s + token.start, token.end - token.start);
+	size_t len = MIN(bufsize, ostring.size+1);
+	ft_strncpy(buf, (const char *)ostring.content, len);
+	buf[len-1] = 0;
+	ft_ostr_clear(&ostring);
+	return (buf);
+}
+
+/****************************************************************************/
+
+t_asn_v2_node *asn1_v2_node_create(void)
+{
+	t_asn_v2_node *cst = NULL;
+	SSL_ALLOC(cst, sizeof(t_asn_v2_node));
+	*cst = (t_asn_v2_node){0};
+	return (cst);
+}
+
+t_asn_v2_node *asn1_v2_node_clone(const t_asn_v2_node *src)
+{
+	if (NULL != src) {
+		t_asn_v2_node *clone = asn1_v2_node_create();
+		clone->kind = src->kind;
+		clone->parser = src->parser;
+		if (NULL != src->token) clone->token = asn1_v2_token_clone(src->token);
+		return (clone);
+	}
+	return (NULL);
+}
+
+void asn1_v2_node_delete(t_asn_v2_node *node)
+{
+	if (node->token != NULL) asn1_v2_token_delete(node->token);
+	SSL_FREE(node);
+}
+
+void asn1_v2_tree_delete(t_asn_v2_node *cst)
+{
+	ft_ntree_v2_del(&cst->base, __asn1_v2_node_delete_adapter);
+}
+
+t_asn_v2_node *asn1_v2_tree_clone(const t_asn_v2_node *src)
+{
+	if (NULL == src) return (NULL);
+	t_node_v2 *clone = ft_ntree_v2_clone(&src->base, __asn1_v2_node_copy_adapter);
+	assert(clone != NULL);
+	return (container_of(clone, t_asn_v2_node, base));
+}
+
+/****************************************************************************/
+
 #define ASN_V2_TAG_CLASS_NAME_UNIVERSAL     "UNIVERSAL"
 #define ASN_V2_TAG_CLASS_NAME_APPLICATION   "APPLICATION"
 #define ASN_V2_TAG_CLASS_NAME_CONTEXT       "CONTEXT-SPECIFIC"
@@ -223,12 +369,12 @@ void asn1_v2_symbol_copy(const t_asn_v2_symbol *src, t_asn_v2_symbol *dst)
 	}}
 }
 
-int	asn1_v2_symbol_register_type(t_asn_v2_symbol_table *symbol_table, const char *symbol_name, const t_json_v2 *source)
+int	asn1_v2_symbol_table_register_type(t_htbl_v2 *symbol_table, const char *symbol_name, const t_json_v2 *source)
 {
 	t_asn_v2_symbol *symbol = asn1_v2_symbol_create();
 	symbol->kind = ASN_V2_SYMBOL_KIND_TYPE_REF;
 	symbol->source = source;
-	if (!ft_htbl_v2_set(&symbol_table->symbols, symbol_name, symbol)) {
+	if (!ft_htbl_v2_set(symbol_table, symbol_name, symbol)) {
 		SSL_LOG(ERROR, "redefintion of the symbol: %s", symbol_name);
 		asn1_v2_symbol_delete(symbol);
 		return (SSL_ERR);
@@ -236,18 +382,61 @@ int	asn1_v2_symbol_register_type(t_asn_v2_symbol_table *symbol_table, const char
 	return (SSL_OK);
 }
 
-int	asn1_v2_symbol_register_value(t_asn_v2_symbol_table *symbol_table, const char *symbol_name, const t_json_v2 *source)
+int	asn1_v2_symbol_table_register_value(t_htbl_v2 *symbol_table, const char *symbol_name, const t_json_v2 *source)
 {
 	t_asn_v2_symbol *symbol = asn1_v2_symbol_create();
 	symbol->kind = ASN_V2_SYMBOL_KIND_VALUE_REF;
 	symbol->source = source;
-	if (!ft_htbl_v2_set(&symbol_table->symbols, symbol_name, symbol)) {
+	if (!ft_htbl_v2_set(symbol_table, symbol_name, symbol)) {
 		SSL_LOG(ERROR, "redefintion of the symbol: %s", symbol_name);
 		asn1_v2_symbol_delete(symbol);
 		return (SSL_ERR);
 	}
-
 	return (SSL_OK);
+}
+
+void asn1_v2_symbol_table_clear(t_htbl_v2 *symbol_table)
+{
+	ft_htbl_v2_clear(symbol_table, __asn1_v2_symbol_delete_adapter);
+}
+
+void asn1_v2_symbol_table_delete(t_htbl_v2 *symbol_table)
+{
+	asn1_v2_symbol_table_clear(symbol_table);
+	SSL_FREE(symbol_table);
+}
+
+char *asn1_v2_symbol_table_dumps(const t_htbl_v2 *symbol_table)
+{
+	if (NULL == symbol_table) return ft_strdup("null");
+
+	t_ostring ostring = {0};
+	ft_ostr_init_with_capacity(&ostring, 1024);
+	ft_ostr_append_cstr(&ostring, "{");
+	t_htbl_v2_next next = {0};
+	const char *key = NULL;
+	void *value = NULL;
+	size_t commas = 0;
+	while (ft_htbl_v2_next(symbol_table, &next, &key, &value)) {
+		t_asn_v2_symbol *symbol = value;
+		if (commas++) ft_ostr_append_cstr(&ostring, ",");
+		switch (symbol->kind) {
+		case ASN_V2_SYMBOL_KIND_TYPE_REF: {
+			char *dumps = asn1_v2_type_dumps(symbol->resolved.type_ref.type);
+			ft_ostr_appendf(&ostring, "\"type:%s\":%s", key, dumps);
+			SSL_FREE(dumps);
+			break;
+		}
+		case ASN_V2_SYMBOL_KIND_VALUE_REF: {
+			char *dumps = asn1_v2_type_dumps(symbol->resolved.type_ref.type);
+			ft_ostr_appendf(&ostring, "\"value:%s\":%s", key, dumps);
+			SSL_FREE(dumps);
+		}}
+	}
+	ft_ostr_append_cstr(&ostring, "}}");
+	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
+	ft_ostr_clear(&ostring);
+	return (dumps);
 }
 
 /****************************************************************************/
@@ -560,12 +749,14 @@ void	asn1_v2_type_copy(const t_asn_v2_type *src, t_asn_v2_type *dst)
 	*dst = (t_asn_v2_type){0};
 	dst->kind = src->kind;
 
-	void *content = NULL;
-	t_list_next next = {0};
-	while (ft_list_next_content(&src->constraints, &next, &content)) {
-		t_asn_v2_constraint *dst_constraint = asn1_v2_constraint_create();
-		asn1_v2_constraint_copy(content, dst_constraint);
-		ft_list_append_content(&dst->constraints, dst_constraint);
+	{
+		void *content = NULL;
+		t_list_next next = {0};
+		while (ft_list_next_content(&src->constraints, &next, &content)) {
+			t_asn_v2_constraint *dst_constraint = asn1_v2_constraint_create();
+			asn1_v2_constraint_copy(content, dst_constraint);
+			ft_list_append_content(&dst->constraints, dst_constraint);
+		}
 	}
 
 	switch (src->kind) {
@@ -730,7 +921,6 @@ t_asn_v2_module *asn1_v2_module_create(void)
 	t_asn_v2_module *asn1_module = NULL;
 	SSL_ALLOC(asn1_module, sizeof(t_asn_v2_module));
 	*asn1_module = (t_asn_v2_module){0};
-	ft_htbl_v2_init(&asn1_module->symbol_table.symbols, 512);
 	return (asn1_module);
 }
 
@@ -742,40 +932,16 @@ void asn1_v2_module_delete(t_asn_v2_module *asn1_module)
 
 void asn1_v2_module_clear(t_asn_v2_module *asn1_module)
 {
-	ft_htbl_v2_clear(&asn1_module->symbol_table.symbols, __asn1_v2_symbol_delete_adapter);
+	if (NULL != asn1_module) {
+		SSL_FREE(asn1_module->name);
+		*asn1_module = (t_asn_v2_module){0};
+	}
 }
 
 void asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *dst)
 {
 	dst->tag_mode = src->tag_mode;
-	{
-		const char *key = NULL;
-		void *value = NULL;
-		t_htbl_v2_next next = {0};
-		while (ft_htbl_v2_next(&src->symbol_table.symbols, &next, &key, &value)) {
-			t_asn_v2_symbol *copy_symbol = __asn1_v2_symbol_copy_adapter(value);
-			bool ok = ft_htbl_v2_set(&dst->symbol_table.symbols, key, copy_symbol);
-			assert(ok);
-		}
-	}
-}
-
-t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name)
-{
-	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&asn1_module->symbol_table.symbols, name);
-	if (NULL != symbol && symbol->kind == ASN_V2_SYMBOL_KIND_TYPE_REF) {
-		return (symbol->resolved.type_ref.type);
-	}
-	return (NULL);
-}
-
-t_asn_v2_value *asn1_v2_module_get_value(const t_asn_v2_module *asn1_module, const char *name)
-{
-	t_asn_v2_symbol *symbol = ft_htbl_v2_get(&asn1_module->symbol_table.symbols, name);
-	if (NULL != symbol && symbol->kind == ASN_V2_SYMBOL_KIND_VALUE_REF) {
-		return (symbol->resolved.value_ref.value);
-	}
-	return (NULL);
+	if (src->name) dst->name = ft_strdup(src->name);
 }
 
 /****************************************************************************/
@@ -785,7 +951,7 @@ char *asn1_v2_tag_dumps(const t_asn_v2_tag *asn1_tag)
 	if (NULL == asn1_tag) return ft_strdup("null");
 
 	char *dumps = NULL;
-	ft_sprintf(&dumps, "{\"mode\":\"%s\",\"class\":\"%s\",\"number\":%d}",
+	ft_asprintf(&dumps, "{\"mode\":\"%s\",\"class\":\"%s\",\"number\":%d}",
 		asn1_v2_get_tag_mode_name(asn1_tag->mode),
 		asn1_v2_get_tag_class_name(asn1_tag->class),
 		asn1_tag->number
@@ -1128,36 +1294,8 @@ char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module)
 	t_ostring ostring = {0};
 	ft_ostr_init_with_capacity(&ostring, 1024);
 
-	ft_ostr_appendf(&ostring, "{\"tag_mode\":\"%s\",\"types\":{", asn1_v2_get_tag_mode_name(asn1_module->tag_mode));
+	ft_ostr_appendf(&ostring, "{\"name\":\"%s\",\"tag_mode\":\"%s\"}", asn1_module->name, asn1_v2_get_tag_mode_name(asn1_module->tag_mode));
 
-	t_htbl_v2_next next = {0};
-	const char *key = NULL;
-	void *value = NULL;
-	size_t commas = 0;
-	while (ft_htbl_v2_next(&asn1_module->symbol_table.symbols, &next, &key, &value)) {
-		// SSL_LOG(TRACE, "dumping asn1 type: %s", key);
-		t_asn_v2_symbol *symbol = value;
-		if (symbol->kind == ASN_V2_SYMBOL_KIND_TYPE_REF) {
-			if (commas++) ft_ostr_append_cstr(&ostring, ",");
-			char *dumps = asn1_v2_type_dumps(symbol->resolved.type_ref.type);
-			ft_ostr_appendf(&ostring, "\"%s\":%s", key, dumps);
-			SSL_FREE(dumps);
-		}
-	}
-	ft_ostr_append_cstr(&ostring, "},\"values\":{");
-	next = (t_htbl_v2_next){0};
-	commas = 0;
-	while (ft_htbl_v2_next(&asn1_module->symbol_table.symbols, &next, &key, &value)) {
-		// SSL_LOG(TRACE, "dumping asn1 value: %s", key);
-		t_asn_v2_symbol *symbol = value;
-		if (symbol->kind == ASN_V2_SYMBOL_KIND_VALUE_REF) {
-			if (commas++) ft_ostr_append_cstr(&ostring, ",");
-			char *dumps = asn1_v2_value_dumps(symbol->resolved.value_ref.value);
-			ft_ostr_appendf(&ostring, "\"%s\":%s", key, dumps);
-			SSL_FREE(dumps);
-		}
-	}
-	ft_ostr_append_cstr(&ostring, "}}");
 	char *dumps = ft_ostr_to_cstr(&ostring, 0, ostring.size);
 	ft_ostr_clear(&ostring);
 

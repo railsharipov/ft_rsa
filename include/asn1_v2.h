@@ -242,7 +242,6 @@ typedef struct s_asn_v2_symbol_table {
 
 typedef struct s_asn_v2_module {
 	t_asn_v2_tag_mode tag_mode;
-	t_asn_v2_symbol_table symbol_table;
 	char *name;
 } t_asn_v2_module;
 
@@ -281,9 +280,6 @@ t_asn_v2_module *asn1_v2_module_create(void);
 void asn1_v2_module_clear(t_asn_v2_module *asn1_module);
 void asn1_v2_module_delete(t_asn_v2_module *asn1_module);
 void asn1_v2_module_copy(const t_asn_v2_module *src, t_asn_v2_module *dst);
-
-t_asn_v2_type *asn1_v2_module_get_type(const t_asn_v2_module *asn1_module, const char *name);
-t_asn_v2_value *asn1_v2_module_get_value(const t_asn_v2_module *asn1_module, const char *name);
 
 char *asn1_v2_module_dumps(const t_asn_v2_module *asn1_module);
 char *asn1_v2_module_dumpb(const t_asn_v2_module *asn1_module, char *buf, size_t size);
@@ -370,6 +366,8 @@ typedef enum e_asn_v2_token_kind {
 	ASN_V2_TOKEN_KIND_EOF,
 } t_asn_v2_token_kind;
 
+const char *asn1_v2_get_token_kind_name(t_asn_v2_token_kind kind);
+
 typedef struct s_asn_v2_token {
 	t_asn_v2_token_kind kind;
 	const char *s;
@@ -377,27 +375,44 @@ typedef struct s_asn_v2_token {
 	size_t start;
 	size_t end;
 	size_t idx;
-	bool done;
 } t_asn_v2_token;
 
-typedef enum e_asn_v2_cst_kind {
-	ASN_V2_DATA_KIND_NULL = 0,
-	ASN_V2_DATA_KIND_EMPTY,
-	ASN_V2_DATA_KIND_LEAF,
-	ASN_V2_DATA_KIND_LIST,
-	ASN_V2_DATA_KIND_WRAP,
-} t_asn_v2_cst_kind;
+t_asn_v2_token *asn1_v2_token_create(void);
+t_asn_v2_token *asn1_v2_token_clone(t_asn_v2_token *src);
+void asn1_v2_token_delete(t_asn_v2_token *token);
+bool asn1_v2_token_value_eq(t_asn_v2_token token, const char *lex);
+bool asn1_v2_token_eq(t_asn_v2_token a, t_asn_v2_token b);
+char *asn1_v2_token_dumps(t_asn_v2_token token);
+const char *asn1_v2_token_dumpb(t_asn_v2_token token, char *buf, size_t bufsize);
 
-typedef struct s_asn_v2_cst {
+typedef enum e_asn_v2_node_kind {
+	ASN_V2_NODE_KIND_NULL = 0,
+	ASN_V2_NODE_KIND_EMPTY,
+	ASN_V2_NODE_KIND_LEAF,
+	ASN_V2_NODE_KIND_LIST,
+	ASN_V2_NODE_KIND_WRAP,
+} t_asn_v2_node_kind;
+
+const char *asn1_v2_get_node_kind_name(t_asn_v2_node_kind kind);
+
+typedef struct s_asn_v2_node {
 	t_node_v2 base;
-	t_asn_v2_cst_kind kind;
+	t_asn_v2_node_kind kind;
 	t_asn_v2_token *token;
 	const char *parser;
-} t_asn_v2_cst;
+} t_asn_v2_node;
 
-int	asn1_v2_parse(const char *s, size_t slen, t_asn_v2_cst **ast);
-char *asn1_v2_cst_dumps(const t_asn_v2_cst *ast);
-void asn1_v2_cst_dump(const t_asn_v2_cst *ast);
+t_asn_v2_node *asn1_v2_node_create(void);
+t_asn_v2_node *asn1_v2_node_clone(const t_asn_v2_node *src);
+void asn1_v2_node_delete(t_asn_v2_node *node);
+
+void asn1_v2_tree_delete(t_asn_v2_node *cst);
+t_asn_v2_node *asn1_v2_tree_clone(const t_asn_v2_node *src);
+char *asn1_v2_tree_dumps(const t_asn_v2_node *node);
+void asn1_v2_tree_dump(const t_asn_v2_node *node);
+
+int	asn1_v2_parse(const char *s, size_t slen, t_asn_v2_node **cst);
+int asn_v2_ast_create(const t_asn_v2_node *cst, t_asn_v2_node **ast);
 
 /****************************************************************************/
 

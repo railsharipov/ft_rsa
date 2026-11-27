@@ -73,4 +73,21 @@ static inline void __der_v2_value_delete_adapter(void *p) { der_v2_value_delete(
 static inline void __der_v2_type_delete_adapter(void *p) { der_v2_type_delete((t_der_v2_type *)p); };
 static inline void __der_v2_component_delete_adapter(void *p) { der_v2_component_delete((t_der_v2_component *)p); };
 
+static inline void __asn1_v2_node_delete_adapter(t_node_v2 *node)
+{
+	t_asn_v2_node *cst = container_of(node, t_asn_v2_node, base);
+	if (cst->token != NULL) asn1_v2_token_delete(cst->token);
+	SSL_FREE(cst);
+}
+
+static inline t_node_v2 *__asn1_v2_node_copy_adapter(const t_node_v2 *node)
+{
+	t_asn_v2_node *src = container_of(node, t_asn_v2_node, base);
+	t_asn_v2_node *clone = asn1_v2_node_create();
+	clone->kind = src->kind;
+	clone->parser = src->parser;
+	if (NULL != src->token) clone->token = asn1_v2_token_clone(src->token);
+	return (&clone->base);
+}
+
 #endif
